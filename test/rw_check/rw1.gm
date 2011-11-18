@@ -1,0 +1,13 @@
+
+Procedure foo(G: Graph, val, val2: N_P<Int>(G); Z: Int)
+{
+    Int Y;
+    Y = 0;
+    While (Y < 10) {
+        Foreach(X: G.Nodes) {
+            If (X.val2 > 3) 
+                Y += X.val @ X;
+        }
+    }
+    Z = Y;
+}

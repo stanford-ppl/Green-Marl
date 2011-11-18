@@ -1,0 +1,20 @@
+// Double Reduce Erros
+
+Proc P(G: Graph, A,B,C:N_P<Int>(G))
+{
+    Foreach(t:G.Nodes) {
+        Foreach(q:t.Nbrs) {
+            q.A += t.B @ t; // bound to +
+        }
+        t.A *= 3 @ t; // bound to *
+    }
+}
+Proc Q(G: Graph, A,B,C:N_P<Int>(G))
+{
+    Foreach(t:G.Nodes) {
+        Foreach(q:t.Nbrs) {
+            q.A += t.B @ q; // bound to q
+        }
+        t.A += 3 @ t; // bound to t
+    }
+}

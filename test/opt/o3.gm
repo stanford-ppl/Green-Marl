@@ -1,0 +1,17 @@
+Proc P() {
+    // test of hoist def
+    Int x; 
+    Int y;
+    
+    x=0;
+    y=x+1; // true dependency
+
+    If (x > 0) {
+        Int z2 = x+ 3;
+    }
+    x = 5; // anti dependency
+
+    Int z;
+    z = 5;
+    z = 8; // output dependency
+}

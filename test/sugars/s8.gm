@@ -1,0 +1,10 @@
+Proc foo(G:Graph, A,B: N_P<Int>(G))
+{
+  // Test of Built-in
+  Int x = G.NumNodes();
+  Node(G) A;
+
+  x = A.NumNbrs();
+  x = A.Degree();
+
+}

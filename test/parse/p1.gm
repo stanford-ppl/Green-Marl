@@ -1,0 +1,5 @@
+Proc foo(G: Graph, A:N_P<Int>(G))
+{
+    Int x;
+    x = Sum (t: G.Nodes) {t.A} ;  // Test of parsing Sum
+}
