@@ -13,7 +13,7 @@ vpath %.h  inc
 vpath %.c parse
 vpath %.l parse
 vpath %.y parse
-vpath %.cc common parse backend_cpp frontend opt
+vpath %.cc common parse backend_cpp backend_gps frontend opt
 
 HEADERS =  \
     gm_frontend_api.h \
@@ -51,6 +51,7 @@ SRCS2 =\
        gm_cpp_opt.cc gm_cpp_opt_defer.cc gm_cpp_opt_entry_exit.cc\
        gm_cpp_opt_reduction.cc \
        gm_cpplib_gen.cc gm_cpplib_opt.cc\
+       gm_gps_gen.cc \
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.

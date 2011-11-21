@@ -41,7 +41,7 @@ static struct GM_comp_args GM_compiler_options[] =
 {
     {GMARGFLAG_HELP,    GMARG_NULL, "Print help messages", NULL},
     {GMARGFLAG_VERSION, GMARG_NULL, "Print version", NULL},
-    {GMARGFLAG_TARGET, GMARG_STRING, "Target backend. Current valid targets are 'cpp','cpp_omp', and 'cuda'.", "cpp"},
+    {GMARGFLAG_TARGET, GMARG_STRING, "Target backend. Current valid targets are 'cpp','cpp_omp', and 'gps'.", "cpp"},
     {GMARGFLAG_OUTDIR, GMARG_STRING, "Output directory.", "."},
     {GMARGFLAG_OPT_LEV, GMARG_INT, "Optimization Level (tobe implemented)", "1"},
     {GMARGFLAG_VERB_LEV, GMARG_INT, "Verbosity Level (tobe implemented) 0:silent", "0"},

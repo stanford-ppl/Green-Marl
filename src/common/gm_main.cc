@@ -20,13 +20,16 @@
 
 #include "gm_backend.h"
 #include "gm_backend_cpp.h"
+#include "gm_backend_gps.h"
 #include "gm_argopts.h"
 #include "gm_ind_opt.h"
 
 const char* GM_version_info = "0.1";
 
 gm_frontend FE;
-gm_cpp_gen CPP_BE;
+gm_cpp_gen CPP_BE;  // CPP Backend
+gm_gps_gen GPS_BE;  // GPS Backend
+gm_backend* BACK_END;
 gm_userargs OPTIONS;
 gm_independent_optimize IND_OPT; // extern defined in gm_ind_opt.h
 gm_tempNameGen TEMP_GEN;
@@ -126,9 +129,19 @@ int main (int argc, char** argv)
 
     const char* name = OPTIONS.get_arg_string(GMARGFLAG_TARGET);
     if (gm_is_same_string(name, "cpp"))
+    {
         CPP_BE.set_target_omp(false);
+        BACK_END = & CPP_BE;
+    }
     else if (gm_is_same_string(name, "cpp_omp"))
+    {
         CPP_BE.set_target_omp(true);
+        BACK_END = & CPP_BE;
+    }
+    else if (gm_is_same_string(name, "gps"))
+    {
+        BACK_END = & GPS_BE;
+    }
     else {
         printf("Unsupported target = %s\n", name);
         return 0;
@@ -184,7 +197,7 @@ int main (int argc, char** argv)
     //-------------------------------------
     gm_begin_major_compiler_stage(GMSTAGE_BACKEND_OPT, "Backend Transform");
     {
-        ok = CPP_BE.do_local_optimize();
+        ok = BACK_END->do_local_optimize();
         if (!ok) exit(0);
     }
     gm_end_major_compiler_stage();
@@ -204,14 +217,14 @@ int main (int argc, char** argv)
     // Final Code Generation
     //-------------------------------------------------
     if (OPTIONS.get_arg_string(GMARGFLAG_OUTDIR) == NULL) 
-        CPP_BE.setTargetDir(".");
+        BACK_END->setTargetDir(".");
     else
-        CPP_BE.setTargetDir(OPTIONS.get_arg_string(GMARGFLAG_OUTDIR));
-    CPP_BE.setFileName(Path.getFilename());
+        BACK_END->setTargetDir(OPTIONS.get_arg_string(GMARGFLAG_OUTDIR));
+    BACK_END->setFileName(Path.getFilename());
 
     gm_begin_major_compiler_stage(GMSTAGE_CODEGEN, "Code Generation");
     {
-        ok = CPP_BE.do_generate();
+        ok = BACK_END->do_generate();
         if (!ok) exit(0);
     }
     gm_end_major_compiler_stage();
