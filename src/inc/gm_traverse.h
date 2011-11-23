@@ -8,7 +8,7 @@
 
 class gm_apply {
     public:
-        gm_apply() : for_id (false), for_symtab(false), for_sent(false), for_expr(false) {}
+        gm_apply() : for_id (false), for_symtab(false), for_sent(false), for_expr(false), separate_post_apply(false) {}
 
     virtual bool apply(gm_symtab* e, int symtab_type){ return true;}      // SYMTAB_ARG, SYMTAB_FIELD, SYMTAB_VAR, SYMTAB_PROC
     virtual bool apply(gm_symtab_entry* e, int symtab_type){ return true;}
@@ -19,11 +19,19 @@ class gm_apply {
     virtual void begin_context(ast_node* n) {return;}
     virtual void end_context(ast_node* n) {return ;}
 
+    virtual bool apply2(gm_symtab* e, int symtab_type){ return true;}      // SYMTAB_ARG, SYMTAB_FIELD, SYMTAB_VAR, SYMTAB_PROC
+    virtual bool apply2(gm_symtab_entry* e, int symtab_type){ return true;}
+    virtual bool apply2(ast_id* e){ return true;}
+    virtual bool apply2(ast_sent* s) {return true;}
+    virtual bool apply2(ast_expr* e) {return true;}
+    virtual bool apply2(ast_procdef* s) {return true;}
+
     protected:
         bool for_id;
         bool for_symtab;
         bool for_sent;
         bool for_expr;
+        bool separate_post_apply;
 
     public:
         bool is_for_id() {return for_id;}
@@ -34,6 +42,9 @@ class gm_apply {
         void set_for_symtab(bool b) {for_symtab=b;}
         void set_for_sent(bool b) {for_sent=b;}
         void set_for_expr(bool b) {for_expr=b;}
+
+        bool has_separate_post_apply() {return separate_post_apply;}
+        void set_separate_post_apply(bool b)  {separate_post_apply = b;}
 
         /*
         void get_all(bool &b1, bool &b2, bool&b3, bool &b4) { b1 = for_id; b2 = for_symtab; b3 = for_sent; b4 = for_expr}
@@ -57,7 +68,7 @@ static void gm_traverse_ids(ast_procdef* top, gm_apply* a, bool is_post_apply=fa
 {
     a->set_all(false);
     a->set_for_id(true);
-    top->traverse(a, is_post_apply);
+    top->traverse(a, is_post_apply, !is_post_apply);
 }
 
 //--------------------------------------------------------------------
@@ -67,13 +78,30 @@ static void gm_traverse_sents(ast_procdef* top, gm_apply *a, bool is_post_apply=
 { 
     a->set_all(false);
     a->set_for_sent(true);
-    top->traverse( a, is_post_apply);
+    top->traverse( a, is_post_apply, !is_post_apply);
 }
 static void gm_traverse_sents(ast_sent* top, gm_apply *a, bool is_post_apply=false)
 { 
     a->set_all(false);
     a->set_for_sent(true);
-    top->traverse( a, is_post_apply);
+    top->traverse( a, is_post_apply, !is_post_apply);
+}
+
+static void gm_traverse_sents_pre_post(ast_procdef* top, gm_apply *a)
+{ 
+    a->set_all(false);
+    a->set_for_sent(true);
+    a->set_separate_post_apply(true);
+    top->traverse(a, true, true);
+}
+
+// traverse and apply two times (pre/post)
+static void gm_traverse_sents_pre_post(ast_sent* top, gm_apply *a)
+{ 
+    a->set_all(false);
+    a->set_for_sent(true);
+    a->set_separate_post_apply(true);
+    top->traverse(a, true, true);
 }
 
 //--------------------------------------------------------------------
@@ -83,13 +111,13 @@ static void gm_traverse_symtabs(ast_procdef* top, gm_apply* a, bool is_post_appl
 { 
     a->set_all(false);
     a->set_for_symtab(true);
-    top->traverse( a, is_post_apply);
+    top->traverse( a, is_post_apply, !is_post_apply);
 }
 static void gm_traverse_symtabs(ast_sent* top, gm_apply* a, bool is_post_apply=false)
 { 
     a->set_all(false);
     a->set_for_symtab(true);
-    top->traverse( a, is_post_apply);
+    top->traverse( a, is_post_apply, !is_post_apply);
 }
 
 //--------------------------------------------------------------------
@@ -98,12 +126,12 @@ static void gm_traverse_symtabs(ast_sent* top, gm_apply* a, bool is_post_apply=f
 static void gm_traverse_exprs(ast_procdef* top, gm_apply* a, bool is_post_apply=false)
 { 
     a->set_all(false); a->set_for_expr(true);
-    top->traverse( a, is_post_apply);
+    top->traverse( a, is_post_apply, !is_post_apply);
 }
 static void gm_traverse_exprs(ast_expr* top, gm_apply* a, bool is_post_apply=false)
 { 
     a->set_all(false); a->set_for_expr(true);
-    top->traverse( a, is_post_apply);
+    top->traverse( a, is_post_apply, !is_post_apply);
 }
 
 //-------------------------------------------------------------

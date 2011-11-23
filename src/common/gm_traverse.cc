@@ -2,35 +2,38 @@
 #include "gm_typecheck.h"
 #include "gm_misc.h"
 
-void ast_procdef::traverse(gm_apply*a, bool is_post_apply)
+#define POST_APPLY     true
+#define PRE_APPLY      false
+
+void ast_procdef::traverse(gm_apply*a, bool is_post, bool is_pre)
 {
     bool for_symtab = a->is_for_symtab();
     bool for_id = a->is_for_id();
     
     a->begin_context(this);
 
-    if (!is_post_apply) {
+    if (is_pre) {
         if (for_symtab)
-            apply_symtabs(a);
+            apply_symtabs(a, PRE_APPLY);
         if (for_id)
-            apply_id(a);
+            apply_id(a, PRE_APPLY);
     }
 
 
     // traverse body
-    ((ast_sent*)get_body())->traverse(a, is_post_apply);
+    ((ast_sent*)get_body())->traverse(a, is_post, is_pre);
 
-    if (is_post_apply) {
+    if (is_post) {
         if (for_symtab)
-            apply_symtabs(a);
+            apply_symtabs(a, POST_APPLY);
         if (for_id)
-            apply_id(a);
+            apply_id(a, POST_APPLY);
     }
 
     a->end_context(this);
 }
 
-void ast_procdef::apply_id(gm_apply* a)
+void ast_procdef::apply_id(gm_apply* a, bool is_post)
 {
     //--------------------------
     // [todo] fix for name and return type
@@ -42,118 +45,125 @@ void ast_procdef::apply_id(gm_apply* a)
         std::list<ast_argdecl*>& args = get_in_args();
         for(it=args.begin();it!=args.end();it++) {
             ast_idlist* idl = (*it)->get_idlist(); 
-            idl->apply_id(a);
+            idl->apply_id(a, is_post);
         }
     }
     {
         std::list<ast_argdecl*>& args = get_out_args();
         for(it=args.begin();it!=args.end();it++) {
             ast_idlist* idl = (*it)->get_idlist(); 
-            idl->apply_id(a);
+            idl->apply_id(a, is_post);
         }
     }
 }
-static void apply_symtab_each(gm_apply* a, gm_symtab* s, int symtab_type)
+static void apply_symtab_each(gm_apply* a, gm_symtab* s, int symtab_type, bool is_post)
 {
     std::vector<gm_symtab_entry*> v = s->get_entries();
     for(int i=0;i<v.size();i++)
     {
-        a->apply(v[i], symtab_type);
+        if (is_post && a->has_separate_post_apply()) {
+            a->apply2(v[i], symtab_type);
+        }
+        else {
+            a->apply(v[i], symtab_type);
+        }
     }
 }
-void ast_procdef::apply_symtabs(gm_apply* a)
+
+void ast_node::apply_symtabs(gm_apply* a, bool is_post)
 {
-    a->apply(get_symtab_var(), GM_SYMTAB_ARG);
-    apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_ARG);
-    a->apply(get_symtab_field(), GM_SYMTAB_FIELD);
-    apply_symtab_each(a, get_symtab_field(), GM_SYMTAB_FIELD);
-    a->apply(get_symtab_proc(), GM_SYMTAB_PROC);
-    apply_symtab_each(a, get_symtab_proc(), GM_SYMTAB_PROC);
-}
-
-void ast_sent::traverse(
-        gm_apply*a, bool is_post )
-{
-    bool for_sent = a->is_for_sent();
-    if (!is_post) {
-        if (for_sent)
-            a->apply(this);
+    assert(has_scope());
+    bool post_apply = is_post && a->has_separate_post_apply();
+    if (post_apply) {
+        a->apply2(get_symtab_var(), (int)GM_SYMTAB_ARG);
+    } else {
+        a->apply(get_symtab_var(), (int)GM_SYMTAB_ARG);
     }
-
-    traverse_sent(a,is_post);
-
-    if (is_post) {
-        if (for_sent)
-            a->apply(this);
+    apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_ARG, is_post);
+    if (post_apply) {
+        a->apply2(get_symtab_field(), (int)GM_SYMTAB_FIELD);
+    } else {
+        a->apply(get_symtab_var(), (int)GM_SYMTAB_FIELD);
     }
+    apply_symtab_each(a, get_symtab_field(), GM_SYMTAB_FIELD, is_post);
+    if (post_apply) {
+        a->apply2(get_symtab_proc(), (int)GM_SYMTAB_PROC);
+    } else {
+        a->apply(get_symtab_proc(), (int)GM_SYMTAB_PROC);
+    }
+    apply_symtab_each(a, get_symtab_proc(), GM_SYMTAB_PROC, is_post);
 }
 
 
 //----------------------------------------------------------------------------------
 // sentences
 //----------------------------------------------------------------------------------
-void ast_sentblock::apply_symtabs(gm_apply* a)
+void ast_sent::traverse(gm_apply*a, bool is_post, bool is_pre )
 {
+    bool for_sent = a->is_for_sent();
+    if (is_pre) {
+        if (for_sent)
+            a->apply(this);
+    }
 
-  a->apply(get_symtab_var(), GM_SYMTAB_VAR);
-  apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_VAR);
-  a->apply(get_symtab_field(), GM_SYMTAB_FIELD);
-  apply_symtab_each(a, get_symtab_field(), GM_SYMTAB_FIELD);
-  a->apply(get_symtab_proc(), GM_SYMTAB_PROC);
-  apply_symtab_each(a, get_symtab_proc(), GM_SYMTAB_PROC);
+    traverse_sent(a,is_post, is_pre);
 
-}
-
-
-void ast_sentblock::traverse_sent(gm_apply*a, bool is_post )
-{
-    a->begin_context(this);
-
-    bool for_symtab = a->is_for_symtab();
-
-    if (!is_post && for_symtab)
-        apply_symtabs(a);
-
-    std::list<ast_sent*>& sents = get_sents();
-    std::list<ast_sent*>::iterator i;
-    for(i=sents.begin();i!=sents.end();i++) 
-        (*i)->traverse(a, is_post);
-
-    if (is_post && for_symtab)
-        apply_symtabs(a);
-
-    a->end_context(this);
-}
-
-void ast_vardecl::traverse_sent(gm_apply*a, bool is_post )
-{
-    bool for_id = a->is_for_id();
-    if (for_id) {
-        ast_idlist* idl = get_idlist();
-        idl->apply_id(a);
+    if (is_post) {
+        if (for_sent) {
+            if (a->has_separate_post_apply())
+                a->apply2(this);
+            else
+                a->apply(this);
+        }
     }
 }
 
 
-void ast_foreach::apply_symtabs(gm_apply* a)
+void ast_sentblock::traverse_sent(gm_apply*a, bool is_post, bool is_pre )
 {
-  a->apply(get_symtab_var(), GM_SYMTAB_VAR);
-  apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_VAR);
-  a->apply(get_symtab_field(), GM_SYMTAB_FIELD);
-  apply_symtab_each(a, get_symtab_field(), GM_SYMTAB_FIELD);
-  a->apply(get_symtab_proc(), GM_SYMTAB_PROC);
-  apply_symtab_each(a, get_symtab_proc(), GM_SYMTAB_PROC);
+    a->begin_context(this);
+
+    bool for_symtab = a->is_for_symtab();
+
+    if (is_pre && for_symtab)
+        apply_symtabs(a, PRE_APPLY);
+
+    std::list<ast_sent*>& sents = get_sents();
+    std::list<ast_sent*>::iterator i;
+    for(i=sents.begin();i!=sents.end();i++) 
+        (*i)->traverse(a, is_post, is_pre);
+
+    if (is_post && for_symtab)
+        apply_symtabs(a, POST_APPLY);
+
+    a->end_context(this);
 }
-void ast_foreach::traverse_sent(gm_apply*a, bool is_post)
+
+void ast_vardecl::traverse_sent(gm_apply*a, bool is_post, bool is_pre )
+{
+    bool for_id = a->is_for_id();
+    if (for_id) {
+        ast_idlist* idl = get_idlist();
+
+        if (is_pre)
+            idl->apply_id(a, PRE_APPLY);
+        
+        if (is_post)
+            idl->apply_id(a, POST_APPLY);
+    }
+}
+
+
+void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     a->begin_context(this);
 
     bool for_symtab = a->is_for_symtab();
     bool for_id = a->is_for_id();
 
-    if (!is_post) {
+    if (is_pre) {
         if (for_symtab) {
-            apply_symtabs(a);
+            apply_symtabs(a, PRE_APPLY);
         }
         if (for_id) {
             ast_id* src = get_source();
@@ -165,47 +175,43 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post)
 
     // traverse
     ast_sent* ss = get_body();
-    ss->traverse(a, is_post);
+    ss->traverse(a, is_post, is_pre);
 
     ast_expr* f = get_filter();
     if (f!=NULL)
-        f->traverse(a, is_post);
+        f->traverse(a, is_post, is_pre);
 
 
     if (is_post) {
         if (for_symtab) {
-            apply_symtabs(a);
+            apply_symtabs(a, POST_APPLY);
         }
         if (for_id) {
             ast_id* src = get_source();
             ast_id* id = get_iterator();
-            a->apply(src);
-            a->apply(id);
+            if (a->has_separate_post_apply()) {
+                a->apply2(src);
+                a->apply2(id);
+            } else {
+                a->apply(src);
+                a->apply(id);
+            }
         }
     }
 
     a->end_context(this);
 }
 
-void ast_bfs::apply_symtabs(gm_apply* a)
-{
-  a->apply(get_symtab_var(), GM_SYMTAB_VAR);
-  apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_VAR);
-  a->apply(get_symtab_field(), GM_SYMTAB_FIELD);
-  apply_symtab_each(a, get_symtab_field(), GM_SYMTAB_FIELD);
-  a->apply(get_symtab_proc(), GM_SYMTAB_PROC);
-  apply_symtab_each(a, get_symtab_proc(), GM_SYMTAB_PROC);
-}
-void ast_bfs::traverse_sent(gm_apply*a, bool is_post)
+void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     a->begin_context(this);
 
     bool for_symtab = a->is_for_symtab();
     bool for_id = a->is_for_id();
 
-    if (!is_post) {
+    if (is_pre) {
         if (for_symtab) {
-            apply_symtabs(a);
+            apply_symtabs(a, PRE_APPLY);
         }
         if (for_id) {
             ast_id* src = get_source();
@@ -221,26 +227,33 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post)
     ast_expr *n = get_node_cond(); 
     ast_expr *e = get_edge_cond(); 
     ast_expr *f = get_filter(); 
-    if (n!= NULL) n->traverse(a, is_post);
-    if (e!= NULL) e->traverse(a, is_post);
-    if (f!= NULL) f->traverse(a, is_post);
+    if (n!= NULL) n->traverse(a, is_post, is_pre);
+    if (e!= NULL) e->traverse(a, is_post, is_pre);
+    if (f!= NULL) f->traverse(a, is_post, is_pre);
 
     ast_sentblock* fb = get_fbody();
     ast_sentblock* bb = get_bbody();
-    if (fb != NULL) fb->traverse(a, is_post);
-    if (bb != NULL) bb->traverse(a, is_post);
+    if (fb != NULL) fb->traverse(a, is_post, is_pre);
+    if (bb != NULL) bb->traverse(a, is_post, is_pre);
 
     if (is_post) {
         if (for_symtab) {
-            apply_symtabs(a);
+            apply_symtabs(a, POST_APPLY);
         }
         if (for_id) {
             ast_id* src = get_source();
             ast_id* id = get_iterator();
             ast_id* root = get_root();
-            a->apply(src);
-            a->apply(id);
-            a->apply(root);
+            if (a->has_separate_post_apply()) {
+                a->apply2(src);
+                a->apply2(id);
+                a->apply2(root);
+            }
+            else {
+                a->apply(src);
+                a->apply(id);
+                a->apply(root);
+            }
         }
     }
 
@@ -248,11 +261,11 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post)
 }
 
 
-void ast_assign::traverse_sent(gm_apply*a, bool is_post)
+void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     bool for_id = a->is_for_id();
 
-    if (!is_post) {
+    if (is_pre) {
         if (for_id) {
             if (get_lhs_type() == GMASSIGN_LHS_SCALA) {
                 a->apply(get_lhs_scala());
@@ -265,74 +278,75 @@ void ast_assign::traverse_sent(gm_apply*a, bool is_post)
         }
     }
 
-    get_rhs()->traverse(a, is_post);
+    get_rhs()->traverse(a, is_post, is_pre);
 
     if (is_post) {
+        bool b = a->has_separate_post_apply();
         if (for_id) {
             if (get_lhs_type() == GMASSIGN_LHS_SCALA) {
-                a->apply(get_lhs_scala());
+                if (b) a->apply2(get_lhs_scala());
+                else a->apply(get_lhs_scala());
             } else { // LHS_FIELD
-                a->apply(get_lhs_field()->get_first());
-                a->apply(get_lhs_field()->get_second());
+                if (b) {
+                    a->apply2(get_lhs_field()->get_first());
+                    a->apply2(get_lhs_field()->get_second());
+                } else {
+                    a->apply(get_lhs_field()->get_first());
+                    a->apply(get_lhs_field()->get_second());
+                }
             }
             if (get_bound() != NULL)  // REDUCE or DEFER
-                a->apply(get_bound());
+            {
+                if (b) a->apply2(get_bound());
+                else a->apply(get_bound());
+            }
         }
     }
 }
 
-void ast_return::traverse_sent(gm_apply*a, bool is_post)
+void ast_return::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     if (get_expr()!=NULL)
-        get_expr()->traverse(a, is_post);
+        get_expr()->traverse(a, is_post, is_pre);
 }
 
-void ast_if::traverse_sent(gm_apply*a, bool is_post)
-
+void ast_if::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     // traverse only
-   get_cond()-> traverse( a, is_post);
-   get_then()-> traverse( a, is_post);
+   get_cond()-> traverse( a, is_post, is_pre);
+   get_then()-> traverse( a, is_post, is_pre);
     if (get_else() != NULL) {
-        get_else()->traverse(a, is_post);
+        get_else()->traverse(a, is_post, is_pre);
     }
 }
 
-void ast_while::traverse_sent(gm_apply*a, bool is_post)
-
+void ast_while::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     // traverse only
-   get_cond()-> traverse( a, is_post);
-   get_body()-> traverse( a, is_post);
+   get_cond()-> traverse( a, is_post, is_pre);
+   get_body()-> traverse( a, is_post, is_pre);
 }
 
-void ast_call::traverse_sent(gm_apply*a, bool is_post)
+void ast_call::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     assert(is_builtin_call());
-    b_in->traverse(a, is_post);
-
+    b_in->traverse(a, is_post, is_pre);
 }
 
 
 
-void ast_idlist::apply_id(gm_apply*a)
+void ast_idlist::apply_id(gm_apply*a, bool is_post_apply)
 {
     for(int i=0;i<get_length();i++) {
         ast_id* id = get_item(i);
-        a->apply(id);
+        if (is_post_apply && a->has_separate_post_apply())
+            a->apply2(id);
+        else
+            a->apply(id);
     }
 }
 
-void ast_expr_reduce::apply_symtabs(gm_apply* a)
-{
-  a->apply(get_symtab_var(), GM_SYMTAB_VAR);
-  apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_VAR);
-  a->apply(get_symtab_field(), GM_SYMTAB_FIELD);
-  apply_symtab_each(a, get_symtab_field(), GM_SYMTAB_FIELD);
-  a->apply(get_symtab_proc(), GM_SYMTAB_PROC);
-  apply_symtab_each(a, get_symtab_proc(), GM_SYMTAB_PROC);
-}
-void ast_expr_reduce::traverse(gm_apply*a, bool is_post)
+void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre)
 {
     a->begin_context(this);
 
@@ -340,9 +354,9 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post)
     bool for_expr = a->is_for_expr();
     bool for_symtab = a->is_for_symtab();
 
-    if (!is_post) {
+    if (is_pre) {
         if (for_symtab) {
-            apply_symtabs(a);
+            apply_symtabs(a, PRE_APPLY);
         }
         if (for_id) {
             ast_id* src = get_source();
@@ -354,36 +368,44 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post)
             a->apply(this);
     }
 
-    if (get_filter() != NULL) get_filter()->traverse(a, is_post);
+    if (get_filter() != NULL) get_filter()->traverse(a, is_post, is_pre);
 
     // fixme: get_body might be null; in the middle for syntax-sugar2 transform (Sum=>Foreach)
-    if (get_body()!=NULL) get_body()->traverse(a, is_post);
+    if (get_body()!=NULL) get_body()->traverse(a, is_post, is_pre);
     
     if (is_post) {
+        bool b = a->has_separate_post_apply();
         if (for_symtab) {
-            apply_symtabs(a);
+            apply_symtabs(a, POST_APPLY);
         }
         if (for_id) {
             ast_id* src = get_source();
             ast_id* it = get_iterator();
-            a->apply(src);
-            a->apply(it);
+            if (b) {
+                a->apply2(src);
+                a->apply2(it);
+            } else  {
+                a->apply(src);
+                a->apply(it);
+            }
         }
-        if (for_expr)
-            a->apply(this);
+        if (for_expr) {
+            if (b) a->apply2(this);
+            else a->apply(this);
+        }    
     }
 
     a->end_context(this);
 }
 
-void ast_expr_builtin::traverse(gm_apply* a, bool is_post)
+void ast_expr_builtin::traverse(gm_apply* a, bool is_post, bool is_pre)
 {
     bool for_sent = a->is_for_sent();
     bool for_id = a->is_for_id();
     bool for_expr = a->is_for_expr();
     bool for_symtab = a->is_for_symtab();
 
-    if (!is_post) {
+    if (is_pre) {
         if (for_id && (driver != NULL))
             a->apply(driver);
         if (for_expr)
@@ -393,18 +415,24 @@ void ast_expr_builtin::traverse(gm_apply* a, bool is_post)
     std::list<ast_expr*>::iterator I;
     for(I = args.begin(); I!= args.end(); I++) {
         ast_expr* e = *I;
-        e->traverse(a, is_post);
+        e->traverse(a, is_post, is_pre);
     }
 
-    if (is_post ) {
+    if (is_post) {
+        bool b = a->has_separate_post_apply();
         if (for_id && (driver != NULL))
-            a->apply(driver);
-        if (for_expr)
-            a->apply(this);
+        {
+            if (b) a->apply2(driver);
+            else a->apply(driver);
+        }
+        if (for_expr) {
+            if (b) a->apply2(driver);
+            else a->apply(driver);
+        }
     }
 }
 
-void ast_expr::traverse(gm_apply*a, bool is_post)
+void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre)
 {
     bool for_sent = a->is_for_sent();
     bool for_id = a->is_for_id();
@@ -413,35 +441,52 @@ void ast_expr::traverse(gm_apply*a, bool is_post)
 
     if (!(for_id || for_expr || for_symtab)) return; // no more sentence behind this
 
-    if (for_expr && !is_post)
+    if (for_expr && is_pre)
         a->apply(this);
 
+    bool b = a->has_separate_post_apply();
     switch(get_opclass())
     {
         case GMEXPR_ID:
-            if (for_id)
-                a->apply(get_id());
+            if (for_id) {
+                if (is_pre) a->apply(get_id());
+                if (is_post) {
+                    if (b) a->apply2(get_id());
+                    else a->apply(get_id());
+                }
+            }
             break;
         case GMEXPR_FIELD:
             if (for_id) {
-                a->apply(get_field()->get_first());
-                a->apply(get_field()->get_second());
+                if (is_pre) {
+                    a->apply(get_field()->get_first());
+                    a->apply(get_field()->get_second());
+                } 
+                if (is_post) {
+                    if (b) {
+                        a->apply2(get_field()->get_first());
+                        a->apply2(get_field()->get_second());
+                    } else {
+                        a->apply(get_field()->get_first());
+                        a->apply(get_field()->get_second());
+                    }
+                }
             }
             break;
         case GMEXPR_UOP:
         case GMEXPR_LUOP:
-            get_left_op()->traverse(a, is_post);
+            get_left_op()->traverse(a, is_post, is_pre);
             break;
         case GMEXPR_BIOP:
         case GMEXPR_LBIOP:
         case GMEXPR_COMP:
-            get_left_op()->traverse(a, is_post);
-            get_right_op()->traverse(a, is_post);
+            get_left_op()->traverse(a, is_post, is_pre);
+            get_right_op()->traverse(a, is_post, is_pre);
             break;
         case GMEXPR_TER:
-            get_cond_op()->traverse(a, is_post);
-            get_left_op()->traverse(a, is_post);
-            get_right_op()->traverse(a, is_post);
+            get_cond_op()->traverse(a, is_post, is_pre);
+            get_left_op()->traverse(a, is_post, is_pre);
+            get_right_op()->traverse(a, is_post, is_pre);
             break;
 
         case GMEXPR_IVAL:
@@ -461,7 +506,11 @@ void ast_expr::traverse(gm_apply*a, bool is_post)
     }
 
     if (for_expr && is_post)
-        a->apply(this);
+    {
+        bool b = a->has_separate_post_apply();
+        if (b) a->apply2(this);
+        else a->apply(this);
+    }
 
     return;
 }

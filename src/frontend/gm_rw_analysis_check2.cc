@@ -222,7 +222,7 @@ private:
 bool gm_check_parall_conflict_error(ast_sent* b)
 {
     gm_check_conf_t T;
-    b->traverse(&T, true); // post apply
+    b->traverse_post(&T); // post apply
     return T.is_okay;
 }
 

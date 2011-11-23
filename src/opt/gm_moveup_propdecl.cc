@@ -92,7 +92,7 @@ bool gm_independent_optimize::do_moveup_propdecl(ast_procdef* p)
 {
     gm_moveup_propdecl_t T;
     //gm_traverse_sents(p, &T);
-    p->get_body()->traverse(&T, GM_PRE_APPLY);
+    p->get_body()->traverse_pre(&T);
 
     gm_redo_rw_analysis(p->get_body());
     return true;

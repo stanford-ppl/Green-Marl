@@ -207,7 +207,7 @@ int main (int argc, char** argv)
     //-------------------------------------
     gm_begin_major_compiler_stage(GMSTAGE_LIBRARY_OPT, "Backend-Lib Transform");
     {
-        ok = CPP_BE.do_local_optimize_lib();
+        ok = BACK_END->do_local_optimize_lib();
         if (!ok) exit(0);
     }
     gm_end_major_compiler_stage();

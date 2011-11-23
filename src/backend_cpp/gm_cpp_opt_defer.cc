@@ -224,7 +224,7 @@ public:
         e_new = n;
         s = _s;
         set_all(false); set_for_sent(true);
-        s->traverse(this, GM_POST_APPLY);
+        s->traverse_post(this);
     }
 
 protected:

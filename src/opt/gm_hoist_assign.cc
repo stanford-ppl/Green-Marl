@@ -23,7 +23,7 @@ protected:
 
         // check if constant assign
         is_const_check.prepare();
-        a->get_rhs()->traverse(&is_const_check, GM_PRE_APPLY);
+        a->get_rhs()->traverse_pre(&is_const_check);
         return is_const_check.is_const();
     }
 

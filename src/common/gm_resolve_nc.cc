@@ -66,7 +66,7 @@ public:
 
         // traverse for symtab entry
         set_all(false); set_for_symtab(true);
-        s->traverse(this, false);
+        s->traverse_pre(this);
         set_all(false);
 
         return _found;
@@ -157,7 +157,7 @@ public:
         _src = e_old; _target = e_new;
         _changed = false;
         _need_change_name = ! gm_is_same_string(e_old->getId()->get_orgname(), e_new->getId()->get_orgname());
-        top->traverse(this, GM_PRE_APPLY);
+        top->traverse_pre(this);
     }
 protected:
     bool _changed;

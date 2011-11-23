@@ -193,7 +193,7 @@ public:
     void do_loop_merge(ast_sentblock* top) {
         set_all(false); set_for_sent(true);
         _changed = false;
-        top->traverse(this, GM_POST_APPLY);
+        top->traverse_post(this);
         std::list<ast_sent*>::iterator i;
         for (i=to_be_deleted.begin(); i!=to_be_deleted.end(); i++)
             delete *i;

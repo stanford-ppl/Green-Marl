@@ -175,14 +175,37 @@ void  gm_conf_error(int errno, gm_symtab_entry* target, ast_id* ev1, ast_id* ev2
     }
 }
 
+// todo: should be differend error routines for different back-ends
 void gm_backend_error(int errno, const char* str1, const char* str2)
 {
+    gm_print_error_header();
+    if (curr_file!=NULL) printf("%s:", curr_file);
     switch(errno) {
         case GM_ERROR_FILEWRITE_ERROR:
             printf("Error: cannot open file %s for write\n", str1);
             break;
+        case GM_ERROR_GPS_NUM_PROCS:
+            printf("Error: There must be one and only one procedure\n");
+            break;
         default:
             assert(false);
-            printf("Unknown error 3\n"); break;
+            printf("Unknown backend error\n"); break;
+    }
+}
+void gm_backend_error(int errno, int l, int c, const char* str1)
+{
+    gm_print_error_header();
+    if (curr_file!=NULL) printf("%s:", curr_file);
+    printf("%d: %d: error: ", l, c);
+    switch(errno) {
+        case GM_ERROR_GPS_UNSUPPORTED_OP:
+            printf("%s operation is not supported", str1);
+            break;
+        case GM_ERROR_GPS_UNSUPPORTED_RANGE_MASTER:
+            printf("Only node-wide parallel iteration is supported in master mode");
+            break;
+        case GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX:
+            printf("Only neighbor-wide iteration is supported in vertex mode");
+            break;
     }
 }

@@ -9,6 +9,7 @@
 static gm_code_writer Out;
 
 void gm_flush_reproduce() {Out.flush();}
+void gm_newline_reproduce() {Out.NL();}
 
 //----------------------------------------------------------------------------------------
 // For debugging. 

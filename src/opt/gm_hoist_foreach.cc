@@ -32,7 +32,7 @@ protected:
         else if (S->get_nodetype()==AST_ASSIGN) {
             ast_assign* a = (ast_assign*) S;
             is_const_check.prepare();
-            a->get_rhs()->traverse(&is_const_check, GM_PRE_APPLY);
+            a->get_rhs()->traverse_pre(&is_const_check);
 
             if (is_const_check.is_const()) return true;  // do not pass over const assignment 
             else return false;

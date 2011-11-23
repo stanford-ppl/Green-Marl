@@ -77,7 +77,7 @@ void gm_replace_upper_scope(ast_node* n, gm_scope* old_scope, gm_scope* new_scop
     replace_upper_scope R;
     R.set_old_scope(old_scope);
     R.set_new_scope(new_scope);
-    n->traverse(&R, false);
+    n->traverse(&R, false, true); // PRE visit
 }
 
 // (scope -> NULL)
@@ -95,7 +95,7 @@ void gm_ripoff_upper_scope(ast_node* n) {
     ripoff_upper_scope R;
     R.set_scope_to_remove(&s);
 
-    n->traverse(&R, false);
+    n->traverse(&R, false, true); //PRE visit
 }
 
 
@@ -112,7 +112,7 @@ void gm_put_new_upper_scope_on_null(ast_node* n, gm_scope* new_s)
     putnew_upper_scope_on_null N;
     N.set_scope_to_put(new_s);
 
-    n->traverse(&N, false);
+    n->traverse(&N, false, true);
 }
 
 void gm_put_new_upper_scope(ast_node* n, gm_scope* new_s)
@@ -395,7 +395,7 @@ bool gm_replace_subexpr(ast_expr* target, ast_expr* old_e, ast_expr* new_e)
     assert(target!= old_e);
 
     replace_subexpr_A T(old_e, new_e);
-    target->traverse(&T, true);  // traverse it with 'post-apply'
+    target->traverse(&T, true, false);  // traverse it with 'post-apply'
     return T.has_found();
 }
 

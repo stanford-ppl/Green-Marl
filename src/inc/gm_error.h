@@ -53,8 +53,13 @@ static enum {
  GM_ERROR_RETURN_MISMATCH,
 
 
- // BACKED ERROS
+ // BACKED ERRORS
  GM_ERROR_FILEWRITE_ERROR,
+
+ GM_ERROR_GPS_NUM_PROCS,
+ GM_ERROR_GPS_UNSUPPORTED_OP,
+ GM_ERROR_GPS_UNSUPPORTED_RANGE_MASTER,
+ GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX,
 
 
  GM_ERROR_END   // END_MARKER
@@ -70,6 +75,7 @@ extern void gm_conf_error(int errno, gm_symtab_entry* target, ast_id* ev1,  ast_
 //extern void gm_conf_warning(int errno, gm_symtab_entry* target, ast_id* evidence1, ast_id* evidence2);
 
 extern void gm_backend_error(int errno, const char* str1, const char* str2="");
+extern void gm_backend_error(int errno, int l, int c, const char* str1="");
 
 
 extern void gm_set_current_filename(char* fname); 

@@ -115,8 +115,11 @@ class ast_node {
         virtual bool local_typecheck(gm_scope* context)=0; // type-check context
 
         // defined in traverse.cc
-        virtual void traverse(gm_apply*a, bool is_post) {assert(false);}
-        virtual void apply_symtabs(gm_apply*a) {assert(false);}
+        virtual void traverse(gm_apply*a, bool is_post, bool is_pre) {assert(false);}
+        void traverse_pre(gm_apply*a) {traverse(a,true,false);}
+        void traverse_post(gm_apply*a) {traverse(a,true,false);}
+        void traverse_both(gm_apply*a) {traverse(a,true,true);}
+        virtual void apply_symtabs(gm_apply*a, bool is_post_apply=false); 
 
 
         // scoped elements
@@ -274,7 +277,7 @@ class ast_idlist : public ast_node {
         int get_length() {return lst.size();}
         ast_id* get_item(int i) {return lst[i];}
         virtual bool local_typecheck(gm_scope* context) {assert(false);}
-        virtual void apply_id(gm_apply*a); // defined in traverse.cc
+        virtual void apply_id(gm_apply*a, bool is_post_apply=false); // defined in traverse.cc
         virtual void reproduce(int id_level); 
         virtual void dump_tree(int id_level); 
         bool contains(char* id) {
@@ -523,8 +526,8 @@ class ast_sent : public ast_node {
     public:
         int get_empty_lines_before() {return eline;}
         void set_empty_lines_before(int t) {eline = t;}
-        virtual void traverse(gm_apply*a, bool is_post);
-        virtual void traverse_sent(gm_apply*a, bool is_post) {assert(false);};
+        virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre) {assert(false);};
         virtual bool is_sentence() {return true;} 
 
         // when to set this variable? (-> should be just before code gen.)
@@ -557,8 +560,7 @@ class ast_sentblock : public ast_sent {
         virtual bool local_typecheck(gm_scope* context); 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
-        virtual void traverse_sent(gm_apply*a, bool is_post);
-        virtual void apply_symtabs(gm_apply*a); 
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
         virtual bool has_scope() {return true;}
 
 
@@ -626,9 +628,8 @@ class ast_procdef : public ast_node {
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
         virtual bool local_typecheck(gm_scope* context); 
-        virtual void traverse(gm_apply*a, bool is_post);
-        virtual void apply_id(gm_apply*a); // defined in traverse.cc
-        virtual void apply_symtabs(gm_apply*a); 
+        virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+        virtual void apply_id(gm_apply*a, bool is_post_apply=false); // defined in traverse.cc
         virtual bool has_scope() {return true;}
 
     private:
@@ -701,7 +702,7 @@ class ast_expr : public ast_node
         virtual void reproduce(int id_level);
         virtual bool local_typecheck(gm_scope* context); 
         virtual void dump_tree(int id_level); 
-        virtual void traverse(gm_apply*a, bool is_post);
+        virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
         virtual bool is_expr() {return true;} 
 
         virtual ast_expr* copy(bool cp_syminfo = false);
@@ -871,7 +872,7 @@ class ast_expr_builtin : public ast_expr
     virtual void reproduce(int id_level);
     virtual bool local_typecheck(gm_scope* context); 
     virtual void dump_tree(int id_level); 
-    virtual void traverse(gm_apply*a, bool is_post);
+    virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual ast_expr* copy(bool cp_syminfo = false);
 
 
@@ -950,8 +951,7 @@ class ast_expr_reduce : public ast_expr
     virtual void reproduce(int id_level);
     virtual bool local_typecheck(gm_scope* context); 
     virtual void dump_tree(int id_level); 
-    virtual void traverse(gm_apply*a, bool is_post);
-    virtual void apply_symtabs(gm_apply*a); 
+    virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual bool has_scope() {return true;}
 
     int get_iter_type() {return iter_type;}
@@ -1029,7 +1029,7 @@ class ast_assign : public ast_sent {
         virtual void reproduce(int id_level);
         virtual bool local_typecheck(gm_scope* context); 
         virtual bool local_typecheck_for_reduce_op(gm_scope* context, bool is_reduce); // reduce or defer
-        virtual void traverse_sent(gm_apply*a, bool is_post);
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
         virtual void dump_tree(int id_level); 
 
         int get_assign_type() {return assign_type;}
@@ -1101,7 +1101,7 @@ class ast_vardecl : public ast_sent
             return d;
         }
         virtual bool local_typecheck(gm_scope* context); 
-        virtual void traverse_sent(gm_apply*a, bool is_post);
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
         ast_idlist* get_idlist(){return idlist;}
@@ -1143,7 +1143,7 @@ class ast_return: public ast_sent {
         virtual bool local_typecheck(gm_scope* context);
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
-        virtual void traverse_sent(gm_apply*a, bool is_post);
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 };
 
 
@@ -1184,8 +1184,7 @@ class ast_foreach : public ast_sent
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
         virtual bool local_typecheck(gm_scope* context); 
-        virtual void traverse_sent(gm_apply*a, bool is_post);
-        virtual void apply_symtabs(gm_apply*a);
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
         ast_id* get_source() {return source;}
         ast_id* get_iterator() {return iterator;}
@@ -1272,8 +1271,7 @@ class ast_bfs: public ast_sent
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
         virtual bool local_typecheck(gm_scope* context); 
-        virtual void traverse_sent(gm_apply*a, bool is_post);
-        virtual void apply_symtabs(gm_apply*a); 
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
         int get_iter_type() {return GMTYPE_NODEITER_BFS;}
         int get_iter_type2() {return is_transpose() ? GMTYPE_NODEITER_IN_NBRS  : GMTYPE_NODEITER_NBRS;}
 
@@ -1311,7 +1309,7 @@ public:
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
     virtual bool local_typecheck(gm_scope* context); 
-    virtual void traverse_sent(gm_apply*a, bool is_post);
+    virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
     static ast_call* new_builtin_call(ast_expr_builtin* b) {
         ast_call* C = new ast_call();
@@ -1359,7 +1357,7 @@ class ast_if : public ast_sent
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
         virtual bool local_typecheck(gm_scope* context); 
-        virtual void traverse_sent(gm_apply*a, bool is_post);
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
         ast_sent* get_then() {return then_part;}
         ast_sent* get_else() {return else_part;}
@@ -1410,7 +1408,7 @@ class ast_while : public ast_sent
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
         virtual bool local_typecheck(gm_scope* context); 
-        virtual void traverse_sent(gm_apply*a, bool is_post);
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
         ast_sent* get_body() {return body;}
         ast_expr* get_cond() {return cond;}
@@ -1442,7 +1440,7 @@ class ast_nop : public ast_sent
         virtual void reproduce(int id_level); 
         virtual void dump_tree(int id_level);
         virtual bool local_typecheck(gm_scope* context) {return true;}
-        virtual void traverse_sent(gm_apply*a, bool is_post) {}
+        virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre) {}
         virtual bool do_rw_analysis() {return true;}
     private:
         int subtype;

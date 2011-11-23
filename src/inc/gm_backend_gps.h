@@ -4,8 +4,10 @@
 #include "gm_backend.h"
 #include "gm_misc.h"
 #include "gm_code_writer.h"
+#include "gm_gps_basicblock.h"
 
 #include <list>
+#include <map>
 
 //-----------------------------------------------------------------
 // interface for graph library Layer
@@ -37,11 +39,13 @@ class gm_gpslib : public gm_graph_library {
 //-----------------------------------------------------------------
 // interface for graph library Layer
 //-----------------------------------------------------------------
+// state number,
+// begin sentence
+// is pararell
 class gm_gps_gen : public gm_backend 
 {
     public:
-        gm_gps_gen() : dname(NULL), fname(NULL), f_body(NULL) {
-            printf("!!!!\n");
+        gm_gps_gen() : dname(NULL), fname(NULL), f_body(NULL), proc(NULL) {
             glib = new gm_gpslib(this);
         }
         virtual ~gm_gps_gen() { close_output_files(); delete [] dname; delete [] fname; }
@@ -49,15 +53,32 @@ class gm_gps_gen : public gm_backend
         virtual void setFileName(const char* fname) ;
 
         virtual bool do_local_optimize_lib() {return true;}
-        virtual bool do_local_optimize() {return true;}
+        virtual bool do_local_optimize() ;
         virtual bool do_generate(); 
 
-        bool open_output_files();
-        void close_output_files();
 
     protected:
         gm_gpslib* get_lib() {return glib;}
         void do_generate_main();
+        bool do_merge_msg_information();
+        void set_current_proc(ast_procdef* p) {proc = p;}
+        ast_procdef* get_current_proc() {return proc;}
+
+
+
+        void write_headers();
+        void begin_class();
+        void end_class();
+        bool open_output_files();
+        void close_output_files();
+
+        //----------------------------------
+        // stages in backend opt
+        //----------------------------------
+    protected:
+        void do_create_stages();
+        bool do_check_synthesizable();
+        void merge_basic_blocks(gm_gps_basic_block* entry);
 
     private:
         char* dname;
@@ -65,6 +86,7 @@ class gm_gps_gen : public gm_backend
         gm_code_writer Body;
         FILE* f_body;
         gm_gpslib* glib; // graph library
+        ast_procdef* proc;
 };
 
 

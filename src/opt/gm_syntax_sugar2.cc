@@ -100,7 +100,7 @@ class ss2_group_assign : public gm_apply {
         this->new_driver = iter;
         this->set_for_expr(true);
         ast_expr* rhs = a->get_rhs();
-        rhs->traverse(this, false);
+        rhs->traverse_pre(this);
         this->set_for_expr(false);
 
         return true;
@@ -213,7 +213,7 @@ class ss2_reduce_op : public gm_apply
         // traverse expression
         this->set_for_expr(true);
         ast_expr* rhs = a->get_rhs();
-        rhs->traverse(this, false);
+        rhs->traverse_pre(this);
         this->set_for_expr(false);
 
         return true;
