@@ -69,7 +69,8 @@ bool gm_gps_gen::do_generate()
 
     // sub-steps
     const char* NAMES[]= {
-        "[Merging Information]",    // create state class and message class
+        "[Merging Information]",    // ... what was I thinking again?
+        "[Generating Skeleton",     // create class header and state machine
         "[Generting Codes]"         // generate java code for vertex/master compute
     };
 
@@ -84,7 +85,12 @@ bool gm_gps_gen::do_generate()
                 break;
 
             case 1:
+                do_generate_skeleton();
+                break;
+
+            case 2:
                 do_generate_main(); 
+                end_class();
                 close_output_files();
                 break;
 
@@ -107,36 +113,11 @@ bool gm_gps_gen::do_merge_msg_information()
 
 void gm_gps_gen::do_generate_main()
 {
-    write_headers();    
-    begin_class();
-
     // dump_vertex_methods();
+    do_generate_master_states();
     // dump_master_methods();
-
-    end_class();
 }
 
-
-void gm_gps_gen::write_headers()
-{
-    Body.pushln("package gps.examples;");       // hardcodede
-    Body.pushln("import gps.graph.Vertex;");
-    Body.pushln("import gps.graph.VertexFactory;");
-    Body.NL();
-
-}
-void gm_gps_gen::begin_class()
-{
-    ast_procdef* proc = get_current_proc(); assert(proc != NULL);
-    char temp[1024];
-    Body.push("public class ");
-    sprintf(temp, "%sVertex", proc->get_procname()->get_genname());
-    Body.push(temp);
-    Body.push(" extends Vertex ");
-    Body.push("{");
-    Body.NL();
-    Body.NL();
-}
 
 void gm_gps_gen::end_class()
 {

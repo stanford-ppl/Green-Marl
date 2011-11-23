@@ -10,6 +10,8 @@ static gm_code_writer Out;
 
 void gm_flush_reproduce() {Out.flush();}
 void gm_newline_reproduce() {Out.NL();}
+void gm_redirect_reproduce(FILE *f) {Out.set_output_file(f);}
+void gm_baseindent_reproduce(int i) {Out.set_base_indent(i);}
 
 //----------------------------------------------------------------------------------------
 // For debugging. 

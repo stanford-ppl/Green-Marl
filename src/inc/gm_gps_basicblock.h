@@ -61,7 +61,10 @@ class gm_gps_basic_block {
     }
 
     gm_gps_basic_block* get_nth_entry(int n) {return entries[n];}
+
+    // for debug
     void print();
+    void reproduce_sents();
 
 private:
     std::list<ast_sent*>::iterator I;

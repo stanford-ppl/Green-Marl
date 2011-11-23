@@ -12,6 +12,7 @@ class gm_code_writer
         static const int MAX_COL = 1024;
         gm_code_writer() {
             indent = 0; 
+            base_indent = 0;
             _out = stdout; 
             tabsz= 4; 
             col = 0;
@@ -25,6 +26,7 @@ class gm_code_writer
         void push_indent() {indent++; }
         void pop_indent() {indent--; }
         void set_output_file(FILE* f) {_out = f; file_ptr = 0;}
+        void set_base_indent(int i) {base_indent = i;}
 
          void flush() {
             _buf[col++] = '\0';
@@ -74,7 +76,7 @@ class gm_code_writer
                // print this line with previous indent
                _buf[col++] = '\0';
                if ((col!=1) || (_buf[0] != '\n')) {
-                    for(int i=0;i<tabsz*indent;i++) {
+                    for(int i=0;i<tabsz*(indent+base_indent);i++) {
                         file_buf[file_ptr++] = ' ';
                     }
                }
@@ -103,6 +105,7 @@ class gm_code_writer
         int col;
         int max_col;
         char* _buf;
+        int base_indent;
 
         // buffered file write.
         // (to implement 'inserting codes' 

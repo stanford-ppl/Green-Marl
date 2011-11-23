@@ -45,7 +45,7 @@ class gm_gpslib : public gm_graph_library {
 class gm_gps_gen : public gm_backend 
 {
     public:
-        gm_gps_gen() : dname(NULL), fname(NULL), f_body(NULL), proc(NULL) {
+        gm_gps_gen() : dname(NULL), fname(NULL), f_body(NULL), proc(NULL), bb_entry(NULL) {
             glib = new gm_gpslib(this);
         }
         virtual ~gm_gps_gen() { close_output_files(); delete [] dname; delete [] fname; }
@@ -59,18 +59,28 @@ class gm_gps_gen : public gm_backend
 
     protected:
         gm_gpslib* get_lib() {return glib;}
-        void do_generate_main();
-        bool do_merge_msg_information();
+
         void set_current_proc(ast_procdef* p) {proc = p;}
         ast_procdef* get_current_proc() {return proc;}
+        void set_entry_basic_block(gm_gps_basic_block* b); // set entry and creat list
+        gm_gps_basic_block* get_entry_basic_block() {return bb_entry;}
+        std::list<gm_gps_basic_block*>& get_basic_blocks() {return bb_blocks;}
 
-
+    protected:
+        //----------------------------------
+        // stages in backend gen
+        //----------------------------------
 
         void write_headers();
         void begin_class();
         void end_class();
         bool open_output_files();
         void close_output_files();
+
+        void do_generate_main();
+        bool do_merge_msg_information();
+        void do_generate_skeleton();  // create class header, state machine
+        void do_generate_master_states();
 
         //----------------------------------
         // stages in backend opt
@@ -86,7 +96,11 @@ class gm_gps_gen : public gm_backend
         gm_code_writer Body;
         FILE* f_body;
         gm_gpslib* glib; // graph library
+
+        // procedure: there should be only one procedure
         ast_procdef* proc;
+        gm_gps_basic_block* bb_entry;  // entry for the procedure
+        std::list<gm_gps_basic_block*> bb_blocks;
 };
 
 

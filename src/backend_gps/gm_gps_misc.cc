@@ -7,6 +7,36 @@
 extern void gm_flush_reproduce(); 
 extern void gm_newline_reproduce();
 
+void gm_gps_basic_block::reproduce_sents()
+{
+    if(type==GM_GPS_BBTYPE_IF_COND) {
+        prepare_iter();
+        ast_sent* s = get_next(); // should be only one sentence (if)
+
+        ast_if* i = (ast_if*) s;
+        i->get_cond()-> reproduce(1);
+
+        gm_newline_reproduce(); 
+        gm_flush_reproduce(); 
+
+    } else if (
+            (type == GM_GPS_BBTYPE_BEGIN_VERTEX) ||
+            (type == GM_GPS_BBTYPE_SEQ)) {
+
+        prepare_iter();
+        ast_sent* s = get_next();
+        while (s!=NULL)
+        { 
+            s->reproduce(1);
+            s = get_next();
+            gm_newline_reproduce(); 
+        }
+        gm_flush_reproduce(); 
+    }
+
+
+}
+
 void gm_gps_basic_block::print()
 {
     printf("[--------------------\n");
@@ -24,31 +54,9 @@ void gm_gps_basic_block::print()
     }
     printf("]=>...\n");
 
-    printf("\n");
-    if(type==GM_GPS_BBTYPE_IF_COND) {
-        prepare_iter();
-        ast_sent* s = get_next(); // should be only one sentence (if)
-
-        ast_if* i = (ast_if*) s;
-        i->get_cond()-> reproduce(1);
-
-        gm_newline_reproduce(); 
-        gm_flush_reproduce(); 
-
-    } else {
-
-        prepare_iter();
-        ast_sent* s = get_next();
-        while (s!=NULL)
-        { 
-            s->reproduce(1);
-            s = get_next();
-            gm_newline_reproduce(); 
-        }
-        gm_flush_reproduce(); 
-    }
-
+    reproduce_sents();
     printf("\t...=>[ ");
+    printf("\n");
     for(int i=0;i<exits.size();i++) {
         printf("%d ", exits[i]->get_id());
     }
@@ -97,6 +105,7 @@ bool  gps_bb_apply_until_no_change(gm_gps_basic_block* entry, gps_apply_bb* appl
 
 
 class gps_print_apply : public gps_apply_bb {
+    public:
     virtual void apply(gm_gps_basic_block* b) {
         b->print();
     }

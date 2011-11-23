@@ -335,14 +335,16 @@ void gm_gps_gen::do_create_stages()
     gm_traverse_sents_pre_post(proc, &T2);
 
     // Debug Print
-    gps_bb_print_all(T2.get_entry()); // return or of has_changed
+    //gps_bb_print_all(T2.get_entry()); // return or of has_changed
 
     //--------------------------------
     // STEP 3:
     //   merge BASIC BLOCKS
     //--------------------------------
     merge_basic_blocks(T2.get_entry());
-    printf("=================================\n");
-    gps_bb_print_all(T2.get_entry()); // return or of has_changed
+    //printf("=================================\n");
+    //gps_bb_print_all(T2.get_entry()); // return or of has_changed
 
+    // Now add entry
+    set_entry_basic_block(T2.get_entry());
 }
