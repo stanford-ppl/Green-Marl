@@ -2,6 +2,7 @@
 #define GM_GPS_BASICBLOCK_H
 
 #include "gm_ast.h"
+#include "gm_traverse.h"
 #include <list>
 
 enum {
@@ -86,10 +87,28 @@ protected:
     bool changed;
 };
 
+class gps_apply_bb_ast : public gm_apply, public gps_apply_bb 
+{
+public:
+    // defined in gm_gps_misc.cc
+    virtual void apply(gm_gps_basic_block* b);
+    gm_gps_basic_block *get_curr_BB() {return _curr;}
+    void set_is_post(bool b) {_is_post = b;}
+    void set_is_pre(bool b) {_is_pre = b;}
+    bool is_post() {return _is_post;}
+    bool is_pre() {return _is_pre;}
+protected:
+    gm_gps_basic_block *_curr;
+    bool _is_post;
+    bool _is_pre;
+};
+
 bool gps_bb_apply_until_no_change(gm_gps_basic_block* entry, gps_apply_bb* apply);
 void gps_bb_apply_only_once(gm_gps_basic_block* entry, gps_apply_bb* apply); // return or of has_changed
 
 void gps_bb_print_all(gm_gps_basic_block* entry); // return or of has_changed
+void gps_bb_traverse_ast(gm_gps_basic_block* entry, 
+                         gps_apply_bb_ast* apply, bool is_post, bool is_pre);
 
 
 #endif

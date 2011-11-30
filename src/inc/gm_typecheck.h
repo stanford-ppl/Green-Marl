@@ -26,6 +26,10 @@ class gm_symtab_entry {
         virtual ~gm_symtab_entry() {
             delete id;
             delete type;
+            std::map<std::string, ast_extra_info*>::iterator i; 
+            for(i=extra.begin();i!=extra.end();i++) {
+                delete i->second;
+            }
         }
 
         ast_typedecl* getType() {return type;}
@@ -34,11 +38,23 @@ class gm_symtab_entry {
         bool isReadable() {return (isRA==GM_READ_AVAILABLE);}
         bool isWriteable() {return (isWA==GM_WRITE_AVAILABLE);}
 
+        void add_info(const char* id, ast_extra_info* e) {
+            std::string s(id);
+            extra[s] = e;
+        }
+        ast_extra_info* find_info(const char* id) {
+            std::string s(id);
+            std::map<std::string, ast_extra_info*>::iterator i = extra.find(s);
+            if (i == extra.end()) return NULL;
+            else return i->second;
+        }
+
     private:
         ast_id* id;
         ast_typedecl* type;
         bool isRA;
         bool isWA;
+        std::map<std::string , ast_extra_info*> extra;
 };
 
 static enum {

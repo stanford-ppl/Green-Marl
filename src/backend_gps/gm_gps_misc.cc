@@ -33,8 +33,6 @@ void gm_gps_basic_block::reproduce_sents()
         }
         gm_flush_reproduce(); 
     }
-
-
 }
 
 void gm_gps_basic_block::print()
@@ -65,6 +63,7 @@ void gm_gps_basic_block::print()
     printf("--------------------]\n");
 }
 
+
 // depth-first recurse
 static void bb_apply_recurse(std::set<gm_gps_basic_block*>& set, gm_gps_basic_block* B, gps_apply_bb* apply)
 {
@@ -88,6 +87,7 @@ void gps_bb_apply_only_once(gm_gps_basic_block* entry, gps_apply_bb* apply)
     set.clear();
     bb_apply_recurse(set, entry, apply);
 }
+
 
 bool  gps_bb_apply_until_no_change(gm_gps_basic_block* entry, gps_apply_bb* apply)
 {
@@ -116,3 +116,64 @@ void gps_bb_print_all(gm_gps_basic_block* entry)  // return or of has_changed
      gps_print_apply G;
      gps_bb_apply_only_once(entry, &G);
 }
+
+
+//-----------------------------------------------------
+// traverse AST in each BB
+//-----------------------------------------------------
+
+void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
+{
+    _curr = b;
+    int type = _curr->get_type();
+    if (type == GM_GPS_BBTYPE_SEQ) 
+    {
+        // traverse sentence block and apply this
+        _curr->prepare_iter(); 
+        ast_sent* s;
+        s = _curr->get_next();
+        while (s!= NULL)
+        {
+            s->traverse(this, is_post(), is_pre());
+            s = _curr->get_next();
+        }
+    }
+    else if (type==GM_GPS_BBTYPE_BEGIN_VERTEX)
+    {
+        // [xxx] do nothing for now
+
+
+    }
+    else if (type==GM_GPS_BBTYPE_IF_COND)
+    {
+        // traverse cond expr
+        std::list<ast_sent*> sents;
+        _curr->prepare_iter(); 
+        ast_sent* s;
+        s = _curr->get_next();
+        assert(s->get_nodetype() == AST_IF);
+        ast_if* i = (ast_if*) s;
+        ast_expr* c = i->get_cond();
+
+        c->traverse(this, is_post(), is_pre());
+    }
+    else
+    {
+        assert(false);
+    }
+
+}
+
+void gps_bb_traverse_ast(gm_gps_basic_block* entry, 
+                         gps_apply_bb_ast* apply,
+                         bool is_post,
+                         bool is_pre)
+{
+    apply->set_is_post(is_post);
+    apply->set_is_pre(is_pre);
+
+    // apply it once
+    gps_bb_apply_only_once(entry, apply);
+
+}
+

@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include "gm_misc.h"
+#include "gm_ast.h"
 
 class gm_code_writer
 {
@@ -148,6 +150,50 @@ class gm_code_writer
 
             file_ptr += to_move;  //
         }
+
+};
+
+// default code generator
+class gm_code_generator {
+public:
+    gm_code_generator(gm_code_writer& W): _Body(W) {}
+    // should be overrided
+    virtual void generate_rhs_id(ast_id* i) =0; 
+    virtual void generate_rhs_field(ast_field* i) =0;
+    virtual void generate_expr_builtin(ast_expr* e) =0; 
+    virtual void generate_expr_minmax(ast_expr* e) =0;
+    virtual void generate_expr_type_conversion(ast_expr *e) = 0;
+
+    virtual void generate_expr(ast_expr* e);
+    virtual void generate_expr_val(ast_expr* e) ;
+    virtual void generate_expr_inf(ast_expr* e) ;
+    virtual void generate_expr_uop(ast_expr* e) ;
+    virtual void generate_expr_ter(ast_expr* e) ;
+    virtual void generate_expr_bin(ast_expr* e) ;
+    virtual void generate_expr_comp(ast_expr* e) ;
+    virtual bool check_need_para(int optype, int up_optype, 
+            bool is_right) {return gm_need_paranthesis(optype, up_optype, is_right);}
+
+    
+    virtual void generate_lhs_id(ast_id* i) =0; 
+    virtual void generate_lhs_field(ast_field* i) =0;
+    virtual void generate_sent_nop(ast_nop* n) =0;
+    virtual void generate_sent_reduce_assign(ast_assign *a) = 0;
+    virtual void generate_sent_defer_assign(ast_assign *a) =0;
+    virtual void generate_sent_vardecl(ast_vardecl *a) =0;
+    virtual void generate_sent_foreach(ast_foreach *a) =0;
+    virtual void generate_sent_bfs(ast_bfs* b) = 0;
+
+    virtual void generate_sent(ast_sent*);
+    virtual void generate_sent_assign(ast_assign *a);
+    virtual void generate_sent_if(ast_if *a);
+    virtual void generate_sent_while(ast_while *w);
+    virtual void generate_sent_block(ast_sentblock *b);
+    virtual void generate_sent_return(ast_return *b);
+
+protected:
+    char temp_str[1024*8];
+    gm_code_writer& _Body;
 
 };
 

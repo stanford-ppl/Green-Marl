@@ -913,7 +913,6 @@ bool gm_cpp_gen::generate(ast_expr* e)
     else if (e->is_comp()) {
         need_para = true;  // I found it helpful to add () for comparison
     }
-    //else if (up->get_opclass() == GMEXPR_BIOP) 
     else if (up->is_biop() || up->is_comp()) {  
         need_para = gm_need_paranthesis(e->get_optype(),up->get_optype(), e->is_right_op());
     } else  {

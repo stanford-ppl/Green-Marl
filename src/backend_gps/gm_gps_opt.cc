@@ -11,8 +11,9 @@ bool gm_gps_gen::do_local_optimize()
 {
     // SUB STEPS
     const char* NAMES[]= {
-        "[Check Compilable]", // 0: Check if the code is compilable into pregel
-        "[Create Stages]",    // 1: Create Stages
+        "[Check Compilable]",              // 0: Check if the code is compilable into pregel
+        "[Create ExtendedBasicBlocks]",    // 1: Create BB
+        "[Check Symbols]",                 // 2: Analyze Symbols
     };
     const int COUNT = sizeof(NAMES)/sizeof(const char*);
     bool is_okay = true;
@@ -40,6 +41,9 @@ bool gm_gps_gen::do_local_optimize()
                     break;
                 case 1: // Create Stages
                     do_create_stages();
+                    break;
+                case 2: // Analyze symbols
+                    is_okay = do_analyze_symbols();
                     break;
 
             }

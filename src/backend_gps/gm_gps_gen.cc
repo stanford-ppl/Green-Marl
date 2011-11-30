@@ -70,8 +70,8 @@ bool gm_gps_gen::do_generate()
     // sub-steps
     const char* NAMES[]= {
         "[Merging Information]",    // ... what was I thinking again?
-        "[Generating Skeleton",     // create class header and state machine
-        "[Generting Codes]"         // generate java code for vertex/master compute
+        "[Generating Skeleton/Master]",    // create class header and state machine
+        "[Generting Vertex]"         // generate java code for vertex/master compute
     };
 
     bool is_okay = true;
@@ -85,7 +85,9 @@ bool gm_gps_gen::do_generate()
                 break;
 
             case 1:
-                do_generate_skeleton();
+                write_headers();
+                begin_class();
+                do_generate_master();
                 break;
 
             case 2:
@@ -114,7 +116,6 @@ bool gm_gps_gen::do_merge_msg_information()
 void gm_gps_gen::do_generate_main()
 {
     // dump_vertex_methods();
-    do_generate_master_states();
     // dump_master_methods();
 }
 

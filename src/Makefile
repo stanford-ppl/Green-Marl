@@ -35,6 +35,7 @@ SRCS1 = gm_grammer.tab.c gm_lex.c
 SRCS2 =\
        gm_reproduce.cc gm_dumptree.cc gm_misc.cc \
        gm_main.cc gm_argopts.cc gm_copy.cc \
+       gm_generate_help.cc\
        gm_error.cc gm_builtin.cc \
 	   gm_traverse.cc gm_transform_helper.cc \
        gm_add_symbol.cc gm_resolve_nc.cc \
@@ -54,6 +55,8 @@ SRCS2 =\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
        gm_gps_create_stages.cc gm_gps_check_synthesizable.cc\
        gm_gps_bb_merge.cc gm_gps_gen_skel.cc\
+       gps_syminfo.cc gm_gps_sym_analyze.cc\
+       gm_gps_java.cc
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.
