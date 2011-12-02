@@ -3,6 +3,7 @@
 
 #include "gm_ast.h"
 #include "gm_traverse.h"
+#include "gps_syminfo.h"
 #include <list>
 
 enum {
@@ -16,11 +17,21 @@ enum {
 class gm_gps_basic_block {
     public:
     gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type) {}
+    virtual ~gm_gps_basic_block() {
+        std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
+        for(I=symbols.begin(); I!=symbols.end();I++)
+        {
+            gps_syminfo* s = I->second;
+            delete s;
+        }
+    }
 
     void prepare_iter() { I = sents.begin();}
     ast_sent* get_next() { if (I!=sents.end()) {ast_sent* s = *I; I++;return s;} else return NULL; }
     std::list<ast_sent*>& get_sents() {return sents;}
     void add_sent(ast_sent* s) {sents.push_back(s);}
+    int get_num_sents() {return sents.size();}
+    ast_sent* get_1st_sent() {return sents.front();}
 
     int get_id() {return id;}
     int get_type() {return type;}
@@ -67,6 +78,8 @@ class gm_gps_basic_block {
     void print();
     void reproduce_sents();
 
+    bool is_vertex() {return (get_type() == GM_GPS_BBTYPE_BEGIN_VERTEX);}
+
 private:
     std::list<ast_sent*>::iterator I;
     std::list<ast_sent*> sents;
@@ -76,6 +89,23 @@ private:
     std::vector<int> entries_reverse_no; //reverse link id
     int id;
     int type;  // GM_GPS_BBTYPE_...
+
+    // map of used symbols inside this BB
+    std::map<gm_symtab_entry*, gps_syminfo*> symbols;
+
+public:
+    gps_syminfo* find_symbol_info(gm_symtab_entry *sym) {
+        if (symbols.find(sym) == symbols.end())
+            return NULL;
+        else symbols.find(sym)->second;
+    }
+    void add_symbol_info(gm_symtab_entry *sym,gps_syminfo* info)
+    {
+        symbols[sym] = info;
+    }
+
+    std::map<gm_symtab_entry*, gps_syminfo*>& get_symbols() {return symbols;}
+
 };
 
 class gps_apply_bb {

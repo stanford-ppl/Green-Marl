@@ -20,13 +20,24 @@ class gm_gpslib : public gm_graph_library {
     gm_gpslib() {main = NULL;}
     gm_gpslib(gm_gps_gen* gen) {set_main(gen);}
     void set_main(gm_gps_gen* gen) {main = gen;}
+    gm_gps_gen* get_main() {return main;}
 
     virtual const char* get_header_info() {return "";}
-
     virtual const char* get_type_string(ast_typedecl*, int usage) {return "";}
     virtual bool generate_builtin(ast_expr_builtin* e) {return true;}
 
     virtual bool do_local_optimize() {return true;}
+
+    // note: consume the return string immedately
+    virtual const char* create_key_string(ast_id* id) {
+        sprintf(str_buf,"KEY_%s",id->get_genname());
+        return str_buf;
+    }
+
+    void generate_broadcast_wrapper_with_value(
+        ast_id* id, gm_code_writer& Body);
+    void generate_broadcast_scalar_master(ast_id* id, gm_code_writer& Body);
+    void generate_headers(gm_code_writer& Body);
 
     protected:
 
@@ -85,6 +96,8 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void do_generate_master_class();
         void do_generate_master_scalar();
         void do_generate_master_state_body(gm_gps_basic_block* b);
+        void do_generate_scalar_broadcast(gm_gps_basic_block* b);
+        void do_generate_shared_variables_keys();
 
         //----------------------------------
         // stages in backend opt
@@ -139,6 +152,9 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         bool is_master_generate() {return _is_master_gen;} 
         bool _is_master_gen;
 };
+
+// symbol usage info
+#define TAG_BB_USAGE    "TAG_BB"
 
 
 

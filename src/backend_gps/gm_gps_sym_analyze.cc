@@ -25,7 +25,7 @@ bool gm_gps_gen::do_analyze_symbols()
     return is_okay;
 }
 
-#define TAG_BB_USAGE    "TAG_BB"
+
 
 
 class gps_merge_symbol_usage_t : public gps_apply_bb_ast  
@@ -35,8 +35,10 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             set_for_sent(true);
             set_for_expr(true);
         }
+    
     virtual bool apply(ast_sent* s) 
     {
+        // only need to look at assign statement
         if (s->get_nodetype() == AST_ASSIGN)
         {
             ast_assign * a = (ast_assign*) s;
@@ -44,19 +46,13 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             if (a->is_target_scalar())
             {
                 ast_id* i = a->get_lhs_scala();
-                gps_syminfo* syminfo = get_or_create_syminfo(i, true);
-
                 bool is_reduce = a->is_reduce_assign();
                 if (is_reduce) {
-                    syminfo->add_usage_in_BB(get_curr_BB()->get_id(), GPS_SYM_USED_AS_REDUCE);
+                    update_access_information(i, GPS_SYM_USED_AS_REDUCE);
                 }
                 else {
-                    syminfo->add_usage_in_BB(get_curr_BB()->get_id(), GPS_SYM_USED_AS_LHS);
+                    update_access_information(i, GPS_SYM_USED_AS_LHS);
                 }
-            }
-            else 
-            {
-                // [XXX] to be done
             }
         }
     }
@@ -66,30 +62,63 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         // RHS
         if (e->is_id()) {
             ast_id* i = e->get_id();
-            gps_syminfo* syminfo = get_or_create_syminfo(i, true);
-
-            syminfo->add_usage_in_BB(get_curr_BB()->get_id(), GPS_SYM_USED_AS_RHS);
-
+            update_access_information(i, GPS_SYM_USED_AS_RHS);
         } 
         else if (e->is_field()) {
             // [XXX] to be done
         }
     }
     protected:
-        gps_syminfo* get_or_create_syminfo(ast_id *i, bool is_scalar)
+        void update_access_information(ast_id *i, int usage)
+        {
+            // update global information
+            gps_syminfo* syminfo = 
+                get_or_create_global_syminfo(i, true);
+
+            // update global information
+            syminfo->add_usage_in_BB(
+                    get_curr_BB()->get_id(), 
+                    usage,
+                    get_curr_BB()->is_vertex());
+
+            // update local information
+            syminfo = 
+                get_or_create_local_syminfo(i, true);
+
+            syminfo->add_usage_in_BB(
+                    get_curr_BB()->get_id(), 
+                    usage,
+                    get_curr_BB()->is_vertex());
+
+        }
+
+        gps_syminfo* get_or_create_global_syminfo(ast_id *i, bool is_scalar)
         {
             gm_symtab_entry* sym = i->getSymInfo(); 
 
             ast_extra_info* info = sym->find_info(TAG_BB_USAGE);
             gps_syminfo* syminfo;
             if (info == NULL)  {
-                syminfo = new gps_syminfo(true);
+                syminfo = new gps_syminfo(is_scalar);
                 sym->add_info(TAG_BB_USAGE, syminfo);
             } else {
                 syminfo = (gps_syminfo*) info;
             }
             return syminfo;
+        }
 
+        gps_syminfo* get_or_create_local_syminfo(ast_id *i, bool is_scalar)
+        {
+            gm_symtab_entry* sym = i->getSymInfo(); 
+
+            // find info from BB-local map
+            gps_syminfo* syminfo =
+                get_curr_BB()-> find_symbol_info(sym);
+            if (syminfo == NULL)  {
+                syminfo = new gps_syminfo(is_scalar);
+                get_curr_BB()->add_symbol_info(sym, syminfo);
+            }
+            return syminfo;
         }
 };
 

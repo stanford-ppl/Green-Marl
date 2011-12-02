@@ -11,7 +11,6 @@
 //--------------------------------------------------------------
 void gm_gps_gen::setTargetDir(const char* d)
 {
-    printf("%s = \n", d);
     if (dname!= NULL)
         printf("%s = \n", dname);
     assert(d!=NULL);

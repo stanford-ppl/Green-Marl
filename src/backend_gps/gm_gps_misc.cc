@@ -140,8 +140,15 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
     }
     else if (type==GM_GPS_BBTYPE_BEGIN_VERTEX)
     {
-        // [xxx] do nothing for now
+        // traverse sentences inside foreach
+        assert(_curr->get_num_sents() == 1);
+        ast_sent* s = _curr->get_1st_sent();
+        assert(s->get_nodetype() == AST_FOREACH);
+        ast_foreach* fe = (ast_foreach*) s;
+        assert(fe->get_filter() == NULL); // should be changed into if
 
+        ast_sent* b = fe->get_body();
+        b->traverse(this, is_post(), is_pre());
 
     }
     else if (type==GM_GPS_BBTYPE_IF_COND)

@@ -48,6 +48,7 @@ void gm_gps_gen::generate_lhs_id(ast_id* i)
     }
     else
     {
+        // [to-be done]
         assert(false);
     }
 
@@ -61,61 +62,8 @@ void gm_gps_gen::generate_rhs_id(ast_id* i)
     }
     else
     {
+        // xxx to be done
         assert(false);
     }
 } 
 
-/*
-bool gm_gpslib::generate(ast_sent *s, bool is_master)
-{
-    switch(s->get_nodetype()) 
-    {
-        case AST_ASSIGN:
-        {
-            ast_assign*a = (ast_assign*) s;
-            generate(a, is_master);
-            break;
-        }
-
-        default:assert(false);
-    }
-
-    return true;
-}
-
-virtual bool gm_gps_lib::generate(ast_assign *a, bool is_master)
-{
-     gm_code_writer& Body = main->get_code();
-
-     if (is_master) {
-        assert(!a->is_reduce_assign());
-        assert (a->is_target_scalar())
-
-        // lhs
-        ast_id* id = a->get_lhs_scalar();
-        sprintf(str_buf, "%s = ", id->get_genname());
-        Body.push(str_buf);
-
-        generate(a->get_rhs(), is_master);
-     }
-     else 
-     {
-         assert(false);
-     }
-}
-
-virtual bool gm_gps_lib::generate(ast_expr* e, bool is_master)
-{
-    assert(! e->is_reduction());
-    assert(! e->is_terop());
-
-    switch(e->get_optype())
-    {
-
-
-
-    }
-
-
-}
-*/

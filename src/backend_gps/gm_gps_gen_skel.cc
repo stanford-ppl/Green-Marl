@@ -8,8 +8,7 @@
 void gm_gps_gen::write_headers()
 {
     Body.pushln("package gps.examples;");       // hardcodede
-    Body.pushln("import gps.graph.Vertex;");
-    Body.pushln("import gps.graph.VertexFactory;");
+    get_lib()->generate_headers(Body);
     Body.NL();
 
 }
@@ -30,6 +29,7 @@ void gm_gps_gen::begin_class()
 
 void gm_gps_gen::do_generate_master()
 {
+    do_generate_shared_variables_keys();
     set_master_generate(true);
     do_generate_master_class();
     do_generate_master_scalar();
@@ -83,6 +83,38 @@ void gm_gps_gen::do_generate_master_scalar()
         Body.pushln(temp);
     }
 
+    Body.NL();
+}
+
+void gm_gps_gen::do_generate_shared_variables_keys()
+{
+    Body.pushln("// Keys for shared_variables ");
+
+    std::set<gm_symtab_entry*>::iterator I;
+    std::set<gm_symtab_entry*>& scalar = this->scalar;
+    char temp[256];
+    for(I=scalar.begin(); I!=scalar.end();I++)
+    {
+        gm_symtab_entry* sym = *I;
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+        assert(syminfo!=NULL);
+
+        // if the symbol is used in vertex and master
+        // we need shared variable
+
+        if (syminfo->is_used_in_vertex() &&
+            syminfo->is_used_in_master())
+        {
+            Body.push("private static final String ");
+            Body.push(get_lib()->create_key_string(
+                        sym->getId()));
+            Body.push(" = ");
+            Body.push("\"");
+            Body.push(sym->getId()->get_genname());
+            Body.pushln("\";");
+
+        }
+    }
     Body.NL();
 }
 
@@ -161,7 +193,16 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     b->reproduce_sents();
     Body.pushln("-----*/");
     if (type == GM_GPS_BBTYPE_BEGIN_VERTEX) {
+
+        // generate Broadcast
+        do_generate_scalar_broadcast(b);
         Body.NL();
+
+        // generate next statement
+        assert (b->get_num_exits() == 1); 
+        int n = b->get_nth_exit(0)->get_id();
+        sprintf(temp,"_master_state_nxt = %d;", n);
+        Body.pushln(temp);
         Body.pushln("_master_should_start_workers = true;");
     }
     else if (type == GM_GPS_BBTYPE_SEQ) 
@@ -190,8 +231,6 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         Body.pushln("boolean _expression_result = ");
         Body.push_indent();
 
-        Body.pop_indent();
-
         // generate sentences
         b->prepare_iter();
         ast_sent* s = b->get_next();
@@ -200,6 +239,8 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         ast_if* i = (ast_if*) s;
         generate_expr(i->get_cond());
         Body.pushln(";");
+
+        Body.pop_indent();
 
         sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;\n",
                 b->get_nth_exit(0)->get_id(), 
@@ -211,5 +252,23 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     }
 
     Body.pushln("}"); // end of state function
+}
+void gm_gps_gen::do_generate_scalar_broadcast(gm_gps_basic_block* b) 
+{
+    // check if scalar variable is used inside the block
+    std::map<gm_symtab_entry*, gps_syminfo*>& syms = b->get_symbols(); 
+    std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
+    for(I=syms.begin(); I!= syms.end(); I++)
+    {
+        gps_syminfo* local_info = I->second;
+        gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(TAG_BB_USAGE);
+        if (!global_info->is_scalar()) continue;
+        if (!global_info->is_used_in_master()) continue;
+        if (local_info->is_used_as_rhs()) {
+            // create a broad cast variable
+            get_lib()->generate_broadcast_scalar_master(
+                    I->first->getId(), Body);
+        }
+    }
 }
 
