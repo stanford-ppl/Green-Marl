@@ -24,12 +24,14 @@ public:
                 if (B->get_type() != GM_GPS_BBTYPE_SEQ) return;
 
                 // merge two BB
+                set_changed(true);
 
                 // merge sents
                 C->prepare_iter();
                 ast_sent* s = C->get_next();
                 while (s!= NULL) {
                     B->add_sent(s);
+                    s = C->get_next();
                 }
 
                 assert(C->is_after_vertex() == false);

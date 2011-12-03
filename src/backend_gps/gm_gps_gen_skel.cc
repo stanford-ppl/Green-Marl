@@ -233,24 +233,44 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     else if (type == GM_GPS_BBTYPE_IF_COND) {
         Body.NL();
 
-        Body.pushln("boolean _expression_result = ");
-        Body.push_indent();
+        Body.push("boolean _expression_result = ");
 
         // generate sentences
-        b->prepare_iter();
-        ast_sent* s = b->get_next();
+        ast_sent* s = b->get_1st_sent();
         assert(s!= NULL);
         assert(s->get_nodetype() == AST_IF);
         ast_if* i = (ast_if*) s;
         generate_expr(i->get_cond());
         Body.pushln(";");
 
-        Body.pop_indent();
 
         sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;\n",
                 b->get_nth_exit(0)->get_id(), 
                 b->get_nth_exit(1)->get_id());
         Body.pushln(temp);
+    }
+    else if (type == GM_GPS_BBTYPE_WHILE_COND) {
+        
+
+        ast_sent* s = b->get_1st_sent();
+        assert(s!= NULL);
+        assert(s->get_nodetype() == AST_WHILE);
+        ast_while* i = (ast_while*) s;
+        if (i->is_do_while())
+            Body.pushln("// Do-While(...)");
+        else
+            Body.pushln("// While (...)");
+
+        Body.NL();
+        Body.push("boolean _expression_result = ");
+        generate_expr(i->get_cond());
+        Body.pushln(";");
+
+        sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;\n",
+                b->get_nth_exit(0)->get_id(), 
+                b->get_nth_exit(1)->get_id());
+        Body.pushln(temp);
+
     }
     else {
         assert(false);

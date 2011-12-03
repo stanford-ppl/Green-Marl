@@ -10,7 +10,6 @@ enum {
     GM_GPS_BBTYPE_SEQ,
     GM_GPS_BBTYPE_IF_COND,
     GM_GPS_BBTYPE_WHILE_COND,
-    GM_GPS_BBTYPE_DOWHILE_COND,
     GM_GPS_BBTYPE_BEGIN_VERTEX,
 };
 
@@ -46,7 +45,6 @@ class gm_gps_basic_block {
     //-------------------------------
     // if: then[0], else[1]
     // while: body[0], exit[1]
-    // do-while: body[0], exit[1]
     //-------------------------------
     void add_exit(gm_gps_basic_block* b, bool add_reverse=true) {
         exits.push_back(b);

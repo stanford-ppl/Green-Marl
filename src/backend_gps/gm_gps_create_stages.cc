@@ -234,7 +234,48 @@ public:
             }
             else if (s->get_nodetype() == AST_WHILE)
             {
-                assert(false); // temporary
+                // create while blocks
+                ast_while *w = (ast_while*) s;
+
+                // create new basic blocks
+                gps_bb* cond  = newBB(GM_GPS_BBTYPE_WHILE_COND );
+                cond->add_sent(w);
+
+                gps_bb* body_begin = newBB();
+                gps_bb* body_end = newBB();
+                gps_bb* dummy = newBB();
+                gps_bb* head = newBB();
+
+                body_begin->add_exit(body_end);
+                if (w->is_do_while()) {
+                    head->add_exit(body_begin);
+                    cond->add_exit(head);
+                    cond->add_exit(dummy);
+                    // (prev) -> head -> begin ... end -> cond -> dummy -> (next)
+                    //            ^                        |
+                    //            +------------------------+
+                    body_end->add_exit(cond);
+                    insert_between_prev_next(head, dummy);
+
+                } else {
+                    //            V-------------------------+
+                    // (prev) -> cond -> begin ... end -> head   dummy -> (next)
+                    //            |                                ^
+                    //            +--------------------------------+
+                    cond->add_exit(body_begin);
+                    cond->add_exit(dummy);
+                    body_end->add_exit(head);
+                    head->add_exit(cond);
+                    insert_between_prev_next(cond, dummy);
+                }
+
+                // begin/end for while sentence block
+                prev_map[w->get_body()] = body_begin;
+                next_map[w->get_body()] = body_end;
+
+                // prev/next after this sentence
+                prev = dummy;
+                next = next;
             }
             else 
             {
@@ -271,7 +312,7 @@ private:
     {
         //------------------------------
         // prev -> next
-        // prev -> (bb1 -> bb2) -> next
+        // prev -> (bb1 ... bb2) -> next
         // bb2 becomes new prev
         //------------------------------
         assert(prev->get_num_exits() == 1);
@@ -336,15 +377,20 @@ void gm_gps_gen::do_create_stages()
     gm_traverse_sents_pre_post(proc, &T2);
 
     // Debug Print
-    //gps_bb_print_all(T2.get_entry()); // return or of has_changed
+    /*
+    gps_bb_print_all(T2.get_entry()); // return or of has_changed
+    exit(0);
+    */
 
     //--------------------------------
     // STEP 3:
     //   merge BASIC BLOCKS
     //--------------------------------
     merge_basic_blocks(T2.get_entry());
-    //printf("=================================\n");
-    //gps_bb_print_all(T2.get_entry()); // return or of has_changed
+    /*
+    gps_bb_print_all(T2.get_entry()); // return or of has_changed
+    exit(0);
+    */
 
     // Now add entry
     set_entry_basic_block(T2.get_entry());

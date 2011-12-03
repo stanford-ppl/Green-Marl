@@ -18,7 +18,15 @@ void gm_gps_basic_block::reproduce_sents()
 
         gm_newline_reproduce(); 
         gm_flush_reproduce(); 
+    } else if (type == GM_GPS_BBTYPE_WHILE_COND) {
+        prepare_iter();
+        ast_sent* s = get_next(); // should be only one sentence (if)
 
+        ast_while* i = (ast_while*) s;
+        i->get_cond()-> reproduce(1);
+
+        gm_newline_reproduce(); 
+        gm_flush_reproduce(); 
     } else if (
             (type == GM_GPS_BBTYPE_BEGIN_VERTEX) ||
             (type == GM_GPS_BBTYPE_SEQ)) {
@@ -32,7 +40,9 @@ void gm_gps_basic_block::reproduce_sents()
             gm_newline_reproduce(); 
         }
         gm_flush_reproduce(); 
-    }
+   } else {
+       assert(false);
+   }
 }
 
 void gm_gps_basic_block::print()
@@ -42,7 +52,6 @@ void gm_gps_basic_block::print()
             (type==GM_GPS_BBTYPE_SEQ) ?        "SEQ" :
             (type==GM_GPS_BBTYPE_IF_COND) ?    "IF" :
             (type==GM_GPS_BBTYPE_WHILE_COND) ? "WHILE" :
-            (type==GM_GPS_BBTYPE_DOWHILE_COND) ? "DOWHILE" :
             (type==GM_GPS_BBTYPE_BEGIN_VERTEX) ? "PAR" : "???"
             );
     //printf("\tnum_entries:%d\n", entries.size());
@@ -155,12 +164,21 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
     {
         // traverse cond expr
         std::list<ast_sent*> sents;
-        _curr->prepare_iter(); 
-        ast_sent* s;
-        s = _curr->get_next();
+        ast_sent* s = _curr->get_1st_sent();
         assert(s->get_nodetype() == AST_IF);
         ast_if* i = (ast_if*) s;
         ast_expr* c = i->get_cond();
+
+        c->traverse(this, is_post(), is_pre());
+    }
+    else if (type == GM_GPS_BBTYPE_WHILE_COND)
+    {
+        // traverse cond expr
+        std::list<ast_sent*> sents;
+        ast_sent* s = _curr->get_1st_sent();
+        assert(s->get_nodetype() == AST_WHILE);
+        ast_while* w = (ast_while*) s;
+        ast_expr* c = w->get_cond();
 
         c->traverse(this, is_post(), is_pre());
     }
