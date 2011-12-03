@@ -1,0 +1,25 @@
+
+Procedure gps3 (G: Graph, x: Int, A:Node_Property<Int>(G) ) : Int
+{
+    Int z = 0;
+    Int h = x;
+    /*
+    // test of while
+    While (h > 0) {
+        // Test of reduction into z
+        z = Sum(t: G.Nodes) {t.A};
+        h = h-1;
+    }
+    */
+
+    // test of do-while
+    Do {
+        // Test of reduction into z
+        z = Sum(t: G.Nodes) {t.A};
+        h = h+1;
+    }
+    While (h <= 0) ;
+
+    // Test of Returen
+    Return z;
+}
