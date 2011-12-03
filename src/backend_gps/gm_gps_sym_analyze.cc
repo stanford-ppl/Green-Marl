@@ -48,7 +48,8 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                 ast_id* i = a->get_lhs_scala();
                 bool is_reduce = a->is_reduce_assign();
                 if (is_reduce) {
-                    update_access_information(i, GPS_SYM_USED_AS_REDUCE);
+                    update_access_information(i, GPS_SYM_USED_AS_REDUCE,
+                            a->get_reduce_type());
                 }
                 else {
                     update_access_information(i, GPS_SYM_USED_AS_LHS);
@@ -69,7 +70,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         }
     }
     protected:
-        void update_access_information(ast_id *i, int usage)
+        void update_access_information(ast_id *i, int usage, int r_type = GMREDUCE_NULL)
         {
             // update global information
             gps_syminfo* syminfo = 
@@ -79,7 +80,8 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             syminfo->add_usage_in_BB(
                     get_curr_BB()->get_id(), 
                     usage,
-                    get_curr_BB()->is_vertex());
+                    get_curr_BB()->is_vertex(),
+                    r_type);
 
             // update local information
             syminfo = 
@@ -88,7 +90,8 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             syminfo->add_usage_in_BB(
                     get_curr_BB()->get_id(), 
                     usage,
-                    get_curr_BB()->is_vertex());
+                    get_curr_BB()->is_vertex(),
+                    r_type);
 
         }
 

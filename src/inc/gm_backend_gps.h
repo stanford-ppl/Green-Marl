@@ -34,9 +34,10 @@ class gm_gpslib : public gm_graph_library {
         return str_buf;
     }
 
-    void generate_broadcast_wrapper_with_value(
-        ast_id* id, gm_code_writer& Body);
-    void generate_broadcast_scalar_master(ast_id* id, gm_code_writer& Body);
+    void generate_broadcast_prepare(gm_code_writer& Body);
+    void generate_broadcast_variable_type(ast_id* id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
+    void generate_broadcast_send_master(ast_id* id, gm_code_writer& Body);
+    void generate_broadcast_receive_master(ast_id* id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
     void generate_headers(gm_code_writer& Body);
 
     protected:
@@ -96,7 +97,8 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void do_generate_master_class();
         void do_generate_master_scalar();
         void do_generate_master_state_body(gm_gps_basic_block* b);
-        void do_generate_scalar_broadcast(gm_gps_basic_block* b);
+        void do_generate_scalar_broadcast_send(gm_gps_basic_block* b);
+        void do_generate_scalar_broadcast_receive(gm_gps_basic_block *b);
         void do_generate_shared_variables_keys();
 
         //----------------------------------

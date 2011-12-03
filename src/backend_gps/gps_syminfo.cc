@@ -1,6 +1,6 @@
 #include "gps_syminfo.h"
 
-void gps_syminfo::add_usage_in_BB(int bb_no, int usage, bool is_vertex_BB)
+void gps_syminfo::add_usage_in_BB(int bb_no, int usage, bool is_vertex_BB, int reduce_type)
 {
     // if not already in
     for(int i=0;i<used_BB.size();i++) {
@@ -30,4 +30,6 @@ void gps_syminfo::add_usage_in_BB(int bb_no, int usage, bool is_vertex_BB)
         used_in_vertex = true;
     else
         used_in_master = true;
+
+    reduce_op_type = reduce_type;
 }

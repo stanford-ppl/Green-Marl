@@ -16,7 +16,7 @@ enum {
 
 class gm_gps_basic_block {
     public:
-    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type) {}
+    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type), after_vertex(false) {}
     virtual ~gm_gps_basic_block() {
         std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
         for(I=symbols.begin(); I!=symbols.end();I++)
@@ -35,8 +35,10 @@ class gm_gps_basic_block {
 
     int get_id() {return id;}
     int get_type() {return type;}
+    bool is_after_vertex() {return after_vertex;}
     void set_type(int t) {type = t;}
     void set_id(int i) {id = i;}
+    bool set_after_vertex(bool b) {after_vertex =  b;}
 
     int get_num_exits() {return exits.size();}
     gm_gps_basic_block* get_nth_exit(int n) {return exits[n];}
@@ -89,6 +91,7 @@ private:
     std::vector<int> entries_reverse_no; //reverse link id
     int id;
     int type;  // GM_GPS_BBTYPE_...
+    bool after_vertex;
 
     // map of used symbols inside this BB
     std::map<gm_symtab_entry*, gps_syminfo*> symbols;

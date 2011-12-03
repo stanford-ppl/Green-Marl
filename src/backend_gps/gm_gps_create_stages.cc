@@ -177,6 +177,7 @@ public:
             gps_bb* bb2 = newBB();
             bb1->add_exit(bb2);
             insert_between_prev_next(bb1, bb2);
+            bb2->set_after_vertex(true);
 
             // add this sentence to the basic block
             bb1->add_sent(s);

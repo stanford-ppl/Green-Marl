@@ -195,7 +195,7 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     if (type == GM_GPS_BBTYPE_BEGIN_VERTEX) {
 
         // generate Broadcast
-        do_generate_scalar_broadcast(b);
+        do_generate_scalar_broadcast_send(b);
         Body.NL();
 
         // generate next statement
@@ -207,6 +207,11 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     }
     else if (type == GM_GPS_BBTYPE_SEQ) 
     {
+        if (b->is_after_vertex()) {
+            assert(b->get_num_entries() == 1);
+            do_generate_scalar_broadcast_receive(b);
+        }
+
         // generate sentences
         b->prepare_iter();
         ast_sent* s = b->get_next();
@@ -253,8 +258,10 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
 
     Body.pushln("}"); // end of state function
 }
-void gm_gps_gen::do_generate_scalar_broadcast(gm_gps_basic_block* b) 
+void gm_gps_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b) 
 {
+    get_lib()->generate_broadcast_prepare(Body);
+
     // check if scalar variable is used inside the block
     std::map<gm_symtab_entry*, gps_syminfo*>& syms = b->get_symbols(); 
     std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
@@ -266,8 +273,34 @@ void gm_gps_gen::do_generate_scalar_broadcast(gm_gps_basic_block* b)
         if (!global_info->is_used_in_master()) continue;
         if (local_info->is_used_as_rhs()) {
             // create a broad cast variable
-            get_lib()->generate_broadcast_scalar_master(
+            get_lib()->generate_broadcast_send_master(
                     I->first->getId(), Body);
+        }
+    }
+}
+
+void gm_gps_gen::do_generate_scalar_broadcast_receive(gm_gps_basic_block* b) 
+{
+    assert(b->get_num_entries() ==1);
+    gm_gps_basic_block* pred = b->get_nth_entry(0);
+    assert(pred->is_vertex());
+
+    // check if scalar variable is modified inside the block
+    std::map<gm_symtab_entry*, gps_syminfo*>& syms = pred->get_symbols(); 
+    std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
+    for(I=syms.begin(); I!= syms.end(); I++)
+    {
+        gps_syminfo* local_info = I->second;
+        gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(TAG_BB_USAGE);
+        if (!global_info->is_scalar()) continue;
+        if (!global_info->is_used_in_master()) continue;
+        if (local_info->is_used_as_lhs() || local_info->is_used_as_reduce()) {
+
+
+            // create a broad cast variable
+            get_lib()->generate_broadcast_receive_master(
+                    I->first->getId(), Body, 
+                    local_info->get_reduce_type());
         }
     }
 }

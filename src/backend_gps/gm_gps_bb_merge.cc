@@ -32,6 +32,8 @@ public:
                     B->add_sent(s);
                 }
 
+                assert(C->is_after_vertex() == false);
+
                 // update exits
                 B->remove_all_exits();
 
