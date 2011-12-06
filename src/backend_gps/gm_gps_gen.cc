@@ -90,7 +90,8 @@ bool gm_gps_gen::do_generate()
                 break;
 
             case 2:
-                do_generate_main(); 
+                //do_generate_main(); 
+                do_generate_vertex();
                 end_class();
                 close_output_files();
                 break;
@@ -110,12 +111,6 @@ bool gm_gps_gen::do_generate()
 bool gm_gps_gen::do_merge_msg_information()
 {
     return true;
-}
-
-void gm_gps_gen::do_generate_main()
-{
-    // dump_vertex_methods();
-    // dump_master_methods();
 }
 
 

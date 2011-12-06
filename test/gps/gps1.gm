@@ -1,10 +1,10 @@
 
-Procedure gps_test (G: Graph, x: Int, A:Node_Property<Int>(G) ) : Int
+Procedure gps (G: Graph, x: Int, A,B:Node_Property<Int>(G) ) : Int
 {
     Int z = 0;
     If (x > 0) {
         // Test of reduction into z
-        z = Sum(t: G.Nodes) {t.A};
+        z = Sum(t: G.Nodes) {t.A + t.B};
     }
 
     // Test of Returen

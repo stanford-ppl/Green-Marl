@@ -42,28 +42,62 @@ void gm_gps_gen::generate_expr_minmax(ast_expr* e)
 
 void gm_gps_gen::generate_lhs_id(ast_id* i) 
 {
-    if (is_master_generate())
-    {
-        _Body.push(i->get_genname());
-    }
-    else
-    {
-        // [to-be done]
-        assert(false);
-    }
+    _Body.push(i->get_genname());
+}
+void gm_gps_gen::generate_lhs_field(ast_field* f)
+{
+    assert(!is_master_generate());
+    
+    // temporary
+    assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
 
+    ast_id* prop = f->get_second();
+    get_lib()->generate_vertex_prop_access_rhs(prop, Body);
 }
 
 void gm_gps_gen::generate_rhs_id(ast_id* i) 
 {
-    if (is_master_generate())
-    {
-        _Body.push(i->get_genname());
-    }
-    else
-    {
-        // xxx to be done
-        assert(false);
-    }
+    _Body.push(i->get_genname());
 } 
 
+void gm_gps_gen::generate_rhs_field(ast_field* f)
+{
+    assert(!is_master_generate());
+
+    // temporary
+    assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
+
+    ast_id* prop = f->get_second();
+    get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+}
+
+
+void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a) 
+{
+    assert(!is_master_generate());
+
+
+}
+
+void gm_gps_gen::generate_sent_assign(ast_assign *a)
+{
+    printf("."); fflush(stdout);
+
+    // normal assign
+    if (is_master_generate())
+        this->gm_code_generator::generate_sent_assign(a);
+    else if (a->is_target_scalar())
+    {
+        // to be done
+        assert(false);
+    }
+    else 
+    {
+        ast_field* f = a->get_lhs_field(); 
+
+        // temporary
+        assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
+
+        this->gm_code_generator::generate_sent_assign(a);
+    }
+}

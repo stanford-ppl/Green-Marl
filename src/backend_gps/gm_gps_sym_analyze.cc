@@ -30,6 +30,9 @@ bool gm_gps_gen::do_analyze_symbols()
 
 class gps_merge_symbol_usage_t : public gps_apply_bb_ast  
 {
+    static bool const IS_SCALAR = true;
+    static bool const IS_FIELD  = false;
+
     public:
         gps_merge_symbol_usage_t() {
             set_for_sent(true);
@@ -38,7 +41,8 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
     
     virtual bool apply(ast_sent* s) 
     {
-        // only need to look at assign statement
+        // only need to look at assign statement (for LHS)
+        // (RHS usages will be gathered in apply(expr)
         if (s->get_nodetype() == AST_ASSIGN)
         {
             ast_assign * a = (ast_assign*) s;
@@ -48,12 +52,24 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                 ast_id* i = a->get_lhs_scala();
                 bool is_reduce = a->is_reduce_assign();
                 if (is_reduce) {
-                    update_access_information(i, GPS_SYM_USED_AS_REDUCE,
+                    update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_REDUCE,
                             a->get_reduce_type());
                 }
                 else {
-                    update_access_information(i, GPS_SYM_USED_AS_LHS);
+                    update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_LHS);
                 }
+            }
+            else {
+                ast_id* i = a->get_lhs_field()->get_second();
+                bool is_reduce = a->is_reduce_assign();
+                if (is_reduce) {
+                    update_access_information(i, IS_FIELD, GPS_SYM_USED_AS_REDUCE,
+                            a->get_reduce_type());
+                }
+                else {
+                    update_access_information(i, IS_FIELD, GPS_SYM_USED_AS_LHS);
+                }
+
             }
         }
     }
@@ -63,18 +79,20 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         // RHS
         if (e->is_id()) {
             ast_id* i = e->get_id();
-            update_access_information(i, GPS_SYM_USED_AS_RHS);
+            update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS);
         } 
         else if (e->is_field()) {
             // [XXX] to be done
+            ast_id* i = e->get_field()->get_second();
+            update_access_information(i, IS_FIELD, GPS_SYM_USED_AS_RHS);
         }
     }
     protected:
-        void update_access_information(ast_id *i, int usage, int r_type = GMREDUCE_NULL)
+        void update_access_information(ast_id *i, bool is_scalar, int usage, int r_type = GMREDUCE_NULL)
         {
             // update global information
             gps_syminfo* syminfo = 
-                get_or_create_global_syminfo(i, true);
+                get_or_create_global_syminfo(i, is_scalar);
 
             // update global information
             syminfo->add_usage_in_BB(
@@ -85,7 +103,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 
             // update local information
             syminfo = 
-                get_or_create_local_syminfo(i, true);
+                get_or_create_local_syminfo(i, is_scalar);
 
             syminfo->add_usage_in_BB(
                     get_curr_BB()->get_id(), 
@@ -169,12 +187,21 @@ public:
             else if (syminfo->is_used_in_multiple_BB()){
                 scalar.insert(sym);
             } else {
-
+                // ignore?
             }
         }
         else
         {
-            // to be done
+            // should be set externally.
+            if (syminfo->is_argument())
+            {
+                prop.insert(sym);
+            }
+            else if (syminfo->is_used_in_multiple_BB()){
+                prop.insert(sym);
+            } else {
+                // ignore?
+            }
         }
 
         return true;
@@ -187,9 +214,45 @@ private:
 
 bool gm_gps_gen::do_make_symbol_summary()
 {
-    gps_flat_symbol_t T(scalar, prop);
     ast_procdef* p = get_current_proc();
-    p->traverse(&T, false, true); // pre apply. doesn't matter
+    //-----------------------------------------------
+    // mark special markers to the property arguments
+    //-----------------------------------------------
+    std::vector<gm_symtab_entry* >::iterator J;
+    std::vector<gm_symtab_entry*>& args =
+        p->get_symtab_field()->get_entries(); 
+    for(J=args.begin(); J!= args.end(); J++)
+    {
+        gm_symtab_entry *sym = *J; 
+        gps_syminfo* syminfo = (gps_syminfo*) 
+            sym->find_info(TAG_BB_USAGE);
+        assert(syminfo!=NULL);
+        syminfo->set_is_argument(true);
+    }
+
+
+    //-------------------------------------
+    // make a flat symbol table
+    //-------------------------------------
+    gps_flat_symbol_t T(scalar, prop);
+    p->traverse(&T, false, true);
+
+    //-------------------------------
+    // order property symbols
+    // (todo: opt for cacheline ?)
+    //-------------------------------
+    int byte_begin = 0;
+    std::set<gm_symtab_entry* >::iterator I;
+    for(I=prop.begin(); I!=prop.end(); I++)
+    {
+        gm_symtab_entry * sym = *I; 
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+
+        int size = get_lib()->get_type_size(sym->getType()->get_target_type());
+        syminfo->set_start_byte(byte_begin);
+        byte_begin += size;
+    }
+    set_total_property_size(byte_begin);
 
     return true;
 }

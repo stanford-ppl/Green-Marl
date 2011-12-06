@@ -52,7 +52,6 @@ void gm_gps_gen::do_generate_master_class()
     Body.pushln("//----------------------------------------------------------");
     Body.pushln("private int     _master_state                = 0;");
     Body.pushln("private int     _master_state_nxt            = 0;");
-    Body.pushln("private boolean _master_cond_result          = false;");
     Body.pushln("private boolean _master_should_start_workers = false;");
     Body.pushln("private boolean _master_should_finish        = false;");
     //Body.pushln("private int  get_master_state()      {return _maser_state;}");
@@ -204,6 +203,8 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         sprintf(temp,"_master_state_nxt = %d;", n);
         Body.pushln(temp);
         Body.pushln("_master_should_start_workers = true;");
+        Body.pushln("//broadcast state");
+        get_lib()->generate_broadcast_state_master("_master_state", Body);
     }
     else if (type == GM_GPS_BBTYPE_SEQ) 
     {

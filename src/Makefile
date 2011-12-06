@@ -54,7 +54,7 @@ SRCS2 =\
        gm_cpplib_gen.cc gm_cpplib_opt.cc\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
        gm_gps_create_stages.cc gm_gps_check_synthesizable.cc\
-       gm_gps_bb_merge.cc gm_gps_gen_skel.cc\
+       gm_gps_bb_merge.cc gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
        gps_syminfo.cc gm_gps_sym_analyze.cc\
        gm_gps_java.cc gm_gps_lib.cc\
 
