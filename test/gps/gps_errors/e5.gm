@@ -1,0 +1,9 @@
+
+Proc e5(G:Graph, A: N_P<Int>(G)) : Int
+{
+    Int z;
+
+    For (n: G.Nodes) {  // Sequential For-loop is not supported
+        z = z+ n.A;
+    }
+}

@@ -11,8 +11,8 @@ bool gm_gps_gen::do_local_optimize()
 {
     // SUB STEPS
     const char* NAMES[]= {
-        "[Check Compilable]",              // 0: Check if the code is compilable into pregel
-        "[Simplify Reduce]",               // 1
+        "[Simplify Reduce]",               // 0
+        "[Check Compilable]",              // 1: Check if the code is compilable into pregel
         "[Create ExtendedBasicBlocks]",    // 2: Create BB
         "[Check Symbols]",                 // 3: Analyze Symbols
     };
@@ -37,11 +37,11 @@ bool gm_gps_gen::do_local_optimize()
         {
             set_current_proc(*it);
             switch(i) {
-                case 0: // Check compilable
-                    is_okay = do_check_synthesizable(); 
-                    break;
-                case 1: // simplify reduce
+                case 0: // simplify reduce
                     do_simplify_reduce(*it);
+                    break;
+                case 1: // Check compilable
+                    is_okay = do_check_synthesizable(); 
                     break;
                 case 2: // Create Stages
                     do_create_stages();

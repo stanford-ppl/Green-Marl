@@ -445,9 +445,9 @@ class ast_typedecl : public ast_node {  // property or type
         bool is_edge()            {return gm_is_edge_type(type_id);}
         bool is_nodeedge()        {return gm_is_nodeedge_type(type_id);}
         //bool is_iterator()        {return gm_is_iter_type(type_id);}
-        bool is_set()            {return gm_is_set_type(type_id);}
-        bool is_set_of_node()    {return gm_is_node_set_type(type_id);}
-        bool is_set_of_edge()    {return gm_is_edge_set_type(type_id);}
+        bool is_collection()      {return gm_is_collection_type(type_id);}
+        bool is_node_collection()    {return gm_is_node_collection_type(type_id);}
+        bool is_edge_collection()    {return gm_is_edge_collection_type(type_id);}
         bool is_set_iterator()   {return gm_is_set_iter_type(type_id);}
         bool is_unknown_set_iterator()   {return gm_is_unknown_set_iter_type(type_id);}
         bool is_node_iterator()   {return gm_is_node_iter_type(type_id);}
@@ -484,7 +484,7 @@ class ast_typedecl : public ast_node {  // property or type
                 assert(target_set->getTypeInfo() != NULL);
                 assert(target_set->getTypeInfo()->get_target_graph() != NULL);
                 return target_set->getTypeInfo()->get_target_graph();
-            } else if (is_set() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator()) {
+            } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator()) {
                 assert(target_graph!=NULL);
                 assert(target_graph->getSymInfo() != NULL);
                 return target_graph->getSymInfo();

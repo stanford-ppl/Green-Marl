@@ -11,15 +11,103 @@
 
 #include <set>
 
+class gps_check_symbol_scope_t : public gm_apply
+{
+    public:
+    gps_check_symbol_scope_t() {
+        set_for_symtab(true);
+        set_for_sent(true);
+        set_separate_post_apply(true); 
+    }
+
+    // pre apply
+    virtual bool apply(ast_sent *s) 
+    {
+        // there are only two levels now
+        if (s->get_nodetype() == AST_FOREACH) 
+        {
+            if (master_context) {
+                master_context = false;
+            }
+            else {
+                inner_context = true;
+            }
+        }
+        return true;
+    }
+
+    // post apply
+    virtual bool apply2(ast_sent *s) 
+    {
+        if (s->get_nodetype() == AST_FOREACH) {
+            if (inner_context) {
+                inner_context = false;
+            }
+            else {
+                master_context = true;
+            }
+        }
+        return true;
+    }
+    virtual bool apply(gm_symtab_entry* e, int symtab_type)
+    {
+        if (e->getType()->is_graph() || e->getType()->is_node_edge_iterator()) 
+            return true;
+
+        bool is_scalar = !e->getType()->is_property();
+        gps_syminfo* info = get_or_create_global_syminfo(e, is_scalar);
+        if (inner_context)
+            info->set_scope(GPS_SCOPE_INNER);
+        else if (master_context)
+            info->set_scope(GPS_SCOPE_GLOBAL);
+        else
+            info->set_scope(GPS_SCOPE_OUTER);
+    }
+
+
+private:
+    bool inner_context;
+    bool master_context; 
+    gps_syminfo* get_or_create_global_syminfo(gm_symtab_entry* sym, bool is_scalar)
+    {
+        ast_extra_info* info = sym->find_info(TAG_BB_USAGE);
+        gps_syminfo* syminfo;
+        if (info == NULL)  {
+            syminfo = new gps_syminfo(is_scalar);
+            sym->add_info(TAG_BB_USAGE, syminfo);
+        } else {
+            syminfo = (gps_syminfo*) info;
+        }
+        return syminfo;
+    }
+};
+
+bool gm_gps_gen::do_analyze_symbol_scope(ast_procdef* p)
+{
+    gps_check_symbol_scope_t T;
+    // assumption: Proc is synthesizable. i.e. having only two levels of loops
+    p->traverse(&T, true, true);
+
+}
+
+
+
 
 bool gm_gps_gen::do_analyze_symbols()
 {
     bool is_okay = true;
+    //-------------------------------------
+    // Check the scope of each symbol (except iterators)
+    // (1) Defined globally 
+    // (2) Defined in outer loop
+    // (3) Defined in inner loop
+    //-------------------------------------
+    do_analyze_symbol_scope(get_current_proc());  // may have done already.
 
-    // first, check in which BB each symbol is used and how
-    do_merge_symbol_usages();
+    // (2) check each BB. How each symbol is used and how
+    do_merge_symbol_usages();  
 
-    // second, make a big flat list of symbols
+    // (3) Make a big flat list of symbols for code generation
     do_make_symbol_summary();
 
     return is_okay;
@@ -215,6 +303,7 @@ private:
 bool gm_gps_gen::do_make_symbol_summary()
 {
     ast_procdef* p = get_current_proc();
+
     //-----------------------------------------------
     // mark special markers to the property arguments
     //-----------------------------------------------
@@ -224,12 +313,10 @@ bool gm_gps_gen::do_make_symbol_summary()
     for(J=args.begin(); J!= args.end(); J++)
     {
         gm_symtab_entry *sym = *J; 
-        gps_syminfo* syminfo = (gps_syminfo*) 
-            sym->find_info(TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
         assert(syminfo!=NULL);
         syminfo->set_is_argument(true);
     }
-
 
     //-------------------------------------
     // make a flat symbol table
@@ -237,10 +324,9 @@ bool gm_gps_gen::do_make_symbol_summary()
     gps_flat_symbol_t T(scalar, prop);
     p->traverse(&T, false, true);
 
-    //-------------------------------
-    // order property symbols
-    // (todo: opt for cacheline ?)
-    //-------------------------------
+    //-----------------------------------------------------------
+    // Enlist property symbols (todo: opt ordering for cacheline ?)
+    //-----------------------------------------------------------
     int byte_begin = 0;
     std::set<gm_symtab_entry* >::iterator I;
     for(I=prop.begin(); I!=prop.end(); I++)

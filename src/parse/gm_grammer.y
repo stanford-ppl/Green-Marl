@@ -183,8 +183,8 @@
   sent_do_while : T_DO sent_block T_WHILE '(' bool_expr ')' { $$ = GM_dowhile($5, $2); }
 
                 
-  sent_foreach :  T_FOREACH foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, false, $2.b1);}
-               |  T_FOR     foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, true, $2.b1);}
+  sent_foreach :  T_FOREACH foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, false, $2.b1); GM_set_lineinfo($$, @1.first_line, @1.first_column);}
+               |  T_FOR     foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, true, $2.b1); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   foreach_header : '(' id ':' id     '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $6;}
                  | '(' id ':' id '+' '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $7;}
@@ -204,9 +204,9 @@
 
             // GM_bfs(it, src,root,   node,edge, filter,   fw, bw,tp)
   sent_bfs    : T_BFS bfs_header_format bfs_filter1 bfs_filter2 sent_block 
-                { $$ = GM_bfs( $2.p1, $2.p2, $2.p3,   $3.p1, $3.p2, $4,  $5, NULL, $2.b1);} 
+                { $$ = GM_bfs( $2.p1, $2.p2, $2.p3,   $3.p1, $3.p2, $4,  $5, NULL, $2.b1); GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
               | T_BFS bfs_header_format bfs_filter1 bfs_filter2 sent_block T_BACK sent_block 
-                { $$ = GM_bfs( $2.p1, $2.p2, $2.p3,   $3.p1, $3.p2, $4,  $5, $7,   $2.b1);} 
+                { $$ = GM_bfs( $2.p1, $2.p2, $2.p3,   $3.p1, $3.p2, $4,  $5, $7,   $2.b1); GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
 
   bfs_header_format :  '(' id ':' id opt_tp '.' T_NODES from_or_semi id ')' {
                            $$.p1 = $2; // it

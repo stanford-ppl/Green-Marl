@@ -1,0 +1,19 @@
+
+Proc e7(G:Graph, A: N_P<Int>(G)) : Int
+{
+    Int z=0;
+
+    // Inner loop cannot be repeated
+
+    Foreach (n: G.Nodes) { 
+        Int x = 5;
+        While (x > 0) {
+            Foreach (k: n.Nbrs) { 
+                z += k.A @ n;
+            }
+            x = x-1;
+        }
+    }
+
+    Return z;
+}

@@ -544,7 +544,7 @@ bool gm_cpp_gen::generate(ast_vardecl* v)
         generate(v->get_idlist());
         declare_prop_def(t, idl->get_item(0));
 
-    } else if (t->is_set()) {
+    } else if (t->is_collection()) {
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);
         generate(v->get_idlist());

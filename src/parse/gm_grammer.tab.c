@@ -2213,14 +2213,14 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 186 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_foreach((yyvsp[(2) - (4)].pair).p1, (yyvsp[(2) - (4)].pair).p2, (yyvsp[(2) - (4)].pair).i1, (yyvsp[(4) - (4)].ptr), (yyvsp[(3) - (4)].ptr), false, (yyvsp[(2) - (4)].pair).b1);;}
+    { (yyval.ptr) = GM_foreach((yyvsp[(2) - (4)].pair).p1, (yyvsp[(2) - (4)].pair).p2, (yyvsp[(2) - (4)].pair).i1, (yyvsp[(4) - (4)].ptr), (yyvsp[(3) - (4)].ptr), false, (yyvsp[(2) - (4)].pair).b1); GM_set_lineinfo((yyval.ptr), (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 63:
 
 /* Line 1455 of yacc.c  */
 #line 187 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_foreach((yyvsp[(2) - (4)].pair).p1, (yyvsp[(2) - (4)].pair).p2, (yyvsp[(2) - (4)].pair).i1, (yyvsp[(4) - (4)].ptr), (yyvsp[(3) - (4)].ptr), true, (yyvsp[(2) - (4)].pair).b1);;}
+    { (yyval.ptr) = GM_foreach((yyvsp[(2) - (4)].pair).p1, (yyvsp[(2) - (4)].pair).p2, (yyvsp[(2) - (4)].pair).i1, (yyvsp[(4) - (4)].ptr), (yyvsp[(3) - (4)].ptr), true, (yyvsp[(2) - (4)].pair).b1); GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 64:
@@ -2318,14 +2318,14 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 207 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_bfs( (yyvsp[(2) - (5)].pair).p1, (yyvsp[(2) - (5)].pair).p2, (yyvsp[(2) - (5)].pair).p3,   (yyvsp[(3) - (5)].pair).p1, (yyvsp[(3) - (5)].pair).p2, (yyvsp[(4) - (5)].ptr),  (yyvsp[(5) - (5)].ptr), NULL, (yyvsp[(2) - (5)].pair).b1);;}
+    { (yyval.ptr) = GM_bfs( (yyvsp[(2) - (5)].pair).p1, (yyvsp[(2) - (5)].pair).p2, (yyvsp[(2) - (5)].pair).p3,   (yyvsp[(3) - (5)].pair).p1, (yyvsp[(3) - (5)].pair).p2, (yyvsp[(4) - (5)].ptr),  (yyvsp[(5) - (5)].ptr), NULL, (yyvsp[(2) - (5)].pair).b1); GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (5)]).first_line, (yylsp[(1) - (5)]).first_column);;}
     break;
 
   case 78:
 
 /* Line 1455 of yacc.c  */
 #line 209 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_bfs( (yyvsp[(2) - (7)].pair).p1, (yyvsp[(2) - (7)].pair).p2, (yyvsp[(2) - (7)].pair).p3,   (yyvsp[(3) - (7)].pair).p1, (yyvsp[(3) - (7)].pair).p2, (yyvsp[(4) - (7)].ptr),  (yyvsp[(5) - (7)].ptr), (yyvsp[(7) - (7)].ptr),   (yyvsp[(2) - (7)].pair).b1);;}
+    { (yyval.ptr) = GM_bfs( (yyvsp[(2) - (7)].pair).p1, (yyvsp[(2) - (7)].pair).p2, (yyvsp[(2) - (7)].pair).p3,   (yyvsp[(3) - (7)].pair).p1, (yyvsp[(3) - (7)].pair).p2, (yyvsp[(4) - (7)].ptr),  (yyvsp[(5) - (7)].ptr), (yyvsp[(7) - (7)].ptr),   (yyvsp[(2) - (7)].pair).b1); GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column);;}
     break;
 
   case 79:

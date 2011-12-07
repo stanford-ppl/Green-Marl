@@ -10,12 +10,22 @@ enum {
     GPS_SYM_USED_AS_REDUCE,
 };
 
+enum {
+    GPS_SCOPE_GLOBAL,
+    GPS_SCOPE_OUTER,
+    GPS_SCOPE_INNER
+};
+
 class gps_syminfo : public ast_extra_info
 {
     public:
         gps_syminfo(bool sc): 
             _scalar(sc), _used_in_multiple_BB (false),  last_BB(-1),  _is_arg(false) ,
-            used_as_rhs(false), used_as_lhs(false), used_as_reduce(false), used_in_vertex(false), used_in_master(false), reduce_op_type(GMREDUCE_NULL), start_byte(0) {}
+            used_as_rhs(false), used_as_lhs(false), 
+            used_as_reduce(false), used_in_vertex(false), used_in_master(false), 
+            reduce_op_type(GMREDUCE_NULL), start_byte(0),
+            scope(GPS_SCOPE_GLOBAL)
+            {}
         virtual ~gps_syminfo() {}
 
         void set_is_argument(bool b) {_is_arg = b;}
@@ -36,6 +46,9 @@ class gps_syminfo : public ast_extra_info
         int get_start_byte() {return start_byte;}
         void set_start_byte(int b) {start_byte = b;}
 
+        int get_scope()  {return scope;}
+        void set_scope(int s) {scope = s;}
+
     private:
         bool _used_in_multiple_BB;
         int last_BB;
@@ -43,6 +56,7 @@ class gps_syminfo : public ast_extra_info
         bool _is_arg;
         std::vector<int> used_BB;
         std::vector<int> used_type;
+        int scope;
 
 
         bool used_as_rhs;

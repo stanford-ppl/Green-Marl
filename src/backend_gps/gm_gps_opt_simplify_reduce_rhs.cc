@@ -6,6 +6,11 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 
+//----------------------------------------------------
+// This optimimization is only for output code, readability.
+// It may not be used in the final version
+//----------------------------------------------------
+
 
 //---------------------------------------
 // <LHS> <reduce_assign> <RHS_EXPR>

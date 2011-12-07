@@ -60,9 +60,9 @@ const char* gm_cpplib::get_type_string(int type, int usage)
         }
         else {assert(false);}
     }
-    else if (gm_is_set_type(type)) {
-        if      (gm_is_true_set_type(type)) return (usage == GMUSE_LOCALDEF) ? SET_T : SET_T"&";
-        else if (gm_is_ordered_set_type(type)) return (usage == GMUSE_LOCALDEF) ? ORDER_T : ORDER_T"&";
+    else if (gm_is_collection_type(type)) {
+        if      (gm_is_set_collection_type(type)) return (usage == GMUSE_LOCALDEF) ? SET_T : SET_T"&";
+        else if (gm_is_order_collection_type(type)) return (usage == GMUSE_LOCALDEF) ? ORDER_T : ORDER_T"&";
         else {assert(false);}
     } else {
         assert(false);
@@ -277,9 +277,9 @@ bool gm_cpplib::add_set_def(ast_id* i)
 {
     Body->push("(");
     Body->push(i->getTypeInfo()->get_target_graph_id()->get_genname());
-    if (i->getTypeInfo()->is_set_of_node())
+    if (i->getTypeInfo()->is_node_collection())
         Body->pushln("."NUM_NODES"());");
-    else if (i->getTypeInfo()->is_set_of_node())
+    else if (i->getTypeInfo()->is_edge_collection())
         Body->pushln("."NUM_EDGES"());");
     else assert(false);
 

@@ -78,7 +78,7 @@ void ast_typedecl::reproduce(int ind_level)
         target_graph->reproduce(0);
         Out.push(')');
     }
-    else if (is_set()) {
+    else if (is_collection()) {
         assert(target_graph!=NULL);
         Out.push(gm_get_type_string(type_id));
         Out.push('(');

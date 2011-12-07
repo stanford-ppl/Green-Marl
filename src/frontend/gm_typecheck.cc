@@ -250,8 +250,8 @@ static bool check_target_set_is_well_defined(ast_id* set, gm_symtab* vars)
         return false;
     }
 
-    // check graph is acutally a graph
-    if (!set->getTypeInfo()->is_set()) 
+    // check target set is well defined
+    if (!set->getTypeInfo()->is_collection()) 
     {
         gm_type_error(GM_ERROR_NONSET_TARGET, set, set);
         return false;
@@ -281,7 +281,7 @@ static bool add_decl(gm_scope* context,
     gm_symtab* target;
 
     // node or edge or iterator
-    if (type->is_node_edge_compatible() || type->is_set()) 
+    if (type->is_node_edge_compatible() || type->is_collection()) 
     {
         ast_id* graph = type->get_target_graph_id();
         gm_symtab* vars = context->get_varsyms();
@@ -1031,7 +1031,7 @@ static bool foreach_header_typecheck(gm_scope* context, int iter_type, ast_id* s
             if (!b) return false;
             ast_typedecl* type = n->getTypeInfo();
 
-            if (!type->is_set()) {
+            if (!type->is_collection()) {
                 gm_type_error(GM_ERROR_NONSET_TARGET, n);
                 return false;
             }
@@ -1106,7 +1106,7 @@ bool ast_foreach::local_typecheck(gm_scope* context)
             set_iter_type(get_iterator()->getTypeSummary());
 
         if (is_reverse_iteration()) {
-            if (!gm_is_ordered_set_type(source->getTypeSummary())) {
+            if (!gm_is_order_collection_type(source->getTypeSummary())) {
                 gm_type_error(GM_ERROR_NEED_ORDER, source);
                 result = false;
             }

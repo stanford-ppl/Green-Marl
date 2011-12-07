@@ -24,4 +24,4 @@ $(ODIR)/%.java: %.gm
 	$(COMP) $(FLAGS) $<
 
 clean: 
-	\rm -rf $(ODUR)/*.java $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h
+	\rm -rf $(ODIR)/*.java $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h *.java

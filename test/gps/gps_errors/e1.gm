@@ -1,0 +1,6 @@
+
+// Error no graph is defined
+Proc e1(x: Int): Int {
+    Return x+1;
+
+}

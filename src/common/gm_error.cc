@@ -204,13 +204,28 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
     printf("%d: %d: error: ", l, c);
     switch(errno) {
         case GM_ERROR_GPS_UNSUPPORTED_OP:
-            printf("%s operation is not supported", str1);
+            printf("%s operation is not supported\n", str1);
             break;
         case GM_ERROR_GPS_UNSUPPORTED_RANGE_MASTER:
-            printf("Only node-wide parallel iteration is supported in master mode");
+            printf("Only node-wide parallel iteration is supported in master mode\n");
             break;
         case GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX:
-            printf("Only neighbor-wide iteration is supported in vertex mode");
+            printf("Only neighbor-wide iteration is supported in vertex mode\n");
+            break;
+        case GM_ERROR_GPS_NEED_PARALLEL:
+            printf("Only parallel iteration is avaiable\n");
+            break;
+        case GM_ERROR_GPS_NBR_LOOP_INSIDE_WHILE:
+            printf("Inner loop cannot be inside extra loop\n");
+            break;
+        case GM_ERROR_GPS_UNSUPPORTED_COLLECTION:
+            printf("%s is an unsupported collection type\n", str1);
+            break;
+        case GM_ERROR_GPS_NO_GRAPH:
+            printf("There should be at least one graph defined at the entry function\n");
+            break;
+        case GM_ERROR_GPS_MULTIPLE_GRAPH:
+            printf("There should only one graph defined at the entry function\n");
             break;
     }
 }

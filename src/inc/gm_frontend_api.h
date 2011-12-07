@@ -97,17 +97,44 @@ extern "C" {
     inline static bool gm_is_node_property_type(int i) {return (i==GMTYPE_NODEPROP);}
     inline static bool gm_is_edge_property_type(int i) {return (i==GMTYPE_EDGEPROP);}
     inline static bool gm_is_property_type(int i) {return gm_is_node_property_type(i) || gm_is_edge_property_type(i);} 
+
+
     inline static bool gm_is_inf_type(int i) {return (i==GMTYPE_INF) || (i==GMTYPE_INF_INT) || (i==GMTYPE_INF_LONG) || (i==GMTYPE_INF_FLOAT) || (i==GMTYPE_INF_FLOAT);}
     inline static bool gm_is_inf_type_unsized(int i) {return (i==GMTYPE_INF);}
     inline static bool gm_is_inf_type_sized(int i) {return gm_is_inf_type(i) && !gm_is_inf_type_unsized(i);}
 
-    inline static bool gm_is_node_set_type(int i) {return (i == GMTYPE_NSET) || (i == GMTYPE_NSEQ) || (i == GMTYPE_NORDER);}
-    inline static bool gm_is_edge_set_type(int i) {return (i == GMTYPE_ESET) || (i == GMTYPE_ESEQ) || (i == GMTYPE_EORDER);}
-    inline static bool gm_is_ordered_set_type(int i) {return (i==GMTYPE_NORDER) || (i==GMTYPE_EORDER);}
-    inline static bool gm_is_sequence_set_type(int i) {return (i==GMTYPE_NSEQ) || (i==GMTYPE_ESEQ);}
-    inline static bool gm_is_true_set_type(int i) {return (i==GMTYPE_NSET) || (i==GMTYPE_ESET);}
-    inline static bool gm_is_set_type(int i) {return gm_is_node_set_type(i) || gm_is_edge_set_type(i);}
 
+    inline static bool gm_is_node_set_type(int i) { return (i==GMTYPE_NSET);}
+    inline static bool gm_is_node_order_type(int i) { return (i==GMTYPE_NORDER);}
+    inline static bool gm_is_node_sequence_type(int i) { return (i==GMTYPE_NSEQ);}
+    inline static bool gm_is_edge_set_type(int i) { return (i==GMTYPE_ESET);}
+    inline static bool gm_is_edge_order_type(int i) { return (i==GMTYPE_EORDER);}
+    inline static bool gm_is_edge_sequence_type(int i) { return (i==GMTYPE_ESEQ);}
+    inline static bool gm_is_node_collection_type(int i) {
+        return gm_is_node_set_type(i) ||
+               gm_is_node_order_type(i) ||
+               gm_is_node_sequence_type(i);
+    }
+    inline static bool gm_is_edge_collection_type(int i) {
+        return gm_is_edge_set_type(i) ||
+               gm_is_edge_order_type(i) ||
+               gm_is_edge_sequence_type(i);
+    }
+    inline static bool gm_is_set_collection_type(int i) {
+        return gm_is_node_set_type(i) ||
+               gm_is_edge_set_type(i);
+    }
+    inline static bool gm_is_order_collection_type(int i) {
+        return gm_is_node_order_type(i) ||
+               gm_is_edge_order_type(i);
+    }
+    inline static bool gm_is_sequence_collection_type(int i) {
+        return gm_is_node_sequence_type(i) ||
+               gm_is_edge_sequence_type(i);
+    }
+    inline static bool gm_is_collection_type(int i) {
+        return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i);
+    }
 
     bool gm_is_compatible_type_for_assign(int lhs, int rhs); // defined in typecheck.cc
     bool gm_is_compatible_type_for_eq(int t1, int t2); // defined in typecheck.cc

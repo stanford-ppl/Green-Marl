@@ -1,0 +1,6 @@
+
+// Error multiple graphs are defined
+Proc e1(G1,G2: Graph): Int {
+    Return G1.NumNodes() + G2.NumNodes();
+
+}
