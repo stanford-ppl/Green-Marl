@@ -12,4 +12,4 @@ $(ODIR)/%.java: %.gm
 	$(COMP) $(FLAGS) $< 
 
 clean: 
-	\rm -rf $(ODIR)/*.java
+	\rm -rf $(ODIR)/*.java *.java
