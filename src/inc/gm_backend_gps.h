@@ -37,10 +37,11 @@ class gm_gpslib : public gm_graph_library {
 
     virtual void generate_broadcast_prepare(gm_code_writer& Body);
     virtual void generate_broadcast_state_master(const char* state_var, gm_code_writer& Body);
-    virtual void generate_broadcast_variable_type(ast_id* id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
+    virtual void generate_broadcast_variable_type(int gm_type_id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
     virtual void generate_broadcast_send_master(ast_id* id, gm_code_writer& Body);
     virtual void generate_broadcast_receive_master(ast_id* id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
     virtual void generate_headers(gm_code_writer& Body);
+    virtual void generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& Body, int reduce_op_type=GMREDUCE_NULL);
 
     virtual void generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Body);
 
@@ -133,6 +134,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         bool do_analyze_symbols();
         bool do_merge_symbol_usages();
         bool do_make_symbol_summary();
+        bool do_simplify_reduce(ast_procdef* p);
     public:
         gm_code_writer& get_code() {return Body;}
 

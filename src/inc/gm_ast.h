@@ -1138,7 +1138,7 @@ class ast_return: public ast_sent {
             return R;
         }
         ast_expr* get_expr() {return expr;}
-        void set_expr(ast_expr*e) {expr=e;}
+        void set_expr(ast_expr*e) {expr=e;if (e!=NULL) e->set_parent(this);}
 
         virtual bool local_typecheck(gm_scope* context);
         virtual void reproduce(int id_level);

@@ -34,7 +34,7 @@ void gm_gps_gen::do_generate_master()
     do_generate_master_class();
     do_generate_master_scalar();
     do_generate_master_states();
-    Body.push("}"); // finish master class
+    Body.pushln("}"); // finish master class
     Body.NL();
 
 }
@@ -45,11 +45,7 @@ void gm_gps_gen::do_generate_master_class()
     char temp[1024];
     sprintf(temp, "public static class %sMaster extends Master {", proc->get_procname()->get_genname());
     Body.pushln(temp);
-    Body.pushln("//----------------------------------------------------------");
-    Body.pushln("// Master's Fields ");
-    Body.pushln("//   - (kept over iterations)");
-    Body.pushln("//   - accessed inside Master.compute");
-    Body.pushln("//----------------------------------------------------------");
+    Body.pushln("// Control fields");
     Body.pushln("private int     _master_state                = 0;");
     Body.pushln("private int     _master_state_nxt            = 0;");
     Body.pushln("private boolean _master_should_start_workers = false;");
@@ -73,6 +69,9 @@ void gm_gps_gen::do_generate_master_scalar()
     for (I = scalar.begin(); I!=scalar.end();I++)
     {
         gm_symtab_entry *e = *I;
+        gps_syminfo* syminfo = (gps_syminfo*) e->find_info(TAG_BB_USAGE);
+        if (!syminfo->is_used_in_master()) continue;
+
         sprintf(temp, "private %s %s;", 
                 get_type_string(
                     e->getType(), 

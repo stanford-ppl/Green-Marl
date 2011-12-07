@@ -70,6 +70,7 @@ class gm_tempNameGen {
 
         // create name as _<base><number>
         // returns a new string with new name.
+        // (caller should delete new name)
         const char* getTempName(const char* base=NULL, const char* base2="") {
             if (base == NULL) base = "t";
             if (base2 == NULL) base2 = "";

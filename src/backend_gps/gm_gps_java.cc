@@ -76,6 +76,9 @@ void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a)
 {
     assert(!is_master_generate());
 
+    assert(a->is_target_scalar());  // xxx: temporary assertion
+
+    get_lib()->generate_reduce_assign_vertex(a, Body, a->get_reduce_type());
 
 }
 
@@ -84,12 +87,28 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
     printf("."); fflush(stdout);
 
     // normal assign
-    if (is_master_generate())
+    if (is_master_generate()) {
         this->gm_code_generator::generate_sent_assign(a);
+    }
     else if (a->is_target_scalar())
     {
-        // to be done
-        assert(false);
+        ast_id* i = a->get_lhs_scala();
+
+        gps_syminfo* syminfo = (gps_syminfo*) 
+            i->getSymInfo()->find_info(TAG_BB_USAGE);
+
+        // normal assign
+        if ((syminfo == NULL) || (!syminfo->is_used_in_multiple_BB()))
+        {
+            this->gm_code_generator::generate_sent_assign(a);
+            return;
+        }
+        else {
+            // write to global scalar
+
+            // to be done
+            assert(false);
+        }
     }
     else 
     {

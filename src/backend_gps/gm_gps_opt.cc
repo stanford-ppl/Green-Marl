@@ -12,8 +12,9 @@ bool gm_gps_gen::do_local_optimize()
     // SUB STEPS
     const char* NAMES[]= {
         "[Check Compilable]",              // 0: Check if the code is compilable into pregel
-        "[Create ExtendedBasicBlocks]",    // 1: Create BB
-        "[Check Symbols]",                 // 2: Analyze Symbols
+        "[Simplify Reduce]",               // 1
+        "[Create ExtendedBasicBlocks]",    // 2: Create BB
+        "[Check Symbols]",                 // 3: Analyze Symbols
     };
     const int COUNT = sizeof(NAMES)/sizeof(const char*);
     bool is_okay = true;
@@ -39,10 +40,13 @@ bool gm_gps_gen::do_local_optimize()
                 case 0: // Check compilable
                     is_okay = do_check_synthesizable(); 
                     break;
-                case 1: // Create Stages
+                case 1: // simplify reduce
+                    do_simplify_reduce(*it);
+                    break;
+                case 2: // Create Stages
                     do_create_stages();
                     break;
-                case 2: // Analyze symbols
+                case 3: // Analyze symbols
                     is_okay = do_analyze_symbols();
                     break;
 

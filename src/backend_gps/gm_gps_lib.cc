@@ -51,7 +51,7 @@ void gm_gpslib::generate_broadcast_send_master(ast_id* id, gm_code_writer& Body)
     Body.push(create_key_string(id));
     Body.push(",");
     Body.push("new ");
-    generate_broadcast_variable_type(id, Body);  // create BV by type
+    generate_broadcast_variable_type(id->getTypeSummary(), Body);  // create BV by type
 
     //---------------------------------------------------
     // Initial Value: Reading of Id
@@ -65,7 +65,7 @@ void gm_gpslib::generate_broadcast_send_master(ast_id* id, gm_code_writer& Body)
 void gm_gpslib::generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Body)
 {
     Body.push("((");
-    generate_broadcast_variable_type(id, Body);
+    generate_broadcast_variable_type(id->getTypeSummary(), Body);
     Body.push(")");
     Body.push("getBVmap().getBV(");
     Body.push(create_key_string(id));
@@ -75,7 +75,8 @@ void gm_gpslib::generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Bo
 
 
 void gm_gpslib::generate_broadcast_variable_type(
-    ast_id* id, gm_code_writer& Body, int reduce_op)
+    int type_id, gm_code_writer& Body, int reduce_op)
+
 {
     //--------------------------------------
     // Generate following string
@@ -86,10 +87,8 @@ void gm_gpslib::generate_broadcast_variable_type(
     //---------------------------------------------------
     // Type:  Long, Int, Double, Float, Bool
     //---------------------------------------------------
-    ast_typedecl* type = id->getTypeInfo();
-    if (type->is_primitive()) {
-        switch(type->get_typeid())
-        {
+     switch(type_id)
+     {
             case GMTYPE_INT:    Body.push("Int"); break;
             case GMTYPE_DOUBLE: Body.push("Double"); break;
             case GMTYPE_LONG: 
@@ -98,11 +97,7 @@ void gm_gpslib::generate_broadcast_variable_type(
             default:
                assert(false);
                break;
-        }
-    } else {
-        assert(false);
-    }
-
+      }
 
     //---------------------------------------------------
     // Reduce Op: Min, Max, Plus, Mult, And, Or, Any
@@ -130,13 +125,37 @@ void gm_gpslib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Bo
     Body.push(" = ");
 
     Body.push("((");
-    generate_broadcast_variable_type(id, Body, reduce_op_type);
+    generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
     Body.push(") ");
     Body.push("BVmap.getBV(");
     Body.push(create_key_string(id));
     Body.push("))");
     Body.pushln(".getValue();");
 }
+
+
+void gm_gpslib::generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& Body, int reduce_op_type)
+{
+    assert(a->is_target_scalar());
+    ast_id* id = a->get_lhs_scala();
+
+    Body.push("getBVMap().putBV(");
+    Body.push(create_key_string(id));
+    Body.push(",");
+    Body.push("new ");
+    generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);  // create BV by type
+
+    //---------------------------------------------------
+    // Initial Value: Reading of Id
+    //---------------------------------------------------
+    Body.push("(");
+    get_main()->generate_expr(a->get_rhs());
+    Body.push(")");
+    Body.pushln(");");
+}
+
+
+
 
 int gm_gpslib::get_type_size(ast_typedecl* t)
 {
