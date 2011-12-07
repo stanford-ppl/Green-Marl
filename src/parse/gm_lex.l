@@ -106,6 +106,8 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "+="      {MarkToken(); return T_PLUSEQ;}
 "++"      {MarkToken(); return T_PLUSPLUS;}
 "*="      {MarkToken(); return T_MULTEQ;}
+"&="      {MarkToken(); return T_ANDEQ;}
+"|="      {MarkToken(); return T_OREQ;}
 "min="    {MarkToken(); return T_MINEQ;}
 "max="    {MarkToken(); return T_MAXEQ;}
 "Sum"     {MarkToken(); return T_SUM;}

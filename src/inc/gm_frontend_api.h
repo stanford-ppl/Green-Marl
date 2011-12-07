@@ -229,6 +229,12 @@ extern "C" {
     inline static bool gm_is_strict_reduce_op(int t) {
         return (t==GMREDUCE_PLUS) || (t==GMREDUCE_MULT) || (t==GMREDUCE_MIN) || (t==GMREDUCE_MAX) || (t==GMREDUCE_AND) || (t==GMREDUCE_OR);
     }
+    inline static bool gm_is_numeric_reduce_op(int t) {
+        return (t==GMREDUCE_PLUS) || (t==GMREDUCE_MULT) || (t==GMREDUCE_MIN) || (t==GMREDUCE_MAX); 
+    }
+    inline static bool gm_is_boolean_reduce_op(int t) {
+        return (t==GMREDUCE_AND) || (t==GMREDUCE_OR);
+    }
 
 
     extern ast_node* GM_normal_assign(ast_node* lhs, ast_node* rhs);

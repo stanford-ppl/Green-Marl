@@ -1402,6 +1402,30 @@ bool ast_assign::local_typecheck(gm_scope* context)
     //-----------------------------------------------
     // check for reduce-op type-check
     //-----------------------------------------------
+    if (is_reduce_assign()) {
+        // SUM/MULT/MAX/MIN ==> numeirc
+        // AND/OR ==> boolean
+        if (gm_is_numeric_reduce_op(get_reduce_type()))
+        {
+            if (!gm_is_numeric_type(summary_lhs))
+            {
+                gm_type_error(GM_ERROR_REQUIRE_NUMERIC_REDUCE, 
+                     get_line(), get_col());
+                goto error_return;
+            }
+        }
+        else if (gm_is_boolean_reduce_op(get_reduce_type()))
+        {
+            if (!gm_is_boolean_type(summary_lhs))
+            {
+                gm_type_error(GM_ERROR_REQUIRE_BOOLEAN_REDUCE, 
+                     get_line(), get_col());
+                goto error_return;
+            }
+        }
+    }
+
+
     result = true;
     if (is_reduce_assign() || is_defer_assign()) {
 

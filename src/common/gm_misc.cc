@@ -117,6 +117,8 @@ const char* gm_get_reduce_string(int rop_type) {
                         (rop_type == GMREDUCE_MULT)? "*=" : 
                         (rop_type == GMREDUCE_MIN)? "min=" : 
                         (rop_type == GMREDUCE_MAX)? "max=" : 
+                        (rop_type == GMREDUCE_AND)? "&=" : 
+                        (rop_type == GMREDUCE_OR)?  "|=" : 
                         (rop_type == GMREDUCE_DEFER)? "<=" : 
                         "??";
     return opstr;

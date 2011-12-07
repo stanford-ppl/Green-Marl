@@ -45,7 +45,7 @@
 %token T_EMPTYLINE
 %token T_AND T_OR T_EQ T_NEQ T_LE T_GE
 %token T_IF  T_ELSE T_DO T_WHILE
-%token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS
+%token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS T_ANDEQ T_OREQ
 %token T_M_INF T_P_INF
 
 %token <text> ID
@@ -259,6 +259,8 @@
             | T_MULTEQ                      {$$ = GMREDUCE_MULT;}
             | T_MINEQ                       {$$ = GMREDUCE_MIN;}
             | T_MAXEQ                       {$$ = GMREDUCE_MAX;}
+            | T_ANDEQ                       {$$ = GMREDUCE_AND;}
+            | T_OREQ                        {$$ = GMREDUCE_OR;}
 
   rhs : expr                          { $$ = $1; }
 

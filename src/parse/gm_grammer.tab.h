@@ -92,13 +92,15 @@
      T_MINEQ = 308,
      T_MAXEQ = 309,
      T_PLUSPLUS = 310,
-     T_M_INF = 311,
-     T_P_INF = 312,
-     ID = 313,
-     INT_NUM = 314,
-     FLOAT_NUM = 315,
-     BOOL_VAL = 316,
-     NEG = 317
+     T_ANDEQ = 311,
+     T_OREQ = 312,
+     T_M_INF = 313,
+     T_P_INF = 314,
+     ID = 315,
+     INT_NUM = 316,
+     FLOAT_NUM = 317,
+     BOOL_VAL = 318,
+     NEG = 319
    };
 #endif
 
@@ -123,7 +125,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 127 "./parse/gm_grammer.tab.h"
+#line 129 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

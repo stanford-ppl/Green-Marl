@@ -108,6 +108,11 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2)
         case GM_ERROR_RETURN_MISMATCH:
             printf("Return type mismatch: required(%s), found(%s)\n",str1,str2 ); break;
 
+        case GM_ERROR_REQUIRE_BOOLEAN_REDUCE:
+            printf("Boolean type required for reduction\n",str1,str2 ); break;
+        case GM_ERROR_REQUIRE_NUMERIC_REDUCE:
+            printf("Numeric type required for reduction\n",str1,str2 ); break;
+
         default:
             printf("Unknown error 2\n"); break;
     }
