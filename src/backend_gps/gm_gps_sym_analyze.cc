@@ -18,6 +18,9 @@ class gps_check_symbol_scope_t : public gm_apply
         set_for_symtab(true);
         set_for_sent(true);
         set_separate_post_apply(true); 
+
+        master_context = true;
+        inner_context = false;
     }
 
     // pre apply
@@ -56,8 +59,9 @@ class gps_check_symbol_scope_t : public gm_apply
 
         bool is_scalar = !e->getType()->is_property();
         gps_syminfo* info = get_or_create_global_syminfo(e, is_scalar);
-        if (inner_context)
+        if (inner_context) {
             info->set_scope(GPS_SCOPE_INNER);
+        }
         else if (master_context)
             info->set_scope(GPS_SCOPE_GLOBAL);
         else

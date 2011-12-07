@@ -227,5 +227,8 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
         case GM_ERROR_GPS_MULTIPLE_GRAPH:
             printf("There should only one graph defined at the entry function\n");
             break;
+        case GM_ERROR_GPS_PULL_SYNTAX:
+            printf("Syntax is based in 'Pulling' and cannot be transformed into 'Pushing'\n");
+            break;
     }
 }

@@ -16,6 +16,9 @@ enum {
     GPS_SCOPE_INNER
 };
 
+// symbol usage info
+#define TAG_BB_USAGE            "GPS_TAG_BB"
+
 class gps_syminfo : public ast_extra_info
 {
     public:
@@ -67,5 +70,10 @@ class gps_syminfo : public ast_extra_info
         int  reduce_op_type;
         int  start_byte;
 };
+
+inline gps_syminfo* gps_get_global_syminfo(ast_id* i) {
+    return (gps_syminfo*) i->getSymInfo()->find_info(TAG_BB_USAGE);
+}
+
 
 #endif

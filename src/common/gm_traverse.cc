@@ -14,7 +14,9 @@ void ast_procdef::traverse(gm_apply*a, bool is_post, bool is_pre)
 
     if (is_pre) {
         if (for_symtab)
+        {
             apply_symtabs(a, PRE_APPLY);
+        }
         if (for_id)
             apply_id(a, PRE_APPLY);
     }
@@ -80,12 +82,14 @@ void ast_node::apply_symtabs(gm_apply* a, bool is_post)
         a->apply(get_symtab_var(), (int)GM_SYMTAB_ARG);
     }
     apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_ARG, is_post);
+
     if (post_apply) {
         a->apply2(get_symtab_field(), (int)GM_SYMTAB_FIELD);
     } else {
         a->apply(get_symtab_var(), (int)GM_SYMTAB_FIELD);
     }
     apply_symtab_each(a, get_symtab_field(), GM_SYMTAB_FIELD, is_post);
+
     if (post_apply) {
         a->apply2(get_symtab_proc(), (int)GM_SYMTAB_PROC);
     } else {

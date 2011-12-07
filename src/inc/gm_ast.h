@@ -494,7 +494,7 @@ class ast_typedecl : public ast_node {  // property or type
         ast_id* get_target_set_id()  {return target_set;}
 
         ast_typedecl* get_target_type() { assert(is_property()); assert(target_type!= NULL); return target_type;}
-        int getTypeSummary() { 
+        int getTypeSummary() {  // same as get type id
             return type_id;
         }
         void setTypeSummary(int s) { // override after typechecking

@@ -33,8 +33,8 @@
 //
 //  [enforce push-based algorithm]
 //  7. Inside inner loop, LHS should be
-//       (1) scalar defined inside inner loop or 
-//       (2) scalar defined globally or
+//       (1) a scalar defined at inner scope or 
+//       (2) a scalar defined at global scope or
 //       (3) property accessed through outside iterator
 //------------------------------------------------
 
@@ -137,21 +137,74 @@ public:
         _error = false;
         set_for_symtab(true);
         set_for_sent(true);
-        _graph_defined = false;
-    }
-    // pre apply
-    virtual bool apply(ast_sent *s) 
-    {
-        // there are only two levels now
+        set_separate_post_apply(true); 
 
-        return true;
+        _graph_defined = false;
+        master_context = true;
+        inner_context = false;
     }
 
     bool is_error() {return _error;}
 
+    virtual bool apply(ast_sent* s)
+    {
+        if (s->get_nodetype() == AST_FOREACH) 
+        {
+            if (master_context) {
+                master_context = false;
+            }
+            else {
+                inner_context = true;
+            }
+        }
+
+        // check LHS
+        if (inner_context && (s->get_nodetype() == AST_ASSIGN)) 
+        {
+                ast_assign* a = (ast_assign*) s;
+                if (a->is_target_scalar())
+                {
+                    ast_id* id = a->get_lhs_scala();
+
+                    // check LHS is defined in global or inner scope
+                    gps_syminfo* info = gps_get_global_syminfo(id);
+                    assert(info != NULL);
+
+                    if (info->get_scope() == GPS_SCOPE_OUTER) {
+                        gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, id->get_line(), id->get_col());
+                        _error = true;
+                    }
+                }
+                else
+                {
+                    ast_field* field = a->get_lhs_field();
+                    
+                    // check if LHS is through inner iterator
+                    ast_id* iter = field->get_first();
+                    if (gm_is_iteration_on_all_graph(iter->getTypeSummary())) {
+                        gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, iter->get_line(), iter->get_col());
+                        _error = true;
+                    }
+                }
+        }
+    }
+    virtual bool apply2(ast_sent *s) 
+    {
+        if (s->get_nodetype() == AST_FOREACH) {
+            if (inner_context) {
+                inner_context = false;
+            }
+            else {
+                master_context = true;
+            }
+        }
+        return true;
+    }
+
     // visit entry
     virtual bool apply(gm_symtab_entry* e, int symtab_type)
     {
+
         int type_id = e->getType()->get_typeid();
         if (gm_is_collection_type(type_id)) {
             gm_backend_error(
@@ -193,26 +246,33 @@ public:
 private:
     bool _error; 
     bool _graph_defined;
+    bool master_context;
+    bool inner_context;
 };
 
 
 bool gm_gps_gen::do_check_synthesizable()
 {
-    // current procedure
     assert(get_current_proc() != NULL);
     ast_procdef* proc = get_current_proc();
 
+    //----------------------------------
     // check condition (1) to (4)
+    //----------------------------------
     gps_check_synth_t T;
     gm_traverse_sents_pre_post(proc, &T);
     if (T.is_error()) return false; // return is_okay
 
-    // scope analysis
+    //----------------------------------
+    // (re-do) scope analysis
+    //----------------------------------
     do_analyze_symbol_scope(proc);
 
-    // check condition (5) to (6) 
+    //----------------------------------
+    // check condition (5) to (7) 
+    //----------------------------------
     gps_check_synth2_t T2;
-    proc->traverse(&T2, true, false);
+    proc->traverse(&T2, true, true);
     if (!T2.is_graph_defined()) 
     {
         gm_backend_error(

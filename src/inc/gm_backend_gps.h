@@ -186,8 +186,6 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         bool _is_master_gen;
 };
 
-// symbol usage info
-#define TAG_BB_USAGE            "TAG_BB"
 
 
 
