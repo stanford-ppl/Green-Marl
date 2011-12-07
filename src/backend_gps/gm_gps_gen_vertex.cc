@@ -14,6 +14,7 @@ void gm_gps_gen::do_generate_vertex()
     set_master_generate(false);
     do_generate_vertex_class();
     do_generate_vertex_property_class();
+    do_generate_message_class();
 }
 
 
@@ -51,6 +52,22 @@ void gm_gps_gen::do_generate_vertex_property_class()
   Body.pushln("} // end of vertex-data"); // end of class
   Body.NL();
 
+}
+
+void gm_gps_gen::do_generate_message_class()
+{
+    Body.pushln("//----------------------------------------------");
+    Body.pushln("// Message Data (For Temporary)");
+    Body.pushln("//----------------------------------------------");
+
+   char temp[1024];
+   ast_procdef* proc = get_current_proc(); assert(proc != NULL);
+   sprintf(temp, 
+           "public static class MessageData extends IntWritable {"
+           ); 
+    Body.pushln(temp);
+    Body.pushln("} // end of message-data");
+    Body.NL();
 }
 
 void gm_gps_gen::do_generate_vertex_class()

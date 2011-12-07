@@ -119,6 +119,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void do_generate_vertex();
         void do_generate_vertex_property_class();
         void do_generate_vertex_class();
+        void do_generate_message_class();
         void do_generate_vertex_states();
         void do_generate_vertex_state_body(gm_gps_basic_block *b);
 
