@@ -52,7 +52,8 @@ SRCS2 =\
        gm_cpp_opt.cc gm_cpp_opt_defer.cc gm_cpp_opt_entry_exit.cc\
        gm_cpp_opt_reduction.cc \
        gm_cpplib_gen.cc gm_cpplib_opt.cc\
-       gm_gps_create_stages.cc gm_gps_check_synthesizable.cc\
+       gm_gps_create_stages.cc \
+       gm_gps_check_canonical.cc gm_gps_check_synthesizable.cc\
        gm_gps_opt_simplify_reduce_rhs.cc\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
        gm_gps_bb_merge.cc gm_gps_gen_master.cc gm_gps_gen_vertex.cc\

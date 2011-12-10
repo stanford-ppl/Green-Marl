@@ -216,7 +216,7 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
             printf("Only parallel iteration is avaiable\n");
             break;
         case GM_ERROR_GPS_NBR_LOOP_INSIDE_WHILE:
-            printf("Inner loop cannot be inside extra loop\n");
+            printf("Inner loop cannot be inside extra loop or if statement.\n");
             break;
         case GM_ERROR_GPS_UNSUPPORTED_COLLECTION:
             printf("%s is an unsupported collection type\n", str1);
@@ -229,6 +229,12 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
             break;
         case GM_ERROR_GPS_PULL_SYNTAX:
             printf("Syntax is based in 'Pulling' and cannot be transformed into 'Pushing'\n");
+            break;
+        case GM_ERROR_GPS_NBR_LOOP_TOO_DEEP:
+            printf("Loop depth too deep\n");
+            break;
+        case GM_ERROR_GPS_MULTIPLE_INNER_LOOP:
+            printf("There can be only one inner loop\n");
             break;
     }
 }

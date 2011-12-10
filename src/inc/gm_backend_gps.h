@@ -137,6 +137,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         bool do_make_symbol_summary();
         bool do_analyze_symbol_scope(ast_procdef* p);
         bool do_simplify_reduce(ast_procdef* p);
+        bool do_check_canonical(ast_procdef* proc);
     public:
         gm_code_writer& get_code() {return Body;}
 

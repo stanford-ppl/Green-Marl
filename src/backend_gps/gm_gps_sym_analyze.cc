@@ -18,9 +18,7 @@ class gps_check_symbol_scope_t : public gm_apply
         set_for_symtab(true);
         set_for_sent(true);
         set_separate_post_apply(true); 
-
-        master_context = true;
-        inner_context = false;
+        foreach_depth = 0;
     }
 
     // pre apply
@@ -29,12 +27,7 @@ class gps_check_symbol_scope_t : public gm_apply
         // there are only two levels now
         if (s->get_nodetype() == AST_FOREACH) 
         {
-            if (master_context) {
-                master_context = false;
-            }
-            else {
-                inner_context = true;
-            }
+            foreach_depth ++;
         }
         return true;
     }
@@ -43,12 +36,7 @@ class gps_check_symbol_scope_t : public gm_apply
     virtual bool apply2(ast_sent *s) 
     {
         if (s->get_nodetype() == AST_FOREACH) {
-            if (inner_context) {
-                inner_context = false;
-            }
-            else {
-                master_context = true;
-            }
+            foreach_depth --;
         }
         return true;
     }
@@ -56,6 +44,9 @@ class gps_check_symbol_scope_t : public gm_apply
     {
         if (e->getType()->is_graph() || e->getType()->is_node_edge_iterator()) 
             return true;
+
+        bool inner_context = (foreach_depth > 1);
+        bool master_context = (foreach_depth == 0);
 
         bool is_scalar = !e->getType()->is_property();
         gps_syminfo* info = get_or_create_global_syminfo(e, is_scalar);
@@ -70,8 +61,8 @@ class gps_check_symbol_scope_t : public gm_apply
 
 
 private:
-    bool inner_context;
-    bool master_context; 
+    int foreach_depth ;
+
     gps_syminfo* get_or_create_global_syminfo(gm_symtab_entry* sym, bool is_scalar)
     {
         ast_extra_info* info = sym->find_info(TAG_BB_USAGE);

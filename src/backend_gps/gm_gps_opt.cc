@@ -37,16 +37,19 @@ bool gm_gps_gen::do_local_optimize()
         {
             set_current_proc(*it);
             switch(i) {
-                case 0: // simplify reduce
+                case 0: // [temporary] simplify reduce
                     do_simplify_reduce(*it);
                     break;
                 case 1: // Check compilable
                     is_okay = do_check_synthesizable(); 
                     break;
-                case 2: // Create Stages
+                case 2:
+                    is_okay = do_check_canonical(*it);
+                    break;
+                case 3: // Create Stages
                     do_create_stages();
                     break;
-                case 3: // Analyze symbols
+                case 4: // Analyze symbols
                     is_okay = do_analyze_symbols();
                     break;
 

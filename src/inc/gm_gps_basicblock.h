@@ -15,7 +15,7 @@ enum {
 
 class gm_gps_basic_block {
     public:
-    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type), after_vertex(false) {}
+    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type), after_vertex(false),inner_loop(false) {}
     virtual ~gm_gps_basic_block() {
         std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
         for(I=symbols.begin(); I!=symbols.end();I++)
@@ -80,9 +80,15 @@ class gm_gps_basic_block {
 
     bool is_vertex() {return (get_type() == GM_GPS_BBTYPE_BEGIN_VERTEX);}
 
+    bool have_inner_loop() {return inner_loop == NULL;}
+    void set_inner_loop(ast_foreach* fe) {inner_loop = fe;}
+    ast_foreach* get_inner_loop() {return inner_loop;}
+
 private:
     std::list<ast_sent*>::iterator I;
     std::list<ast_sent*> sents;
+
+    ast_foreach* inner_loop;    // for vertex computation only;
 
     std::vector<gm_gps_basic_block*> exits;
     std::vector<gm_gps_basic_block*> entries;
