@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
     test_backedge(g);
     printf("saving to file = %s\n", argv[3]);fflush(stdout);
-	g->storeBinary(argv[3]);
+	g->store_binary(argv[3]);
 
 	delete g;
 }
