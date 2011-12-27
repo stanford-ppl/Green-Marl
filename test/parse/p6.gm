@@ -10,12 +10,6 @@ Proc T(G: Graph, s: Node(G))
     }
 
     // test of basic bfs
-    InRBFS(t: G.Nodes To s)
-    {
-        y = 0;
-    }
-
-    // test of basic bfs
     InBFS(t: G.Nodes ; s)
     {
         z = 0;

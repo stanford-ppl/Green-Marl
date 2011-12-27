@@ -1,0 +1,6 @@
+Procedure foo(G: Graph)
+{
+  Node(G) y;
+  G.X = 1;
+  y.X = 1;
+}

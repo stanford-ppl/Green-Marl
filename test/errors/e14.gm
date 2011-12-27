@@ -1,0 +1,13 @@
+
+Procedure foo()
+{
+    Graph G;
+    Int x;
+    Node(G) N;
+    Foreach (t: G.Nbrs) {       // G.Nbrs is error
+        x = 0;
+    }
+    Foreach (t: N.Nodes) {      // N.Nodes is error
+        x = 0;
+    }
+}

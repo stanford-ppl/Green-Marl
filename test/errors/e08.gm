@@ -1,0 +1,15 @@
+Procedure foo()
+{
+    Int x,y,z;
+    Bool A,B,C;
+    Graph G;
+
+    A = -B; // type error
+    x = !z; // type error
+    z = x + C; // type error
+    z = C + x; // type error
+    A = x && B; // type error
+    A = C && x; // type error
+    B = (A < x);
+    B = (x >= G);
+}

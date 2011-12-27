@@ -1,0 +1,9 @@
+Procedure foo(G: Graph)
+{
+    Int x;
+    {
+        Int x;
+    }
+
+}
+

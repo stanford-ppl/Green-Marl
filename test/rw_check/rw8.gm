@@ -1,5 +1,5 @@
 
-// Test of write-reduce
+// Test of write-reduce error
 Proc P(G: Graph, A,B: N_P<Int>(G))
 {
     Foreach(t:G.Nodes) {
@@ -10,7 +10,7 @@ Proc P(G: Graph, A,B: N_P<Int>(G))
     }
 }
         
-// Test of read-reduce
+// Test of read-reduce error
 Proc Q(G: Graph, A,B: N_P<Int>(G))
 {
     Foreach(t:G.Nodes) {

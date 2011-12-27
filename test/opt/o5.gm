@@ -1,15 +1,26 @@
 
 // Test of hoist property-decl
-Proc P(G:Graph, A:N_P<Int>(G), Y:Int)
-{
-    Int X = 0;
+Proc prop_hoist(G:Graph)
+{  // #0
+    Int a,b,c,d,e;
 
-    While (X >= 0) {
-        N_P<Bool>(G) B;
+    While(a > 0) {
+        N_P<Int>(G) A;     // --> 0
 
-        Foreach(t:G.Nodes) {
-            If (t.A > 0) t.B = True;
+        While (b > 0) { 
+            N_P<Int>(G) B; // --> 0
+
+            If (c > 0) {   // #1
+                N_P<Int>(G) C; 
+
+                While (d > 0) {
+                    N_P<Int>(G) D;  // -> 1
+                }
+            }
+
+            While(e>0) {
+               N_P<Int>(G) E; // --> 0
+            }
         }
     }
-
 }

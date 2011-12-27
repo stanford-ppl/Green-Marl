@@ -1,0 +1,20 @@
+Proc Foo(y:Int)
+{
+    //test of variable re-name
+    // following x's will be re-named
+    If (y>0) {
+
+        If (y> 1) {
+
+            If (y>2) {
+
+                Int x = 1;
+            }
+        }
+
+        Int x= 2;
+
+    }
+
+    Int x=3;
+}

@@ -1,0 +1,10 @@
+// Test of BFS
+Proc P(G:Graph, A,B: N_P<Int>(G), s: Node(G))
+{
+    InBFS(t: G.Nodes ; s)
+    {
+        Foreach(u: t.UpNbrs) {
+            t.A += u.B @ u;
+        }
+    }
+}

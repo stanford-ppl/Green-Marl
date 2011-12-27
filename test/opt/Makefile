@@ -9,7 +9,8 @@ OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=_rep.gm))
 all: $(OUTS)
 
 $(ODIR)/%_rep.gm: %.gm
-	$(COMP) $(FLAGS) $< > $@
+	cat $< > $@
+	$(COMP) $(FLAGS) $< >> $@
 
 clean: 
 	\rm -rf $(ODIR)/*.gm *.cc *.h

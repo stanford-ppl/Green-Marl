@@ -1,0 +1,7 @@
+Procedure foo(G1, G2:Graph)
+{
+    Node(G1) Y;
+    Node(G2) X;
+
+    Y = X;
+}

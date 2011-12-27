@@ -1,0 +1,11 @@
+Procedure foo()
+{
+    Int x;
+    Bool y;
+    Graph G;
+    Node(G) n;
+
+    y = (x == y);
+    y = (x == G);
+    y = (x == n);
+}

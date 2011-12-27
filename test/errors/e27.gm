@@ -1,0 +1,9 @@
+Proc p() : Int {
+    Return True;  // ERROR_RETURN_MISMATCH
+}
+Proc q() : Int {
+    Return ;   // ERROR_NO_VOID_RETURN
+}
+Proc r() {
+    Return 1; // ERROR_RETURN_FOR_VOID
+}
