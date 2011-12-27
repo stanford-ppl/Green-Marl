@@ -38,11 +38,11 @@ protected:
     gm_check_if_constant_t is_const_check;
 };
 
-bool gm_independent_optimize::do_hoist_assign(ast_procdef* p)
+//bool gm_independent_optimize::do_hoist_assign(ast_procdef* p)
+void gm_ind_opt_hoist_assign::process(ast_procdef* p)
 {
     gm_hoist_assign_up_t T1;
     gm_traverse_sents(p, &T1, GM_POST_APPLY);   // hoist const defs up
 
     // host final defs down
-    return true;
 }

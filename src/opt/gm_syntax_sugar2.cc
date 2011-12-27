@@ -384,7 +384,8 @@ public:
 
 
 
-bool gm_independent_optimize::do_regularize_syntax(ast_procdef* p)
+//bool gm_independent_optimize::do_regularize_syntax(ast_procdef* p)
+void gm_ind_opt_syntax_sugar2::process(ast_procdef* p)
 {
     //1. Group Assign -->  Foreach
     ss2_group_assign ga;
@@ -407,7 +408,6 @@ bool gm_independent_optimize::do_regularize_syntax(ast_procdef* p)
     // Should re-do rw-analysis
     gm_redo_rw_analysis(p->get_body()); 
 
-    return true;
 }
 
 static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_type, ast_sent* curr, ast_expr* default_val)

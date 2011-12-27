@@ -67,7 +67,7 @@ void gm_begin_minor_compiler_stage(int m, const char* desc)
     gm_stage_minor = m;
     gm_minor_desc = desc;
     if (OPTIONS.get_arg_int(GMARGFLAG_VERB_LEV) > 0) {
-        printf("...Stage %d.%d: %s.%s\n", gm_stage_major, gm_stage_minor, gm_major_desc, gm_minor_desc);
+        printf("...Stage %d.%d: %s.[%s]\n", gm_stage_major, gm_stage_minor, gm_major_desc, gm_minor_desc);
         fflush(stdout);
     }
 
@@ -79,7 +79,7 @@ void gm_end_minor_compiler_stage()
 
     int stop_major = OPTIONS.get_arg_int(GMARGFLAG_STOP_MAJOR);
     if ((stop_major == gm_stage_major) && (stop_minor == gm_stage_minor)) {
-        printf("...Stopping compiler after %s.%s\n", gm_major_desc, gm_minor_desc);
+        printf("...Stopping compiler after %s.[%s]\n", gm_major_desc, gm_minor_desc);
         do_compiler_action_at_stop();
         exit(EXIT_SUCCESS);
     }

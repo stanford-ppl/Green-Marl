@@ -68,10 +68,11 @@ private:
 
 };
 
-bool gm_frontend::do_typecheck_step4_resolve_inf(ast_procdef* p)
+//bool gm_frontend::do_typecheck_step4_resolve_inf(ast_procdef* p)
+void gm_fe_typecheck_step4::process(ast_procdef* p)
 {
     gm_typechecker_stage_4 T(p->get_return_type());
     p->traverse_pre(&T);  
     //return T.is_okay();
-    return true;
+    //return true;
 }

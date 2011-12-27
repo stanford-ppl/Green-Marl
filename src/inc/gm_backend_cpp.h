@@ -4,6 +4,9 @@
 #include "gm_backend.h"
 #include "gm_misc.h"
 #include "gm_code_writer.h"
+#include "gm_compile_step.h"
+#include "gm_backend_cpp_opt_steps.h"
+#include "gm_backend_cpp_gen_steps.h"
 
 #include <list>
 
@@ -67,13 +70,22 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
     public:
         gm_cpp_gen() : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL),_target_omp(false), _pblock(false), gm_code_generator(Body) {
             glib = new gm_cpplib(this);
+            init();
         }
         gm_cpp_gen(gm_cpplib* l) : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL), _target_omp(false),_pblock(false), gm_code_generator(Body) {
+            assert(l != NULL);
             glib = l;
             glib->set_main(this);
-            assert(l != NULL);
+            init();
+        }
+    protected:
+        void init() {
+            init_opt_steps();
+            init_gen_steps();
+            build_up_language_voca();
         }
 
+    public:
         virtual ~gm_cpp_gen() {close_output_files();}
         virtual void setTargetDir(const char* dname);
         virtual void setFileName(const char* fname);
@@ -81,39 +93,26 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         virtual bool do_local_optimize_lib();
         virtual bool do_local_optimize();
         virtual bool do_generate();
-        virtual void build_up_language_voca();
+        virtual void do_generate_begin();
+        virtual void do_generate_end();
 
-
-        virtual void add_local_varname(const char* local) {
-            // do not add if duplicated
-            std::list<const char*>::iterator I;
-            for(I=local_names.begin(); I!=local_names.end(); I++) {
-                if (gm_is_same_string(*I, local)) return;
-            }
-            local_names.push_back(gm_strdup(local));
-            
-        }
-        virtual void clear_local_varnames() {
-            std::list<const char*>::iterator I;
-            for(I=local_names.begin(); I!=local_names.end(); I++) {
-                delete [] *I;
-            }
-            local_names.clear();
-         }
+        /*
+         */
 
     protected:
+        std::list<gm_compile_step*> opt_steps;
+        std::list<gm_compile_step*> gen_steps;
 
-        virtual bool do_generate_main();
-        virtual bool do_mark_parallel_sents();
-        virtual bool do_restore_vardecl();
+        virtual void build_up_language_voca();
+        virtual void init_opt_steps();
+        virtual void init_gen_steps();
 
         virtual void prepare_parallel_for();
-        //virtual void generate_parallel_for_header(ast_sent* s);
         int _ptr, _indent;
 
         gm_cpplib* get_lib() {return glib;}
 
-        std::list<const char*> local_names;
+        //std::list<const char*> local_names;
 
     public:
         virtual void set_target_omp(bool b) {
@@ -134,9 +133,6 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         FILE *f_body;
         bool open_output_files();
         void close_output_files();
-        ast_procdef* proc;
-        void set_current_proc(ast_procdef* p) {proc = p;}
-        ast_procdef* get_current_proc() {return proc;}
 
         gm_cpplib* glib; // graph library
 
@@ -185,14 +181,6 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         bool _pblock;
 
     protected:
-        bool sanitize_id(ast_procdef* proc);
-        bool add_property_cleanup(ast_procdef* proc);
-        bool deferred_write(ast_procdef* proc);
-        bool add_entry_exit(ast_procdef* proc);
-        bool select_parallel(ast_procdef* proc);
-        bool optimize_reduction(ast_procdef* p);
-
-
         void generate_bfs_top();
         void generate_bfs_init(ast_bfs* bfs);
         void generate_bfs_finish(ast_bfs* bfs);
@@ -208,6 +196,8 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         const char* i_temp;  // temporary variable name
         char temp[2048];
 };
+
+extern gm_cpp_gen CPP_BE;
 
 //---------------------------------------------------
 // (NOPS) for CPP/CPP_LIB
@@ -260,6 +250,7 @@ public:
     std::list<gm_symtab_entry*> new_s;
     std::list<int> reduce_op;
 };
+
 
 
 

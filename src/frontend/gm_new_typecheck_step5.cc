@@ -217,10 +217,11 @@ private:
 };
 
 
-bool gm_frontend::do_typecheck_step5_check_assign(ast_procdef* p)
+//bool gm_frontend::do_typecheck_step5_check_assign(ast_procdef* p)
+void gm_fe_typecheck_step5::process(ast_procdef* p)
 {
     gm_typechecker_stage_5 T;
     T.set_return_type(p->get_return_type());
-    p->traverse(&T, true, false);  // post-apply
-    return T.is_okay();
+    p->traverse_post(&T);
+    set_okay(T.is_okay());
 }

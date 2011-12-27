@@ -1331,6 +1331,7 @@ class ast_bfs: public ast_sent
         ast_id*        get_root()        {return root;}
         bool           is_transpose()    {return use_transpose;}
 
+        void           set_iterator2(ast_id* id) {assert(iter2 == NULL); iter2 = id;}
         void           set_filter(ast_expr* e)  {if (e!=NULL) e->set_parent(this); filter = e;}
         void           set_fbody(ast_sentblock* b) {f_body = b;}
         virtual void reproduce(int id_level);

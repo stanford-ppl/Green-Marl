@@ -337,9 +337,9 @@ bool gm_typechecker_stage_3::check_uop(ast_expr* e)
     return false;
 };
 
-bool gm_frontend::do_typecheck_step3_resolve_expressions(ast_procdef* p)
+void gm_fe_typecheck_step3::process(ast_procdef* p)
 {
     gm_typechecker_stage_3 T;
-    p->traverse(&T, true, false);  // post-apply
-    return T.is_okay();
+    p->traverse_post(&T);  // post-apply
+    set_okay(T.is_okay());
 }

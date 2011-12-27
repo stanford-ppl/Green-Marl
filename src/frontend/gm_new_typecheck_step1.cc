@@ -561,6 +561,7 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
         is_okay = gm_declare_symbol(curr_sym, iter2, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE) && is_okay;
         delete type;
         delete [] tname;
+        bfs->set_iterator2(iter2);
         break;
     }
 
@@ -696,9 +697,10 @@ bool gm_typechecker_stage_1::find_symbol_field(ast_field* f)
    return is_okay;
 }
 
-bool gm_frontend::do_typecheck_step1_create_symbol_table(ast_procdef* p)
+//bool gm_frontend::do_typecheck_step1_create_symbol_table(ast_procdef* p)
+void gm_fe_typecheck_step1::process(ast_procdef* p)
 {
     gm_typechecker_stage_1 T;
-    p->traverse(&T, false, true);  // pre-apply
-    return T.is_okay();
+    p->traverse_pre(&T);  // pre-apply
+    set_okay(T.is_okay());
 }

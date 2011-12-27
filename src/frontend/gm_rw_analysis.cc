@@ -984,11 +984,12 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a)
 // main entry to rw_analysis.
 // (procedure locally) gather rw info and save it into each ast node.
 //----------------------------------------------------------------------
-bool gm_frontend::do_rw_analysis(ast_procdef* p)
+//bool gm_frontend::do_rw_analysis(ast_procdef* p)
+void gm_fe_rw_analysis::process(ast_procdef* p)
 {
     gm_rw_analysis RWA;
     gm_traverse_sents(p, &RWA, GM_POST_APPLY); // post apply
-    return RWA.is_success();
+    set_okay(RWA.is_success());
 }
 
 //===========================================================================

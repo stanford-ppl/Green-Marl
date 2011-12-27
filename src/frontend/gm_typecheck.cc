@@ -103,10 +103,12 @@ bool gm_is_compatible_type_for_eq(int t1, int t2)       {return gm_check_compati
 bool gm_is_compatible_type_for_less(int t1, int t2)     {return gm_check_compatible_types(t1, t2, FOR_LESS);}
 bool gm_is_compatible_type_for_biop(int t1, int t2)     {return gm_check_compatible_types(t1, t2, FOR_BOP);}
 
+/*
 bool gm_frontend::do_type_resolve(ast_procdef* p)
 {
     return true;
 }
+*/
 
 
 //=========================================================================

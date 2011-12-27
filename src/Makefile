@@ -41,6 +41,7 @@ SRCS2 =\
        gm_add_symbol.cc gm_resolve_nc.cc \
        gm_resolve_inf_size.cc \
        gm_parallel_helper.cc\
+       gm_apply_compiler_stage.cc\
        gm_new_sents_after_tc.cc gm_merge_sentblock.cc\
        gm_reduce_error_check.cc\
        gm_prepare_genname.cc\
@@ -57,11 +58,20 @@ SRCS2 =\
        gm_syntax_sugar2.cc gm_flip_be.cc\
        gm_ind_opt.cc gm_hoist_assign.cc gm_hoist_foreach.cc\
        gm_merge_loops.cc gm_moveup_propdecl.cc\
-	   gm_cpp_gen.cc gm_cpp_gen_bfs.cc gm_cpp_opt_parallel.cc\
-       gm_cpp_opt.cc gm_cpp_opt_defer.cc gm_cpp_opt_entry_exit.cc\
-       gm_cpp_opt_reduction.cc \
-       gm_cpp_name_sanitize.cc \
-       gm_cpplib_gen.cc gm_cpplib_opt.cc\
+       gm_cpp_opt.cc\
+       gm_cpp_opt_select_par.cc\
+       gm_cpp_opt_defer.cc \
+       gm_cpp_opt_reduce_scalar.cc \
+	   gm_cpp_gen.cc \
+       gm_cpp_gen_bfs.cc \
+       gm_cpp_gen_buildup_language_voca.cc\
+       gm_cpp_gen_entry_exit.cc\
+       gm_cpp_gen_sanitize_name.cc \
+       gm_cpp_gen_temp_cleanup.cc\
+       gm_cpp_gen_main.cc\
+       gm_cpp_gen_mark_parallel.cc\
+       gm_cpplib_gen.cc \
+       gm_cpplib_opt.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_canonical.cc gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc gm_gps_bb_merge.cc\

@@ -29,7 +29,7 @@ public:
     bool is_need;
 };
 
-bool gm_cpp_gen::add_entry_exit(ast_procdef* proc)
+void gm_cpp_gen_entry_exit::process(ast_procdef* proc)
 {
     //--------------------------------------
     // Add BFS definition at the entry
@@ -59,5 +59,4 @@ bool gm_cpp_gen::add_entry_exit(ast_procdef* proc)
         }
     }
 
-    return true;
 }

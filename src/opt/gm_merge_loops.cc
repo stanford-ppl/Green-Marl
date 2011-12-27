@@ -207,9 +207,13 @@ protected:
 };
 
 
-bool gm_independent_optimize::do_merge_foreach(ast_procdef* proc) 
+//bool gm_independent_optimize::do_merge_foreach(ast_procdef* proc) 
+void gm_ind_opt_loop_merge::process(ast_procdef* proc)
 {
     gm_merge_loop_t T;
     T.do_loop_merge(proc->get_body());
-    return true;
+
+    // re-do rw-analysis (should be done already inside loop_merge. but to be sure...)
+    gm_redo_rw_analysis(proc->get_body()); 
+    //return true;
 }

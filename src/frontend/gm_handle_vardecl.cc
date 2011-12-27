@@ -29,25 +29,6 @@ public:
             ast_vardecl* v = (ast_vardecl*) z;
 
             /*
-            bool is_scalar = !(v->get_type()->is_property());
-            //-----------------------------------------
-            // 2. iterate from the beginning up to v.
-            //    and resolve name conflict
-            //-----------------------------------------
-            std::list<ast_sent*> sents2 = sb->get_sents(); // need a copy
-            for(j = sents.begin(); j!= sents.end(); j++)  {
-                ast_sent* s = *j;
-                if (s==v) break;
-                if (s->get_nodetype() == AST_VARDECL)
-                    continue;
-
-                ast_idlist* idl = v->get_idlist();
-                for(int i=0;i<idl->get_length();i++) {
-                    gm_symtab_entry *e = idl->get_item(i)->getSymInfo();
-                    assert(e!=NULL);
-                    //gm_resolve_name_conflict(s, e, is_scalar);
-                }
-            }
             */
 
             stack.push_back(v);
@@ -115,14 +96,15 @@ public:
 };
 
 
-void gm_frontend::remove_vardecl(ast_procdef* p)
+void gm_fe_remove_vardecl::process(ast_procdef* p)
 {
-    vardecl_removed = true; // hack
     remove_vardecl_t T;
     T.do_removal(p);
 
     rename_all_t T2;
     T2.do_rename_all_potential(p);
+
+    FE.set_vardecl_removed(true);
 }
 
 
@@ -134,6 +116,7 @@ public:
     virtual bool apply(ast_sent* b)
     {
         if (b->get_nodetype() != AST_SENTBLOCK) return true;
+
         ast_sentblock* sb = (ast_sentblock*) b;
         gm_symtab* V = sb->get_symtab_var();
         gm_symtab* F = sb->get_symtab_field();
@@ -142,7 +125,7 @@ public:
 
         ast_sent* top = NULL;
         //-------------------------------------
-        // Add vardecls after any 'NOP'
+        // Add vardecls after all 'NOP's
         //-------------------------------------
         std::list<ast_sent*> &sents = sb->get_sents();
         std::list<ast_sent*>::iterator ii;
@@ -196,16 +179,17 @@ public:
     }
 };
 
-void gm_frontend::restore_vardecl(ast_procdef* p)
+void gm_fe_restore_vardecl::process(ast_procdef* p)
 {
-    vardecl_removed = false;
+    FE.set_vardecl_removed(false);
     restore_vardecl_t T;
     T.do_restore(p);
 }
+
 void gm_frontend::restore_vardecl_all()
 {
-    std::vector<ast_procdef*>::iterator i;
-    for(i=procs.begin();i != procs.end(); i++) 
-        restore_vardecl(*i);
+    std::list<gm_compile_step*> L;
+    gm_apply_all_proc(gm_fe_restore_vardecl::get_factory());
+
 }
 

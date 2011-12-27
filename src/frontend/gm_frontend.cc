@@ -457,6 +457,7 @@ ast_node* GM_new_call_sent(ast_node* n, bool is_builtin)
 //------------------------------------------------
 gm_frontend::gm_frontend() : curr_proc(NULL), curr_idlist(NULL),vardecl_removed(false) 
 {
+    init_steps();
     init_op_type_rules(); 
 }
 
@@ -507,6 +508,39 @@ void gm_frontend::dump_tree() {
 // local frontend process
 //--------------------------------------------------------
 
+void gm_frontend::init_steps()
+{
+    std::list<gm_compile_step*>& LIST = this->local_steps;
+
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_syntax_sugar));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step1));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step2));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step3));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step4));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step5));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_fixup_bound_symbol));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_rw_analysis));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_reduce_error_check));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_rw_analysis_check2));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_remove_vardecl));
+}
+
+bool gm_frontend::do_local_frontend_process()
+{
+    // create information objects for all procedures
+    std::vector<ast_procdef*>::iterator I;
+    for(I=procs.begin();I!=procs.end();I++)
+    {
+        ast_procdef* p = *I;
+        proc_info[p] = new gm_procinfo(p);
+    }
+
+    // now apply frontend steps
+    return gm_apply_compiler_stage(local_steps);
+}
+
+
+/*
 bool gm_frontend::do_local_frontend_process()
 {
    const char* STEP_NAMES[]= {
@@ -562,3 +596,4 @@ bool gm_frontend::do_local_frontend_process()
    }
    return is_okay; // returns is_okay
 }
+*/

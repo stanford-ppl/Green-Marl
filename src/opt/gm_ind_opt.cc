@@ -7,6 +7,26 @@
 //--------------------------------------------
 // backend-independnt transformation 
 //--------------------------------------------
+#include "gm_ind_opt_steps.h"
+
+void gm_independent_optimize::init_steps()
+{
+    std::list<gm_compile_step*>& LIST = this->opt_steps;
+
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_flip_edge_bfs));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_syntax_sugar2));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_hoist_assign));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_hoist_foreach));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_loop_merge));
+}
+
+bool gm_independent_optimize::do_local_optimize()
+{
+    return gm_apply_compiler_stage(opt_steps);
+}
+
+/*
 bool gm_independent_optimize::do_local_optimize()
 {
    const char* STEP_NAMES[]= {
@@ -53,4 +73,4 @@ bool gm_independent_optimize::do_local_optimize()
    }
    return is_okay; // returns is_okay (Must be okay)
 }
-
+*/

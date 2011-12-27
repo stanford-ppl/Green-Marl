@@ -6,11 +6,7 @@
 #include "gm_transform_helper.h"
 
 #define HELPERS "gm_helper_functions.h"
-#define SET_INC "gm_helper_functions.h"
 
-//--------------------------------------------------------------
-// A Back-End for Single Threaded C++ execution
-//--------------------------------------------------------------
 void gm_cpp_gen::setTargetDir(const char* d)
 {
     assert(d!=NULL);
@@ -29,10 +25,6 @@ void gm_cpp_gen::setFileName(const char* f)
     strcpy(fname, f);
 }
 
-
-//=======================================================================================
-// Text Generation
-//=======================================================================================
 bool gm_cpp_gen::open_output_files()
 {
     char temp[1024];
@@ -86,68 +78,8 @@ void gm_cpp_gen::add_ifdef_protection(const char* s)
     Header.NL();
 }
 
-bool gm_cpp_gen::do_generate()
-{
-    //-----------------------------------
-    // source name
-    //-----------------------------------
-    if (!open_output_files())
-        return false;
 
-    const char* NAMES[]= {
-        "[Reviving Vardecl]",
-        "[Mark Parallel Sentences]",
-        "[Generting Codes]"};
-
-    const int COUNT = sizeof(NAMES)/sizeof(const char*);
-    for(int i=0;i<COUNT;i++) {
-        gm_begin_minor_compiler_stage(i +1, NAMES[i]);
-        switch(i) {
-            case 0: 
-                do_restore_vardecl(); break;
-            case 1 :
-                do_mark_parallel_sents(); break;
-            case 2:
-                do_generate_main(); break;
-
-            case COUNT:
-            default:
-                assert(false);
-        }
-
-        gm_end_minor_compiler_stage();
-    }
-    return true;
-}
-
-bool gm_cpp_gen::do_restore_vardecl()
-{
-    FE.prepare_proc_iteration(); 
-    ast_procdef* proc;
-    while ((proc=FE.get_next_proc()) != NULL)
-    {
-        FE.restore_vardecl(proc);
-        proc = FE. get_next_proc(); 
-    }
-
-    return true;
-}
-
-bool gm_cpp_gen::do_mark_parallel_sents()
-{
-    FE.prepare_proc_iteration(); 
-    ast_procdef* proc;
-    while ((proc=FE.get_next_proc()) != NULL)
-    {
-        bool entry_is_seq = true;
-        gm_mark_sents_under_parallel_execution(proc->get_body(), entry_is_seq);
-        proc = FE. get_next_proc(); 
-    }
-
-    return true;
-}
-
-bool gm_cpp_gen::do_generate_main()
+void gm_cpp_gen::do_generate_begin()
 {
     //----------------------------------
     // header
@@ -164,31 +96,21 @@ bool gm_cpp_gen::do_generate_main()
         add_include("omp.h", Header);
     add_include(HELPERS, Header, false);
     add_include(get_lib()->get_header_info(), Header, false);
-    add_include(SET_INC, Header, false);
     Header.NL();
 
     //----------------------------------------
-    // .cc
+    // Body
     //----------------------------------------
     sprintf(temp, "%s.h", fname);
     add_include(temp, Body, false);
     Body.NL();
+}
 
-    FE.prepare_proc_iteration(); 
-    ast_procdef* proc;
-    while ((proc=FE.get_next_proc()) != NULL)
-    {
-        generate_proc(proc);
-        Body.NL();
-        proc = FE. get_next_proc(); 
-    }
 
+void gm_cpp_gen::do_generate_end()
+{
     Header.NL();
     Header.pushln("#endif");
-
-    close_output_files();
-
-    return true;
 }
 
 
@@ -285,10 +207,12 @@ void gm_cpp_gen::generate_idlist(ast_idlist* idl)
     return;
 }
 
-void gm_cpp_gen::generate_lhs_id(ast_id* id) {
+void gm_cpp_gen::generate_lhs_id(ast_id* id) 
+{
     Body.push(id->get_genname());
 }
-void gm_cpp_gen::generate_rhs_id(ast_id* id)  {
+void gm_cpp_gen::generate_rhs_id(ast_id* id)  
+{
     generate_lhs_id(id);
 }
 void gm_cpp_gen::generate_lhs_field(ast_field* f)
@@ -598,7 +522,7 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 
 void gm_cpp_gen::generate_sent_return(ast_return *r)
 {
-    ast_extra_info* info =  get_current_proc()->find_info(LABEL_NEED_MEM);
+    ast_extra_info* info =  FE.get_current_proc()->find_info(LABEL_NEED_MEM);
     assert(info != NULL);
     bool need_cleanup = info->bval;
     if (need_cleanup) { // call cleanup before return

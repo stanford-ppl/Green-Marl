@@ -200,7 +200,6 @@ public:
             gm_symtab* from = I->second.first;
             gm_symtab* to = I->second.second;
 
-            printf("moving %s %p->%p\n", e->getId()->get_orgname(), from,to);
             assert(!to->is_entry_in_the_tab(e));
             assert(from->is_entry_in_the_tab(e));
 
@@ -211,13 +210,12 @@ public:
     }
 };
 
-bool gm_independent_optimize::do_moveup_propdecl(ast_procdef* p)
+//bool gm_independent_optimize::do_moveup_propdecl(ast_procdef* p)
+void gm_ind_opt_move_propdecl::process(ast_procdef* p)
 {
     gm_moveup_propdecl_t T;
-    //gm_traverse_sents(p, &T);
     p->get_body()->traverse_both(&T);
     T.post_process();
 
     gm_redo_rw_analysis(p->get_body());
-    return true;
 }

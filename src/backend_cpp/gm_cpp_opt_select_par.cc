@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "gm_backend_cpp.h"
 #include "gm_error.h"
+#include "gm_typecheck.h"
+#include "gm_transform_helper.h"
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 #include "gm_traverse.h"
 #include "gm_typecheck.h"
 #include "gm_transform_helper.h"
+
+#include "gm_backend_cpp_opt_steps.h"
 
 class set_to_seq_t : public gm_apply
 {
@@ -96,9 +100,11 @@ class make_all_seq_t : public gm_apply
         }
 };
 
-bool gm_cpp_gen::select_parallel(ast_procdef* p)
+extern gm_cpp_gen CPP_BE;
+
+void gm_cpp_opt_select_par::process(ast_procdef* p)
 {
-    if (!is_target_omp())
+    if (!CPP_BE.is_target_omp())
     {
         make_all_seq_t A;
         gm_traverse_sents(p, &A);
@@ -107,5 +113,6 @@ bool gm_cpp_gen::select_parallel(ast_procdef* p)
         gm_traverse_sents(p, &A);
     }
 
-    return true;
+    return;
 }
+

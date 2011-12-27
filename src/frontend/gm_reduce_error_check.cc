@@ -168,11 +168,12 @@ public:
 //=========================================================
 // called from gm_typecheck.cc
 //=========================================================
-bool gm_frontend::do_reduce_error_check(ast_procdef* p)
+//bool gm_frontend::do_reduce_error_check(ast_procdef* p)
+void gm_fe_reduce_error_check::process(ast_procdef* p)
 {
      gm_check_reduce_error_t CHECK_1;
      gm_traverse_sents(p, &CHECK_1);
-     return CHECK_1.is_okay;
+     set_okay(CHECK_1.is_okay);
 }
 
 

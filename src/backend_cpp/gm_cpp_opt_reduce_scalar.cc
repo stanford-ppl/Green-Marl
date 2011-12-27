@@ -239,32 +239,24 @@ void nop_reduce_scalar::generate(gm_cpp_gen* gen)
 
         gen->generate_sent_reduce_assign(new_assign);
                 
-        // symbols are scalar
-            /*
-        gen->generate_reduce_main(
-                lhs, NULL,
-                rhs,
-                lhs->get_genname(),
-                r_type,
-                old_sym->getType());
-
-        delete lhs;
-        delete rhs;
-        */
-            delete new_assign;
+        delete new_assign;
     }
 }
 
 
-bool gm_cpp_gen::optimize_reduction(ast_procdef *p)
+//bool gm_cpp_gen::optimize_reduction(ast_procdef *p)
+#include "gm_backend_cpp_opt_steps.h"
+void gm_cpp_opt_reduce_scalar::process(ast_procdef *p)
 {
     opt_scalar_reduction_t T;
+    gm_redo_rw_analysis(p->get_body());
     gm_traverse_sents(p->get_body(), &T);
     if (T.has_targets()) {
         T.transform_targets();
 
         // need redo rw analysis
         gm_redo_rw_analysis(p->get_body());
+
+        set_affected(true);
     }
-    return true;
 }

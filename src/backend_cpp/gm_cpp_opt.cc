@@ -4,59 +4,34 @@
 #include "gm_rw_analysis.h"
 #include "gm_typecheck.h"
 #include "gm_transform_helper.h"
-//#include "gm_argopts.h"
 #include "gm_frontend.h"
 #include "gm_ind_opt.h"
 #include "gm_argopts.h"
+#include "gm_backend_cpp_opt_steps.h"
+#include "gm_ind_opt_steps.h"
 
-
-class property_cleanup : public gm_apply
+void gm_cpp_gen::init_opt_steps()
 {
-    // add clean-up node(NOP) for each property declaration
-    public:
-    virtual bool apply(ast_sent *s) 
-    {
-        if (s->get_nodetype() == AST_SENTBLOCK)
-        {
-            ast_sentblock* sb = (ast_sentblock*) s;
-            gm_symtab* e = sb-> get_symtab_field();
+    std::list<gm_compile_step*>& LIST = this->opt_steps;
 
-            // if last sentence is a return, insert it in front of return;
-            ast_sent* last_ret = NULL;
-            if (sb->get_sents().back()->get_nodetype() == AST_RETURN) {
-                last_ret = sb->get_sents().back();
-            }
-
-            std::vector<gm_symtab_entry*>& v = 
-                e->get_entries(); 
-
-            std::vector<gm_symtab_entry*>::iterator i;
-            for(i= v.begin(); i!=v.end(); i++) {
-                nop_propdel *nop= new 
-                    nop_propdel(*i);
-                if (last_ret == NULL)
-                    gm_insert_sent_end_of_sb(sb, nop, GM_NOFIX_SYMTAB);
-                else
-                    gm_add_sent_before(last_ret, nop, GM_NOFIX_SYMTAB);
-            }
-        }
-        return true;
-    }
-};
-
-bool gm_cpp_gen::add_property_cleanup(ast_procdef* proc)
-{
-    //--------------------------------------
-    // Add 'free' calls to the properties
-    // at the end of sentence block
-    //--------------------------------------
-   property_cleanup T1;
-   gm_traverse_sents(proc, &T1);
-   return true;
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_defer));
+    //LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_sanitize_name));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_select_par));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl)); // from ind-opt
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_fixup_bound_symbol));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_reduce_scalar));
+    //LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_temp_cleanup));
+    //LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_entry_exit));
 }
 
 
+bool gm_cpp_gen::do_local_optimize()
+{
+    // apply all the optimize steps to all procedures
+    return gm_apply_compiler_stage(opt_steps);
+}
 
+/*
 bool gm_cpp_gen::do_local_optimize()
 {
     const char* NAMES[]= {
@@ -110,6 +85,7 @@ bool gm_cpp_gen::do_local_optimize()
     fflush(stdout);
     return is_okay;
 } 
+*/
 
 bool gm_cpp_gen::do_local_optimize_lib()
 {

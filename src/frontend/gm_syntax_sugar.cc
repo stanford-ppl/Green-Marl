@@ -123,7 +123,8 @@ static void gm_expand_argument_list(std::list<ast_argdecl*>& A)
     }
 }
 
-bool gm_frontend::do_syntax_sugar_1(ast_procdef* p)
+//bool gm_frontend::do_syntax_sugar_1(ast_procdef* p)
+void gm_fe_syntax_sugar::process(ast_procdef*p)
 {
     gm_ss1_filter s1;
     gm_traverse_sents(p, &s1);
@@ -135,7 +136,7 @@ bool gm_frontend::do_syntax_sugar_1(ast_procdef* p)
     gm_expand_argument_list(p->get_out_args());
 
 
-    return true;
+    //return true;
 }
 
 

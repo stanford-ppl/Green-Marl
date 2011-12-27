@@ -183,9 +183,9 @@ bool gm_typechecker_stage_2::apply(ast_expr* e)
   return is_okay;
 }
 
-bool gm_frontend::do_typecheck_step2_find_functions(ast_procdef* p)
+void gm_fe_typecheck_step2::process(ast_procdef* p)
 {
     gm_typechecker_stage_2 T;
-    p->traverse(&T, true, true);  // pre and post apply
-    return T.is_okay();
+    p->traverse_both(&T); // pre and post apply
+    set_okay(T.is_okay());
 }

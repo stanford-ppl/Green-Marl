@@ -280,11 +280,13 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p, ast_expr *
     delete a;
 }
 
-bool gm_independent_optimize::do_flip_edges(ast_procdef* p)
+//bool gm_independent_optimize::do_flip_edges(ast_procdef* p)
+
+void gm_ind_opt_flip_edge_bfs::process(ast_procdef* p)
 {
     gm_flip_backedge_t T;
     gm_traverse_sents(p, &T);
     T.post_process();
 
-    return true;
+    //return true;
 }

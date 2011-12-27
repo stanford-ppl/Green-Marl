@@ -257,28 +257,24 @@ public:
 };
 
 
-bool gm_frontend::fix_bound_symbols(ast_procdef* p, bool optimize_seq_bound)
+void gm_fe_fixup_bound_symbol::process(ast_procdef* p)
 {
     find_hpb_t T;
-    T.set_opt_seq_bound(optimize_seq_bound);
+    T.set_opt_seq_bound(true);
 
     gm_traverse_sents(p, &T);
-
-    return true;
 }
 
 
 
-
-// used in later optimizations
+//-----------------------------------
+// make reduction into a normal assignment
+// LHS += <expr>
+// -->
+// LHS = LHS + <expr>
+//-----------------------------------
 void gm_make_normal_assign(ast_assign* a)
 {
-    //-----------------------------------
-    // make it a normal assignment
-    // LHS += <expr>
-    // -->
-    // LHS = LHS + <expr>
-    //-----------------------------------
     assert(a->is_reduce_assign());
 
     ast_expr *base;

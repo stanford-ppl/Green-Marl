@@ -320,20 +320,9 @@ bool gm_check_conf_t::apply(ast_sent* s)
 //=========================================================
 // called from gm_typecheck.cc
 //=========================================================
-bool gm_frontend::do_rw_analysis_check(ast_procdef* p)
+void gm_fe_rw_analysis_check2::process(ast_procdef* p)
 {
-    return gm_check_parall_conflict_error(p->get_body());
-
-    /*
-     gm_topdown_check_rw_result CHECK_1;
-     gm_bottomup_check_rw_result CHECK_2;
-     gm_traverse_sents(p, &CHECK_1);
-     bool b = CHECK_1.is_okay;
-     if (!b) return false;
-
-     gm_traverse_sents(p, &CHECK_2);
-     return CHECK_2.is_okay;
-     */
+    set_okay(gm_check_parall_conflict_error(p->get_body()));
 }
 
 

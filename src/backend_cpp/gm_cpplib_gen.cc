@@ -178,7 +178,7 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
         ast_extra_info_string* alias = (ast_extra_info_string*) 
             iter->find_info(LABEL_ITER_ALIAS);
         if (alias == NULL) {
-            const char* a_name = FE.voca_temp_name_and_add(iter->get_orgname(),"");
+            const char* a_name = FE.voca_temp_name_and_add(iter->get_orgname(),"_idx");
             alias = new ast_extra_info_string(a_name);
             delete [] a_name;
             iter->add_info(LABEL_ITER_ALIAS, alias);
