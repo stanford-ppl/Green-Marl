@@ -587,20 +587,20 @@ static const yytype_uint16 yyrline[] =
 {
        0,    91,    91,    92,    94,    96,    97,    99,   101,   102,
      104,   105,   108,   109,   111,   112,   114,   119,   121,   123,
-     124,   125,   126,   127,   130,   132,   133,   134,   135,   136,
-     138,   139,   141,   142,   144,   145,   146,   148,   150,   153,
-     154,   157,   159,   160,   161,   163,   164,   166,   167,   168,
-     169,   170,   171,   172,   173,   174,   175,   176,   177,   179,
-     181,   183,   186,   187,   189,   190,   191,   193,   194,   196,
-     197,   198,   199,   200,   201,   202,   203,   206,   208,   211,
-     218,   219,   221,   222,   224,   225,   226,   227,   229,   230,
-     233,   234,   236,   238,   239,   240,   242,   247,   254,   255,
-     258,   259,   260,   261,   262,   263,   265,   268,   269,   274,
-     275,   281,   282,   283,   285,   286,   287,   288,   289,   293,
-     298,   299,   300,   301,   302,   303,   304,   305,   306,   307,
-     308,   309,   310,   312,   314,   315,   316,   317,   318,   319,
-     320,   323,   326,   327,   328,   329,   331,   334,   335,   337,
-     338,   340,   341,   343,   345,   346,   348,   349,   352
+     124,   125,   126,   127,   130,   133,   135,   137,   139,   141,
+     144,   145,   147,   149,   152,   154,   156,   159,   162,   166,
+     167,   170,   172,   173,   174,   176,   177,   179,   180,   181,
+     182,   183,   184,   185,   186,   187,   188,   189,   190,   192,
+     194,   196,   199,   200,   202,   203,   204,   206,   207,   209,
+     210,   211,   212,   213,   214,   215,   216,   219,   221,   224,
+     231,   232,   234,   235,   237,   238,   239,   240,   242,   243,
+     246,   247,   249,   251,   252,   253,   255,   260,   267,   268,
+     271,   272,   273,   274,   275,   276,   278,   281,   282,   287,
+     288,   294,   295,   296,   298,   299,   300,   301,   302,   306,
+     311,   312,   313,   314,   315,   316,   317,   318,   319,   320,
+     321,   322,   323,   325,   327,   328,   329,   330,   331,   332,
+     333,   336,   339,   340,   341,   342,   344,   347,   348,   350,
+     351,   353,   354,   356,   358,   359,   361,   362,   365
 };
 #endif
 
@@ -1959,379 +1959,392 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 130 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_graphtype_ref(GMTYPE_GRAPH);;}
+    { (yyval.ptr) = GM_graphtype_ref(GMTYPE_GRAPH); 
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 132 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_primtype_ref(GMTYPE_INT);;}
+#line 133 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_primtype_ref(GMTYPE_INT);
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 133 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_primtype_ref(GMTYPE_LONG);;}
+#line 135 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_primtype_ref(GMTYPE_LONG);
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 134 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_primtype_ref(GMTYPE_FLOAT);;}
+#line 137 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_primtype_ref(GMTYPE_FLOAT);
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 135 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_primtype_ref(GMTYPE_DOUBLE);;}
+#line 139 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_primtype_ref(GMTYPE_DOUBLE);
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 136 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_primtype_ref(GMTYPE_BOOL);;}
+#line 141 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_primtype_ref(GMTYPE_BOOL);
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 138 "parse/gm_grammer.y"
+#line 144 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 139 "parse/gm_grammer.y"
+#line 145 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 141 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_nodetype_ref((yyvsp[(3) - (4)].ptr)); ;}
+#line 147 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_nodetype_ref((yyvsp[(3) - (4)].ptr)); 
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 142 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_edgetype_ref((yyvsp[(3) - (4)].ptr)); ;}
+#line 149 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_edgetype_ref((yyvsp[(3) - (4)].ptr)); 
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 144 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_settype_ref(GMTYPE_NSET, (yyvsp[(3) - (4)].ptr));;}
+#line 152 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_settype_ref(GMTYPE_NSET, (yyvsp[(3) - (4)].ptr));
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 145 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_settype_ref(GMTYPE_NSEQ, (yyvsp[(3) - (4)].ptr));;}
+#line 154 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_settype_ref(GMTYPE_NSEQ, (yyvsp[(3) - (4)].ptr));
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 146 "parse/gm_grammer.y"
-    { (yyval.ptr) = GM_settype_ref(GMTYPE_NORDER, (yyvsp[(3) - (4)].ptr));;}
+#line 156 "parse/gm_grammer.y"
+    { (yyval.ptr) = GM_settype_ref(GMTYPE_NORDER, (yyvsp[(3) - (4)].ptr));
+                   GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 148 "parse/gm_grammer.y"
+#line 159 "parse/gm_grammer.y"
     {
-                       (yyval.ptr) = GM_nodeprop_ref((yyvsp[(3) - (7)].ptr), (yyvsp[(6) - (7)].ptr) );;}
+                       (yyval.ptr) = GM_nodeprop_ref((yyvsp[(3) - (7)].ptr), (yyvsp[(6) - (7)].ptr) );
+                       GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column);;}
     break;
 
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 150 "parse/gm_grammer.y"
+#line 162 "parse/gm_grammer.y"
     {
-                       (yyval.ptr) = GM_edgeprop_ref((yyvsp[(3) - (7)].ptr), (yyvsp[(6) - (7)].ptr));;}
+                       (yyval.ptr) = GM_edgeprop_ref((yyvsp[(3) - (7)].ptr), (yyvsp[(6) - (7)].ptr));
+                       GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column);;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 153 "parse/gm_grammer.y"
+#line 166 "parse/gm_grammer.y"
     { GM_add_id_comma_list((yyvsp[(1) - (1)].ptr));;}
     break;
 
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 154 "parse/gm_grammer.y"
+#line 167 "parse/gm_grammer.y"
     { GM_add_id_comma_list((yyvsp[(3) - (3)].ptr));;}
     break;
 
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 157 "parse/gm_grammer.y"
+#line 170 "parse/gm_grammer.y"
     { GM_procdef_setbody((yyvsp[(1) - (1)].ptr)); ;}
     break;
 
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 159 "parse/gm_grammer.y"
+#line 172 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_finish_sentblock(); ;}
     break;
 
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 160 "parse/gm_grammer.y"
+#line 173 "parse/gm_grammer.y"
     { GM_start_sentblock(); ;}
     break;
 
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 164 "parse/gm_grammer.y"
+#line 177 "parse/gm_grammer.y"
     { GM_add_sent((yyvsp[(2) - (2)].ptr)); ;}
     break;
 
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 166 "parse/gm_grammer.y"
+#line 179 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (2)].ptr);;}
     break;
 
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 167 "parse/gm_grammer.y"
+#line 180 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (2)].ptr);;}
     break;
 
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 168 "parse/gm_grammer.y"
+#line 181 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 169 "parse/gm_grammer.y"
+#line 182 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 170 "parse/gm_grammer.y"
+#line 183 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 171 "parse/gm_grammer.y"
+#line 184 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (2)].ptr);;}
     break;
 
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 172 "parse/gm_grammer.y"
+#line 185 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (2)].ptr);;}
     break;
 
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 173 "parse/gm_grammer.y"
+#line 186 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (2)].ptr);;}
     break;
 
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 174 "parse/gm_grammer.y"
+#line 187 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 175 "parse/gm_grammer.y"
+#line 188 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (2)].ptr);;}
     break;
 
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 176 "parse/gm_grammer.y"
+#line 189 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 177 "parse/gm_grammer.y"
+#line 190 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (2)].ptr);;}
     break;
 
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 179 "parse/gm_grammer.y"
+#line 192 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_new_call_sent((yyvsp[(1) - (1)].ptr), true);;}
     break;
 
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 181 "parse/gm_grammer.y"
+#line 194 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_while((yyvsp[(3) - (5)].ptr), (yyvsp[(5) - (5)].ptr));;}
     break;
 
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 183 "parse/gm_grammer.y"
+#line 196 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_dowhile((yyvsp[(5) - (6)].ptr), (yyvsp[(2) - (6)].ptr)); ;}
     break;
 
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 186 "parse/gm_grammer.y"
+#line 199 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_foreach((yyvsp[(2) - (4)].pair).p1, (yyvsp[(2) - (4)].pair).p2, (yyvsp[(2) - (4)].pair).i1, (yyvsp[(4) - (4)].ptr), (yyvsp[(3) - (4)].ptr), false, (yyvsp[(2) - (4)].pair).b1); GM_set_lineinfo((yyval.ptr), (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 187 "parse/gm_grammer.y"
+#line 200 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_foreach((yyvsp[(2) - (4)].pair).p1, (yyvsp[(2) - (4)].pair).p2, (yyvsp[(2) - (4)].pair).i1, (yyvsp[(4) - (4)].ptr), (yyvsp[(3) - (4)].ptr), true, (yyvsp[(2) - (4)].pair).b1); GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column);;}
     break;
 
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 189 "parse/gm_grammer.y"
+#line 202 "parse/gm_grammer.y"
     {(yyval.pair).p1 = (yyvsp[(2) - (7)].ptr); (yyval.pair).p2 = (yyvsp[(4) - (7)].ptr); (yyval.pair).b1 = false; (yyval.pair).i1 = (yyvsp[(6) - (7)].ival);;}
     break;
 
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 190 "parse/gm_grammer.y"
+#line 203 "parse/gm_grammer.y"
     {(yyval.pair).p1 = (yyvsp[(2) - (8)].ptr); (yyval.pair).p2 = (yyvsp[(4) - (8)].ptr); (yyval.pair).b1 = false; (yyval.pair).i1 = (yyvsp[(7) - (8)].ival);;}
     break;
 
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 191 "parse/gm_grammer.y"
+#line 204 "parse/gm_grammer.y"
     {(yyval.pair).p1 = (yyvsp[(2) - (8)].ptr); (yyval.pair).p2 = (yyvsp[(4) - (8)].ptr); (yyval.pair).b1 = true;  (yyval.pair).i1 = (yyvsp[(7) - (8)].ival);;}
     break;
 
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 193 "parse/gm_grammer.y"
+#line 206 "parse/gm_grammer.y"
     { (yyval.ptr) = NULL;;}
     break;
 
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 194 "parse/gm_grammer.y"
+#line 207 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(2) - (3)].ptr); ;}
     break;
 
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 196 "parse/gm_grammer.y"
+#line 209 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_NODEITER_ALL;;}
     break;
 
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 197 "parse/gm_grammer.y"
+#line 210 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_EDGEITER_ALL;;}
     break;
 
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 198 "parse/gm_grammer.y"
+#line 211 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_NODEITER_NBRS;;}
     break;
 
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 199 "parse/gm_grammer.y"
+#line 212 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_EDGEITER_NBRS;;}
     break;
 
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 200 "parse/gm_grammer.y"
+#line 213 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_NODEITER_IN_NBRS;;}
     break;
 
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 201 "parse/gm_grammer.y"
+#line 214 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_NODEITER_UP_NBRS;;}
     break;
 
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 202 "parse/gm_grammer.y"
+#line 215 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_NODEITER_DOWN_NBRS;;}
     break;
 
   case 76:
 
 /* Line 1455 of yacc.c  */
-#line 203 "parse/gm_grammer.y"
+#line 216 "parse/gm_grammer.y"
     { (yyval.ival) = GMTYPE_ITER_ANY; /* should be resolved after typechecking */;}
     break;
 
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 207 "parse/gm_grammer.y"
+#line 220 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_bfs( (yyvsp[(2) - (5)].pair).p1, (yyvsp[(2) - (5)].pair).p2, (yyvsp[(2) - (5)].pair).p3,   (yyvsp[(3) - (5)].pair).p1, (yyvsp[(3) - (5)].pair).p2, (yyvsp[(4) - (5)].ptr),  (yyvsp[(5) - (5)].ptr), NULL, (yyvsp[(2) - (5)].pair).b1); GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (5)]).first_line, (yylsp[(1) - (5)]).first_column);;}
     break;
 
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 209 "parse/gm_grammer.y"
+#line 222 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_bfs( (yyvsp[(2) - (7)].pair).p1, (yyvsp[(2) - (7)].pair).p2, (yyvsp[(2) - (7)].pair).p3,   (yyvsp[(3) - (7)].pair).p1, (yyvsp[(3) - (7)].pair).p2, (yyvsp[(4) - (7)].ptr),  (yyvsp[(5) - (7)].ptr), (yyvsp[(7) - (7)].ptr),   (yyvsp[(2) - (7)].pair).b1); GM_set_lineinfo((yyval.ptr),(yylsp[(1) - (7)]).first_line, (yylsp[(1) - (7)]).first_column);;}
     break;
 
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 211 "parse/gm_grammer.y"
+#line 224 "parse/gm_grammer.y"
     {
                            (yyval.pair).p1 = (yyvsp[(2) - (10)].ptr); // it
                            (yyval.pair).p2 = (yyvsp[(4) - (10)].ptr); // source
@@ -2343,119 +2356,119 @@ yyreduce:
   case 80:
 
 /* Line 1455 of yacc.c  */
-#line 218 "parse/gm_grammer.y"
+#line 231 "parse/gm_grammer.y"
     {(yyval.bval) = false;;}
     break;
 
   case 81:
 
 /* Line 1455 of yacc.c  */
-#line 219 "parse/gm_grammer.y"
+#line 232 "parse/gm_grammer.y"
     {(yyval.bval) = true;;}
     break;
 
   case 82:
 
 /* Line 1455 of yacc.c  */
-#line 221 "parse/gm_grammer.y"
+#line 234 "parse/gm_grammer.y"
     {(yyval.ival) = 0;;}
     break;
 
   case 83:
 
 /* Line 1455 of yacc.c  */
-#line 222 "parse/gm_grammer.y"
+#line 235 "parse/gm_grammer.y"
     {(yyval.ival) = 0;;}
     break;
 
   case 84:
 
 /* Line 1455 of yacc.c  */
-#line 224 "parse/gm_grammer.y"
+#line 237 "parse/gm_grammer.y"
     {(yyval.pair).p1 = (yyval.pair).p2  = NULL;;}
     break;
 
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 225 "parse/gm_grammer.y"
+#line 238 "parse/gm_grammer.y"
     {(yyval.pair).p1 = (yyvsp[(2) - (3)].ptr); (yyval.pair).p2 = NULL;;}
     break;
 
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 226 "parse/gm_grammer.y"
+#line 239 "parse/gm_grammer.y"
     {(yyval.pair).p1 = NULL; (yyval.pair).p2 = (yyvsp[(3) - (4)].ptr);;}
     break;
 
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 227 "parse/gm_grammer.y"
+#line 240 "parse/gm_grammer.y"
     {(yyval.pair).p1 = (yyvsp[(2) - (5)].ptr); (yyval.pair).p2 = (yyvsp[(4) - (5)].ptr);;}
     break;
 
   case 88:
 
 /* Line 1455 of yacc.c  */
-#line 229 "parse/gm_grammer.y"
+#line 242 "parse/gm_grammer.y"
     {(yyval.ptr) = NULL;;}
     break;
 
   case 89:
 
 /* Line 1455 of yacc.c  */
-#line 230 "parse/gm_grammer.y"
+#line 243 "parse/gm_grammer.y"
     {(yyval.ptr) = (yyvsp[(2) - (3)].ptr);;}
     break;
 
   case 90:
 
 /* Line 1455 of yacc.c  */
-#line 233 "parse/gm_grammer.y"
+#line 246 "parse/gm_grammer.y"
     { (yyval.ptr) =  GM_vardecl_prim((yyvsp[(1) - (2)].ptr), (yyvsp[(2) - (2)].ptr)); ;}
     break;
 
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 234 "parse/gm_grammer.y"
+#line 247 "parse/gm_grammer.y"
     { (yyval.ptr) =  GM_vardecl_and_assign((yyvsp[(1) - (4)].ptr),(yyvsp[(2) - (4)].ptr),(yyvsp[(4) - (4)].ptr));;}
     break;
 
   case 92:
 
 /* Line 1455 of yacc.c  */
-#line 236 "parse/gm_grammer.y"
+#line 249 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_finish_id_comma_list();;}
     break;
 
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 238 "parse/gm_grammer.y"
+#line 251 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_normal_assign((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr)); GM_set_lineinfo((yyval.ptr), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);}
     break;
 
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 239 "parse/gm_grammer.y"
+#line 252 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_reduce_assign((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), NULL, (yyvsp[(2) - (3)].ival)); GM_set_lineinfo((yyval.ptr), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 95:
 
 /* Line 1455 of yacc.c  */
-#line 240 "parse/gm_grammer.y"
+#line 253 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_reduce_assign((yyvsp[(1) - (5)].ptr), (yyvsp[(3) - (5)].ptr), (yyvsp[(5) - (5)].ptr), (yyvsp[(2) - (5)].ival)); GM_set_lineinfo((yyval.ptr), (yylsp[(2) - (5)]).first_line, (yylsp[(2) - (5)]).first_column);;}
     break;
 
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 242 "parse/gm_grammer.y"
+#line 255 "parse/gm_grammer.y"
     {
                              (yyval.ptr) = GM_reduce_assign((yyvsp[(1) - (2)].ptr), 
                                      GM_expr_ival(1, (yylsp[(2) - (2)]).first_line, (yylsp[(2) - (2)]).first_column), 
@@ -2466,7 +2479,7 @@ yyreduce:
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 247 "parse/gm_grammer.y"
+#line 260 "parse/gm_grammer.y"
     {
                              (yyval.ptr) = GM_reduce_assign((yyvsp[(1) - (4)].ptr), 
                                      GM_expr_ival(1, (yylsp[(2) - (4)]).first_line, (yylsp[(2) - (4)]).first_column), 
@@ -2477,147 +2490,147 @@ yyreduce:
   case 98:
 
 /* Line 1455 of yacc.c  */
-#line 254 "parse/gm_grammer.y"
+#line 267 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_defer_assign((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), NULL); GM_set_lineinfo((yyval.ptr), (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 255 "parse/gm_grammer.y"
+#line 268 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_defer_assign((yyvsp[(1) - (5)].ptr), (yyvsp[(3) - (5)].ptr), (yyvsp[(5) - (5)].ptr)); GM_set_lineinfo((yyval.ptr), (yylsp[(2) - (5)]).first_line, (yylsp[(2) - (5)]).first_column);;}
     break;
 
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 258 "parse/gm_grammer.y"
+#line 271 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_PLUS;;}
     break;
 
   case 101:
 
 /* Line 1455 of yacc.c  */
-#line 259 "parse/gm_grammer.y"
+#line 272 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_MULT;;}
     break;
 
   case 102:
 
 /* Line 1455 of yacc.c  */
-#line 260 "parse/gm_grammer.y"
+#line 273 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_MIN;;}
     break;
 
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 261 "parse/gm_grammer.y"
+#line 274 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_MAX;;}
     break;
 
   case 104:
 
 /* Line 1455 of yacc.c  */
-#line 262 "parse/gm_grammer.y"
+#line 275 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_AND;;}
     break;
 
   case 105:
 
 /* Line 1455 of yacc.c  */
-#line 263 "parse/gm_grammer.y"
+#line 276 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_OR;;}
     break;
 
   case 106:
 
 /* Line 1455 of yacc.c  */
-#line 265 "parse/gm_grammer.y"
+#line 278 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr); ;}
     break;
 
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 268 "parse/gm_grammer.y"
+#line 281 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_return ((yyvsp[(2) - (2)].ptr), (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column) ;;}
     break;
 
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 269 "parse/gm_grammer.y"
+#line 282 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_return (NULL, (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 109:
 
 /* Line 1455 of yacc.c  */
-#line 274 "parse/gm_grammer.y"
+#line 287 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_if((yyvsp[(3) - (5)].ptr), (yyvsp[(5) - (5)].ptr), NULL);;}
     break;
 
   case 110:
 
 /* Line 1455 of yacc.c  */
-#line 275 "parse/gm_grammer.y"
+#line 288 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_if((yyvsp[(3) - (7)].ptr), (yyvsp[(5) - (7)].ptr), (yyvsp[(7) - (7)].ptr));;}
     break;
 
   case 111:
 
 /* Line 1455 of yacc.c  */
-#line 281 "parse/gm_grammer.y"
+#line 294 "parse/gm_grammer.y"
     {(yyval.ptr) = (yyvsp[(2) - (3)].ptr);;}
     break;
 
   case 112:
 
 /* Line 1455 of yacc.c  */
-#line 282 "parse/gm_grammer.y"
+#line 295 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_uop((yyvsp[(2) - (3)].ptr), GMOP_ABS, (yylsp[(1) - (3)]).first_line, (yylsp[(1) - (3)]).first_column); ;}
     break;
 
   case 113:
 
 /* Line 1455 of yacc.c  */
-#line 284 "parse/gm_grammer.y"
+#line 297 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_uop((yyvsp[(2) - (2)].ptr), GMOP_NEG, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column); ;}
     break;
 
   case 114:
 
 /* Line 1455 of yacc.c  */
-#line 285 "parse/gm_grammer.y"
+#line 298 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_luop((yyvsp[(2) - (2)].ptr), GMOP_NOT, (yylsp[(1) - (2)]).first_line, (yylsp[(1) - (2)]).first_column); ;}
     break;
 
   case 115:
 
 /* Line 1455 of yacc.c  */
-#line 286 "parse/gm_grammer.y"
+#line 299 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_conversion((yyvsp[(4) - (4)].ptr), (yyvsp[(2) - (4)].ptr) , (yylsp[(1) - (4)]).first_line, (yylsp[(1) - (4)]).first_column); ;}
     break;
 
   case 116:
 
 /* Line 1455 of yacc.c  */
-#line 287 "parse/gm_grammer.y"
+#line 300 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (14)].ival), (yyvsp[(3) - (14)].ptr), (yyvsp[(5) - (14)].ptr), (yyvsp[(7) - (14)].ival), (yyvsp[(13) - (14)].ptr), (yyvsp[(10) - (14)].ptr), (yylsp[(1) - (14)]).first_line, (yylsp[(1) - (14)]).first_column);;}
     break;
 
   case 117:
 
 /* Line 1455 of yacc.c  */
-#line 288 "parse/gm_grammer.y"
+#line 301 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (11)].ival), (yyvsp[(3) - (11)].ptr), (yyvsp[(5) - (11)].ptr), (yyvsp[(7) - (11)].ival), (yyvsp[(10) - (11)].ptr), NULL, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column);;}
     break;
 
   case 118:
 
 /* Line 1455 of yacc.c  */
-#line 289 "parse/gm_grammer.y"
+#line 302 "parse/gm_grammer.y"
     {
                  (yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (11)].ival), (yyvsp[(3) - (11)].ptr), (yyvsp[(5) - (11)].ptr), (yyvsp[(7) - (11)].ival), 
                          GM_expr_ival(1, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column),
@@ -2627,7 +2640,7 @@ yyreduce:
   case 119:
 
 /* Line 1455 of yacc.c  */
-#line 293 "parse/gm_grammer.y"
+#line 306 "parse/gm_grammer.y"
     {
                  (yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (11)].ival), (yyvsp[(3) - (11)].ptr), (yyvsp[(5) - (11)].ptr), (yyvsp[(7) - (11)].ival), 
                      GM_expr_ival(1, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column),
@@ -2637,280 +2650,280 @@ yyreduce:
   case 120:
 
 /* Line 1455 of yacc.c  */
-#line 298 "parse/gm_grammer.y"
+#line 311 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_biop((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_MOD, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 121:
 
 /* Line 1455 of yacc.c  */
-#line 299 "parse/gm_grammer.y"
+#line 312 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_biop((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_MULT, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 122:
 
 /* Line 1455 of yacc.c  */
-#line 300 "parse/gm_grammer.y"
+#line 313 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_biop((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_DIV, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 123:
 
 /* Line 1455 of yacc.c  */
-#line 301 "parse/gm_grammer.y"
+#line 314 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_biop((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_ADD, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 124:
 
 /* Line 1455 of yacc.c  */
-#line 302 "parse/gm_grammer.y"
+#line 315 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_biop((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_SUB, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 125:
 
 /* Line 1455 of yacc.c  */
-#line 303 "parse/gm_grammer.y"
+#line 316 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_comp((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_LE, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 126:
 
 /* Line 1455 of yacc.c  */
-#line 304 "parse/gm_grammer.y"
+#line 317 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_comp((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_GE, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 127:
 
 /* Line 1455 of yacc.c  */
-#line 305 "parse/gm_grammer.y"
+#line 318 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_comp((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_LT, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 128:
 
 /* Line 1455 of yacc.c  */
-#line 306 "parse/gm_grammer.y"
+#line 319 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_comp((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_GT, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 129:
 
 /* Line 1455 of yacc.c  */
-#line 307 "parse/gm_grammer.y"
+#line 320 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_comp((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_EQ, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 130:
 
 /* Line 1455 of yacc.c  */
-#line 308 "parse/gm_grammer.y"
+#line 321 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_comp((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_NEQ, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 131:
 
 /* Line 1455 of yacc.c  */
-#line 309 "parse/gm_grammer.y"
+#line 322 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_lbiop((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_AND, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 132:
 
 /* Line 1455 of yacc.c  */
-#line 310 "parse/gm_grammer.y"
+#line 323 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_lbiop((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr), GMOP_OR, (yylsp[(2) - (3)]).first_line, (yylsp[(2) - (3)]).first_column);;}
     break;
 
   case 133:
 
 /* Line 1455 of yacc.c  */
-#line 312 "parse/gm_grammer.y"
+#line 325 "parse/gm_grammer.y"
     { (yyval.ptr)= GM_expr_ternary((yyvsp[(1) - (5)].ptr), (yyvsp[(3) - (5)].ptr), (yyvsp[(5) - (5)].ptr), (yylsp[(2) - (5)]).first_line, (yylsp[(2) - (5)]).first_column);;}
     break;
 
   case 134:
 
 /* Line 1455 of yacc.c  */
-#line 314 "parse/gm_grammer.y"
+#line 327 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_bval((yyvsp[(1) - (1)].bval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 135:
 
 /* Line 1455 of yacc.c  */
-#line 315 "parse/gm_grammer.y"
+#line 328 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_ival((yyvsp[(1) - (1)].ival), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 136:
 
 /* Line 1455 of yacc.c  */
-#line 316 "parse/gm_grammer.y"
+#line 329 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_fval((yyvsp[(1) - (1)].fval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 137:
 
 /* Line 1455 of yacc.c  */
-#line 317 "parse/gm_grammer.y"
+#line 330 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_inf((yyvsp[(1) - (1)].bval), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column);;}
     break;
 
   case 138:
 
 /* Line 1455 of yacc.c  */
-#line 318 "parse/gm_grammer.y"
+#line 331 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_id_access((yyvsp[(1) - (1)].ptr));;}
     break;
 
   case 139:
 
 /* Line 1455 of yacc.c  */
-#line 319 "parse/gm_grammer.y"
+#line 332 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_expr_field_access((yyvsp[(1) - (1)].ptr));;}
     break;
 
   case 140:
 
 /* Line 1455 of yacc.c  */
-#line 320 "parse/gm_grammer.y"
+#line 333 "parse/gm_grammer.y"
     {(yyval.ptr) = (yyvsp[(1) - (1)].ptr);;}
     break;
 
   case 141:
 
 /* Line 1455 of yacc.c  */
-#line 323 "parse/gm_grammer.y"
+#line 336 "parse/gm_grammer.y"
     {(yyval.ptr) = (yyvsp[(1) - (1)].ptr); ;}
     break;
 
   case 142:
 
 /* Line 1455 of yacc.c  */
-#line 326 "parse/gm_grammer.y"
+#line 339 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_PLUS; ;}
     break;
 
   case 143:
 
 /* Line 1455 of yacc.c  */
-#line 327 "parse/gm_grammer.y"
+#line 340 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_MULT; ;}
     break;
 
   case 144:
 
 /* Line 1455 of yacc.c  */
-#line 328 "parse/gm_grammer.y"
+#line 341 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_MIN;  ;}
     break;
 
   case 145:
 
 /* Line 1455 of yacc.c  */
-#line 329 "parse/gm_grammer.y"
+#line 342 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_MAX;  ;}
     break;
 
   case 146:
 
 /* Line 1455 of yacc.c  */
-#line 331 "parse/gm_grammer.y"
+#line 344 "parse/gm_grammer.y"
     {(yyval.ival) = GMREDUCE_PLUS; ;}
     break;
 
   case 147:
 
 /* Line 1455 of yacc.c  */
-#line 334 "parse/gm_grammer.y"
+#line 347 "parse/gm_grammer.y"
     {(yyval.bval) = true;;}
     break;
 
   case 148:
 
 /* Line 1455 of yacc.c  */
-#line 335 "parse/gm_grammer.y"
+#line 348 "parse/gm_grammer.y"
     {(yyval.bval) = false;;}
     break;
 
   case 149:
 
 /* Line 1455 of yacc.c  */
-#line 337 "parse/gm_grammer.y"
+#line 350 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr); ;}
     break;
 
   case 150:
 
 /* Line 1455 of yacc.c  */
-#line 338 "parse/gm_grammer.y"
+#line 351 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr); ;}
     break;
 
   case 151:
 
 /* Line 1455 of yacc.c  */
-#line 340 "parse/gm_grammer.y"
+#line 353 "parse/gm_grammer.y"
     { (yyval.ptr) = (yyvsp[(1) - (1)].ptr); ;}
     break;
 
   case 152:
 
 /* Line 1455 of yacc.c  */
-#line 341 "parse/gm_grammer.y"
+#line 354 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_field((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].ptr)); ;}
     break;
 
   case 153:
 
 /* Line 1455 of yacc.c  */
-#line 343 "parse/gm_grammer.y"
+#line 356 "parse/gm_grammer.y"
     { (yyval.ptr) = GM_expr_builtin_expr((yyvsp[(1) - (4)].ptr), (yyvsp[(3) - (4)].ptr), (yyvsp[(4) - (4)].e_list));;}
     break;
 
   case 154:
 
 /* Line 1455 of yacc.c  */
-#line 345 "parse/gm_grammer.y"
+#line 358 "parse/gm_grammer.y"
     { (yyval.e_list) = (yyvsp[(2) - (3)].e_list);;}
     break;
 
   case 155:
 
 /* Line 1455 of yacc.c  */
-#line 346 "parse/gm_grammer.y"
+#line 359 "parse/gm_grammer.y"
     { (yyval.e_list) = GM_empty_expr_list();;}
     break;
 
   case 156:
 
 /* Line 1455 of yacc.c  */
-#line 348 "parse/gm_grammer.y"
+#line 361 "parse/gm_grammer.y"
     { (yyval.e_list) = GM_single_expr_list((yyvsp[(1) - (1)].ptr));;}
     break;
 
   case 157:
 
 /* Line 1455 of yacc.c  */
-#line 349 "parse/gm_grammer.y"
+#line 362 "parse/gm_grammer.y"
     { (yyval.e_list) = GM_add_expr_front((yyvsp[(1) - (3)].ptr), (yyvsp[(3) - (3)].e_list));;}
     break;
 
   case 158:
 
 /* Line 1455 of yacc.c  */
-#line 352 "parse/gm_grammer.y"
+#line 365 "parse/gm_grammer.y"
     {(yyval.ptr) = GM_id((yyvsp[(1) - (1)].text), (yylsp[(1) - (1)]).first_line, (yylsp[(1) - (1)]).first_column); ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 2914 "./parse/gm_grammer.tab.c"
+#line 2927 "./parse/gm_grammer.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -3129,7 +3142,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 354 "parse/gm_grammer.y"
+#line 367 "parse/gm_grammer.y"
 
 
 

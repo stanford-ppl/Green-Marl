@@ -20,7 +20,7 @@
 #define NUM_NODES "numNodes"
 #define NUM_EDGES "numEdges"
 
-#define INDEX_T      "index_t"
+//#define INDEX_T      "index_t"
 #define NODE_T       "node_t"
 #define EDGE_T       "edge_t"
 #define NODEITER_T   "node_t" // [todo] clarify later
@@ -35,23 +35,34 @@
 //=========================================================================
 // Code Generation for library
 //=========================================================================
-const char* gm_cpplib::get_type_string(int type, int usage)
+void gm_cpplib::build_up_language_voca(gm_vocabulary& V)
 {
-    bool is_out = (usage == GMUSE_OUTARG);
+    //V.add_word(INDEX_T);
+    V.add_word(NODE_T);
+    V.add_word(EDGE_T);
+    V.add_word(GRAPH_T);
+    V.add_word(SET_T);
+    V.add_word(ORDER_T);
+    V.add_word(NODE_IDX);
+    V.add_word(EDGE_IDX);
+    V.add_word(R_NODE_IDX);
+    V.add_word(R_EDGE_IDX);
+    V.add_word(BEGIN);
+    V.add_word(R_BEGIN);
+}
+
+const char* gm_cpplib::get_type_string(int type)
+{
     if (gm_is_graph_type(type)) {
-        if (usage == GMUSE_LOCALDEF)
-            return GRAPH_T;
-        else 
-            return GRAPH_T"&";
+        return GRAPH_T;
     }
     else if (gm_is_nodeedge_type(type)) {
         if (gm_is_node_type(type))
-            return (!is_out) ? NODE_T: NODE_T"&";
+            return NODE_T;
         else
-            return (!is_out) ? EDGE_T : EDGE_T"&";
+            return EDGE_T;
     }
     else if (gm_is_iter_type(type)) {
-        assert(!is_out);
         if (gm_is_node_iter_type(type)) {
             return NODEITER_T;
         }
@@ -61,18 +72,19 @@ const char* gm_cpplib::get_type_string(int type, int usage)
         else {assert(false);}
     }
     else if (gm_is_collection_type(type)) {
-        if      (gm_is_set_collection_type(type)) return (usage == GMUSE_LOCALDEF) ? SET_T : SET_T"&";
-        else if (gm_is_order_collection_type(type)) return (usage == GMUSE_LOCALDEF) ? ORDER_T : ORDER_T"&";
+        if      (gm_is_set_collection_type(type))   return SET_T;
+        else if (gm_is_order_collection_type(type)) return ORDER_T;
         else {assert(false);}
     } else {
+        printf("type = %d %s\n", type, gm_get_type_string(type));
         assert(false);
         return "ERROR";
     }
 }
 
-const char* gm_cpplib::get_type_string(ast_typedecl* t, int usage)
+const char* gm_cpplib::get_type_string(ast_typedecl* t)
 {
-   return get_type_string(t->getTypeSummary(), usage);
+   return get_type_string(t->getTypeSummary());
 }    
 
 const char* gm_cpplib::max_node_index(ast_id* graph) {
@@ -117,13 +129,15 @@ void gm_cpplib::generate_init_before_iteration_header(
         ast_extra_info_string* alias = (ast_extra_info_string*) 
             iter->find_info(LABEL_LIST_OF_SET);
         if (alias == NULL) {
-            const char* a_name = TEMP_GEN.getTempName(source->get_orgname(),"_L");
+            const char* a_name = FE.voca_temp_name_and_add(source->get_orgname(),"_L");
             alias = new ast_extra_info_string(a_name);
             delete [] a_name;
             iter->add_info(LABEL_LIST_OF_SET, alias);
         }
         const char* list_name = alias->get_string();
-        sprintf(str_buf, "std::list<%s>& %s = %s.%s();", INDEX_T, list_name, source->get_genname(), GET_LIST);
+
+        // [xxx] node set only
+        sprintf(str_buf, "std::list<%s>& %s = %s.%s();", NODE_T, list_name, source->get_genname(), GET_LIST);
         Body->pushln(str_buf);
     }
 }
@@ -151,7 +165,7 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
         char* graph_name = source->get_genname();
         char* it_name = iter->get_genname();
         sprintf(str_buf,"for (%s %s = 0; %s < %s.%s(); %s ++) ",
-            get_type_string(iter_type, GMUSE_LOCALDEF), it_name, 
+            get_type_string(iter_type), it_name, 
             it_name,
             graph_name, gm_is_iteration_on_nodes(type) ? NUM_NODES : NUM_EDGES, 
             it_name);
@@ -164,13 +178,18 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
         ast_extra_info_string* alias = (ast_extra_info_string*) 
             iter->find_info(LABEL_ITER_ALIAS);
         if (alias == NULL) {
-            const char* a_name = TEMP_GEN.getTempName(iter->get_orgname(),"");
+            const char* a_name = FE.voca_temp_name_and_add(iter->get_orgname(),"");
             alias = new ast_extra_info_string(a_name);
             delete [] a_name;
             iter->add_info(LABEL_ITER_ALIAS, alias);
         }
 
         // [todo] check name-conflict
+        if (source->getTypeInfo()->get_target_graph_id()==NULL) {
+            printf("%s %d %d\n", source->get_orgname(), source->get_line(), source->get_col());
+            fflush(stdout);
+
+        }
         const char* alias_name = alias->get_string();
         const char* graph_name = source->getTypeInfo()->get_target_graph_id()->get_genname();
         const char* array_name = gm_is_iteration_use_reverse(type) ? R_BEGIN : BEGIN;
@@ -178,7 +197,7 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
 
         int i;
         i = sprintf(str_buf,"for (%s %s = %s.%s[%s];",
-                INDEX_T,
+                EDGE_T,
                 alias_name, 
                 graph_name, array_name, src_name);
         i+= sprintf(&str_buf[i], "%s < %s.%s[%s+1] ; %s ++) ", 
@@ -196,7 +215,7 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
         const char* iter_name = iter->get_genname();
         const char* set_name = source->get_genname();
         sprintf(str_buf,"for (%s %s = 0; %s < %s.%s() ; %s ++)",
-                INDEX_T, iter_name,  iter_name, set_name, MAX_SET_CNT, iter_name);
+                NODE_T, iter_name,  iter_name, set_name, MAX_SET_CNT, iter_name);
     } else if (gm_is_iteration_on_ordered_set(iter_type)) {
 
         if (!is_parallel) {
@@ -207,11 +226,11 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
 
             // should check if reverse
             if (use_reverse) {
-                int i = sprintf(str_buf,     "for (std::list<%s>::iterator %s = %s.rbegin();", INDEX_T, iter_name, list_name);
+                int i = sprintf(str_buf,     "for (std::list<%s>::iterator %s = %s.rbegin();", NODE_T, iter_name, list_name);
                     i+= sprintf(&str_buf[i], "%s != %s.rend(); %s ++)", iter_name, list_name, iter_name);
             }
             else  {
-                int i = sprintf(str_buf,     "for (std::list<%s>::iterator %s = %s.begin();", INDEX_T, iter_name, list_name);
+                int i = sprintf(str_buf,     "for (std::list<%s>::iterator %s = %s.begin();", NODE_T, iter_name, list_name);
                     i+= sprintf(&str_buf[i], "%s != %s.end(); %s ++)", iter_name, list_name, iter_name);
             }
         } else {
@@ -238,7 +257,7 @@ bool gm_cpplib::generate_iteration_header_init(ast_id* iter, int iter_type, ast_
         ast_typedecl* i_type = iter->getTypeInfo();
 
         const char* alias_name = alias->get_string();
-        const char* type_name  = get_type_string(i_type, GMUSE_LOCALDEF);
+        const char* type_name  = get_type_string(i_type);
         const char* graph_name = source->getTypeInfo()->get_target_graph_id()->get_genname();
         const char* var_name   = iter->get_genname();
         const char* array_name;
@@ -287,18 +306,16 @@ bool gm_cpplib::add_set_def(ast_id* i)
 }
 
 
-bool gm_cpplib::generate(ast_nop *f)
+void gm_cpplib::generate_sent_nop(ast_nop *f)
 {
     int subtype = f->get_subtype();
     switch(subtype) {
         default: 
              assert(false);
-             return true;
     }
-    return false;
 }
 
-bool gm_cpplib::generate_builtin(ast_expr_builtin* e)
+void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e)
 {
     ast_id* i = e->get_driver(); // driver 
     gm_builtin_def* def = e->get_builtin_def();
@@ -338,9 +355,11 @@ bool gm_cpplib::generate_builtin(ast_expr_builtin* e)
                 case GM_BLTIN_SET_ADD:
                     sprintf(str_buf, "%s.push_back(", e->get_driver()->get_genname());
                     Body->push(str_buf);
-                    main->generate(e->get_args());
+                    main->generate_expr_list(e->get_args());
                     sprintf(str_buf,")");
                     break;
+                default:
+                    assert(false);
             }
             break;
 

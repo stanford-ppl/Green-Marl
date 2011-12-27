@@ -145,7 +145,7 @@ static bool check_if_conflict(gm_rwinfo_list* l1, gm_rwinfo_list* l2, gm_rwinfo*
                 if (e2->reduce_op == GMREDUCE_DEFER) continue;
             }
 
-            printf("lev1 = %d, lev2 = %d\n", lev1, lev2);
+            //printf("lev1 = %d, lev2 = %d\n", lev1, lev2);
 
             return true;  // found conflict!
         }
@@ -168,6 +168,7 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
         case WW_CONFLICT: error_code = GM_ERROR_WRITE_WRITE_CONFLICT; is_warning = true; break;
         case RD_CONFLICT: error_code = GM_ERROR_READ_REDUCE_CONFLICT; is_warning = false; break;
         case WD_CONFLICT: error_code = GM_ERROR_WRITE_REDUCE_CONFLICT; is_warning = false; break;
+        default: assert(false);
     }
 
     gm_rwinfo_map::iterator i1, i2;
@@ -188,7 +189,7 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
             // find if they conflict
             bool is_error_or_warn = check_if_conflict(list1, list2, e1, e2, conf_type);
             if (!is_warning)
-                is_okay &= !is_error_or_warn;
+                is_okay = is_okay && !is_error_or_warn;
 
             // find if they report
             if (is_error_or_warn) {
@@ -240,8 +241,8 @@ bool gm_check_conf_t::apply(ast_sent* s)
 
         check_rw_conf_error(R, W, RW_CONFLICT, Report); // R-W (warning)
         check_rw_conf_error(W, W, WW_CONFLICT, Report); // W-W (warning)
-        is_okay &= check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
-        is_okay &= check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
+        is_okay = is_okay && check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
+        is_okay = is_okay && check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
 
     } else if (s->get_nodetype() == AST_BFS) {
         ast_bfs* bfs = (ast_bfs*) s;
@@ -287,9 +288,9 @@ bool gm_check_conf_t::apply(ast_sent* s)
             check_rw_conf_error(R, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(R_filter, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(W, W, WW_CONFLICT, Report); // W-W (warning)
-            is_okay &= check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
-            is_okay &= check_rw_conf_error(R_filter, D, RD_CONFLICT, Report); // R-D
-            is_okay &= check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
+            is_okay = is_okay && check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
+            is_okay = is_okay && check_rw_conf_error(R_filter, D, RD_CONFLICT, Report); // R-D
+            is_okay = is_okay && check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
         }
 
         //---------------------------------------------
@@ -306,9 +307,9 @@ bool gm_check_conf_t::apply(ast_sent* s)
             check_rw_conf_error(R, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(R_filter, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(W, W, WW_CONFLICT, Report); // W-W (warning)
-            is_okay &= check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
-            is_okay &= check_rw_conf_error(R_filter, D, RD_CONFLICT, Report); // R-D
-            is_okay &= check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
+            is_okay = is_okay && check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
+            is_okay = is_okay && check_rw_conf_error(R_filter, D, RD_CONFLICT, Report); // R-D
+            is_okay = is_okay && check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
         }
     }
 

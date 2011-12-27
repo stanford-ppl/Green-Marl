@@ -127,28 +127,41 @@
             | set_type                 { $$ = $1;}
 
 
-  graph_type : T_GRAPH               { $$ = GM_graphtype_ref(GMTYPE_GRAPH);}
+  graph_type : T_GRAPH               { $$ = GM_graphtype_ref(GMTYPE_GRAPH); 
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
-  prim_type : T_INT                  { $$ = GM_primtype_ref(GMTYPE_INT);}
-            | T_LONG                 { $$ = GM_primtype_ref(GMTYPE_LONG);}
-            | T_FLOAT                { $$ = GM_primtype_ref(GMTYPE_FLOAT);}
-            | T_DOUBLE               { $$ = GM_primtype_ref(GMTYPE_DOUBLE);}
-            | T_BOOL                 { $$ = GM_primtype_ref(GMTYPE_BOOL);}
+  prim_type : T_INT                  { $$ = GM_primtype_ref(GMTYPE_INT);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_LONG                 { $$ = GM_primtype_ref(GMTYPE_LONG);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_FLOAT                { $$ = GM_primtype_ref(GMTYPE_FLOAT);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_DOUBLE               { $$ = GM_primtype_ref(GMTYPE_DOUBLE);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_BOOL                 { $$ = GM_primtype_ref(GMTYPE_BOOL);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   nodeedge_type : node_type          { $$ = $1;}
                 | edge_type          { $$ = $1;}
 
-  node_type : T_NODE '(' id  ')'      { $$ = GM_nodetype_ref($3); }
-  edge_type : T_EDGE '(' id  ')'      { $$ = GM_edgetype_ref($3); }
+  node_type : T_NODE '(' id  ')'      { $$ = GM_nodetype_ref($3); 
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+  edge_type : T_EDGE '(' id  ')'      { $$ = GM_edgetype_ref($3); 
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
-  set_type :  T_NSET   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);}
-           |  T_NSEQ   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSEQ, $3);}
-           |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);}
+  set_type :  T_NSET   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NSEQ   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSEQ, $3);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   property : T_NODEPROP '<' prim_type '>' '(' id ')'  {
-                       $$ = GM_nodeprop_ref($3, $6 );}
+                       $$ = GM_nodeprop_ref($3, $6 );
+                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' prim_type '>' '(' id ')'  {
-                       $$ = GM_edgeprop_ref($3, $6);}
+                       $$ = GM_edgeprop_ref($3, $6);
+                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   id_comma_list   : id                            { GM_add_id_comma_list($1);}
                   | id_comma_list ',' id          { GM_add_id_comma_list($3);}

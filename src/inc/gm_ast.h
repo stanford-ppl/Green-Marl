@@ -54,7 +54,7 @@ class ast_extra_info {
     ast_extra_info(int i): ival(i), bval(false), fval(0), ptr1(NULL), ptr2(NULL) {}
     ast_extra_info(void* p1, void* p2=NULL): ival(0), bval(false), fval(0), ptr1(p1), ptr2(p2) {}
     virtual ~ast_extra_info() {}
-    virtual ast_extra_info* copy() {ast_extra_info* i = new ast_extra_info(); i->base_copy(this);}
+    virtual ast_extra_info* copy() {ast_extra_info* i = new ast_extra_info(); i->base_copy(this); return i;}
     virtual void base_copy(ast_extra_info* from) { *this = *from; }
 };
 
@@ -67,6 +67,7 @@ class ast_extra_info_string : public ast_extra_info {
     virtual ast_extra_info* copy() {
         ast_extra_info_string * s = new ast_extra_info_string(str);
         s->base_copy(this);
+        return s;
     }
     virtual ~ast_extra_info_string() { delete [] str;}
 };
@@ -112,11 +113,11 @@ class ast_node {
         virtual void dump_tree(int id_level) = 0; // defined in dump_tree.cc
 
         // defined in typecheck.cc
-        virtual bool local_typecheck(gm_scope* context)=0; // type-check context
+        //virtual bool local_typecheck(gm_scope* context)=0; // type-check context
 
         // defined in traverse.cc
         virtual void traverse(gm_apply*a, bool is_post, bool is_pre) {assert(false);}
-        void traverse_pre(gm_apply*a) {traverse(a,true,false);}
+        void traverse_pre(gm_apply*a) {traverse(a,false,true);}
         void traverse_post(gm_apply*a) {traverse(a,true,false);}
         void traverse_both(gm_apply*a) {traverse(a,true,true);}
         virtual void apply_symtabs(gm_apply*a, bool is_post_apply=false); 
@@ -177,6 +178,7 @@ class ast_node {
 // access of identifier
 class ast_typedecl;
 class ast_id : public ast_node {
+    friend class gm_symtab_entry;
     public:
         virtual ~ast_id() { 
             delete [] name;
@@ -187,11 +189,9 @@ class ast_id : public ast_node {
         // [NOTE] pointer to symbol table entry is *not* copied if cp_syminfo is false
         ast_id* copy(bool cp_syminfo = false) { 
             ast_id* cp;
+            cp = new ast_id(get_orgname(), line, col); // name can be null here. [xxx] WHY?
             if (cp_syminfo) {
-                cp = new ast_id(name, line, col); // name can be numll
                 cp->info = this->info;
-            } else {
-                cp = new ast_id(get_orgname(), line, col); // name cannot be null
             }
             return cp;
         }
@@ -206,8 +206,9 @@ class ast_id : public ast_node {
         int getTypeSummary();        // returns Typedecl for this 
                                      // return TypeDecl->getTypeSummary. returns one of GMTYPE_*
 
-        ast_typedecl* getTargetTypeInfo(); // defined in gm_scope.cc 
-        int getTargetTypeSummary();        // (defined in gm_scope.cc)
+        // only called for property types
+        ast_typedecl* getTargetTypeInfo(); 
+        int getTargetTypeSummary();         
 
     private:
         ast_id() : ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL) {}
@@ -240,12 +241,14 @@ class ast_id : public ast_node {
             strcpy(gen_name, c);
         }
 
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
 
-    private:
+    public:
         char* name;
+
+    private:
         char* gen_name;
         gm_symtab_entry* info;
 
@@ -276,7 +279,7 @@ class ast_idlist : public ast_node {
         void add_id(ast_id* id) {lst.push_back(id);}
         int get_length() {return lst.size();}
         ast_id* get_item(int i) {return lst[i];}
-        virtual bool local_typecheck(gm_scope* context) {assert(false);}
+        //virtual bool local_typecheck(gm_scope* context) {assert(false);}
         virtual void apply_id(gm_apply*a, bool is_post_apply=false); // defined in traverse.cc
         virtual void reproduce(int id_level); 
         virtual void dump_tree(int id_level); 
@@ -302,7 +305,7 @@ class ast_field : public ast_node { // access of node/edge property
         }
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
 
     private: 
         ast_field() : ast_node(AST_FIELD), first(NULL), second(NULL) {}
@@ -358,14 +361,32 @@ class ast_field : public ast_node { // access of node/edge property
 
 class ast_typedecl : public ast_node {  // property or type
     private: 
-        ast_typedecl(): ast_node(AST_TYPEDECL),target_type(NULL),target_graph(NULL), target_set(NULL) {} 
-
+        ast_typedecl(): 
+            ast_node(AST_TYPEDECL),target_type(NULL),
+            target_graph(NULL), target_collection(NULL),
+            target_nbr(NULL),_well_defined(false) {} 
 
     public:
+        // give a deep copy
+        ast_typedecl* copy() {
+            ast_typedecl *p = new ast_typedecl();
+            p->type_id = this->type_id;
+            p->target_type = (this->target_type == NULL) ? NULL : this->target_type->copy();
+            p->target_graph = (this->target_graph == NULL) ? NULL : this->target_graph->copy(true);
+            p->target_collection = (this->target_collection == NULL) ? NULL : this->target_collection->copy(true);
+            p->target_nbr = (this->target_nbr == NULL) ? NULL : this->target_nbr->copy(true);
+            p->line = this->line;
+            p->col = this->col;
+            p->_well_defined = this->_well_defined;
+
+            return p;
+        }
+
         virtual ~ast_typedecl() { 
             delete target_type;
             delete target_graph;
-            delete target_set;
+            delete target_collection;
+            delete target_nbr;
         }
         static ast_typedecl* new_primtype(int ptype_id)  {
             ast_typedecl* t = new ast_typedecl();
@@ -391,11 +412,23 @@ class ast_typedecl : public ast_node {  // property or type
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
+
         static ast_typedecl* new_nodeedge_iterator( ast_id* tg, int iter_type ) 
         {
+            assert(gm_is_all_graph_iter_type(iter_type));
             ast_typedecl* t = new ast_typedecl();
             t->type_id = iter_type;
-            t->target_graph = tg; tg->set_parent(t);
+            t->target_graph = tg; 
+            tg->set_parent(t);
+            return t;
+        }
+        static ast_typedecl* new_nbr_iterator( ast_id* tg, int iter_type)
+        {
+            assert(gm_is_any_nbr_iter_type(iter_type));
+            ast_typedecl* t = new ast_typedecl();
+            t->type_id = iter_type;
+            t->target_nbr = tg; 
+            tg->set_parent(t);
             return t;
         }
         static ast_typedecl* new_set(ast_id* tg, int set_type)
@@ -407,9 +440,17 @@ class ast_typedecl : public ast_node {  // property or type
         }
         static ast_typedecl* new_set_iterator(ast_id* set, int iter_type)
         {
+            // deprecated
             ast_typedecl* t = new ast_typedecl();
             t->type_id = iter_type;
-            t->target_set = set; set->set_parent(t);
+            t->target_collection = set; set->set_parent(t);
+            return t;
+        }
+        static ast_typedecl* new_collection_iterator(ast_id* set, int iter_type)
+        {
+            ast_typedecl* t = new ast_typedecl();
+            t->type_id = iter_type;
+            t->target_collection = set; set->set_parent(t);
             return t;
         }
 
@@ -428,12 +469,15 @@ class ast_typedecl : public ast_node {  // property or type
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
+        static ast_typedecl* new_void() {
+            ast_typedecl* t = new ast_typedecl();
+            t->type_id = GMTYPE_VOID;
+            return t;
+        }
 
 
         int  get_typeid()   {return type_id;}
         void set_typeid(int s) { type_id = s; } 
-        //int  get_graphtype() {return type_id;}
-        //int  get_primtype() {return type_id;}
 
         // seed gm_frontend_api.h
         bool is_primitive() {return gm_is_prim_type(type_id);}
@@ -444,12 +488,13 @@ class ast_typedecl : public ast_node {  // property or type
         bool is_node()            {return gm_is_node_type(type_id);}
         bool is_edge()            {return gm_is_edge_type(type_id);}
         bool is_nodeedge()        {return gm_is_nodeedge_type(type_id);}
-        //bool is_iterator()        {return gm_is_iter_type(type_id);}
         bool is_collection()      {return gm_is_collection_type(type_id);}
         bool is_node_collection()    {return gm_is_node_collection_type(type_id);}
         bool is_edge_collection()    {return gm_is_edge_collection_type(type_id);}
-        bool is_set_iterator()   {return gm_is_set_iter_type(type_id);}
-        bool is_unknown_set_iterator()   {return gm_is_unknown_set_iter_type(type_id);}
+        bool is_set_iterator()          {return gm_is_set_iter_type(type_id);} // [xxx] to be not used
+        bool is_collection_iterator()   {return gm_is_collection_iter_type(type_id);}
+        bool is_unknown_set_iterator()   {return gm_is_unknown_set_iter_type(type_id);} // not to be used
+        bool is_unknown_collection_iterator()   {return gm_is_unknown_collection_iter_type(type_id);}
         bool is_node_iterator()   {return gm_is_node_iter_type(type_id);}
         bool is_edge_iterator()   {return gm_is_edge_iter_type(type_id);}
         bool is_node_edge_iterator()   {return is_node_iterator() || is_edge_iterator();}
@@ -459,45 +504,42 @@ class ast_typedecl : public ast_node {  // property or type
         bool is_node_edge_compatible() {return gm_is_node_edge_compatible_type(type_id);}
         bool is_boolean()         {return gm_is_boolean_type(type_id);}
         bool is_reverse_iterator() {return gm_is_iteration_use_reverse(type_id);}
+        bool has_target_graph() {return gm_has_target_graph_type(type_id);}
+        bool is_void()          {return gm_is_void_type(type_id);}
+        bool is_all_graph_iterator() {return gm_is_all_graph_iter_type(type_id);}
+        bool is_any_nbr_iterator()   {return gm_is_any_nbr_iter_type(type_id);}
 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
-        virtual bool local_typecheck(gm_scope* context) {assert(false);}
+        //virtual bool local_typecheck(gm_scope* context) {assert(false);}
 
-
-        ast_typedecl* copy() {
-            ast_typedecl* cpy = new ast_typedecl();
-            cpy->type_id = type_id;
-            if (target_type != NULL)
-                cpy->target_type = target_type->copy();
-            if (target_graph != NULL)
-                cpy->target_graph = target_graph->copy(true); // always copy symtab info (why?)
-            if (target_set != NULL)
-                cpy->target_set = target_set->copy(true); // always copy symtab info
-            return cpy;
-        }
-
-        //ast_id* get_target_graph() {return target_graph;}
-        gm_symtab_entry* get_target_graph() {
-            if  (is_set_iterator()) {
-                assert(target_set!=NULL);
-                assert(target_set->getTypeInfo() != NULL);
-                assert(target_set->getTypeInfo()->get_target_graph() != NULL);
-                return target_set->getTypeInfo()->get_target_graph();
+        // there is no copying of type
+        
+        gm_symtab_entry* get_target_graph_sym() {
+            if  (is_collection_iterator()) {
+                assert(target_collection!=NULL);
+                assert(target_collection->getTypeInfo() != NULL);
+                assert(target_collection->getTypeInfo()->get_target_graph_sym() != NULL);
+                return target_collection->getTypeInfo()->get_target_graph_sym();
             } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator()) {
                 assert(target_graph!=NULL);
                 assert(target_graph->getSymInfo() != NULL);
                 return target_graph->getSymInfo();
             } 
+            else {
+                assert(false);
+                return NULL;
+            }
         }
         ast_id* get_target_graph_id() {return target_graph;}
-        ast_id* get_target_set_id()  {return target_set;}
-
-        ast_typedecl* get_target_type() { assert(is_property()); assert(target_type!= NULL); return target_type;}
+        ast_id* get_target_collection_id()  {return target_collection;}
+        ast_id* get_target_nbr_id()         {return target_nbr;}
+        ast_typedecl* get_target_type() { return target_type;}
         int getTypeSummary() {  // same as get type id
             return type_id;
         }
-        void setTypeSummary(int s) { // override after typechecking
+        void setTypeSummary(int s) { 
+            // type id might be overriden during type-checking
             set_typeid(s);
         }
         int getTargetTypeSummary() {
@@ -506,13 +548,29 @@ class ast_typedecl : public ast_node {  // property or type
             return target_type->getTypeSummary();
         }
 
+        void set_target_graph_id(ast_id* i) {
+
+            assert(target_graph == NULL);
+            assert(i->getTypeInfo() != NULL);
+            target_graph = i;
+            i->set_parent(this);
+        }
+
+        bool is_well_defined() {return _well_defined;}
+        void set_well_defined(bool b) {_well_defined = b;}
+
+        // for the compiler generated symbols
+        // (when scope is not available)
+        void enforce_well_defined();
 
     private:
         // defined in gm_frontend_api.h
         int type_id;  
         ast_typedecl* target_type;  // for property
-        ast_id* target_graph;       // for property, node, edge
-        ast_id* target_set;         // target set
+        ast_id* target_graph;       // for property, node, edge, set
+        ast_id* target_collection;  // for set-iterator set
+        ast_id* target_nbr;         // for nbr-iterator
+        bool _well_defined;
 };
 
 
@@ -557,7 +615,7 @@ class ast_sentblock : public ast_sent {
         static ast_sentblock* new_sentblock() {return new ast_sentblock();}
         void add_sent(ast_sent* s) {sents.push_back(s); s->set_parent(this);}
 
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
@@ -592,7 +650,7 @@ class ast_argdecl : public ast_node {
         }
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
-        virtual bool local_typecheck(gm_scope* context) {assert(false);}
+        //virtual bool local_typecheck(gm_scope* context) {assert(false);}
 
         ast_typedecl* get_type() {
             if (!tc_finished) {
@@ -627,7 +685,7 @@ class ast_procdef : public ast_node {
         }
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
         virtual void apply_id(gm_apply*a, bool is_post_apply=false); // defined in traverse.cc
         virtual bool has_scope() {return true;}
@@ -645,7 +703,7 @@ class ast_procdef : public ast_node {
             return d; }
 
         void add_argdecl(ast_argdecl* d)     { in_args.push_back(d); d->set_parent(this); }
-        void add_out_argdecl(ast_argdecl* d) { out_args.push_back(d); d->set_parent( this); }
+        void add_out_argdecl(ast_argdecl* d) { out_args.push_back(d); d->set_parent(this); }
         void set_sentblock(ast_sentblock* s) { sents = s; s->set_parent(this);}
         void set_return_type(ast_typedecl* t) {
             ret_type = t; t->set_parent(this);}
@@ -700,7 +758,7 @@ class ast_expr : public ast_node
             delete cond;
         }
         virtual void reproduce(int id_level);
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void dump_tree(int id_level); 
         virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
         virtual bool is_expr() {return true;} 
@@ -782,7 +840,8 @@ class ast_expr : public ast_node
             ast_node(AST_EXPR),
             left(NULL), right(NULL), id1(NULL), field(NULL), 
             ival(0), fval(0), bval(false), op_type(GMOP_END), up(NULL), is_right(false),
-            type_of_expression(GMTYPE_UNKNOWN), cond(NULL)
+            type_of_expression(GMTYPE_UNKNOWN), cond(NULL),
+            bound_graph_sym(NULL)
             {}
 
        protected:
@@ -819,10 +878,13 @@ class ast_expr : public ast_node
         bool is_terop()  {return expr_class == GMEXPR_TER;}
 
         //-----------------------------------------------
-        // set after type-checker execution
+        // type is set after type-checker execution
         //-----------------------------------------------
         int  get_type_summary() {return type_of_expression;}
         void  set_type_summary(int t) {type_of_expression = t;} // set by type checker
+
+        gm_symtab_entry* get_bound_graph() {return bound_graph_sym;}
+        void set_bound_graph(gm_symtab_entry*e) {bound_graph_sym = e;}
 
         long get_ival() {return ival;}
         double get_fval() {return fval;}
@@ -845,11 +907,14 @@ class ast_expr : public ast_node
         void set_right_op(ast_expr* r) { right = r;}
         void set_up_op(ast_expr* e) {up = e;}
         void set_cond_op(ast_expr* e) {cond = e;}
+
     protected:
-        bool local_typecheck_biop(gm_scope* context); 
-        bool local_typecheck_comp(gm_scope* context); 
-        bool local_typecheck_uop(gm_scope* context); 
-        bool local_typecheck_terop(gm_scope* context); 
+        //bool local_typecheck_biop(gm_scope* context); 
+        //bool local_typecheck_comp(gm_scope* context); 
+        //bool local_typecheck_uop(gm_scope* context); 
+        //bool local_typecheck_terop(gm_scope* context); 
+
+        gm_symtab_entry* bound_graph_sym; // set during typecheck
 };
 
 class expr_list {
@@ -870,7 +935,7 @@ class ast_expr_builtin : public ast_expr
     }
 
     virtual void reproduce(int id_level);
-    virtual bool local_typecheck(gm_scope* context); 
+    //virtual bool local_typecheck(gm_scope* context); 
     virtual void dump_tree(int id_level); 
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual ast_expr* copy(bool cp_syminfo = false);
@@ -949,7 +1014,7 @@ class ast_expr_reduce : public ast_expr
     }
 
     virtual void reproduce(int id_level);
-    virtual bool local_typecheck(gm_scope* context); 
+    //virtual bool local_typecheck(gm_scope* context); 
     virtual void dump_tree(int id_level); 
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual bool has_scope() {return true;}
@@ -1027,8 +1092,8 @@ class ast_assign : public ast_sent {
         }
 
         virtual void reproduce(int id_level);
-        virtual bool local_typecheck(gm_scope* context); 
-        virtual bool local_typecheck_for_reduce_op(gm_scope* context, bool is_reduce); // reduce or defer
+        //virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck_for_reduce_op(gm_scope* context, bool is_reduce); // reduce or defer
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
         virtual void dump_tree(int id_level); 
 
@@ -1100,7 +1165,7 @@ class ast_vardecl : public ast_sent
             id->set_parent(d); type->set_parent(d); if (init!=NULL) init->set_parent(d);
             return d;
         }
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
@@ -1140,7 +1205,7 @@ class ast_return: public ast_sent {
         ast_expr* get_expr() {return expr;}
         void set_expr(ast_expr*e) {expr=e;if (e!=NULL) e->set_parent(this);}
 
-        virtual bool local_typecheck(gm_scope* context);
+        //virtual bool local_typecheck(gm_scope* context);
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
@@ -1183,7 +1248,7 @@ class ast_foreach : public ast_sent
         } 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
         ast_id* get_source() {return source;}
@@ -1270,7 +1335,7 @@ class ast_bfs: public ast_sent
         void           set_fbody(ast_sentblock* b) {f_body = b;}
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
         int get_iter_type() {return GMTYPE_NODEITER_BFS;}
         int get_iter_type2() {return is_transpose() ? GMTYPE_NODEITER_IN_NBRS  : GMTYPE_NODEITER_NBRS;}
@@ -1308,7 +1373,7 @@ public:
     }
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
-    virtual bool local_typecheck(gm_scope* context); 
+    //virtual bool local_typecheck(gm_scope* context); 
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
     static ast_call* new_builtin_call(ast_expr_builtin* b) {
@@ -1356,7 +1421,7 @@ class ast_if : public ast_sent
         }
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
         ast_sent* get_then() {return then_part;}
@@ -1407,7 +1472,7 @@ class ast_while : public ast_sent
         // rotuines that should be implemented
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
-        virtual bool local_typecheck(gm_scope* context); 
+        //virtual bool local_typecheck(gm_scope* context); 
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
         ast_sent* get_body() {return body;}
@@ -1439,7 +1504,7 @@ class ast_nop : public ast_sent
         void set_subtype(int s) {subtype = s;}
         virtual void reproduce(int id_level); 
         virtual void dump_tree(int id_level);
-        virtual bool local_typecheck(gm_scope* context) {return true;}
+        //virtual bool local_typecheck(gm_scope* context) {return true;}
         virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre) {}
         virtual bool do_rw_analysis() {return true;}
     private:

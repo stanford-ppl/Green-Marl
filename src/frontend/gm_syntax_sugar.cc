@@ -6,6 +6,7 @@
 
 //---------------------------------------------------
 // syntax sugar elimination, prior to type resolution
+//  0. (argument) x,y:Z ==> x:TYPE, y:TYPE
 //  1. filter of foreach --> if inside foreach
 //  2. define and initialization --> define; initialization
 //---------------------------------------------------
@@ -84,6 +85,44 @@ public:
     }
 };
 
+static void gm_expand_argument_list(std::list<ast_argdecl*>& A)
+{
+    std::list<ast_argdecl*> s; // temp;
+    std::list<ast_argdecl*>::iterator I;
+
+    // expand  x,y : INT -> x:INT, y:INT
+    for(I=A.begin(); I!= A.end(); I++) {
+        ast_argdecl *a = *I;
+        ast_idlist* idl = a->get_idlist();
+        ast_typedecl* t = a->get_type();
+        if (idl->get_length() == 1) {
+            s.push_back(a);
+        }
+        else {
+           for(int i=0;i<idl->get_length(); i++)
+           {
+               ast_id* I = idl->get_item(i)->copy();
+               ast_idlist* IDL = new ast_idlist();
+               IDL->add_id(I);
+               ast_typedecl* T= t->copy();
+
+               ast_argdecl *aa  = ast_argdecl::new_argdecl(IDL,T);
+               s.push_back(aa);
+           }
+
+           delete a;
+        }
+    }
+
+
+    // new clear A, and put contents of S into A
+    A.clear();
+    for(I=s.begin(); I!= s.end(); I++) 
+    {
+        A.push_back(*I);
+    }
+}
+
 bool gm_frontend::do_syntax_sugar_1(ast_procdef* p)
 {
     gm_ss1_filter s1;
@@ -91,6 +130,10 @@ bool gm_frontend::do_syntax_sugar_1(ast_procdef* p)
 
     gm_ss1_initial_expr s2;
     gm_traverse_sents(p, &s2);
+
+    gm_expand_argument_list(p->get_in_args());
+    gm_expand_argument_list(p->get_out_args());
+
 
     return true;
 }

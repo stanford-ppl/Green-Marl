@@ -28,16 +28,16 @@ void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2)
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", id->get_line(), id->get_col());
     switch(errno) {
+        case GM_ERROR_INVALID_GROUP_DRIVER:
+            printf("%s cannot be used outside group assignment.\n", id->get_orgname()); break;
         case GM_ERROR_UNDEFINED:
             printf("%s is not defined.\n", id->get_orgname()); break;
         case GM_ERROR_UNDEFINED_FIELD:
             printf("Property name %s is not defined.\n", id->get_orgname()); break;
         //case GM_ERROR_MULTIPLE_TARGET:
         //    printf("%s is bound to multiple graphs.\n", id->get_orgname()); break;
-        case GM_ERROR_PROPERTY_ARGUMENT:
-            printf("Property %s cannot be defined as an output parameter.\n", id->get_orgname()); break;
         case GM_ERROR_WRONG_PROPERTY:
-            printf("Property %s is not defined as %s\n", id->get_orgname(), str1); break;
+            printf("%s is not defined as a %s\n", id->get_orgname(), str1); break;
         case GM_ERROR_NONGRAPH_FIELD:
             printf("%s is neither node, edge, nor graph.\n", id->get_orgname()); break;
         case GM_ERROR_READONLY:
@@ -57,16 +57,29 @@ void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2)
 
         case GM_ERROR_UNKNOWN:
         default:
+            assert(false);
             printf("Unknown error 1\n"); break;
     }
 }
-void gm_type_error(int errno, int l, int c, const char* str1, const char* str2)
+void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, const char* str3)
 {
     gm_print_error_header();
 
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
     switch(errno) {
+        case GM_ERROR_GROUP_REDUCTION:
+            printf("Group assignment cannot be a reduction\n");
+            break;
+
+        case GM_ERROR_NESTED_BFS:
+            printf("Currently, nested bfs is not supported\n");
+            break;
+        case GM_ERROR_NEED_PRIMITIVE:
+            printf("need primitive type.\n");
+            break;
+        case GM_ERROR_INVALID_OUTPUT_TYPE:
+            printf("Invalid type for an output parameter, or return.\n"); break;
         case GM_ERROR_INVALID_BUILTIN:
             printf("Invalid built-in:%s\n", str1);
             break;
@@ -78,6 +91,8 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2)
             break;
         case GM_ERROR_OPERATOR_MISMATCH:
             printf("Operator %s applied to an unsupported type (%s)\n", str1, str2);break;
+        case GM_ERROR_OPERATOR_MISMATCH2:
+            printf("Operator %s cannot be applied to (%s, %s)\n", str1, str2, str3);break;
         case GM_ERROR_TYPE_CONVERSION:
             printf("Type conversion can be only applied to primitive types\n");break;
         case GM_ERROR_TYPE_CONVERSION_BOOL_NUM:
@@ -91,7 +106,7 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2)
         case GM_ERROR_NEED_BOOLEAN:
             printf("Need boolean expression.\n"); break;
         case GM_ERROR_UNBOUND_REDUCE:
-            printf("Reduce(Defer) assignment must be performed inside a foreach statement\n"); break;
+            printf("Cannot determine bound to Reduce(Defer) assignment\n"); break;
 
         case GM_ERROR_DOUBLE_BOUND_ITOR:
             printf("Reduce(Defer) Target already bound to a different iterator: %s\n", str1); break;
@@ -125,20 +140,24 @@ void gm_type_error(int errno, ast_id* id1, ast_id* id2)
     printf("%d: %d: error: ", id1->get_line(),id1->get_col());
     switch(errno) {
         case GM_ERROR_NONGRAPH_TARGET:
-            printf("%s is not a graph type object\n", 
-                    id1->get_orgname()); break;
+            printf("%s is not a graph type object\n", id1->get_orgname()); break;
         case GM_ERROR_NONSET_TARGET:
-            printf("%s is not a set  type object\n", 
-                    id1->get_orgname()); break;
+            printf("%s is not a collection type object\n", id1->get_orgname()); break;
+        case GM_ERROR_NONNODE_TARGET:
+            printf("%s is not a node-compatible type object\n", id1->get_orgname()); break;
+        case GM_ERROR_TARGET_GRAPH_MISMATCH:
+            printf("%s and %s are not bound to the same graph\n", 
+                    id1->get_orgname(), id2->get_orgname()); break;
         case GM_ERROR_UNDEFINED_FIELD_GRAPH:
             printf("Property %s is not defined for graph %s.\n", id1->get_orgname(), id2->get_orgname()); break;
         case GM_ERROR_DUPLICATE:
             printf("%s is defined more than one time. (First defined in line %d : %d)\n",
                     id1->get_orgname(), id2->get_line(), id2->get_col());
             break;
+        case GM_ERROR_TARGET_MISMATCH:
+            printf("Target Graphs mismatches %s, %s.\n", id1->get_orgname(), id2->get_orgname());break;
         case GM_ERROR_UNKNOWN:
         default:
-            assert(false);
             printf("Unknown error 3\n"); break;
     }
 }

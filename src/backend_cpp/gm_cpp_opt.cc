@@ -8,90 +8,6 @@
 #include "gm_frontend.h"
 #include "gm_ind_opt.h"
 #include "gm_argopts.h"
-//=======================================================================================
-// Transformation and Optimization for CPP
-// [1] name sanitization
-// [2] translate deferred write
-// [3] add cleanup code for property
-// [4] Add entry/exit routines (gm_cpp_opt_entry_exit.cc)
-//=======================================================================================
-class gm_sanitize_name_for_cpp : public gm_apply
-{
-    public:
-        // change names in the symbol table
-        virtual bool apply(gm_symtab_entry* e, int symtab_type);
-    protected:
-        virtual bool isReservedWord(const char* c);
-};
-
-//-------------------------------------------------------------
-// name changer for cpp
-//   (1) proc, var -> avoid reserved words
-//   (2) field -> change into _<graph>_f_
-//-------------------------------------------------------------
-bool gm_sanitize_name_for_cpp ::apply(gm_symtab_entry* e, int symtab_type)
-{
-    //------------------------------------------
-    // change names in the symbol table
-    //------------------------------------------
-    char buf[1024]; // should be enough
-
-    ast_id* id = e->getId();
-    if (symtab_type == GM_SYMTAB_FIELD) {
-        char* org_fname = id->get_orgname();
-        char* org_graph_name = e->getType()->get_target_graph_id()->get_orgname();
-        sprintf(buf,"__%s_%s", org_graph_name, org_fname);
-        printf("changing name %s -> %s %p\n", org_fname, buf, e);
-        id->set_genname(buf);
-    }
-    else {
-        if (isReservedWord(id->get_orgname())) {
-            sprintf(buf,"__%s", id->get_orgname());
-            id->set_genname(buf);
-        }
-    }
-    return true;
-}
-
-bool gm_sanitize_name_for_cpp ::isReservedWord(const char* c)
-{
-    if (gm_is_same_string(c, "int")) return true;
-    else if (gm_is_same_string(c, "unsigned")) return true;
-    else if (gm_is_same_string(c, "char")) return true;
-    else if (gm_is_same_string(c, "void")) return true;
-    else if (gm_is_same_string(c, "short")) return true;
-    else if (gm_is_same_string(c, "long")) return true;
-    else if (gm_is_same_string(c, "while")) return true;
-    else if (gm_is_same_string(c, "for")) return true;
-    else if (gm_is_same_string(c, "double")) return true;
-    else if (gm_is_same_string(c, "float")) return true;
-    else if (gm_is_same_string(c, "if")) return true;
-    else if (gm_is_same_string(c, "else")) return true;
-    else if (gm_is_same_string(c, "do")) return true;
-    else if (gm_is_same_string(c, "return")) return true;
-    else if (gm_is_same_string(c, "register")) return true;
-    else if (gm_is_same_string(c, "volatile")) return true;
-    else if (gm_is_same_string(c, "public")) return true;
-    else if (gm_is_same_string(c, "class")) return true;
-    else if (gm_is_same_string(c, "switch")) return true;
-    else if (gm_is_same_string(c, "case")) return true;
-    else if (gm_is_same_string(c, "virtual")) return true;
-    else if (gm_is_same_string(c, "struct")) return true;
-    else if (gm_is_same_string(c, "typedef")) return true;
-    return false;
-}
-
-bool gm_cpp_gen::sanitize_id(ast_procdef* proc)
-{
-    //--------------------------------
-    // Sanitize identifiers
-    // (i.e. avoid C++ reserved words)
-    //--------------------------------
-    gm_sanitize_name_for_cpp nc;
-    gm_traverse_symtabs(proc, &nc);
-
-    return true;
-}
 
 
 class property_cleanup : public gm_apply
@@ -160,29 +76,32 @@ bool gm_cpp_gen::do_local_optimize()
     for(int i=0;i<COUNT;i++) {
         gm_begin_minor_compiler_stage(i +1, NAMES[i]);
 
-        std::vector<ast_procdef*>& top_levels = FE.get_procs(); 
-        std::vector<ast_procdef*>::iterator it;
-        for(it = top_levels.begin(); it!=top_levels.end(); it++)
+        FE.prepare_proc_iteration(); 
+        ast_procdef* p;
+        while ((p=FE.get_next_proc()) != NULL)
         {
-            set_current_proc(*it);
+            bool okay =true;
             switch(i) {
-                case 0: is_okay &= deferred_write(*it); break;
-                case 1: is_okay &= sanitize_id(*it); break; 
-                case 2: is_okay &= select_parallel(*it); break;
-                case 3: is_okay &= IND_OPT.do_moveup_propdecl(*it); break;
-                case 4: is_okay &= FE.fix_bound_symbols(*it); gm_redo_rw_analysis((*it)->get_body());break;
-                case 5: if (OPTIONS.get_arg_bool(GMARGFLAG_NOSCREDUCE)) {
-                            is_okay = true;
-                        } else 
-                            is_okay &= optimize_reduction(*it);
+                case 0: okay = deferred_write(p); break;
+                case 1: okay = sanitize_id(p); break; 
+                case 2: okay = select_parallel(p); break;
+                case 3: okay = IND_OPT.do_moveup_propdecl(p); break;
+                case 4: okay = FE.fix_bound_symbols(p); 
+                        gm_redo_rw_analysis((p)->get_body());
                         break;
-                case 6: is_okay &= add_property_cleanup(*it); break;
-                case 7: is_okay &= add_entry_exit(*it); break;
+                case 5: if (OPTIONS.get_arg_bool(GMARGFLAG_NOSCREDUCE)) {
+                            okay = true;
+                        } else 
+                            okay = optimize_reduction(p);
+                        break;
+                case 6: okay = add_property_cleanup(p); break;
+                case 7: okay = add_entry_exit(p); break;
                 case COUNT:
                 default:
                     assert(false);
                     break;
             }
+            is_okay = is_okay && okay;
         }
 
         gm_end_minor_compiler_stage();

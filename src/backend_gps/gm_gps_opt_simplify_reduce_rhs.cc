@@ -69,7 +69,7 @@ public:
             gm_add_new_symbol_primtype(
                 sb, 
                 ptype,
-                (char*)TEMP_GEN.getTempName("t"));
+                (char*)FE.voca_temp_name_and_add("t"));
 
         // add an assign statement
         // <temp> = <org_rhs>

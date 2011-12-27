@@ -19,7 +19,12 @@ static enum {
     GM_BLTIN_GRAPH_NUM_EDGES,   // number of edges in graph
     GM_BLTIN_NODE_DEGREE,       // (out-)degree of a node
     GM_BLTIN_NODE_IN_DEGREE,    // in-degree of a node
+
     GM_BLTIN_TOP_DRAND,         // rand function
+    GM_BLTIN_TOP_IRAND,         // rand function
+    GM_BLTIN_TOP_LOG,           // log function
+    GM_BLTIN_TOP_EXP,           // exp function
+    GM_BLTIN_TOP_POW,           // pow function
 
     GM_BLTIN_SET_ADD,           
     GM_BLTIN_SET_REMOVE,
@@ -58,7 +63,7 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"*Push",                      GM_BLTIN_SET_ADD,         ""},
     {"NodeO:PushFront:Void:1:Node",GM_BLTIN_SET_ADD_BACK,    ""},
     {"NodeO:Pop:Node:0",           GM_BLTIN_SET_REMOVE,      ""},
-    {"*Pop_Back",                  GM_BLTIN_SET_REMOVE,      ""},
+    {"*PopBack",                   GM_BLTIN_SET_REMOVE,      ""},
     {"NodeO:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE_BACK, ""},
     {"NodeO:Has:Bool:1:Node",      GM_BLTIN_SET_HAS,         ""},
     {"NodeO:Front:Node:0",         GM_BLTIN_SET_PEEK,         ""},
@@ -74,7 +79,11 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"EdgeO:Front:Edge:0",         GM_BLTIN_SET_PEEK,        ""},
     {"EdgeO:Back:Edge:0",          GM_BLTIN_SET_PEEK_BACK,   ""},
 
-    {"_:_DRand:Double:0",          GM_BLTIN_TOP_DRAND,       ""},
+    {"_:Uniform:Double:0",         GM_BLTIN_TOP_DRAND,       ""},  // returns [0, 1)
+    {"_:Rand:Int:1:Int",           GM_BLTIN_TOP_IRAND,       ""},  // returns [0, n-1] 
+    {"_:Log:Double:1:Double",      GM_BLTIN_TOP_LOG,         ""},  // returns log(d)  // base-e
+    {"_:Exp:Double:1:Double",      GM_BLTIN_TOP_EXP,         ""},  // returns e^d
+    {"_:Pow:Double:2:Double:Double", GM_BLTIN_TOP_POW,       ""},  // returns a^b
 };
 
 class gm_builtin_def {

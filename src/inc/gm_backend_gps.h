@@ -23,7 +23,7 @@ class gm_gpslib : public gm_graph_library {
     gm_gps_gen* get_main() {return main;}
 
     virtual const char* get_header_info() {return "";}
-    virtual const char* get_type_string(ast_typedecl*, int usage) {return "";}
+    virtual const char* get_type_string(ast_typedecl* t) {return "";}
     virtual bool generate_builtin(ast_expr_builtin* e) {return true;}
 
 
@@ -63,6 +63,7 @@ class gm_gpslib : public gm_graph_library {
 };
 
 
+#define GPS_TAG_COMM_ID    "GPS_TAG_COMM_ID"
 
 //-----------------------------------------------------------------
 // interface for graph library Layer
@@ -75,8 +76,10 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
     public:
         gm_gps_gen() : gm_code_generator(Body), dname(NULL), fname(NULL), f_body(NULL), proc(NULL), bb_entry(NULL) {
             glib = new gm_gpslib(this);
+            comm_id = 0;
+            basicblock_id = 0;
         }
-        virtual ~gm_gps_gen() { close_output_files(); delete [] dname; delete [] fname; }
+        virtual ~gm_gps_gen() { close_output_files(); delete_comms(); delete [] dname; delete [] fname; }
         virtual void setTargetDir(const char* dname) ;
         virtual void setFileName(const char* fname) ;
 
@@ -93,6 +96,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void set_entry_basic_block(gm_gps_basic_block* b); // set entry and creat list
         gm_gps_basic_block* get_entry_basic_block() {return bb_entry;}
         std::list<gm_gps_basic_block*>& get_basic_blocks() {return bb_blocks;}
+        
 
     protected:
         //----------------------------------
@@ -132,6 +136,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void do_create_stages();
         bool do_check_synthesizable();
         void merge_basic_blocks(gm_gps_basic_block* entry);
+        void split_communication_basic_blocks(gm_gps_basic_block* entry);
         bool do_analyze_symbols();
         bool do_merge_symbol_usages();
         bool do_make_symbol_summary();
@@ -153,11 +158,53 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         // : there should be only one procedure
         //---------------------------------------
         ast_procdef* proc;
-        gm_gps_basic_block* bb_entry;  // entry for the procedure
-        std::list<gm_gps_basic_block*> bb_blocks;
-        std::set<gm_symtab_entry* > scalar;
-        std::set<gm_symtab_entry* > prop;
-        int total_prop_size;
+
+        gm_gps_basic_block* bb_entry;               // entry for the procedure basic blocks (DAG)
+        std::list<gm_gps_basic_block*> bb_blocks;   // same as above DAG, but flattened as list 
+
+        std::set<gm_symtab_entry* > scalar;         // list of persistent master symbols 
+        std::set<gm_symtab_entry* > prop;           // list of persistent property symbols
+        int total_prop_size;                    
+
+        // map of 
+        // inner loops (possible communications) and
+        // symbols used in the communication
+        std::map<ast_foreach*, std::set<gm_symtab_entry*>* >  comms;
+        int comm_id;
+        int basicblock_id;
+
+    public:
+        int issue_comm_id() {return comm_id++;}
+        int issue_basicblock_id() {return basicblock_id++;}
+
+    public:
+        std::map<ast_foreach*, std::set<gm_symtab_entry*>* >&  get_communication_loops() {return comms;}
+        void add_commnication_loop(ast_foreach* fe) {
+            assert(comms.find(fe) == comms.end());
+            std::set<gm_symtab_entry*>* new_set = new std::set<gm_symtab_entry*>();
+            comms[fe] = new_set;
+            assert(fe->find_info(GPS_TAG_COMM_ID) == NULL);
+            fe->add_info(GPS_TAG_COMM_ID, new ast_extra_info(issue_comm_id()));
+        }
+        void delete_comms() {
+            std::map<ast_foreach*, std::set<gm_symtab_entry*>* >::iterator I;
+            for(I=comms.begin(); I!=comms.end();I++)
+                delete (I->second);
+        }
+        void add_comminication_symbol(ast_foreach* fe, gm_symtab_entry* sym)
+        {
+            assert(comms.find(fe) != comms.end());
+            std::set<gm_symtab_entry*>* set = comms.find(fe)->second;
+            set->insert(sym);
+        }
+        std::set<gm_symtab_entry*>* find_comminication_symbols(ast_foreach* fe)
+        {
+            assert(comms.find(fe) != comms.end());
+            std::set<gm_symtab_entry*>* set = comms.find(fe)->second;
+            return set;
+        }
+
+
     public:
         void set_total_property_size(int s) {total_prop_size = s;}
         int  get_total_property_size() {return total_prop_size;}
@@ -165,11 +212,13 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
     public: // from code generator interface
         const char* get_type_string(ast_typedecl* T, bool is_master);
 
+
         virtual void generate_rhs_id(ast_id* i); 
         virtual void generate_rhs_field(ast_field* i) ;
         virtual void generate_expr_builtin(ast_expr* e) {assert(false);}
         virtual void generate_expr_minmax(ast_expr* e);
         virtual void generate_expr_type_conversion(ast_expr *e) {assert(false);}
+        virtual void generate_expr_abs(ast_expr*e) {assert(false);}
         virtual void generate_lhs_id(ast_id* i); 
 
         virtual void generate_lhs_field(ast_field* i);
@@ -182,11 +231,13 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_sent_return(ast_return *r) {}
         virtual void generate_sent_assign(ast_assign *a);
 
+        virtual const char* get_type_string(int prim_type) {assert(false);}
+
         void set_master_generate(bool b) {_is_master_gen = b;}
         bool is_master_generate() {return _is_master_gen;} 
         bool _is_master_gen;
-};
 
+};
 
 
 

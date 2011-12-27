@@ -138,7 +138,7 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe)
         if (e->getType()->is_property()) continue;
 
         assert(gm_is_prim_type(e->getType()->getTypeSummary()));
-        const char* new_name = TEMP_GEN.getTempName(e->getId()->get_genname(), "_prv");
+        const char* new_name = FE.voca_temp_name_and_add(e->getId()->get_genname(), "_prv");
 
         // add local variable at scope
         gm_symtab_entry* thread_local = gm_add_new_symbol_primtype(se, e->getType()->getTypeSummary(), (char*)new_name);
@@ -234,7 +234,13 @@ void nop_reduce_scalar::generate(gm_cpp_gen* gen)
         ast_id* rhs_s = new_sym->getId()->copy(true);
         ast_expr* rhs = ast_expr::new_id_expr(rhs_s);
 
+        ast_assign* new_assign = ast_assign::new_assign_scala(
+                lhs, rhs, GMASSIGN_REDUCE, NULL, r_type);
+
+        gen->generate_sent_reduce_assign(new_assign);
+                
         // symbols are scalar
+            /*
         gen->generate_reduce_main(
                 lhs, NULL,
                 rhs,
@@ -244,6 +250,8 @@ void nop_reduce_scalar::generate(gm_cpp_gen* gen)
 
         delete lhs;
         delete rhs;
+        */
+            delete new_assign;
     }
 }
 

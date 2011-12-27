@@ -22,6 +22,7 @@ class gm_symtab_entry {
             id(_id), type(_type), isRA(_isRA), isWA(_isWA) {
                 id->setSymInfo(this, true);
                 assert(type != NULL);
+                assert(id->name != NULL);
             } 
         virtual ~gm_symtab_entry() {
             delete id;
@@ -47,6 +48,10 @@ class gm_symtab_entry {
             std::map<std::string, ast_extra_info*>::iterator i = extra.find(s);
             if (i == extra.end()) return NULL;
             else return i->second;
+        }
+        void remove_info(const char* id) {
+            std::string s(id);
+            extra.erase(s);
         }
 
     private:
@@ -84,11 +89,11 @@ class gm_symtab {
         ast_node* get_ast() {return ast;}
 
         // if old entry is not found, copy of id and copy of typedecl is added into the table
-        bool check_and_add_symbol(ast_id* id, 
+        bool check_duplicate_and_add_symbol(ast_id* id, 
                 ast_typedecl* type, 
                 gm_symtab_entry*& old_def,
                 bool isRA=true, bool isWA=true)
-        {
+        { 
             assert(id->getSymInfo() == NULL);
             old_def = find_symbol(id); 
             if (old_def != NULL) return false;
@@ -96,11 +101,21 @@ class gm_symtab {
             return true;
         }
 
+        bool check_and_add_symbol(ast_id* id, 
+                ast_typedecl* type, 
+                gm_symtab_entry*& old_def,
+                bool isRA=true, bool isWA=true)
+        {
+            return check_duplicate_and_add_symbol(id, type, old_def, isRA, isWA);
+        }
+
 
         gm_symtab_entry* find_symbol(ast_id* id) {
             for(int i=0;i<entries.size(); i++) {
                 gm_symtab_entry* e = entries[i];
-                if (!strcmp(e->id->get_orgname(), id->get_orgname())) return e;
+                const char* c = e->id->get_orgname();
+                const char* c2 = id->get_orgname();
+                if (!strcmp(c,c2)) return e;
             }
             if (parent == NULL) return NULL;
             return parent->find_symbol(id);
@@ -140,6 +155,7 @@ class gm_symtab {
         }
 
     private:
+        // copy of (id) and copy of (type) is added into a new symbol entry
         void add_entry(ast_id* id, ast_typedecl* type, bool isRA=true, bool isWA=true) { 
             ast_id* id_copy = id->copy();
             ast_typedecl* type_copy = type->copy();

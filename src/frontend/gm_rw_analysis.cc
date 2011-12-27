@@ -51,47 +51,47 @@ bool gm_rw_analysis::apply(ast_sent* s)
 
         case AST_NOP:
             b = apply_nop((ast_nop*) s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
         case AST_ASSIGN:
             b = apply_assign((ast_assign*) s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
         case AST_CALL:
             b = apply_call((ast_call*) s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
         case AST_SENTBLOCK:
             b = apply_sentblock((ast_sentblock*) s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
         case AST_IF:
             b = apply_if((ast_if*)s);
-            _succ &= b;
+            _succ = _succ && b;
             return b; 
 
         case AST_WHILE:
             b = apply_while((ast_while*)s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
         case AST_FOREACH:
             b = apply_foreach((ast_foreach*)s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
         case AST_BFS:
             b = apply_bfs((ast_bfs*)s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
         case AST_RETURN:
             b = apply_return((ast_return*)s);
-            _succ &= b;
+            _succ = _succ && b;
             return b;
 
 
@@ -436,9 +436,9 @@ bool gm_rw_analysis::apply_assign(ast_assign *a)
     }
 
     if (is_reduce) {
-        is_okay &= gm_add_rwinfo_to_set(D, target_sym, new_entry, true);
+        is_okay = is_okay && gm_add_rwinfo_to_set(D, target_sym, new_entry, true);
     } else {
-        is_okay &= gm_add_rwinfo_to_set(W, target_sym, new_entry, false);
+        is_okay = is_okay && gm_add_rwinfo_to_set(W, target_sym, new_entry, false);
     }
 
     // (2) RHS
@@ -502,7 +502,7 @@ static bool merge_for_if_else(
                 gm_rwinfo* e = *ss1;
                 gm_rwinfo* copy = e->copy();
                 copy->always = false; // chage it into conditional access
-                is_okay &= gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
+                is_okay = is_okay && gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
             }
         } else {
             // symbol also in the else path
@@ -526,10 +526,10 @@ static bool merge_for_if_else(
                     if (!found) // add it as 'non-conditional' access
                         copy->always = false;
 
-                    is_okay &= gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
+                    is_okay = is_okay && gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
                 }
                 else { // alrady conditional. simply add in the new set
-                    is_okay &= gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
+                    is_okay = is_okay && gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
                 }
             }
         }
@@ -546,7 +546,7 @@ static bool merge_for_if_else(
             gm_rwinfo* e = *ss2;
             gm_rwinfo* copy = e->copy();
             copy->always = false; // chage it into conditional access
-            is_okay &= gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
+            is_okay = is_okay && gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
         }
     }
 
@@ -571,7 +571,7 @@ static bool merge_for_if(
             gm_rwinfo* e = *ss1;
             gm_rwinfo* copy = e->copy();
             copy->always = false; // chage it into conditional access
-            is_okay &= gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
+            is_okay = is_okay && gm_add_rwinfo_to_set(Target, sym, copy, is_reduce);
         }
     }
     return is_okay;
@@ -593,14 +593,14 @@ bool gm_rw_analysis::apply_if(ast_if *i)
     if (i->get_else() != NULL) {
         gm_rwinfo_sets* S1 = get_rwinfo_sets(i->get_then());
         gm_rwinfo_sets* S2 = get_rwinfo_sets(i->get_else());
-        is_okay &= merge_for_if_else(R, S1->read_set, S2->read_set, false);
-        is_okay &= merge_for_if_else(W, S1->write_set, S2->write_set, false);
-        is_okay &= merge_for_if_else(D, S1->reduce_set, S2->reduce_set, true);
+        is_okay = is_okay && merge_for_if_else(R, S1->read_set, S2->read_set, false);
+        is_okay = is_okay && merge_for_if_else(W, S1->write_set, S2->write_set, false);
+        is_okay = is_okay && merge_for_if_else(D, S1->reduce_set, S2->reduce_set, true);
     } else {
         gm_rwinfo_sets* S1 = get_rwinfo_sets(i->get_then());
-        is_okay &= merge_for_if(R, S1->read_set, false);
-        is_okay &= merge_for_if(W, S1->write_set, false);
-        is_okay &= merge_for_if(D, S1->reduce_set, true);
+        is_okay = is_okay && merge_for_if(R, S1->read_set, false);
+        is_okay = is_okay && merge_for_if(W, S1->write_set, false);
+        is_okay = is_okay && merge_for_if(D, S1->reduce_set, true);
     }
 
     return is_okay;
@@ -641,7 +641,8 @@ static bool merge_for_sentblock(
         for(ii= l->begin(); ii!=l->end(); ii++)
         {
              gm_rwinfo* copy = (*ii)->copy();
-             is_okay &= gm_add_rwinfo_to_set(target, e, copy, is_reduce);
+             bool b = gm_add_rwinfo_to_set(target, e, copy, is_reduce);
+             is_okay = is_okay && b;
         }
     }
     return is_okay;
@@ -664,9 +665,9 @@ bool gm_rw_analysis::apply_sentblock(ast_sentblock *s)
         gm_rwinfo_map& W2 = sets2->write_set;
         gm_rwinfo_map& D2 = sets2->reduce_set;
 
-        is_okay &= merge_for_sentblock( s, R, R2, false); 
-        is_okay &= merge_for_sentblock( s, W, W2, false); 
-        is_okay &= merge_for_sentblock( s, D, D2, true); 
+        is_okay = merge_for_sentblock( s, R, R2, false) && is_okay; 
+        is_okay = merge_for_sentblock( s, W, W2, false) && is_okay; 
+        is_okay = merge_for_sentblock( s, D, D2, true) && is_okay; 
     }
     return is_okay;
 }
@@ -692,7 +693,7 @@ static bool merge_all( gm_rwinfo_map& target, gm_rwinfo_map& old, bool is_reduce
         for(ii= l->begin(); ii!=l->end(); ii++)
         {
              gm_rwinfo* copy = (*ii)->copy();
-             is_okay &= gm_add_rwinfo_to_set(target, e, copy, is_reduce);
+             is_okay = gm_add_rwinfo_to_set(target, e, copy, is_reduce) && is_okay;
         }
     }
     return is_okay;
@@ -711,13 +712,13 @@ static bool merge_body(
     bool is_okay = true;
 
     if (!is_conditional) {
-        is_okay &= merge_all(R, R2, false); // copy as is
-        is_okay &= merge_all(W, W2, false);
-        is_okay &= merge_all(D, D2, true);
+        is_okay = merge_all(R, R2, false) && is_okay; // copy as is
+        is_okay = merge_all(W, W2, false) && is_okay;
+        is_okay = merge_all(D, D2, true) && is_okay;
     } else {
-        is_okay &= merge_for_if(R, R2, false); // copy and change it as conditional
-        is_okay &= merge_for_if(W, W2, false);
-        is_okay &= merge_for_if(D, D2, true);
+        is_okay = merge_for_if(R, R2, false) && is_okay; // copy and change it as conditional
+        is_okay = merge_for_if(W, W2, false) && is_okay;
+        is_okay = merge_for_if(D, D2, true) && is_okay;
     }
 
     return is_okay;
@@ -784,7 +785,7 @@ static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwin
                cp->driver = NULL;
                cp->access_range = range;
             }
-            is_okay &= gm_add_rwinfo_to_set(T, sym, cp, false);
+            is_okay = gm_add_rwinfo_to_set(T, sym, cp, false) && is_okay;
         }
     }    
     return is_okay;
@@ -876,9 +877,9 @@ static bool cleanup_iterator_access_reduce(
             }
 
             if (cp->bound_symbol == NULL)
-                is_okay &= gm_add_rwinfo_to_set(W, sym, cp, false);
+                is_okay = gm_add_rwinfo_to_set(W, sym, cp, false) && is_okay;
             else
-                is_okay &= gm_add_rwinfo_to_set(D, sym, cp, true);
+                is_okay = gm_add_rwinfo_to_set(D, sym, cp, true) && is_okay;
         }
     }    
     return is_okay;
@@ -909,9 +910,9 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a)
     // 3) Eliminate access driven by the current iterator
     // 4) And construct bound set
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;  
-    is_okay &= cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type());
-    is_okay &= cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type());
-    is_okay &= cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type());
+    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type()) && is_okay;
 
     return is_okay;
 }
@@ -955,10 +956,10 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a)
 
     bool is_conditional = !((a->get_filter() == NULL)  && (a->get_node_cond() == NULL) && (a->get_edge_cond() == NULL)) ;
     if (a->get_fbody() != NULL) {
-        is_okay &= merge_body(R_temp, W_temp, D_temp1, a->get_fbody(), is_conditional);
+        is_okay = merge_body(R_temp, W_temp, D_temp1, a->get_fbody(), is_conditional) && is_okay;
     }
     if (a->get_bbody() != NULL) {
-        is_okay &= merge_body(R_temp, W_temp, D_temp2, a->get_bbody(), is_conditional);
+        is_okay = merge_body(R_temp, W_temp, D_temp2, a->get_bbody(), is_conditional) && is_okay;
     }
 
     // [TODO: reduce operation bound to BFS]
@@ -966,10 +967,10 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a)
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;  
     gm_rwinfo_map& B2 = gm_get_bound_set_info(a)->bound_set_back;  
 
-    is_okay &= cleanup_iterator_access(a->get_iterator(), R_temp, R, iter_type);
-    is_okay &= cleanup_iterator_access(a->get_iterator(), W_temp, W, iter_type);
-    is_okay &= cleanup_iterator_access_reduce(a->get_iterator(), D_temp1, D, W, B, iter_type);
-    is_okay &= cleanup_iterator_access_reduce(a->get_iterator(), D_temp2, D, W, B2, iter_type);
+    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, iter_type) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, iter_type) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp1, D, W, B, iter_type) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp2, D, W, B2, iter_type) && is_okay;
 
     cleanup_iterator_access_bfs(R);
     cleanup_iterator_access_bfs(W);

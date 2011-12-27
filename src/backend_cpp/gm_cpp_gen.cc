@@ -122,12 +122,12 @@ bool gm_cpp_gen::do_generate()
 
 bool gm_cpp_gen::do_restore_vardecl()
 {
-    std::vector<ast_procdef*>& top_levels = FE.get_procs(); 
-    std::vector<ast_procdef*>::iterator it;
-    for(it = top_levels.begin(); it!=top_levels.end(); it++)
+    FE.prepare_proc_iteration(); 
+    ast_procdef* proc;
+    while ((proc=FE.get_next_proc()) != NULL)
     {
-        ast_procdef* proc = *it;
         FE.restore_vardecl(proc);
+        proc = FE. get_next_proc(); 
     }
 
     return true;
@@ -135,13 +135,13 @@ bool gm_cpp_gen::do_restore_vardecl()
 
 bool gm_cpp_gen::do_mark_parallel_sents()
 {
-    std::vector<ast_procdef*>& top_levels = FE.get_procs(); 
-    std::vector<ast_procdef*>::iterator it;
-    for(it = top_levels.begin(); it!=top_levels.end(); it++)
+    FE.prepare_proc_iteration(); 
+    ast_procdef* proc;
+    while ((proc=FE.get_next_proc()) != NULL)
     {
-        ast_procdef* proc = *it;
         bool entry_is_seq = true;
         gm_mark_sents_under_parallel_execution(proc->get_body(), entry_is_seq);
+        proc = FE. get_next_proc(); 
     }
 
     return true;
@@ -174,12 +174,13 @@ bool gm_cpp_gen::do_generate_main()
     add_include(temp, Body, false);
     Body.NL();
 
-    std::vector<ast_procdef*>& top_levels = FE.get_procs(); 
-    std::vector<ast_procdef*>::iterator it;
-    for(it = top_levels.begin(); it!=top_levels.end(); it++)
+    FE.prepare_proc_iteration(); 
+    ast_procdef* proc;
+    while ((proc=FE.get_next_proc()) != NULL)
     {
-        generate(*it);
+        generate_proc(proc);
         Body.NL();
+        proc = FE. get_next_proc(); 
     }
 
     Header.NL();
@@ -191,28 +192,26 @@ bool gm_cpp_gen::do_generate_main()
 }
 
 
-bool gm_cpp_gen::generate(ast_procdef* proc)
+void gm_cpp_gen::generate_proc(ast_procdef* proc)
 {
-    bool b;
     //-------------------------------
     // declare function name 
     //-------------------------------
-    b = generate_proc_decl(proc, false);  // header
-    b &=  generate_proc_decl(proc, true);   // body
-    if (!b) return false;
+    generate_proc_decl(proc, false);  // declare in header file
+    generate_proc_decl(proc, true);   // declare in body file
 
-    b &= generate(proc->get_body());
+    generate_sent(proc->get_body());
 
-    return b;
+    return ;
 }
 
-bool gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_def)
+void gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_body_file)
 {
      // declare in the header or body
-     gm_code_writer& Out = is_def ? Body : Header;
+     gm_code_writer& Out = is_body_file ? Body : Header;
 
      // return type
-     Out.push_spc(get_type_string(proc->get_return_type(), GMUSE_RETURN));
+     Out.push_spc(get_type_string(proc->get_return_type()));
      Out.push( proc->get_procname()->get_genname() );
      Out.push('(');
 
@@ -227,7 +226,14 @@ bool gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_def)
             remain_args--;
             arg_curr++;
 
-            Out.push_spc(get_type_string((*i)->get_type(), GMUSE_INARG) );
+            ast_typedecl* T = (*i)->get_type();
+            Out.push(get_type_string(T) );
+            if (T->is_primitive() || T->is_property())
+                Out.push(" ");
+            else
+                Out.push("& ");
+
+            assert((*i)->get_idlist()->get_length() == 1);
             Out.push((*i)->get_idlist()->get_item(0)->get_genname());
             if (remain_args > 0) {
                 Out.push(", ");
@@ -247,7 +253,8 @@ bool gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_def)
             remain_args--;
             arg_curr++;
 
-            Out.push_spc(get_type_string((*i)->get_type(), GMUSE_OUTARG) );
+            Out.push(get_type_string((*i)->get_type()) );
+            Out.push_spc("&");
             Out.push((*i)->get_idlist()->get_item(0)->get_genname());
             if (remain_args > 0) {
                 Out.push(", ");
@@ -260,53 +267,73 @@ bool gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_def)
     }
 
      Out.push(')');
-     if (!is_def)
+     if (!is_body_file)
         Out.push(';');
 
      Out.NL();
-     return true;
+     return;
 }
 
-bool gm_cpp_gen::generate(ast_idlist* idl)
+void gm_cpp_gen::generate_idlist(ast_idlist* idl)
 {
     int z = idl->get_length();
     for(int i=0; i < z;i++) {
         ast_id* id = idl->get_item(i);
-        generate(id);
+        generate_lhs_id(id);
         if (i < z-1) Body.push_spc(',');
     }
-    return true;
+    return;
 }
-bool gm_cpp_gen::generate(ast_id* id) {
+
+void gm_cpp_gen::generate_lhs_id(ast_id* id) {
     Body.push(id->get_genname());
-    return true;
+}
+void gm_cpp_gen::generate_rhs_id(ast_id* id)  {
+    generate_lhs_id(id);
+}
+void gm_cpp_gen::generate_lhs_field(ast_field* f)
+{
+    Body.push( f->get_second()->get_genname());
+    Body.push('[');
+    if (f->getTypeInfo()->is_node_property())
+        Body.push(get_lib()->node_index(f->get_first()));
+    else if (f->getTypeInfo()->is_edge_property())
+        Body.push(get_lib()->edge_index(f->get_first()));
+    else {
+        assert(false);
+    }
+    Body.push(']');
+    return; 
 }
 
-const char* gm_cpp_gen::get_type_string(int prim_type, int usage)
+void gm_cpp_gen::generate_rhs_field(ast_field* f)
 {
-    bool is_out = (usage == GMUSE_OUTARG);
-        switch(prim_type) {
-            case GMTYPE_BYTE:  return !is_out ? "char_t" :"char_t&";
-            case GMTYPE_SHORT: return !is_out? "int16_t" : "int16_t&";
-            case GMTYPE_INT:   return !is_out? "int32_t" : "int32_t&";
-            case GMTYPE_LONG:  return !is_out? "int64_t" : "int64_t&";
-            case GMTYPE_FLOAT: return !is_out? "float" : "float&";
-            case GMTYPE_DOUBLE: return !is_out? "double" : "double&";
-            case GMTYPE_BOOL: return !is_out? "bool" : "bool&";
-            default: assert(false); return "??";
-        }
+    generate_lhs_field(f);
 }
 
-const char* gm_cpp_gen::get_type_string(ast_typedecl* t, int usage)
+
+const char* gm_cpp_gen::get_type_string(int prim_type)
 {
-    bool is_out = (usage == GMUSE_OUTARG);
-    if (t==NULL) {
-        assert(usage == GMUSE_RETURN);
+    switch(prim_type) {
+        case GMTYPE_BYTE:  return "int8_t"  ;
+        case GMTYPE_SHORT: return "int16_t" ;
+        case GMTYPE_INT:   return "int32_t" ;
+        case GMTYPE_LONG:  return "int64_t" ;
+        case GMTYPE_FLOAT: return  "float" ;
+        case GMTYPE_DOUBLE: return "double";
+        case GMTYPE_BOOL: return "bool";
+        default: assert(false); return "??";
+    }
+}
+
+const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
+{
+    if ((t==NULL) || (t->is_void())) {
         return "void";
     }
 
     if (t->is_primitive()) {
-            return get_type_string(t->get_typeid(), usage);
+        return get_type_string(t->get_typeid());
     }
     else if (t->is_property()) {
         ast_typedecl* t2 = t->get_target_type();
@@ -328,62 +355,13 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t, int usage)
         }
     }
     else 
-        return get_lib()->get_type_string(t, usage);
+        return get_lib()->get_type_string(t);
 
     return "ERROR";
 }
 
-bool gm_cpp_gen::generate(ast_sent* s)
-{
-    // todo: check how this becomes after code transformation
-    int lines = s->get_empty_lines_before();
-    for(int i=0;i<lines;i++) {
-        Body.NL();
-    }
 
-    switch(s->get_nodetype())
-    {
-        case AST_VARDECL:
-            return generate((ast_vardecl*) s);
-        case AST_CALL:
-            return generate((ast_call*) s);
-        case AST_SENTBLOCK:
-            return generate((ast_sentblock*) s);
-        case AST_ASSIGN:
-            return generate((ast_assign*) s);
-        case AST_FOREACH:
-            return generate((ast_foreach*) s);
-        case AST_IF:
-            return generate((ast_if*) s);
-        case AST_WHILE:
-            return generate((ast_while*) s);
-        case AST_NOP:
-            return generate((ast_nop*) s);
-        case AST_RETURN:
-            return generate((ast_return*) s);
-        case AST_BFS:
-            return generate((ast_bfs*) s);
-        default:
-            printf("\n Generation Code not defined For Sentence:\n");
-            s->reproduce(0); // for compiler debug
-            printf("\n");
-            assert(false);
-            break;
-    }
-    return true;
-}
-
-class collect_syms_t : public gm_apply {
-public: 
-    virtual bool apply(gm_symtab_entry* e, int type) { 
-        if ((type == GM_SYMTAB_VAR) || (type == GM_SYMTAB_FIELD)) 
-            _all.push_back(e);
-        return true;
-    }
-    std::list<gm_symtab_entry*> _all;
-};
-
-bool gm_cpp_gen::generate(ast_foreach* f)
+void gm_cpp_gen::generate_sent_foreach(ast_foreach* f)
 {
     
     int ptr,indent;
@@ -406,13 +384,14 @@ bool gm_cpp_gen::generate(ast_foreach* f)
     int iter_type = f->get_iter_type();;
 
 
-    bool b = get_lib()->generate_iteration_header(f, need_init_inside);
+    get_lib()->generate_iteration_header(f, need_init_inside);
     bool need_level_check = gm_is_iteration_on_updown_levels(iter_type);
     if (need_init_inside)
     {
         Body.pushln("{");
         get_lib()->generate_iteration_header_init(f);
 
+        // [xxx]
         if (need_level_check) {
             sprintf(temp, "if (_BFS.level[%s] != (_BFS.curr_level %c 1)) continue;",
                     f->get_iterator()->get_genname(),
@@ -421,90 +400,32 @@ bool gm_cpp_gen::generate(ast_foreach* f)
         }
 
         if (f->get_body()->get_nodetype() != AST_SENTBLOCK) {
-            b &= generate(f->get_body());
+            generate_sent(f->get_body());
         }
         else {
-            b &= generate((ast_sentblock*)f->get_body(), false);
+            generate_sent_block((ast_sentblock*)f->get_body(), false);
         }
         Body.pushln("}");
+
     } else {
         if (f->get_body()->get_nodetype() != AST_SENTBLOCK) {
             Body.push_indent();
         }
-        b &= generate(f->get_body());
+        generate_sent(f->get_body());
         if (f->get_body()->get_nodetype() != AST_SENTBLOCK) {
             Body.pop_indent();
             Body.NL();
         }
     } 
 
-    if (f->is_parallel()) {
-        generate_parallel_for_header(f->get_body());
-    }
-
-    return b;
+    return;
 }
 
-bool gm_cpp_gen::generate(ast_call* c)
+void gm_cpp_gen::generate_sent_call(ast_call* c)
 {
     assert(c->is_builtin_call());
-    bool b = generate(c->get_builtin());
+    generate_expr_builtin(c->get_builtin());
     Body.pushln(";");
-    return b;
-}
-
-bool gm_cpp_gen::generate(ast_if* f)
-{
-    bool b;
-    Body.push("if (");
-    b &= generate(f->get_cond());
-    Body.pushln(")");
-
-    if (f->get_then()->get_nodetype()!=AST_SENTBLOCK) {
-        Body.push_indent();
-        b &= generate(f->get_then());
-        Body.pop_indent();
-        //if (f->get_else() == NULL) Body.NL();
-    }
-    else {
-        b &= generate(f->get_then());
-    }
-
-    if (f->get_else() == NULL) return b;
-
-    Body.pushln("else ");
-
-    if (f->get_else()->get_nodetype()!=AST_SENTBLOCK) {
-        Body.push_indent();
-        b &= generate(f->get_else());
-        Body.pop_indent();
-        //Body.NL();
-    }
-    else {
-        b &= generate(f->get_else());
-    }
-
-    return b;
-}
-
-bool gm_cpp_gen::generate(ast_while* f)
-{
-    bool b;
-    if (f->is_do_while()) {
-        Body.pushln("do ");
-        b = generate(f->get_body()); // must be a sentence block
-        Body.push("while (");
-        b &= generate(f->get_cond());
-        Body.pushln(");");
-    }
-    else {
-        Body.push("while (");
-        b = generate(f->get_cond());
-        Body.pushln(")");
-        b &= generate(f->get_body());
-    }
-
-    return b;
 }
 
 
@@ -517,7 +438,7 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
     assert(t2->is_primitive());
 
     Body.push(" = new ");
-    Body.push(get_type_string(t2, GMUSE_LOCALDEF));
+    Body.push(get_type_string(t2));
     Body.push(" [ ");
     if (t->is_node_property()) {
         Body.push(get_lib()->max_node_index(t->get_target_graph_id()));
@@ -533,31 +454,36 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
     // regeister to memory controller 
 }
 
-bool gm_cpp_gen::generate(ast_vardecl* v)
+void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v)
 {
     ast_typedecl* t = v->get_type();
-    Body.push_spc(get_type_string(t, GMUSE_LOCALDEF));
+    Body.push_spc(get_type_string(t));
 
     if (t->is_property()) {
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);
-        generate(v->get_idlist());
+        generate_lhs_id(idl->get_item(0));
         declare_prop_def(t, idl->get_item(0));
 
     } else if (t->is_collection()) {
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);
-        generate(v->get_idlist());
+        generate_lhs_id(idl->get_item(0));
         get_lib()->add_set_def(idl->get_item(0));
     } else {
-        generate(v->get_idlist());
+        generate_idlist(v->get_idlist());
         Body.pushln(";");
     }
-    return true;
+    return; 
 }
-bool gm_cpp_gen::generate(ast_sentblock* sb, bool need_br)
+
+void gm_cpp_gen::generate_sent_block(ast_sentblock* sb)
 {
-   bool b = true;
+    generate_sent_block(sb, true);
+}
+
+void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br)
+{
    //Body.push_indent();
 
    if (is_target_omp()) {
@@ -578,7 +504,7 @@ bool gm_cpp_gen::generate(ast_sentblock* sb, bool need_br)
    std::list<ast_sent*>::iterator it;
    for(it = sents.begin(); it!= sents.end(); it++)
    {
-       b &= generate(*it);
+       generate_sent(*it);
    }
 
    //Body.pop_indent();
@@ -588,19 +514,11 @@ bool gm_cpp_gen::generate(ast_sentblock* sb, bool need_br)
     if (is_under_parallel_sentblock())
         set_under_parallel_sentblock(false);
 
-   return b;
+   return ;
 }
 
 
-bool gm_cpp_gen::generate_lhs(ast_assign *a)
-{
-  if (a->get_lhs_type() == GMASSIGN_LHS_SCALA) 
-        generate(a->get_lhs_scala());
-  else
-        generate(a->get_lhs_field());
-}
-
-bool gm_cpp_gen::generate_reduce_assign(ast_assign *a)
+void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 {
   // implement reduction using compare and swap
       //---------------------------------------
@@ -613,9 +531,6 @@ bool gm_cpp_gen::generate_reduce_assign(ast_assign *a)
       //    } while (!__bool_comp_swap(&LHS, OLD, NEW))
       //  }
       //---------------------------------------
-      const char* temp_var_old;
-      const char* temp_var_new;
-
       ast_typedecl* lhs_target_type = (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? 
           a->get_lhs_scala() -> getTypeInfo() :
           a->get_lhs_field() -> getTypeInfo()->get_target_type() ;
@@ -624,29 +539,32 @@ bool gm_cpp_gen::generate_reduce_assign(ast_assign *a)
           a->get_lhs_scala() -> get_orgname() :
           a->get_lhs_field() -> get_second()->get_orgname();
 
-      int rtype = a->get_reduce_type();
+      int r_type = a->get_reduce_type();
 
+      /*
       if (a->get_lhs_type() == GMASSIGN_LHS_SCALA)
-            return generate_reduce_main(a->get_lhs_scala(), NULL, a->get_rhs(), temp_var_base, rtype, lhs_target_type);
+            generate_reduce_main(a->get_lhs_scala(), NULL, a->get_rhs(), temp_var_base, rtype, lhs_target_type);
       else
-            return generate_reduce_main(NULL, a->get_lhs_field(), a->get_rhs(), temp_var_base, rtype, lhs_target_type);
-}
+            generate_reduce_main(NULL, a->get_lhs_field(), a->get_rhs(), temp_var_base, rtype, lhs_target_type);
+        */
 
-bool gm_cpp_gen::generate_reduce_main(ast_id* lhs1, ast_field* lhs2, ast_expr* rhs, const char* temp_var_base, int r_type, ast_typedecl* lhs_target_type)
-{
       const char* temp_var_old;
       const char* temp_var_new;
+      bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
 
-      temp_var_old = TEMP_GEN.getTempName(temp_var_base, "_old");
-      temp_var_new = TEMP_GEN.getTempName(temp_var_base, "_new");
+      temp_var_old = FE.voca_temp_name_and_add(temp_var_base, "_old");
+      temp_var_new = FE.voca_temp_name_and_add(temp_var_base, "_new");
 
       Body.pushln("// reduction");
       Body.pushln("{ ");
-        sprintf(temp, "%s %s, %s;", get_type_string(lhs_target_type, GMUSE_LOCALDEF), temp_var_old, temp_var_new); Body.pushln(temp);
+
+        sprintf(temp, "%s %s, %s;", get_type_string(lhs_target_type), temp_var_old, temp_var_new); Body.pushln(temp);
 
         Body.pushln("do {");
             sprintf(temp, "%s = ", temp_var_old); Body.push(temp); 
-            if (lhs1 != NULL) generate(lhs1); else if (lhs2 != NULL) generate(lhs2); else assert(false);
+            if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
+            else generate_rhs_field(a->get_lhs_field()); 
+
             Body.pushln(";");
             if (r_type = GMREDUCE_PLUS) {
                 sprintf(temp, "%s = %s + (", temp_var_new, temp_var_old); Body.push(temp); 
@@ -658,12 +576,14 @@ bool gm_cpp_gen::generate_reduce_main(ast_id* lhs1, ast_field* lhs2, ast_expr* r
                 sprintf(temp, "%s = std::min (%s, ", temp_var_new, temp_var_old); Body.push(temp); 
             } else {assert(false);}
 
-            generate(rhs); Body.pushln(");");
+            generate_expr(a->get_rhs()); Body.pushln(");");
             if ((r_type == GMREDUCE_MAX) || (r_type == GMREDUCE_MIN)) {
                 sprintf(temp, "if (%s == %s) break;", temp_var_old, temp_var_new); Body.pushln(temp);
             }
         Body.push("} while (_gm_CAS(&("); 
-            if (lhs1 != NULL) generate(lhs1); else if (lhs2 != NULL) generate(lhs2); else assert(false);
+        if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
+        else generate_rhs_field(a->get_lhs_field()); 
+
         sprintf(temp, "), %s, %s)==false); ", temp_var_old, temp_var_new); Body.pushln(temp);
         Body.pushln("}");
 
@@ -673,16 +593,17 @@ bool gm_cpp_gen::generate_reduce_main(ast_id* lhs1, ast_field* lhs2, ast_expr* r
       delete [] temp_var_new;
       delete [] temp_var_old;
 
-  return true;
+    return;
 }
 
-bool gm_cpp_gen::generate(ast_return *r)
+void gm_cpp_gen::generate_sent_return(ast_return *r)
 {
     ast_extra_info* info =  get_current_proc()->find_info(LABEL_NEED_MEM);
     assert(info != NULL);
     bool need_cleanup = info->bval;
     if (need_cleanup) { // call cleanup before return
-        if (r->get_parent()->get_nodetype() != AST_SENTBLOCK)
+        bool need_para = (r->get_parent()->get_nodetype() != AST_SENTBLOCK);
+        if (need_para)
         {
             Body.pop_indent();
             Body.push("{");
@@ -690,10 +611,10 @@ bool gm_cpp_gen::generate(ast_return *r)
         Body.pushln("_MEM.cleanup();");
         Body.push("return ");
         if (r->get_expr() != NULL) {
-            generate(r->get_expr());
+            generate_expr(r->get_expr());
         }
         Body.pushln("; ");
-        if (r->get_parent()->get_nodetype() != AST_SENTBLOCK)
+        if (need_para)
         {
             Body.pushln("}");
             Body.push_indent();
@@ -701,40 +622,16 @@ bool gm_cpp_gen::generate(ast_return *r)
     } else {
         Body.push("return ");
         if (r->get_expr() != NULL) {
-            generate(r->get_expr());
+            generate_expr(r->get_expr());
         }
         Body.pushln(";");
     }
 }
 
-bool gm_cpp_gen::generate(ast_assign* a)
-{
-  //------------------------------
-  // plain assign
-  //------------------------------
-  if (a->get_assign_type() == GMASSIGN_NORMAL)
-  {
-      generate_lhs(a);
-      Body.push(" = ");
-      generate(a->get_rhs());
-      Body.pushln(";");
-      return true;
-  }
-  else if (a->get_assign_type() == GMASSIGN_REDUCE)
-  {
-     return generate_reduce_assign(a);
-  }
-  else
-  {
-     assert(false);
-  }
-}
-
-bool gm_cpp_gen::generate(ast_nop* n)
+void gm_cpp_gen::generate_sent_nop(ast_nop* n)
 {
     switch(n->get_subtype())
     {
-        /* If this is something I know, process it myself */
         case NOP_CLEAR_PROP:
         {
             Body.push("_MEM.clear(");
@@ -772,221 +669,74 @@ bool gm_cpp_gen::generate(ast_nop* n)
         /* otherwise ask library to hande it */
         default:
         { 
-            return get_lib() -> generate(n);
+            get_lib() -> generate_sent_nop(n);
+            break;
         }
     }
 
-    return true;
+    return; 
 }
 
-bool gm_cpp_gen::generate(ast_field* f)
+void gm_cpp_gen::generate_expr_inf(ast_expr *e)
 {
-    Body.push( f->get_second()->get_genname());
-    Body.push('[');
-    if (f->getTypeInfo()->is_node_property())
-        Body.push(get_lib()->node_index(f->get_first()));
-    else if (f->getTypeInfo()->is_edge_property())
-        Body.push(get_lib()->edge_index(f->get_first()));
-    else {
-        assert(false);
-    }
-    Body.push(']');
-    return true;
+    char* temp = temp_str;
+    assert(e->get_opclass() == GMEXPR_INF);
+    int t = e->get_type_summary();
+    char* str;
+    switch(t) {
+       case GMTYPE_INF:
+       case GMTYPE_INF_INT:
+            sprintf(temp,"%s",e->is_plus_inf()?"INT_MAX":"INT_MIN"); 
+            break;
+        case GMTYPE_INF_LONG:
+                    sprintf(temp,"%s",e->is_plus_inf()?"LLONG_MAX":"LLONG_MIN"); 
+                    break;
+        case GMTYPE_INF_FLOAT:
+            sprintf(temp,"%s",e->is_plus_inf()?"FLT_MAX":"FLT_MIN"); 
+            break;
+        case GMTYPE_INF_DOUBLE:
+            sprintf(temp,"%s",e->is_plus_inf()?"DBL_MAX":"DBL_MIN"); 
+            break;
+        default:
+            printf("what type is it? %d", t);
+            assert(false);
+            sprintf(temp,"%s",e->is_plus_inf()?"INT_MAX":"INT_MIN"); 
+            break;
+         }
+    Body.push(temp);
+    return ;
 }
 
-bool gm_cpp_gen::generate(std::list<ast_expr*>& L)
+void gm_cpp_gen::generate_expr_abs(ast_expr *e)
 {
-    std::list<ast_expr*>::iterator I;
-    int i=0;
-    int size = L.size();
-    for(I=L.begin(); I!=L.end(); I++, i++) {
-        generate(*I);
-        if (i!=(size-1))
-            Body.push(", ");
-    }
+    Body.push(" std::abs(");
+    generate_expr(e->get_left_op());
+    Body.push(") ");
 }
-
-
-bool gm_cpp_gen::generate(ast_expr* e)
+void gm_cpp_gen::generate_expr_minmax(ast_expr *e)
 {
-    char temp[128];
-    switch (e->get_opclass())
-    {
-        case GMEXPR_IVAL:
-            sprintf(temp,"%ld",e->get_ival()); // to be changed
-            Body.push(temp);
-            return true;
-        case GMEXPR_FVAL:
-            sprintf(temp,"%lf",e->get_fval()); // to be changed
-            Body.push(temp);
-            return true;
-        case GMEXPR_BVAL:
-            sprintf(temp,"%s",e->get_bval()?"true":"false");
-            Body.push(temp);
-            return true;
-        case GMEXPR_INF:
-            {int t = e->get_type_summary();
-             char* str;
-             switch(t) {
-                case GMTYPE_INF:
-                case GMTYPE_INF_INT:
-                    sprintf(temp,"%s",e->is_plus_inf()?"INT_MAX":"INT_MIN"); // temporary
-                    break;
-                case GMTYPE_INF_LONG:
-                    sprintf(temp,"%s",e->is_plus_inf()?"LLONG_MAX":"LLONG_MIN"); // temporary
-                    break;
-                case GMTYPE_INF_FLOAT:
-                    sprintf(temp,"%s",e->is_plus_inf()?"FLT_MAX":"FLT_MIN"); // temporary
-                    break;
-                case GMTYPE_INF_DOUBLE:
-                    sprintf(temp,"%s",e->is_plus_inf()?"DBL_MAX":"DBL_MIN"); // temporary
-                    break;
-                default: //assert(false);
-                //case GMTYPE_INF:
-                //case GMTYPE_INF_INT:
-                    sprintf(temp,"%s",e->is_plus_inf()?"INT_MAX":"INT_MIN"); // temporary
-                    break;
-                //case GMTYPE_INF_LONG:
-             }
-           }
-            Body.push(temp);
-            return true;
-
-        case GMEXPR_ID:
-            return generate(e->get_id());
-        case GMEXPR_BUILTIN:
-            return get_lib()->generate_builtin((ast_expr_builtin*)e);
-
-        case GMEXPR_FIELD:
-            return generate(e->get_field());
-
-        case GMEXPR_UOP:
-            if (e->get_optype() == GMOP_NEG) {
-                Body.push(" -");
-                return generate(e->get_left_op());
-            } else if (e->get_optype() == GMOP_ABS) {
-                Body.push(" std::abs(");
-                bool b =  generate(e->get_left_op());
-                Body.push(") ");
-                return b;
-            } else if (e->get_optype() == GMOP_TYPEC) {
-                Body.push(" (");
-                Body.push(get_type_string(e->get_type_summary(), GMUSE_LOCALDEF));
-                Body.push(") ");
-                return  generate(e->get_left_op());
-            }
-            else {
-                assert(false);
-                return false;
-            }
-        case GMEXPR_LUOP:
-            Body.push(" !");
-            return generate(e->get_left_op());
-
-        case GMEXPR_TER:
-            {
-            bool need_para = 
-                (e->get_up_op() == NULL) ? false :
-                gm_need_paranthesis(e->get_optype(), e->get_up_op()->get_optype(), e->is_right_op());
-            if (need_para) Body.push("(");
-            generate(e->get_cond_op());
-            Body.push("?");
-            generate(e->get_left_op());
-            Body.push(":");
-            generate(e->get_right_op());
-            if (need_para) Body.push(")");
-            return true;
-            }
-    }
-
-    assert(e->is_biop() || e->is_comp()); // numeric or logical
-
-    // binary op
-    ast_expr* up = e->get_up_op();
-    bool need_para; 
-    if ((e->get_optype() == GMOP_MIN) || (e->get_optype() == GMOP_MAX))
-    {
-        need_para = true;
-    }
-    else if (up==NULL)
-        need_para=false;
-    else if (e->is_comp()) {
-        need_para = true;  // I found it helpful to add () for comparison
-    }
-    else if (up->is_biop() || up->is_comp()) {  
-        need_para = gm_need_paranthesis(e->get_optype(),up->get_optype(), e->is_right_op());
-    } else  {
-        need_para = true;
-    }
-
-    if ((e->get_optype() == GMOP_MIN) || (e->get_optype() == GMOP_MAX)) {
-        if (e->get_optype() == GMOP_MIN) {
-            Body.push("std::min");
-        } else {
-            Body.push("std::max");
-        }
-    }
-
-    if (need_para) {
-        Body.push("(");
-    }
-
-    bool l = generate(e->get_left_op());
-    Body.SPC();
-    if ((e->get_optype() == GMOP_MIN) || (e->get_optype() == GMOP_MAX)) {
-        Body.push(", ");
+    if (e->get_optype() == GMOP_MIN) {
+        Body.push(" std::min(");
     } else {
-        const char* opstr = gm_get_op_string(e->get_optype());
-        Body.push_spc(opstr);
-    } 
-    bool r = generate(e->get_right_op());
-    if (need_para) {
-        Body.push(")");
+        Body.push(" std::max(");
     }
-    return l&&r;
+    generate_expr(e->get_left_op());
+    Body.push(",");
+    generate_expr(e->get_right_op());
+    Body.push(") ");
+}
+
+void gm_cpp_gen::generate_expr_builtin(ast_expr* e)
+{
+  get_lib()->generate_expr_builtin((ast_expr_builtin*)e);
 }
 
 void gm_cpp_gen::prepare_parallel_for()
 {
-    //_ptr = Body.get_write_ptr(_indent);
-    //clear_local_varnames();  // no need
-
     if (is_under_parallel_sentblock())
-        Body.pushln("#pragma omp for nowait"); // TODO why no wait?
+        Body.pushln("#pragma omp for nowait"); // already under parallel region.
     else
         Body.pushln("#pragma omp parallel for");
 }
-
-void gm_cpp_gen::generate_parallel_for_header(ast_sent* body)
-{
-    //int i = sprintf(temp, "#pragma omp parallel for \n");
-
-    // No need
-
-    /*
-    // collect symbols in symbol table
-    collect_syms_t T;
-    gm_traverse_symtabs(body, &T);
-    std::list<gm_symtab_entry*>::iterator J;
-    for(J=T._all.begin(); J!=T._all.end(); J++)
-        add_local_varname((*J)->getId()->get_genname());
-
-
-    // temporary symbols were collected during code generation
-    if (local_names.size() > 0) {
-        i += sprintf(&temp[i], "private(");
-        std::list<const char*>::iterator I;
-        for(I=local_names.begin(); I!=local_names.end(); I++) {
-            i+= sprintf(&temp[i], "%s, ", *I);
-        }
-        temp[i-2] = ')'; // remove final ','
-    }
-    sprintf(&temp[i], " \n");
-
-    Body.insert_at(_ptr, _indent, temp); 
-    clear_local_varnames();
-    */
-}
-
 
 

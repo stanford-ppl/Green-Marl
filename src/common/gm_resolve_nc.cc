@@ -4,23 +4,11 @@
 #include "gm_traverse.h"
 #include "gm_typecheck.h"
 #include "gm_misc.h"
-extern gm_tempNameGen TEMP_GEN;
-
-//---------------------------------------------------------------------------------------
-// For the subtree, top,
-// replace any id's symbol entry refrence e_old into e_new.
-// If the new symbol has different orgname() from the old one, modify the name in the id node as well.
-// (Assumption. e_new is a valid symbol entry that does not break scoping rule.
-//---------------------------------------------------------------------------------------
-bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top);
-
-//------------------------------------------------------------------------------------
-// For the subtree top,
-//   Reflect the name in the symbol-table e (which has been modifid), to all id nodes
-//------------------------------------------------------------------------------------
-//bool gm_reflect_symbol_entry_name(gm_symtab_entry *e_modified, ast_node* top);
 
 
+
+
+#if 0
 //--------------------------------------------------------------------------------
 // If any subblock inside S defines a varaible v which
 // has a name conflict with e, rename v with v'
@@ -71,15 +59,13 @@ public:
 
         return _found;
     }
-    /*
-    void rename_all() {
-        std::list<gm_symtab_entry*>::iterator i;
-        for(i=conflicts.begin(); i != conflicts.end(); i++)  {
-            gm_reflect_symbol_entry_name(*i, _top);
-        }
-        conflicts.clear();
-    }
-    */
+    //void rename_all() {
+    //    std::list<gm_symtab_entry*>::iterator i;
+    //    for(i=conflicts.begin(); i != conflicts.end(); i++)  {
+    //        gm_reflect_symbol_entry_name(*i, _top);
+    //    }
+    //    conflicts.clear();
+    //}
 
 protected:
     //std::list<gm_symtab_entry*> conflicts;
@@ -99,9 +85,16 @@ bool gm_resolve_name_conflict(ast_sent *s, gm_symtab_entry *e, bool is_scalar)
     //if (ret) R.rename_all();
     return ret;
 }
+#endif
 
 
-/*
+
+#if 0
+//------------------------------------------------------------------------------------
+// For the subtree top,
+//   Reflect the name in the symbol-table e (which has been modifid), to all id nodes
+//------------------------------------------------------------------------------------
+//bool gm_reflect_symbol_entry_name(gm_symtab_entry *e_modified, ast_node* top);
 class gm_reflect_symbol_entry_name_t : public gm_apply {
 public:
     virtual bool apply(ast_id* i) 
@@ -131,8 +124,16 @@ bool gm_reflect_symbol_entry_name(gm_symtab_entry *e_modified, ast_node* top)
   T.do_reflect(e_modified, top);
   return T.is_changed();
 }
-*/
+#endif
 
+
+//---------------------------------------------------------------------------------------
+// For the subtree(top), 
+// replace any id's symbol entry refrence e_old into e_new.
+// If the new symbol has different orgname() from the old one, modify the name in the id node as well.
+// (Assumption. e_new is a valid symbol entry that does not break scoping rule)
+//---------------------------------------------------------------------------------------
+bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top);
 
 class gm_replace_symbol_entry_t : public gm_apply
 {
@@ -143,10 +144,10 @@ public:
         assert(i->getSymInfo() != NULL);
         if (i->getSymInfo() == _src) {
             i->setSymInfo(_target);
-            if (_need_change_name) {
-                char* new_name = i->getSymInfo()->getId()->get_orgname();
-                i->set_orgname(new_name); // old name is deleted. new name is copied
-            }
+            //if (_need_change_name) {
+            //    char* new_name = i->getSymInfo()->getId()->get_orgname();
+            //    i->set_orgname(new_name); // old name is deleted. new name is copied
+            //}
             _changed = true;
         }
         return true;
@@ -156,12 +157,12 @@ public:
         set_all(false); set_for_id(true);
         _src = e_old; _target = e_new;
         _changed = false;
-        _need_change_name = ! gm_is_same_string(e_old->getId()->get_orgname(), e_new->getId()->get_orgname());
+        //_need_change_name = ! gm_is_same_string(e_old->getId()->get_orgname(), e_new->getId()->get_orgname());
         top->traverse_pre(this);
     }
 protected:
     bool _changed;
-    bool _need_change_name;
+    //bool _need_change_name;
     gm_symtab_entry* _src; 
     gm_symtab_entry*_target;
 };

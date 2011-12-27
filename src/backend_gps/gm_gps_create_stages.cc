@@ -98,7 +98,7 @@ public:
             for(I=L.begin(); I!=L.end(); I++) {
                 ast_sent *s = *I;
                 ASSERT_MARKED(s);
-                seq &= MARKED_AS_SEQ(s);
+                seq = MARKED_AS_SEQ(s) && seq;
             }
             MARK_SEQ(s, seq);
         }
@@ -121,16 +121,17 @@ private:
 
 class gm_gps_create_basic_block1_t : public gm_apply {
 public:
-    gm_gps_create_basic_block1_t (std::map<ast_sent*, int>* s)
+    gm_gps_create_basic_block1_t (std::map<ast_sent*, int>* s, gm_gps_gen* _gen)
     {
-        bb_number = 0;
         already_added = false;
         added_depth = 0;
         s_mark = s;
+        gen = _gen;
         entry = prev = newBB(); // entry
         exit = next = newBB(); // exit
 
         entry->add_exit(exit);
+
     }
 
     virtual bool apply(ast_sent *s) 
@@ -328,7 +329,8 @@ private:
     }
 
     gps_bb* newBB(int t=GM_GPS_BBTYPE_SEQ) {
-        gps_bb*  bb = new gps_bb(bb_number++, t);
+        assert(gen!=NULL);
+        gps_bb*  bb = new gps_bb(gen->issue_basicblock_id(), t);
         return bb;
     }
 
@@ -352,6 +354,7 @@ private:
 
     bool already_added;
     int added_depth;
+    gm_gps_gen* gen;
 };
 
 
@@ -373,7 +376,7 @@ void gm_gps_gen::do_create_stages()
     // STEP 2:
     //   create Basic Blocks
     //--------------------------------
-    gm_gps_create_basic_block1_t T2(&s_mark);
+    gm_gps_create_basic_block1_t T2(&s_mark, this);
     gm_traverse_sents_pre_post(proc, &T2);
 
     // Debug Print

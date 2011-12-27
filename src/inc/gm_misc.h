@@ -7,6 +7,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <list>
+#include <set>
 //------------------------------------------------------
 // Misc Utility Routines and Classes
 //------------------------------------------------------
@@ -56,6 +57,62 @@ class gm_path_parser {
         }
 };
 
+
+
+
+//-----------------------------------------------------
+// For compiler debug,
+// mark begining/end of compiler stage (major or minor).
+// All numbering should start from 1. (not from 0)
+#define GMSTAGE_PARSE        1
+#define GMSTAGE_FRONTEND     2
+#define GMSTAGE_INDEPENDENT_OPT   3
+#define GMSTAGE_BACKEND_OPT  4
+#define GMSTAGE_LIBRARY_OPT  5
+#define GMSTAGE_CODEGEN      6
+
+extern void gm_begin_major_compiler_stage(int major_no, const char* desc);
+extern void gm_end_major_compiler_stage();
+extern void gm_begin_minor_compiler_stage(int major_no, const char* desc);
+extern void gm_end_minor_compiler_stage();
+
+
+
+struct gm_comp_string {
+    bool operator() (const char* s1, const char* s2) {return (strcmp(s1, s2) < 0);}
+};
+
+class gm_vocabulary {
+
+public:
+    virtual ~gm_vocabulary() {
+        clear();
+    }
+
+    void clear() {
+        std::set<const char*, gm_comp_string>::iterator I; 
+        for(I=words.begin(); I!=words.end();I++)
+            delete [] *I;
+        words.clear();
+    }
+    void add_word(const char* w) {
+        add_word((char*) w);
+    }
+    void add_word(char* w) {
+        char* dup = gm_strdup(w);
+        words.insert((const char*) dup);
+    }
+    bool has_word(char* w) {
+        return (words.find((const char*) w)!=words.end());
+    }
+
+private:
+    std::set<const char*, gm_comp_string> words;
+
+};
+
+
+/*
 //------------------------------------------------
 // Temporary variable name generator
 // should be a singleton
@@ -92,27 +149,7 @@ class gm_tempNameGen {
         int _idx;
 };
 extern gm_tempNameGen TEMP_GEN;
-
-
-
-//-----------------------------------------------------
-// For compiler debug,
-// mark begining/end of compiler stage (major or minor).
-// All numbering should start from 1. (not from 0)
-#define GMSTAGE_PARSE        1
-#define GMSTAGE_FRONTEND     2
-#define GMSTAGE_INDEPENDENT_OPT   3
-#define GMSTAGE_BACKEND_OPT  4
-#define GMSTAGE_LIBRARY_OPT  5
-#define GMSTAGE_CODEGEN      6
-
-extern void gm_begin_major_compiler_stage(int major_no, const char* desc);
-extern void gm_end_major_compiler_stage();
-extern void gm_begin_minor_compiler_stage(int major_no, const char* desc);
-extern void gm_end_minor_compiler_stage();
-
-
-
+*/
 
 #endif
 

@@ -13,6 +13,8 @@
 class gm_backend {
 
     public:
+        gm_backend() : _voca_created(false) {}
+
         virtual void setTargetDir(const char* dname)=0;
         virtual void setFileName(const char* fname)=0;
 
@@ -33,6 +35,22 @@ class gm_backend {
         // returns is_okay
         //--------------------------------------------------
         virtual bool do_generate()=0;
+
+        virtual gm_vocabulary& get_language_voca() {
+            if (!_voca_created) {
+                _voca_created = true;
+                build_up_language_voca();
+            }
+            return _lang_voca;
+        }
+
+
+    protected:
+        virtual void build_up_language_voca() {}// default is to do nothing
+
+        gm_vocabulary _lang_voca;
+        bool _voca_created;
+
 };
 
 static enum  {
@@ -46,14 +64,15 @@ static enum  {
 class gm_graph_library {
     public:
 
-    virtual const char* get_header_info()=0;
-    virtual const char* get_type_string(ast_typedecl*, int usage) =0;
+    //virtual const char* get_header_info()=0;
+    //virtual const char* get_type_string(ast_typedecl*, int usage) =0;
 
-    virtual bool generate(ast_nop* n) {return true;}
-    virtual bool generate_builtin(ast_expr_builtin* e) = 0;
+    //virtual const char* get_header_info()=0;
+    //virtual const char* get_type_string(ast_typedecl*, int usage) =0;
 
-    // apply local optimize 
-    // returns is_okay
+    //virtual bool generate(ast_nop* n) {return true;}
+    //virtual bool generate_builtin(ast_expr_builtin* e) = 0;
+
     virtual bool do_local_optimize()=0;
 
 

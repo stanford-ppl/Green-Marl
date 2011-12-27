@@ -15,7 +15,8 @@ enum {
 
 class gm_gps_basic_block {
     public:
-    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type), after_vertex(false),inner_loop(false) {}
+    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type), after_vertex(false),
+    _has_sender(false) {}
     virtual ~gm_gps_basic_block() {
         std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
         for(I=symbols.begin(); I!=symbols.end();I++)
@@ -49,23 +50,21 @@ class gm_gps_basic_block {
     void add_exit(gm_gps_basic_block* b, bool add_reverse=true) {
         exits.push_back(b);
         if (add_reverse)
-            b->add_entry(this, exits.size()-1); // add reverse link
+            b->add_entry(this); // add reverse link
     }
     void remove_all_exits()   {exits.clear(); }
-    void remove_all_entries() {entries.clear(); entries_reverse_no.clear();}
+    void remove_all_entries() {entries.clear(); }
 
     int get_num_entries() {return entries.size();}
-    void add_entry(gm_gps_basic_block* b, int no) {
+    void add_entry(gm_gps_basic_block* b) {
         entries.push_back(b);
-        entries_reverse_no.push_back(no);
     }
-    void update_entry_from(gm_gps_basic_block* old, gm_gps_basic_block* to, int no)
+    void update_entry_from(gm_gps_basic_block* old, gm_gps_basic_block* to)
     {
         for(int i =0;i<entries.size();i++)
         {
             if (entries[i] == old) {
                 entries[i] = to;
-                entries_reverse_no[i] = no;
                 return;
             }
         }
@@ -79,23 +78,27 @@ class gm_gps_basic_block {
     void reproduce_sents();
 
     bool is_vertex() {return (get_type() == GM_GPS_BBTYPE_BEGIN_VERTEX);}
+    bool has_sender() {return _has_sender;}
+    void set_has_sender(bool b) {_has_sender = b;}
 
-    bool have_inner_loop() {return inner_loop == NULL;}
-    void set_inner_loop(ast_foreach* fe) {inner_loop = fe;}
-    ast_foreach* get_inner_loop() {return inner_loop;}
+    // multiple inner loops?
+    void         add_receiver_loop  (ast_foreach* fe)              {receivers.push_back(fe);}
+    std::list<ast_foreach*>&  get_receiver_loops()                 {return receivers;}
+    bool  has_receiver_loops()     {return (receivers.size() >0);}
+    void  clear_receiver_loops()   {receivers.clear();}
 
 private:
     std::list<ast_sent*>::iterator I;
     std::list<ast_sent*> sents;
 
-    ast_foreach* inner_loop;    // for vertex computation only;
+    std::list<ast_foreach*> receivers;
 
     std::vector<gm_gps_basic_block*> exits;
     std::vector<gm_gps_basic_block*> entries;
-    std::vector<int> entries_reverse_no; //reverse link id
     int id;
     int type;  // GM_GPS_BBTYPE_...
     bool after_vertex;
+    bool _has_sender;
 
     // map of used symbols inside this BB
     std::map<gm_symtab_entry*, gps_syminfo*> symbols;
@@ -127,6 +130,8 @@ protected:
 class gps_apply_bb_ast : public gm_apply, public gps_apply_bb 
 {
 public:
+    gps_apply_bb_ast() : _under_receiver(false) {}
+
     // defined in gm_gps_misc.cc
     virtual void apply(gm_gps_basic_block* b);
     gm_gps_basic_block *get_curr_BB() {return _curr;}
@@ -134,10 +139,18 @@ public:
     void set_is_pre(bool b) {_is_pre = b;}
     bool is_post() {return _is_post;}
     bool is_pre() {return _is_pre;}
+
+
+    // set by traverse engine
 protected:
     gm_gps_basic_block *_curr;
     bool _is_post;
     bool _is_pre;
+
+    bool is_under_receiver_traverse() {return _under_receiver;}
+    void  set_under_receiver_traverse(bool b) {_under_receiver = b;}
+
+    bool _under_receiver;
 };
 
 bool gps_bb_apply_until_no_change(gm_gps_basic_block* entry, gps_apply_bb* apply);

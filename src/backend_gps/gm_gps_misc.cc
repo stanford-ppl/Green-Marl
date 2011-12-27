@@ -6,6 +6,7 @@
 
 extern void gm_flush_reproduce(); 
 extern void gm_newline_reproduce();
+extern void gm_push_reproduce(char *s);
 
 void gm_gps_basic_block::reproduce_sents()
 {
@@ -27,9 +28,20 @@ void gm_gps_basic_block::reproduce_sents()
 
         gm_newline_reproduce(); 
         gm_flush_reproduce(); 
-    } else if (
-            (type == GM_GPS_BBTYPE_BEGIN_VERTEX) ||
-            (type == GM_GPS_BBTYPE_SEQ)) {
+    } else if ( (type == GM_GPS_BBTYPE_BEGIN_VERTEX) || (type == GM_GPS_BBTYPE_SEQ)) {
+
+        if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) && (has_receiver_loops())) {
+            gm_push_reproduce((char*)"//Receive Loops"); 
+            gm_newline_reproduce(); 
+            std::list<ast_foreach*>& L =  get_receiver_loops(); 
+            std::list<ast_foreach*>::iterator I;
+            for(I=L.begin();I!=L.end();I++)
+            {
+                ast_foreach* s = *I;
+                s->reproduce(1);
+                gm_newline_reproduce(); 
+            }
+        }
 
         prepare_iter();
         ast_sent* s = get_next();
@@ -156,8 +168,26 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
         ast_foreach* fe = (ast_foreach*) s;
         assert(fe->get_filter() == NULL); // should be changed into if
 
+        // traverse body
+        set_under_receiver_traverse(false);
         ast_sent* b = fe->get_body();
         b->traverse(this, is_post(), is_pre());
+
+        // traverse sender
+        // traverse receiver
+        if (_curr->has_receiver_loops())
+        {
+            std::list<ast_foreach*> R = _curr->get_receiver_loops();
+            std::list<ast_foreach*>::iterator I;
+            set_under_receiver_traverse(true);
+            for(I=R.begin(); I!=R.end(); I++)
+            {
+                ast_foreach* fe = *I;
+                ast_sent* b = fe->get_body();
+                b->traverse(this, is_post(), is_pre());
+            }
+            set_under_receiver_traverse(false);
+        }
 
     }
     else if (type==GM_GPS_BBTYPE_IF_COND)

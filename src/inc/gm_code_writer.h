@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include "gm_misc.h"
 #include "gm_ast.h"
+#include <list>
 
 class gm_code_writer
 {
@@ -162,8 +163,12 @@ public:
     virtual void generate_rhs_field(ast_field* i) =0;
     virtual void generate_expr_builtin(ast_expr* e) =0; 
     virtual void generate_expr_minmax(ast_expr* e) =0;
-    virtual void generate_expr_type_conversion(ast_expr *e) = 0;
+    virtual void generate_expr_abs(ast_expr* e) =0;
+    virtual void generate_expr_type_conversion(ast_expr *e);
 
+    virtual const char* get_type_string(int prim_t)=0; // returned string should be copied before usage.
+
+    virtual void generate_expr_list(std::list<ast_expr*>& L);
     virtual void generate_expr(ast_expr* e);
     virtual void generate_expr_val(ast_expr* e) ;
     virtual void generate_expr_inf(ast_expr* e) ;
@@ -190,6 +195,7 @@ public:
     virtual void generate_sent_while(ast_while *w);
     virtual void generate_sent_block(ast_sentblock *b);
     virtual void generate_sent_return(ast_return *b);
+    virtual void generate_sent_call(ast_call *c) {assert(false);}
 
 protected:
     char temp_str[1024*8];
@@ -197,17 +203,5 @@ protected:
 
 };
 
-#endif
-
-#if 0
-int main()
-{
-    gm_code_writer G;
-
-    G.pushln("#include <stdio.h>");
-    G.pushln("If (x > y) {");
-    G.pushln("x=y+3; }");
-    G.pushln("print x;");
-}
 #endif
 

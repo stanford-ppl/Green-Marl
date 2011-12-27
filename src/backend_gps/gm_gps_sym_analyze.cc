@@ -8,8 +8,20 @@
 #include "gm_typecheck.h"
 #include "gps_syminfo.h"
 
-
 #include <set>
+/*
+class gps_clear_symbol_scope_t : public gm_apply
+{
+    public:
+    gps_clear_symbol_scope_t() {
+        set_for_symtab(true);
+    }
+    virtual bool apply(gm_symtab_entry* e, int symtab_type)
+    {
+        e->remove_info(TAG_BB_USAGE);
+    }
+};
+*/
 
 class gps_check_symbol_scope_t : public gm_apply
 {
@@ -77,10 +89,18 @@ private:
     }
 };
 
+
+// This function may be called multiple times
 bool gm_gps_gen::do_analyze_symbol_scope(ast_procdef* p)
 {
-    gps_check_symbol_scope_t T;
+    /*
+    // clean up previous symbol analysis
+    gps_clear_symbol_scope_t T0;
+    p->traverse(&T0, true, false);
+    */
+
     // assumption: Proc is synthesizable. i.e. having only two levels of loops
+    gps_check_symbol_scope_t T;
     p->traverse(&T, true, true);
 
 }
@@ -91,13 +111,14 @@ bool gm_gps_gen::do_analyze_symbol_scope(ast_procdef* p)
 bool gm_gps_gen::do_analyze_symbols()
 {
     bool is_okay = true;
+
     //-------------------------------------
     // Check the scope of each symbol (except iterators)
-    // (1) Defined globally 
-    // (2) Defined in outer loop
-    // (3) Defined in inner loop
+    // (a) Defined globally 
+    // (b) Defined in outer loop
+    // (c) Defined in inner loop
     //-------------------------------------
-    do_analyze_symbol_scope(get_current_proc());  // may have done already.
+    do_analyze_symbol_scope(get_current_proc());  // may have done already. [XXX: no need to repeat]
 
     // (2) check each BB. How each symbol is used and how
     do_merge_symbol_usages();  
@@ -120,6 +141,8 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         gps_merge_symbol_usage_t() {
             set_for_sent(true);
             set_for_expr(true);
+            set_separate_post_apply(true); 
+            foreach_depth = 0;
         }
     
     virtual bool apply(ast_sent* s) 
@@ -155,6 +178,14 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 
             }
         }
+
+        if (s->get_nodetype() == AST_FOREACH) 
+            foreach_depth++;
+    }
+
+    virtual bool apply2(ast_sent * s) {
+        if (s->get_nodetype() == AST_FOREACH) 
+            foreach_depth--;
     }
 
     virtual bool apply(ast_expr* e) 
@@ -177,11 +208,31 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             gps_syminfo* syminfo = 
                 get_or_create_global_syminfo(i, is_scalar);
 
+            int context;
+            if (!get_curr_BB()->is_vertex()) {
+                // master context
+                context = GPS_CONTEXT_MASTER;
+            }
+            else {
+                // sender/recevier
+                if (is_under_receiver_traverse()) {
+                    context = GPS_CONTEXT_RECEIVER;
+                }
+                else {
+                    if (foreach_depth == 0) {
+                        context = GPS_CONTEXT_SENDER;
+                    } 
+                    else {
+                        context = GPS_CONTEXT_VERTEX;
+                    }
+                }
+            }
+
             // update global information
             syminfo->add_usage_in_BB(
                     get_curr_BB()->get_id(), 
                     usage,
-                    get_curr_BB()->is_vertex(),
+                    context,
                     r_type);
 
             // update local information
@@ -191,7 +242,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             syminfo->add_usage_in_BB(
                     get_curr_BB()->get_id(), 
                     usage,
-                    get_curr_BB()->is_vertex(),
+                    context,
                     r_type);
 
         }
@@ -224,6 +275,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             }
             return syminfo;
         }
+        int foreach_depth;
 };
 
 
@@ -298,6 +350,7 @@ private:
 bool gm_gps_gen::do_make_symbol_summary()
 {
     ast_procdef* p = get_current_proc();
+
 
     //-----------------------------------------------
     // mark special markers to the property arguments

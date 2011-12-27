@@ -12,6 +12,7 @@ void gm_flush_reproduce() {Out.flush();}
 void gm_newline_reproduce() {Out.NL();}
 void gm_redirect_reproduce(FILE *f) {Out.set_output_file(f);}
 void gm_baseindent_reproduce(int i) {Out.set_base_indent(i);}
+void gm_push_reproduce(char *s) {Out.push(s);}
 
 //----------------------------------------------------------------------------------------
 // For debugging. 
@@ -85,6 +86,9 @@ void ast_typedecl::reproduce(int ind_level)
         target_graph->reproduce(0);
         Out.push(')');
     }
+    else if (is_void()) {
+        // do nothing
+    }
     else {
         assert(false);
     }
@@ -132,7 +136,7 @@ void ast_procdef::reproduce(int ind_level) {
         }
     }
     Out.push(")");
-    if (ret_type != NULL) {
+    if ((ret_type != NULL) && (!ret_type->is_void())) {
         Out.push(" : ");
         ret_type->reproduce(0);
     }

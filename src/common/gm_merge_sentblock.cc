@@ -9,10 +9,11 @@
 // Merge two sentence blocks (P, Q) into one. (P)
 // [Assumption: the two sentblocks are siblings]
 //   - All the sentences in Q is moved to P.
-//   - Name conflicts are resolved.
+//   - Name conflicts are resolved ==> should not happen (see handle_vardecl)
 //   - Symbol table is kept valid.
 //   - (RW analysis is re-done here?)
 //---------------------------------------------------------
+/*
 static void resolve_name_conflict(ast_sentblock* P, ast_sentblock* Q)
 {
     gm_symtab* V = P->get_symtab_var();
@@ -23,13 +24,14 @@ static void resolve_name_conflict(ast_sentblock* P, ast_sentblock* Q)
     std::vector<gm_symtab_entry*>::iterator i;
     for(i=Vs.begin(); i!=Vs.end(); i++)
     {
-        gm_resolve_name_conflict(Q, *i, true); // for scalar
+        //gm_resolve_name_conflict(Q, *i, true); // for scalar
     }
     for(i=Fs.begin(); i!=Fs.end(); i++)
     {
-        gm_resolve_name_conflict(Q, *i, false); // for properties
+        //gm_resolve_name_conflict(Q, *i, false); // for properties
     }
 }
+*/
 
 void gm_merge_sentblock(ast_sentblock* P, ast_sentblock *Q, bool delete_Q_after)
 {
@@ -40,8 +42,8 @@ void gm_merge_sentblock(ast_sentblock* P, ast_sentblock *Q, bool delete_Q_after)
     assert(Q!=NULL);
 
     // 1. resolve name conflict in each direction
-    resolve_name_conflict(P,Q);
-    resolve_name_conflict(Q,P);
+    //resolve_name_conflict(P,Q);
+    //resolve_name_conflict(Q,P);
 
     // 2. merge symbol tables
     gm_symtab* V = P->get_symtab_var();

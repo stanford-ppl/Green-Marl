@@ -5,187 +5,262 @@
 #include "gm_misc.h"
 #include "gm_typecheck.h"
 #include "gm_transform_helper.h"
+#include "gm_error.h"
 
 void gm_make_normal_assign(ast_assign* a);
+
 //-----------------------------------------------------------------
-// Find highest parallel bound
-//  - The highest parallel scope below where the symbol is defined.
-//    (from the current subtree where the reduce operation is defined)
+// Fix Bound symbols
+//    (a) If bound is null  (defer-assign)
+//            -> find closest binding for loop (canbe a seq-loop). Error, if none.
 //
-// [Example]
-// { Int a;
-//   For(x: ...) {
-//     Foreach(y: x.Nbrs) {
-//       Foreach(z: y.Nbrs) {
-//          a++ [@ y];    // <- Most of the time, one should be bound to HPB
-// } } } }
+//    (b) If bound is null, or seq-loop ==> find appropriate bound
+//           [The first parallel loop (strictly comes) after the scope where target/driver is defined
+//           => if no such thing, reduction can be optimized
 //
-//
-// // This is the only exception
-//
-// { N_P<Int>(G) A,B,C;
-//   Foreach(x: G.Nodes) {  // <- HPB
-//      Foreach(y: x.Nbrs)  
-//          x.A += y.C @ y; // <- maynot bound to HPB. (but writing to driver HPB)
-//      x.B = x.A + 1;
-// } }
 //-----------------------------------------------------------------
 
+
+//-------------------------------------------------------------------------
+// Empty bound
+//   -> will simply choose highest parallel bound after property or scala definition
+//-------------------------------------------------------------------------
+//  
+//  Foreach(s: G.Node)
+//     s.A += ..           -> @ s
+//     Foreach (t: s.Nbrs)
+//         t.A += ..       -> @s
+//
+//  Foreach(s: G.Node)
+//     s.A += ..           -> @ s  // [note: this can be replace with normal read and write!]
+//     Foreach (t: s.Nbrs)
+//         s.A += ..       -> @ s  // [note: however in this case, @t is even meaningful!)
+//     ... 
+//
+//  Foreach(x: G.Node)
+//    Foreach(s: G.Node)
+//     Foreach (t: s.Nbrs)
+//         t.A += ..       -> @x
+//
+//  For(s: G.Node)
+//     Foreach (t: s.Nbrs)
+//         s.A += ..       -> @t
+//
+//-----------------------------------------------------------------
+
+struct find_bound_t {
+    gm_symtab* v_scope;
+    gm_symtab* f_scope;
+    bool is_par;
+    bool is_boundary;
+    gm_symtab_entry* iter;
+};
+
 class find_hpb_t : public gm_apply {
+private:
+    std::list<find_bound_t> scope;
+    bool opt_seq_bound;
+
 public:
     //------------------------
     // make a big table 
     // each symbol -> depth
     //------------------------
-    find_hpb_t() {current_depth = 0; }
+    find_hpb_t() {
+        find_bound_t curr_T;
+        curr_T.v_scope = NULL;
+        curr_T.f_scope = NULL;
+        curr_T.is_par = false;
+        curr_T.is_boundary = false;
+        curr_T.iter = NULL;
+
+        scope.push_back(curr_T);
+        opt_seq_bound = false;
+    }
+
+    void set_opt_seq_bound(bool b) {opt_seq_bound = b;}
 
     void begin_context(ast_node* t) {
+
+        find_bound_t curr_T;
+
+        curr_T.v_scope = t->get_symtab_var();
+        curr_T.f_scope = t->get_symtab_field();
+        curr_T.is_par = false;
+        curr_T.is_boundary = false;
+        curr_T.iter = NULL;
+
         if (t->get_nodetype() == AST_FOREACH) {
             ast_foreach* fe = (ast_foreach*) t;
+            curr_T.is_boundary = true;
+            curr_T.iter = fe->get_iterator()->getSymInfo();
             if (fe->is_parallel()) {
-                current_depth++;
+                curr_T.is_par = true;
             }
-            para_iter_map[fe->get_iterator()->getSymInfo()] = fe->is_parallel();
         } else if (t->get_nodetype() == AST_BFS) {
             ast_bfs* fe = (ast_bfs*) t;
-            if (fe->is_parallel())
-                current_depth++;
-            para_iter_map[fe->get_iterator()->getSymInfo()] = fe->is_parallel();
+            curr_T.is_boundary = true;
+            curr_T.iter = fe->get_iterator()->getSymInfo();
+            if (fe->is_parallel()) {
+                curr_T.is_par = true;
+            }
         }
+        else {
+            // do nithing
+        }
+        scope.push_back(curr_T);
     }
+
     void end_context(ast_node* t) {
-        if (t->get_nodetype() == AST_FOREACH) {
-            ast_foreach* fe = (ast_foreach*) t;
-            if (fe->is_parallel())
-                current_depth--;
-        } else if (t->get_nodetype() == AST_BFS) {
-            ast_bfs* fe = (ast_bfs*) t;
-            if (fe->is_parallel())
-                current_depth--;
+        //curr_T = scope.back();
+        scope.pop_back();
+    }
+
+    gm_symtab_entry* find_closest_any_boundary_iterator() { // can be a sequence
+        std::list<find_bound_t>::reverse_iterator I;
+        for(I=scope.rbegin(); I!=scope.rend(); ++I)
+        {
+            find_bound_t& T = *I;
+            if (T.is_boundary)  return T.iter;
         }
+        return NULL;
     }
 
-    // phase 1: create depth_map
-    virtual bool apply(gm_symtab_entry* e, int symtab_type) 
+    //-----------------------------------------------------------
+    // find highest parallel boundary after sym is defined
+    //-----------------------------------------------------------
+    gm_symtab_entry* find_highest_parallel_boundary_iterator(gm_symtab_entry* entry, bool is_prop)
     {
-        depth_map[e]  = current_depth;
-        return true;
+        bool def_found = false;
+        // first find symbol def
+        std::list<find_bound_t>::iterator I;
+        for(I=scope.begin(); I!=scope.end(); I++) 
+        {
+            if (!def_found) {
+                gm_symtab* scope_to_look = (is_prop)? I->f_scope : I->v_scope;
+                if (scope_to_look == NULL) continue;
+                if (scope_to_look->is_entry_in_the_tab(entry)) {
+                    def_found = true;
+                }
+                else {
+                    continue;
+                }
+            }
+
+            assert(def_found);
+            // find parallel boundary
+            if (I->is_par && I->is_boundary)
+                return I->iter;
+        }
+
+        // no parallel boundary!
+        if (!def_found) // argument or current boundary)
+        {
+            // okay
+        }
+        return NULL;
     }
 
-    //----------------------------------------------------------------
-    // phase 2: for every reduction assignment, find HPB.
-    // If HPB is NULL -> change it to normal assign
-    // If current bound is NULL or higher than HPB -> lower it to HPB.
-    // If current bound is lower than HPB,
-    //    If parallel -> leave it (can be an error or not)
-    //    If sequential-> fix it silently (or leave it to be error). 
-    //----------------------------------------------------------------
+    //-----------------------------------------------------------
+    // find first parallel boundary after current bound
+    //-----------------------------------------------------------
+    gm_symtab_entry* find_tighter_bound(gm_symtab_entry* curr_bound)
+    {
+        bool def_found = false;
+
+        // first find current bound
+        std::list<find_bound_t>::iterator I;
+        for(I=scope.begin(); I!=scope.end(); I++) 
+        {
+            if (!def_found) {
+                if (I->iter == curr_bound) {
+                    def_found = true;
+                    if (I->is_par && I->is_boundary)
+                        return I->iter;
+                    else
+                        continue;
+                }
+                else {
+                    continue;
+                }
+            }
+            else {
+                // find parallel boundary
+                if (I->is_par && I->is_boundary)
+                    return I->iter;
+            }
+        }
+
+        assert(def_found == true);
+        return NULL;
+    }
+
     virtual bool apply(ast_sent *s)
     {
         if (s->get_nodetype() != AST_ASSIGN) return true;
         ast_assign *a = (ast_assign*)s;
-        if (!a->is_reduce_assign()) return true;
 
-        gm_symtab_entry* HPB = find_highest_parallel_bound_from(a);
+        if (a->is_defer_assign()) 
+        {
+            if (a->get_bound() == NULL) {
+                gm_symtab_entry* bound = find_closest_any_boundary_iterator();
+                if (bound == NULL) {
+                    gm_type_error(GM_ERROR_UNBOUND_REDUCE, a->get_line(), a->get_col());
+                    return false;
+                }
 
-        if (HPB == NULL) {
-            gm_make_normal_assign(a);
+                a->set_bound(bound->getId()->copy(true));
+            }
         }
-        else if (a->get_bound() == NULL) {
-            assert(HPB->getId() != NULL);
-            ast_id* new_bound = HPB->getId()->copy(true);
-            a->set_bound(new_bound); 
-        }
-        else if (a->get_bound()->getSymInfo() == HPB) {
-            return true;
-        } else {
-            assert(a->get_bound()!=NULL);
-            assert(a->get_bound()->getSymInfo() != NULL);
-            assert(HPB->getId() != NULL);
-
-            int HPB_depth  = depth_map[HPB];
-            int curr_bound_depth = depth_map[a->get_bound()->getSymInfo()];
-            // smaller number means higher scope
-            // curr bound level is lower
-            if (HPB_depth < curr_bound_depth) 
-            {
-                if (para_iter_map[a->get_bound()->getSymInfo()]) { // is parallel
-                    // do nothing: there is a special case.
+        else if (a->is_reduce_assign()) 
+        {
+            // null bound
+            // find higest parallel region
+            if (a->get_bound() == NULL) {
+                gm_symtab_entry *target; // target or driver symbol
+                gm_symtab_entry* new_iter;
+                if (a->is_target_scalar()) {
+                    target = a->get_lhs_scala()->getSymInfo();
+                    new_iter = find_highest_parallel_boundary_iterator(target, false);
                 }
                 else {
-                    // fixing error
-                    ast_id* old_bound = a->get_bound(); delete old_bound;
-                    ast_id* new_bound = HPB->getId()->copy(true);
-                    a->set_bound(new_bound); 
+                    target = a->get_lhs_field()->get_second()->getSymInfo();
+                    new_iter = find_highest_parallel_boundary_iterator(target, true);
+                }
+
+                // no such iterator
+                if (new_iter == NULL) {
+                    gm_make_normal_assign(a);
+                }
+                else {
+                    a->set_bound(new_iter->getId()->copy(true));
                 }
             }
-            else 
+            else if (opt_seq_bound) 
             {
-                // fixing error
-                ast_id* old_bound = a->get_bound(); delete old_bound;
-                ast_id* new_bound = HPB->getId()->copy(true);
-                a->set_bound(new_bound); 
+                // check if bound is sequential
+                ast_id* old_bound = a->get_bound();
+                gm_symtab_entry* new_bound = 
+                    find_tighter_bound(old_bound->getSymInfo());
+                if (new_bound == NULL) {
+                    gm_make_normal_assign(a);
+                }
+                else if (new_bound != old_bound->getSymInfo()) {
+                    a->set_bound(new_bound->getId()->copy(true));
+                    delete old_bound;
+                }
             }
         }
+
         return true;
     }
-
-    gm_symtab_entry* find_highest_parallel_bound_from(ast_assign *a)
-    {
-        gm_symtab_entry* dest;
-        if (a->is_target_scalar()) {
-            ast_id* i = a->get_lhs_scala();
-            dest = i->getSymInfo();
-        }
-        else {
-            ast_id* i = a->get_lhs_field()->get_second();
-            dest = i->getSymInfo();
-        }
-        assert(dest!=NULL);
-
-        // smaller number means higher scope
-        int dest_depth = depth_map[dest];
-        ast_node* n = a->get_parent();
-
-        gm_symtab_entry* HPB = NULL;
-
-        while (n!= NULL) {
-            //printf("B3 %s\n", gm_get_nodetype_string(n->get_nodetype()));fflush(stdout);
-            if(n->get_nodetype() == AST_FOREACH) {
-                ast_foreach* fe = (ast_foreach*) n;
-                assert(fe->get_iterator()->getSymInfo()!=NULL);
-                int iter_depth = depth_map[fe->get_iterator()->getSymInfo()];
-                
-                if (iter_depth <= dest_depth) break;
-                if (fe->is_parallel())
-                    HPB = fe->get_iterator()->getSymInfo();
-            }
-            else if(n->get_nodetype() == AST_BFS) {
-                ast_bfs* fe = (ast_bfs*) n;
-                assert(fe->get_iterator()->getSymInfo()!=NULL);
-                int iter_depth = depth_map[fe->get_iterator()->getSymInfo()];
-
-                if (iter_depth <= dest_depth) break;
-                if (fe->is_parallel())
-                    HPB = fe->get_iterator()->getSymInfo();
-            }
-
-            n = n->get_parent();
-        }
-
-        return HPB;
-    }
-
-private:
-    int current_depth;
-    std::map<gm_symtab_entry*, int> depth_map; // map of symbol & depth
-    std::map<gm_symtab_entry*, bool> para_iter_map; // map of iterator symbol & is parallel
 };
 
-bool gm_frontend::fix_bound_symbols(ast_procdef* p)
+
+bool gm_frontend::fix_bound_symbols(ast_procdef* p, bool optimize_seq_bound)
 {
     find_hpb_t T;
-    gm_traverse_symtabs(p, &T);
+    T.set_opt_seq_bound(optimize_seq_bound);
 
     gm_traverse_sents(p, &T);
 
@@ -193,6 +268,9 @@ bool gm_frontend::fix_bound_symbols(ast_procdef* p)
 }
 
 
+
+
+// used in later optimizations
 void gm_make_normal_assign(ast_assign* a)
 {
     //-----------------------------------

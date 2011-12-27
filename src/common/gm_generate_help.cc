@@ -1,6 +1,20 @@
 #include "gm_code_writer.h"
 #include "gm_ast.h"
 
+void gm_code_generator::generate_expr_list(std::list<ast_expr*>& L)
+{
+    std::list<ast_expr*>::iterator I;
+    int i=0;
+    int size = L.size();
+    for(I=L.begin(); I!=L.end(); I++, i++) {
+        generate_expr(*I);
+        if (i!=(size-1))
+            _Body.push(", ");
+    }
+}
+
+extern void gm_flush_reproduce(); 
+
 void gm_code_generator::generate_expr(ast_expr*e)
 {
     if (e->is_inf())
@@ -23,8 +37,27 @@ void gm_code_generator::generate_expr(ast_expr*e)
     }
     else if (e->is_comp())
         generate_expr_comp(e);
-    else 
+    else if (e->is_terop())
+        generate_expr_ter(e);
+    else if (e->is_builtin())
+        generate_expr_builtin(e);
+    else {
+        e->reproduce(0);
+        gm_flush_reproduce();
         assert(false);
+    }
+}
+
+#define LP "("
+#define RP ")"
+void gm_code_generator::generate_expr_type_conversion(ast_expr * e)
+{
+    _Body.push(LP);
+    _Body.push(LP);
+    _Body.push(get_type_string(e->get_type_summary()));
+    _Body.push(RP);
+    generate_expr(e->get_left_op());
+    _Body.push(RP);
 }
 
 void gm_code_generator::generate_expr_val(ast_expr *e)
@@ -79,6 +112,7 @@ void gm_code_generator::generate_expr_inf(ast_expr *e)
     return ;
 }
 
+
 void gm_code_generator::generate_expr_uop(ast_expr *e)
 {
     char* temp = temp_str;
@@ -90,9 +124,7 @@ void gm_code_generator::generate_expr_uop(ast_expr *e)
                 generate_expr(e->get_left_op());
                 return;
             } else if (e->get_optype() == GMOP_ABS) {
-                _Body.push(" std::abs(");
-                generate_expr(e->get_left_op());
-                _Body.push(") ");
+                generate_expr_abs(e);
                 return ;
             } else if (e->get_optype() == GMOP_TYPEC) {
                 generate_expr_type_conversion(e);
@@ -212,6 +244,9 @@ void gm_code_generator::generate_sent(ast_sent* s)
         case AST_NOP:
             generate_sent_nop((ast_nop*)s);
             break;
+        case AST_CALL:
+            generate_sent_call((ast_call*)s);
+            break;
         default:
             assert(false);
     }
@@ -313,3 +348,4 @@ void gm_code_generator::generate_sent_while(ast_while *w)
     }
 
 }
+

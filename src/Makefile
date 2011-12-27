@@ -39,24 +39,35 @@ SRCS2 =\
        gm_error.cc gm_builtin.cc \
 	   gm_traverse.cc gm_transform_helper.cc \
        gm_add_symbol.cc gm_resolve_nc.cc \
+       gm_resolve_inf_size.cc \
        gm_parallel_helper.cc\
        gm_new_sents_after_tc.cc gm_merge_sentblock.cc\
        gm_reduce_error_check.cc\
+       gm_prepare_genname.cc\
        gm_frontend.cc gm_rw_analysis.cc gm_rw_analysis_check2.cc \
        gm_handle_vardecl.cc  gm_fixup_bound_symbol.cc\
-       gm_syntax_sugar.cc  gm_typecheck.cc\
+       gm_syntax_sugar.cc  \
+       gm_typecheck.cc \
+       gm_typecheck_oprules.cc \
+       gm_new_typecheck_step1.cc \
+       gm_new_typecheck_step2.cc \
+       gm_new_typecheck_step3.cc \
+       gm_new_typecheck_step4.cc \
+       gm_new_typecheck_step5.cc \
        gm_syntax_sugar2.cc gm_flip_be.cc\
        gm_ind_opt.cc gm_hoist_assign.cc gm_hoist_foreach.cc\
        gm_merge_loops.cc gm_moveup_propdecl.cc\
 	   gm_cpp_gen.cc gm_cpp_gen_bfs.cc gm_cpp_opt_parallel.cc\
        gm_cpp_opt.cc gm_cpp_opt_defer.cc gm_cpp_opt_entry_exit.cc\
        gm_cpp_opt_reduction.cc \
+       gm_cpp_name_sanitize.cc \
        gm_cpplib_gen.cc gm_cpplib_opt.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_canonical.cc gm_gps_check_synthesizable.cc\
+       gm_gps_bb_split.cc gm_gps_bb_merge.cc\
        gm_gps_opt_simplify_reduce_rhs.cc\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
-       gm_gps_bb_merge.cc gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
+       gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
        gps_syminfo.cc gm_gps_sym_analyze.cc\
        gm_gps_java.cc gm_gps_lib.cc\
 

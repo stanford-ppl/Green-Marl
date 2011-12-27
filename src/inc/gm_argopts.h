@@ -44,7 +44,7 @@ static struct GM_comp_args GM_compiler_options[] =
     {GMARGFLAG_TARGET, GMARG_STRING, "Target backend. Current valid targets are 'cpp','cpp_omp', and 'gps'.", "cpp"},
     {GMARGFLAG_OUTDIR, GMARG_STRING, "Output directory.", "."},
     {GMARGFLAG_OPT_LEV, GMARG_INT, "Optimization Level (tobe implemented)", "1"},
-    {GMARGFLAG_VERB_LEV, GMARG_INT, "Verbosity Level (tobe implemented) 0:silent", "0"},
+    {GMARGFLAG_VERB_LEV, GMARG_INT, "Verbosity Level 0:silent, 1:show compile stage", "0"},
     {GMARGFLAG_STOP_MAJOR, GMARG_INT, "(For internal debug) Stop after given compiler stage (major #). 1: parsing, 2:front-end, 3:common-opt, 4:back-end-opt, 0: do-not-stop", "0"},
     {GMARGFLAG_STOP_MINOR, GMARG_INT, "(For internal debug) Stop after given compiler stage (minor #). 0:after the final minor stage of major stage, 1~n:after specific minor stage", "0"},
     {GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For internal debug) When stopped, reproduce input", "0"},

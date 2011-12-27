@@ -8,7 +8,10 @@
 
 class gm_apply {
     public:
-        gm_apply() : for_id (false), for_symtab(false), for_sent(false), for_expr(false), separate_post_apply(false) {}
+        gm_apply() : for_id (false), for_symtab(false), 
+                     for_sent(false), for_expr(false), 
+                     for_proc(false),
+                     separate_post_apply(false) {}
 
     virtual bool apply(gm_symtab* e, int symtab_type){ return true;}      // SYMTAB_ARG, SYMTAB_FIELD, SYMTAB_VAR, SYMTAB_PROC
     virtual bool apply(gm_symtab_entry* e, int symtab_type){ return true;}
@@ -31,6 +34,7 @@ class gm_apply {
         bool for_symtab;
         bool for_sent;
         bool for_expr;
+        bool for_proc;
         bool separate_post_apply;
 
     public:
@@ -38,10 +42,12 @@ class gm_apply {
         bool is_for_symtab() {return for_symtab;}
         bool is_for_sent() {return for_sent;}
         bool is_for_expr() {return for_expr;}
+        bool is_for_proc() {return for_proc;}
         void set_for_id(bool b) {for_id =b;}
         void set_for_symtab(bool b) {for_symtab=b;}
         void set_for_sent(bool b) {for_sent=b;}
         void set_for_expr(bool b) {for_expr=b;}
+        void set_for_proc(bool b) {for_proc=b;}
 
         bool has_separate_post_apply() {return separate_post_apply;}
         void set_separate_post_apply(bool b)  {separate_post_apply = b;}

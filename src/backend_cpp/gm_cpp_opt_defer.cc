@@ -128,9 +128,9 @@ static void post_process_deferred_writes(
         bool is_nodeprop = type->is_node_property();
         int target_type = type->getTargetTypeSummary(); assert(gm_is_prim_type(target_type));
         ast_sentblock* scope = gm_find_upscope(fe);
-        gm_symtab_entry * target_graph = type->get_target_graph();
+        gm_symtab_entry * target_graph = type->get_target_graph_sym();
         
-        char* fname = (char*) TEMP_GEN.getTempName(id->get_orgname(), "_nxt");
+        char* fname = (char*) FE.voca_temp_name_and_add(id->get_orgname(), "_nxt");
         gm_symtab_entry* new_dest
             = gm_add_new_symbol_property(scope, target_type, is_nodeprop, target_graph, fname);
         delete [] fname;
@@ -269,7 +269,7 @@ static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symt
     //------------------------------
     // create foreach statement
     //------------------------------
-    const char* iter_name = TEMP_GEN.getTempName("i");
+    const char* iter_name = FE.voca_temp_name_and_add("i");
     ast_id* itor = ast_id::new_id(iter_name, 0, 0);
     int iter_type = is_nodeprop ?  GMTYPE_NODEITER_ALL : GMTYPE_EDGEITER_ALL;
     ast_foreach* fe = gm_new_foreach_after_tc(itor, src, a, iter_type);
@@ -297,7 +297,7 @@ static ast_foreach* create_updater(ast_id* src, bool is_nodeprop, gm_symtab_entr
 
 static bool check_if_modified_elsewhere(gm_symtab_entry* e, ast_sent* myself, ast_sent* seq_loop)
 {
-    printf("seq_loop = %p, myself = %p\n", seq_loop, myself);
+    //printf("seq_loop = %p, myself = %p\n", seq_loop, myself);
 
     if (myself == seq_loop) return false;  // not modified elsewhere then my-self 
 
@@ -364,7 +364,7 @@ static void add_conditional_initialize(
     // }
     //--------------------------------------------
     gm_symtab* upup_symtab_v = upup->get_symtab_var();
-    const char* flag_name = TEMP_GEN.getTempName("is_first");
+    const char* flag_name = FE.voca_temp_name_and_add("is_first");
     gm_symtab_entry *flag_sym = gm_add_new_symbol_primtype(upup, GMTYPE_BOOL, (char*) flag_name); // symbol
     ast_id* lhs   = flag_sym->getId()->copy(true);
     ast_expr* rhs = ast_expr::new_bval_expr(true);

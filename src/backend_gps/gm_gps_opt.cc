@@ -25,26 +25,25 @@ bool gm_gps_gen::do_local_optimize()
     for(int i=0;i<COUNT;i++) {
         gm_begin_minor_compiler_stage(i +1, NAMES[i]);
 
-        std::vector<ast_procdef*>& top_levels = FE.get_procs(); 
 
         // currently, there should be one and only one top-level for Pregel Back-end
-        if (top_levels.size() != 1) {
+        if (FE.get_num_procs() != 1) {
             gm_backend_error(GM_ERROR_GPS_NUM_PROCS,"");
         }
-
-        std::vector<ast_procdef*>::iterator it;
-        for(it = top_levels.begin(); it!=top_levels.end(); it++)
+        FE.prepare_proc_iteration(); 
+        ast_procdef* p; 
+        while ((p=FE.get_next_proc()) != NULL)
         {
-            set_current_proc(*it);
+            set_current_proc(p);
             switch(i) {
                 case 0: // [temporary] simplify reduce
-                    do_simplify_reduce(*it);
+                    do_simplify_reduce(p);
                     break;
                 case 1: // Check compilable
                     is_okay = do_check_synthesizable(); 
                     break;
                 case 2:
-                    is_okay = do_check_canonical(*it);
+                    is_okay = do_check_canonical(p);
                     break;
                 case 3: // Create Stages
                     do_create_stages();

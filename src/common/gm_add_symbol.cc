@@ -19,6 +19,10 @@ ast_sentblock*   gm_find_upscope(ast_sent* s)
     return NULL;
 }
 
+// temporary: should be improved
+extern bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V); // should be called separatedly for property type.
+extern bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bool is_readable, bool is_writeable);
+
 //-------------------------------------------------------
 // add a new symbol of primitive type into given sentence block
 // assumption: newname does not have any name-conflicts
@@ -26,17 +30,23 @@ ast_sentblock*   gm_find_upscope(ast_sent* s)
 gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, char* newname)
 {
     assert(sb!=NULL);
-    ast_typedecl* type = ast_typedecl::new_primtype(primtype);
-    ast_id* new_id = ast_id::new_id(newname, 0, 0);
 
     gm_symtab* target_syms;
     target_syms = sb->get_symtab_var(); assert(target_syms!=NULL);
 
-    gm_symtab_entry *e = NULL;
-    bool success = target_syms->check_and_add_symbol(new_id, type, e);
+    // create type object and check
+    ast_typedecl* type = ast_typedecl::new_primtype(primtype);
+    bool success = gm_check_type_is_well_defined(type, target_syms);
     assert(success);
 
-    e = target_syms->find_symbol(new_id);
+    // create id object and declare
+    ast_id* new_id = ast_id::new_id(newname, 0, 0); 
+    success = gm_declare_symbol(target_syms, new_id, type, true, true);
+    assert(success);
+
+    // return symbol
+    gm_symtab_entry *e = NULL;
+    e = new_id->getSymInfo(); 
     assert(e!=NULL);
 
     // these are temporary
@@ -58,22 +68,26 @@ gm_symtab_entry* gm_add_new_symbol_property(
     ast_id* target_graph_id = target_graph->getId()->copy();
     ast_typedecl* target_type = ast_typedecl::new_primtype(primtype);
 
+    // create type object and check
     ast_typedecl* type;
     if (is_nodeprop) 
         type = ast_typedecl::new_nodeprop(target_type, target_graph_id);
     else
         type = ast_typedecl::new_edgeprop(target_type, target_graph_id);
 
-    ast_id* new_id = ast_id::new_id(newname, 0, 0);
-
-    gm_symtab* target_syms;
-    target_syms = sb->get_symtab_field(); assert(target_syms!=NULL);
-
-    gm_symtab_entry *e = NULL;
-    bool success = target_syms->check_and_add_symbol(new_id, type, e);
+    bool success = gm_check_type_is_well_defined(type,sb->get_symtab_var());
     assert(success);
 
-    e = target_syms->find_symbol(new_id);
+    // create property id object and declare
+    ast_id* new_id = ast_id::new_id(newname, 0, 0);
+    gm_symtab* target_syms;
+    target_syms = sb->get_symtab_field(); assert(target_syms!=NULL);
+    success = gm_declare_symbol(target_syms, new_id, type, true, true);
+    assert(success);
+
+    // return symbol
+    gm_symtab_entry *e = NULL;
+    e = new_id->getSymInfo();
     assert(e!=NULL);
 
     // these are temporary
@@ -86,8 +100,8 @@ gm_symtab_entry* gm_add_new_symbol_property(
 
 //-------------------------------------------------------------------
 // - move a symbol entry up into another symbol table
-// - name conflict is resolved 
 // [assumption] new_tab belongs to a sentence block
+// - name conflict does not happen 
 // [return]
 //   the sentence block which is the new scope
 //-------------------------------------------------------------------
@@ -102,7 +116,7 @@ void gm_move_symbol_into(gm_symtab_entry *e, gm_symtab* old_tab, gm_symtab* new_
     old_tab->remove_entry_in_the_tab(e);
 
     // resolve name conflict in the up-scope
-    gm_resolve_name_conflict(sb, e, is_scalar);
+    //gm_resolve_name_conflict(sb, e, is_scalar);
 
     // add in the new-table
     new_tab->add_symbol(e);

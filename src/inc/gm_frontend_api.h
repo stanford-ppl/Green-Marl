@@ -2,6 +2,7 @@
 #define GM_API_H
 
 // 'C' Functions called by gm_grammer.y
+#include <assert.h>
 
 extern "C" {
 
@@ -63,20 +64,43 @@ extern "C" {
 
     inline static bool gm_is_integer_type(int i) { return (i==GMTYPE_INT) || (i==GMTYPE_LONG) || (i==GMTYPE_BYTE) || (i==GMTYPE_SHORT);}
     inline static bool gm_is_float_type(int i) { return (i==GMTYPE_FLOAT) || (i==GMTYPE_DOUBLE);}
+    inline static bool gm_is_unknown_type(int i) { return (i==GMTYPE_UNKNOWN) || (i==GMTYPE_UNKNOWN_NUMERIC);}
     inline static bool gm_is_numeric_type(int i) { return gm_is_integer_type(i) || gm_is_float_type(i);}
     inline static bool gm_is_nodeedge_type(int i) { return (i==GMTYPE_NODE) || (i==GMTYPE_EDGE);}
     inline static bool gm_is_node_type(int i) {return (i==GMTYPE_NODE);}
     inline static bool gm_is_edge_type(int i) {return (i==GMTYPE_EDGE);}
+    inline static bool gm_is_int_type(int i) {return (i==GMTYPE_INT);}
+    inline static bool gm_is_long_type(int i) {return (i==GMTYPE_LONG);}
+
+    inline static bool gm_is_all_graph_node_iter_type(int i) {
+        return (i==GMTYPE_NODEITER_ALL) || (i==GMTYPE_NODEITER_BFS);
+    }
+    inline static bool gm_is_all_graph_edge_iter_type(int i) {
+        return (i==GMTYPE_EDGEITER_ALL) || (i==GMTYPE_EDGEITER_BFS);
+    }
+    inline static bool gm_is_all_graph_iter_type(int i) {
+        return gm_is_all_graph_node_iter_type(i) || gm_is_all_graph_edge_iter_type(i);
+    }
+    inline static bool gm_is_any_nbr_node_iter_type(int i) {
+        return (i==GMTYPE_NODEITER_NBRS) || (i==GMTYPE_NODEITER_IN_NBRS) || 
+               (i==GMTYPE_NODEITER_UP_NBRS) || (i==GMTYPE_NODEITER_DOWN_NBRS);
+    }
+    inline static bool gm_is_any_nbr_edge_iter_type(int i) {
+        return (i==GMTYPE_EDGEITER_NBRS) || (i==GMTYPE_EDGEITER_IN_NBRS) || 
+            (i==GMTYPE_EDGEITER_UP_NBRS) || (i==GMTYPE_EDGEITER_DOWN_NBRS);
+    }
+    inline static bool gm_is_any_nbr_iter_type(int i) {
+        return gm_is_any_nbr_edge_iter_type(i) ||
+               gm_is_any_nbr_node_iter_type(i);
+    }
+
     inline static bool gm_is_node_iter_type(int i) { 
-        return (i==GMTYPE_NODEITER_ALL) || (i==GMTYPE_NODEITER_NBRS) ||
-               (i==GMTYPE_NODEITER_BFS) || (i==GMTYPE_NODEITER_IN_NBRS) ||
-               (i==GMTYPE_NODEITER_UP_NBRS) || (i==GMTYPE_NODEITER_DOWN_NBRS) 
-               ;}
+        return gm_is_all_graph_node_iter_type(i) || gm_is_any_nbr_node_iter_type(i);
+    }
     inline static bool gm_is_edge_iter_type(int i) { 
-        return (i==GMTYPE_EDGEITER_ALL) || (i==GMTYPE_EDGEITER_NBRS) ||
-               (i==GMTYPE_EDGEITER_BFS) || (i==GMTYPE_EDGEITER_IN_NBRS) ||
-               (i==GMTYPE_EDGEITER_UP_NBRS) || (i==GMTYPE_EDGEITER_DOWN_NBRS) 
-               ;}
+        return gm_is_all_graph_edge_iter_type(i) || gm_is_any_nbr_edge_iter_type(i);
+    }
+
     inline static bool gm_is_node_set_iter_type(int i) { 
         return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
     inline static bool gm_is_edge_set_iter_type(int i) { 
@@ -86,12 +110,23 @@ extern "C" {
     inline static bool gm_is_unknown_set_iter_type(int i) {
         return (i==GMTYPE_ITER_ANY); }
 
-    inline static bool gm_is_node_compatible_type(int i) {return gm_is_node_type(i) || gm_is_node_iter_type(i) || gm_is_node_set_iter_type(i);}
-    inline static bool gm_is_edge_compatible_type(int i) {return gm_is_edge_type(i) || gm_is_edge_iter_type(i) || gm_is_edge_set_iter_type(i);}
+    inline static bool gm_is_node_collection_iter_type(int i) { 
+        return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
+    inline static bool gm_is_edge_collection_iter_type(int i) { 
+        return ((i==GMTYPE_EDGEITER_SET) || (i==GMTYPE_EDGEITER_SEQ) || (i==GMTYPE_EDGEITER_ORDER));}
+    inline static bool gm_is_unknown_collection_iter_type(int i) {
+        return (i==GMTYPE_ITER_ANY); }
+    inline static bool gm_is_collection_iter_type(int i) {
+        return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) ||
+               gm_is_unknown_collection_iter_type(i);}
+
+    inline static bool gm_is_node_compatible_type(int i) {return gm_is_node_type(i) || gm_is_node_iter_type(i) || gm_is_node_collection_iter_type(i);}
+    inline static bool gm_is_edge_compatible_type(int i) {return gm_is_edge_type(i) || gm_is_edge_iter_type(i) || gm_is_edge_collection_iter_type(i);}
     inline static bool gm_is_node_edge_compatible_type(int i) {return gm_is_node_compatible_type(i) || gm_is_edge_compatible_type(i);}
-    inline static bool gm_is_iter_type(int i) { return gm_is_node_iter_type(i) || gm_is_edge_iter_type(i) || gm_is_set_iter_type(i);}
+    inline static bool gm_is_iter_type(int i) { return gm_is_node_iter_type(i) || gm_is_edge_iter_type(i) || gm_is_collection_iter_type(i);}
     inline static bool gm_is_boolean_type(int i) {return (i==GMTYPE_BOOL);}
     inline static bool gm_is_unknonwn_type(int i) {return (i==GMTYPE_UNKNOWN) || (i==GMTYPE_UNKNOWN_NUMERIC);}
+    inline static bool gm_is_void_type(int i) {return (i==GMTYPE_VOID);} 
     inline static bool gm_is_prim_type(int i) {return gm_is_numeric_type(i) || gm_is_boolean_type(i);} 
     inline static bool gm_is_graph_type(int i) {return (i==GMTYPE_GRAPH);}
     inline static bool gm_is_node_property_type(int i) {return (i==GMTYPE_NODEPROP);}
@@ -102,6 +137,13 @@ extern "C" {
     inline static bool gm_is_inf_type(int i) {return (i==GMTYPE_INF) || (i==GMTYPE_INF_INT) || (i==GMTYPE_INF_LONG) || (i==GMTYPE_INF_FLOAT) || (i==GMTYPE_INF_FLOAT);}
     inline static bool gm_is_inf_type_unsized(int i) {return (i==GMTYPE_INF);}
     inline static bool gm_is_inf_type_sized(int i) {return gm_is_inf_type(i) && !gm_is_inf_type_unsized(i);}
+    inline static int  gm_get_sized_inf_type(int i) {
+        if (i==GMTYPE_INT) return GMTYPE_INF_INT;
+        else if (i==GMTYPE_LONG) return GMTYPE_INF_LONG;
+        else if (i==GMTYPE_FLOAT) return GMTYPE_INF_FLOAT;
+        else if (i==GMTYPE_DOUBLE) return GMTYPE_INF_DOUBLE;
+        else assert(false);
+    }
 
 
     inline static bool gm_is_node_set_type(int i) { return (i==GMTYPE_NSET);}
@@ -136,9 +178,29 @@ extern "C" {
         return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i);
     }
 
+    // node set -> nodeset iter
+    // edge set -> edgeset iter ...
+    inline int gm_get_natural_collection_iterator(int src_type) {
+        if      (src_type == GMTYPE_NSET)   return GMTYPE_NODEITER_SET;
+        else if (src_type == GMTYPE_NSEQ)   return GMTYPE_NODEITER_SEQ;
+        else if (src_type == GMTYPE_NORDER) return GMTYPE_NODEITER_ORDER;
+        else if (src_type == GMTYPE_ESET)   return GMTYPE_NODEITER_SET;
+        else if (src_type == GMTYPE_NSEQ)   return GMTYPE_NODEITER_SEQ;
+        else if (src_type == GMTYPE_EORDER) return GMTYPE_NODEITER_ORDER;
+        else assert(false);
+    }
+
+    // return true if this type has a target graph
+    inline bool gm_has_target_graph_type(int t) 
+    {
+        return gm_is_node_edge_compatible_type(t) || // any node-edge iterator (including collection iterator)
+               gm_is_collection_type(t); 
+    }
+
     bool gm_is_compatible_type_for_assign(int lhs, int rhs); // defined in typecheck.cc
     bool gm_is_compatible_type_for_eq(int t1, int t2); // defined in typecheck.cc
     bool gm_is_compatible_type_for_less(int t1, int t2); // defined in typecheck.cc
+    bool gm_is_compatible_type_for_biop(int t1, int t2); // defined in typecheck.cc
 
     static enum { // list of operators
         GMOP_ABS,
@@ -269,11 +331,12 @@ extern "C" {
     extern ast_node* GM_defer_assign(ast_node* lhs, ast_node* rhs, ast_node* itor);
 
     // todo: clarify following macros
-    inline static bool gm_is_iteration_on_set(int itype) {return gm_is_set_iter_type(itype);}
+    inline static bool gm_is_iteration_on_set(int itype) {return gm_is_collection_iter_type(itype);}
+    inline static bool gm_is_iteration_on_collection(int itype) {return gm_is_collection_iter_type(itype);}
     inline static bool gm_is_iteration_on_true_set(int itype)   {return (itype == GMTYPE_NODEITER_SET) || (itype == GMTYPE_EDGEITER_SET);}
     inline static bool gm_is_iteration_on_ordered_set(int itype) {return (itype == GMTYPE_NODEITER_ORDER) || (itype == GMTYPE_EDGEITER_ORDER);}
     inline static bool gm_is_iteration_on_sequence_set(int itype) {return (itype == GMTYPE_NODEITER_SEQ) || (itype == GMTYPE_EDGEITER_SEQ);}
-    inline static bool gm_is_iteration_on_all_graph(int itype) {return (itype == GMTYPE_NODEITER_ALL)||(itype==GMTYPE_EDGEITER_ALL);}
+    inline static bool gm_is_iteration_on_all_graph(int itype) {return gm_is_all_graph_iter_type(itype);}
     inline static bool gm_is_iteration_on_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_NBRS)||(itype==GMTYPE_NODEITER_NBRS);}
     inline static bool gm_is_iteration_on_in_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_IN_NBRS)||(itype==GMTYPE_NODEITER_IN_NBRS);}
     inline static bool gm_is_iteration_on_up_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_UP_NBRS)||(itype==GMTYPE_NODEITER_UP_NBRS);}

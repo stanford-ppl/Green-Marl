@@ -9,6 +9,10 @@
 
 typedef gm_gps_basic_block gps_bb;
 
+//------------------------------------------------------------------
+// Merge siple basic blocks
+//------------------------------------------------------------------
+
 class gps_merge_simple_t : public gps_apply_bb 
 {
 public:
@@ -44,8 +48,7 @@ public:
                     gps_bb* D = C->get_nth_exit(0);
                     bool auto_insert_remote_entry = false; // do not auto-add entries at D
                     B->add_exit(D, auto_insert_remote_entry); 
-                    int edge_id_from_B = 0;  // there is only one edge
-                    D->update_entry_from(C, D, edge_id_from_B);
+                    D->update_entry_from(C, D);
                 }
                 
                 // delete C
@@ -62,3 +65,4 @@ void gm_gps_gen::merge_basic_blocks(gps_bb* entry)
     gps_merge_simple_t T;
     gps_bb_apply_until_no_change(entry, &T);
 }
+

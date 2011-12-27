@@ -40,8 +40,12 @@ const char* gm_get_type_string(int t)
         case GMTYPE_EDGEPROP:return "EP";
         case GMTYPE_NODE: return "Node";
         case GMTYPE_EDGE:return "Edge";
-        case GMTYPE_NODEITER_ALL: return "Node::I(Linear)";
-        case GMTYPE_NODEITER_NBRS: return "Node::I(Nbrs)";
+        case GMTYPE_NODEITER_ALL: return "Node::I(ALL)";
+        case GMTYPE_NODEITER_NBRS: return "Node::I(NBR)";
+        case GMTYPE_NODEITER_IN_NBRS: return "Node::I(IN_NBR)";
+        case GMTYPE_NODEITER_BFS:     return "Node::I(BFS)";
+        case GMTYPE_NODEITER_UP_NBRS:   return "Node::I(+1)";
+        case GMTYPE_NODEITER_DOWN_NBRS:   return "Node::I(-1)";
         case GMTYPE_EDGEITER_ALL:return "EdgeI";
         case GMTYPE_EDGEITER_NBRS:return "EdgeI";
         case GMTYPE_BOOL: return "Bool";
@@ -65,7 +69,7 @@ const char* gm_get_type_string(int t)
         case GMTYPE_ITER_ANY:return "Collection::I";
         case GMTYPE_VOID: return "Void";
                          
-        default: assert(false);return "Unknown";
+        default: /*printf("%d\n",t); assert(false);*/return "Unknown";
     }
 }
 const char* gm_get_iter_type_string(int t)

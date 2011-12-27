@@ -11,13 +11,18 @@ static enum {
  GM_ERROR_UNDEFINED_FIELD_GRAPH, 
  //GM_ERROR_MULTIPLE_TARGET, 
  GM_ERROR_PROPERTY_ARGUMENT,
+ GM_ERROR_INVALID_OUTPUT_TYPE,
  GM_ERROR_NONGRAPH_TARGET,
+ GM_ERROR_NONNODE_TARGET,
+ GM_ERROR_NONSET_TARGET,
  GM_ERROR_DUPLICATE,
  GM_ERROR_NONGRAPH_FIELD,
  GM_ERROR_OPERATOR_MISMATCH,
+ GM_ERROR_OPERATOR_MISMATCH2,
  GM_ERROR_COMPARE_MISMATCH,
  GM_ERROR_READONLY,
  GM_ERROR_TARGET_MISMATCH,
+ GM_ERROR_TARGET_MISMATCH2, // expr
  GM_ERROR_ASSIGN_TYPE_MISMATCH,
  GM_ERROR_WRONG_PROPERTY,
  //GM_ERROR_INVALID_ITERATOR,
@@ -35,9 +40,13 @@ static enum {
  GM_ERROR_TYPE_CONVERSION_BOOL_NUM,
  GM_ERROR_REQUIRE_NUMERIC_REDUCE,
  GM_ERROR_REQUIRE_BOOLEAN_REDUCE,
+ GM_ERROR_NEED_PRIMITIVE,
+ GM_ERROR_TARGET_GRAPH_MISMATCH,
+ GM_ERROR_GROUP_REDUCTION,
 
- GM_ERROR_NONSET_TARGET,
  GM_ERROR_NEED_ORDER,
+ GM_ERROR_NESTED_BFS,
+ GM_ERROR_INVALID_GROUP_DRIVER,
 
  // Conflict erors
  GM_ERROR_READ_REDUCE_CONFLICT,
@@ -77,7 +86,7 @@ static enum {
 
 extern void gm_type_error(int errno, ast_id* id, const char* str1 ="", const char* str2="");
 extern void gm_type_error(int errno, ast_id* id, ast_id* id2);
-extern void gm_type_error(int errno, int l, int c, const char* str1="", const char* str2="");
+extern void gm_type_error(int errno, int l, int c, const char* str1="", const char* str2="", const char* str3="");
 extern void gm_type_error(int errno, const char* str);
 
 //extern void gm_conf_error(int errno, gm_symtab_entry* target, ast_id* evidence1);

@@ -123,16 +123,13 @@ class ss2_group_assign : public gm_apply {
         }
         else if (e->is_builtin())
         {
-            printf("Hey why?");
             ast_expr_builtin* e2 = (ast_expr_builtin*) e;
             ast_id* old = e2->get_driver();
             if ((old !=NULL) && (old->getSymInfo() == this->old_driver_sym)) {
-                printf("Heelo\n");
 
                 // If the builtin-op is for graph do not replace!
                 if (old->getTypeSummary() != e2->get_builtin_def()->get_source_type_summary())
                 {
-                    printf("Heelo2\n");
                     ast_id* iter = new_driver->copy(true);
                     iter->set_line(old->get_line()); iter->set_col(old->get_col());
                     delete old;
@@ -159,8 +156,9 @@ static ast_foreach* create_surrounding_fe(ast_assign* a) {
     // source : graph
     // iter-type all nodes or all edges
     // body : assignment statement
-    const char* temp_name = 
-        TEMP_GEN.getTempName("t"); // should I use first->get_orgname())?
+    //const char* temp_name = 
+    //    TEMP_GEN.getTempName("t"); // should I use first->get_orgname())?
+    const char* temp_name = FE.voca_temp_name("t");
     ast_id *it = ast_id::new_id(temp_name,
             first->get_line(), first->get_col());
     ast_id *src = first->copy(true);
@@ -174,6 +172,7 @@ static ast_foreach* create_surrounding_fe(ast_assign* a) {
     else assert(false);
 
     ast_foreach* fe_new = gm_new_foreach_after_tc(it, src, a, iter);
+
 
     return fe_new;
 }
@@ -270,10 +269,10 @@ void ss2_reduce_op::post_process_body(
     int rtype = target->get_reduce_type();
     const char* t_name_base = ""; 
     switch(rtype) {
-        case GMREDUCE_PLUS: t_name_base= "S"; break; // Sum
-        case GMREDUCE_MULT: t_name_base= "P"; break; // Product
-        case GMREDUCE_MIN:  t_name_base= "Mn"; break; // Min
-        case GMREDUCE_MAX:  t_name_base= "Mx"; break; // Max
+        case GMREDUCE_PLUS: t_name_base= "_S"; break; // Sum
+        case GMREDUCE_MULT: t_name_base= "_P"; break; // Product
+        case GMREDUCE_MIN:  t_name_base= "_Mn"; break; // Min
+        case GMREDUCE_MAX:  t_name_base= "_Mx"; break; // Max
         default: assert(false);
     }
 
@@ -284,7 +283,8 @@ void ss2_reduce_op::post_process_body(
     ast_expr* init_val = gm_new_bottom_symbol(rtype, expr_type);
 
     // 1.3 add init
-    const char* temp_name = TEMP_GEN.getTempName(t_name_base); 
+    //const char* temp_name = TEMP_GEN.getTempName(t_name_base); 
+    const char* temp_name = FE.voca_temp_name(t_name_base); 
     gm_symtab_entry* temp_val = 
         insert_def_and_init_before(temp_name, expr_type, holder, init_val);
 
@@ -324,10 +324,11 @@ void ss2_reduce_op::post_process_body(
     ast_id* foreach_it = old_iter->copy();
     ast_id* foreach_src = target->get_source()->copy(true); // copy SymInfo as well
     int iter_type = target->get_iter_type();
-    ast_foreach* fe_new = gm_new_foreach_after_tc(
-            foreach_it, foreach_src, foreach_body, iter_type);
-    //printf("old_iter: graph :%s\n", old_iter->getTypeInfo()->get_target_graph_id()->get_genname());
-    //printf("new_iter: graph :%s\n", foreach_it->getTypeInfo()->get_target_graph_id()->get_genname());
+
+    // see common/new_sent_after_tc.cc
+    ast_foreach* fe_new = gm_new_foreach_after_tc(foreach_it, foreach_src, foreach_body, iter_type);
+
+    fflush(stdout);
 
     // 3.2 add foreach 
     gm_add_sent_before(holder, fe_new);
@@ -340,9 +341,7 @@ void ss2_reduce_op::post_process_body(
     bound_id->setSymInfo(foreach_it->getSymInfo());
 
     // 4.2 replace iterator (symbol) in the body_expression with the new foreach iterator
-    bool success = gm_replace_symbol_entry( old_iter->getSymInfo(), foreach_it->getSymInfo(), body);
-    if (filter)
-        success &= gm_replace_symbol_entry( old_iter->getSymInfo(), foreach_it->getSymInfo(), filter);
+    bool success = gm_replace_symbol_entry( old_iter->getSymInfo(), foreach_it->getSymInfo(), foreach_body);
     //assert(success); // may contain iterator symbol at all. (e.g. Sum(..)(..){1})
 
     //----------------------------------------------
@@ -360,6 +359,7 @@ void ss2_reduce_op::post_process_body(
 
     // finally  delete old expression.
     delete target;
+
 }
 
 
@@ -436,7 +436,7 @@ static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_t
     //-------------------------------------------------------------
     if (default_val != NULL) {
         //prinf("def_val = %p, new_id = %p\n", default_val, new_id);
-        assert(gm_is_compatible_type_for_assign(prim_type, default_val->get_type_summary()));
+        //assert(gm_is_compatible_type_for_assign(prim_type, default_val->get_type_summary()));
         ast_assign* init_a = ast_assign::new_assign_scala(e->getId()->copy(true), default_val, GMASSIGN_NORMAL);
         gm_add_sent_before(curr, init_a);
     }

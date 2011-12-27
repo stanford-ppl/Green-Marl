@@ -22,7 +22,8 @@ void gm_cpp_gen::generate_bfs_top()
 
 void gm_cpp_gen::generate_bfs_init(ast_bfs* bfs)
 {
-    i_temp = TEMP_GEN.getTempName("i");
+    i_temp = FE.voca_temp_name_and_add("i");
+
     char temp[2048];
     // TODO name conflict in C++ world
     //Body.NL();
@@ -196,7 +197,7 @@ void gm_cpp_gen::generate_bfs_body_fw(ast_bfs* bfs)
         Body.NL();
         Body.pushln("// body");
         ast_sentblock *sb = bfs->get_fbody();
-        generate(sb, false);
+        generate_sent_block(sb, false);
     } else {
         Body.pushln("// NULL body");
     }
@@ -208,7 +209,7 @@ void gm_cpp_gen::generate_bfs_body_bw(ast_bfs* bfs)
         Body.NL();
         Body.pushln("// body");
         ast_sentblock *sb = bfs->get_bbody();
-        generate(sb, false);
+        generate_sent_block(sb, false);
     } else {
         Body.pushln("// NULL body");
     }
@@ -232,7 +233,7 @@ void gm_cpp_gen::generate_bfs_expansion(ast_bfs* bfs, bool to_queue, bool is_par
     // generate filter
     if (bfs->get_node_cond() != NULL) {
         Body.push("if (!(");
-        generate(bfs->get_node_cond());
+        generate_expr(bfs->get_node_cond());
         Body.pushln(")) // filter");
         Body.pushln("    continue;");
     }
@@ -267,7 +268,7 @@ void gm_cpp_gen::generate_bfs_end_level(ast_bfs* bfs, bool to_queue, bool is_par
 }
 
 
-bool gm_cpp_gen::generate(ast_bfs* bfs)
+void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs)
 {
     generate_bfs_init(bfs);
 
@@ -277,5 +278,5 @@ bool gm_cpp_gen::generate(ast_bfs* bfs)
 
     generate_bfs_finish(bfs);
 
-    return true;
+    return; 
 }

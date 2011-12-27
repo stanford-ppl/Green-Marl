@@ -19,7 +19,6 @@ public:
 
         //--------------------------------------------
         // 1. find all var-decls
-        // 2. iterate again and resolve name conflict
         // 3. delete var-decl
         //--------------------------------------------
         for(i = sents.begin(); i!= sents.end(); i++) 
@@ -29,6 +28,7 @@ public:
                 continue;
             ast_vardecl* v = (ast_vardecl*) z;
 
+            /*
             bool is_scalar = !(v->get_type()->is_property());
             //-----------------------------------------
             // 2. iterate from the beginning up to v.
@@ -45,9 +45,10 @@ public:
                 for(int i=0;i<idl->get_length();i++) {
                     gm_symtab_entry *e = idl->get_item(i)->getSymInfo();
                     assert(e!=NULL);
-                    gm_resolve_name_conflict(s, e, is_scalar);
+                    //gm_resolve_name_conflict(s, e, is_scalar);
                 }
             }
+            */
 
             stack.push_back(v);
         }
@@ -63,17 +64,65 @@ public:
     }
 
 public:
-    void do_removal(ast_procdef* p) {
+    void do_removal(ast_procdef* p) 
+    {
         set_all(false); set_for_sent(true);
         gm_traverse_sents(p, this, GM_POST_APPLY);
     }
 };
+
+
+//---------------------------------------------------
+// rename all potential name conflicts
+//---------------------------------------------------
+class rename_all_t : public gm_apply
+{
+public:
+    rename_all_t() {
+        set_for_symtab(true);
+    }
+
+    virtual bool apply(gm_symtab_entry* e, int symtab_type){
+        ast_id* id = e->getId();
+
+        // if name is already in -> generate-new-name
+        const char* name = id->get_orgname();
+
+        //printf("checking :%s\n",name);
+        if (FE.voca_isin((char*)name)) {
+            // should use a new name
+            const char* new_name = FE.voca_temp_name(name);
+            id->set_orgname(new_name); // new name is copied & old name is deleted inside
+            delete [] new_name; 
+        }
+
+        //printf("adding :%s\n",id->get_orgname());
+        // add to vocabulary
+        FE.voca_add(id->get_orgname());
+        //assert(FE.voca_isin(id->get_orgname()));
+    }
+
+    //-------------------------------------------------
+    // rename all potential name conflicts
+    //-------------------------------------------------
+    void do_rename_all_potential(ast_procdef * p)
+    {
+        assert(p == FE.get_current_proc());
+
+        FE.voca_clear();  // rebuild vocaburary
+        p->traverse_pre(this);
+    }
+};
+
 
 void gm_frontend::remove_vardecl(ast_procdef* p)
 {
     vardecl_removed = true; // hack
     remove_vardecl_t T;
     T.do_removal(p);
+
+    rename_all_t T2;
+    T2.do_rename_all_potential(p);
 }
 
 

@@ -32,7 +32,6 @@ gm_gps_gen GPS_BE;  // GPS Backend
 gm_backend* BACK_END;
 gm_userargs OPTIONS;
 gm_independent_optimize IND_OPT; // extern defined in gm_ind_opt.h
-gm_tempNameGen TEMP_GEN;
 gm_builtin_manager BUILT_IN;
 
 std::list<char*> GM_input_lists;
@@ -57,9 +56,9 @@ void gm_end_major_compiler_stage()
     int stop_major = OPTIONS.get_arg_int(GMARGFLAG_STOP_MAJOR);
     int stop_minor = OPTIONS.get_arg_int(GMARGFLAG_STOP_MINOR);
     if (stop_major == gm_stage_major) {
-        printf("...Stopping compiler after %s\n", gm_major_desc);
+        printf("...Stopping compiler after %d:%s\n", stop_major, gm_major_desc);
         do_compiler_action_at_stop();
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 }
 void gm_begin_minor_compiler_stage(int m, const char* desc)
@@ -67,7 +66,11 @@ void gm_begin_minor_compiler_stage(int m, const char* desc)
     assert(m > 0);
     gm_stage_minor = m;
     gm_minor_desc = desc;
-    printf("...Stage: %s.%s\n", gm_major_desc, gm_minor_desc);
+    if (OPTIONS.get_arg_int(GMARGFLAG_VERB_LEV) > 0) {
+        printf("...Stage %d.%d: %s.%s\n", gm_stage_major, gm_stage_minor, gm_major_desc, gm_minor_desc);
+        fflush(stdout);
+    }
+
 }
 void gm_end_minor_compiler_stage()
 {
@@ -78,7 +81,7 @@ void gm_end_minor_compiler_stage()
     if ((stop_major == gm_stage_major) && (stop_minor == gm_stage_minor)) {
         printf("...Stopping compiler after %s.%s\n", gm_major_desc, gm_minor_desc);
         do_compiler_action_at_stop();
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 }
 void do_compiler_action_at_stop()
@@ -157,7 +160,7 @@ int main (int argc, char** argv)
         char* fname = GM_input_lists.front();
         gm_set_current_filename(fname);
         FE.start_parse(fname);
-        if (GM_is_parse_error()) exit(0);
+        if (GM_is_parse_error()) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
 
@@ -173,7 +176,7 @@ int main (int argc, char** argv)
     gm_begin_major_compiler_stage(GMSTAGE_FRONTEND, "Frontend");
     {
        ok = FE.do_local_frontend_process();
-       if (!ok) exit(0);
+       if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
 
@@ -188,7 +191,7 @@ int main (int argc, char** argv)
     gm_begin_major_compiler_stage(GMSTAGE_INDEPENDENT_OPT, "Indep-Opt");
     {
        ok = IND_OPT.do_local_optimize();
-       if (!ok) exit(0);
+       if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
 
@@ -198,7 +201,7 @@ int main (int argc, char** argv)
     gm_begin_major_compiler_stage(GMSTAGE_BACKEND_OPT, "Backend Transform");
     {
         ok = BACK_END->do_local_optimize();
-        if (!ok) exit(0);
+        if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
 
@@ -208,7 +211,7 @@ int main (int argc, char** argv)
     gm_begin_major_compiler_stage(GMSTAGE_LIBRARY_OPT, "Backend-Lib Transform");
     {
         ok = BACK_END->do_local_optimize_lib();
-        if (!ok) exit(0);
+        if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
 
@@ -225,7 +228,7 @@ int main (int argc, char** argv)
     gm_begin_major_compiler_stage(GMSTAGE_CODEGEN, "Code Generation");
     {
         ok = BACK_END->do_generate();
-        if (!ok) exit(0);
+        if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
 

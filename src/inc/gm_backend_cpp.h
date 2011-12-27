@@ -18,8 +18,8 @@ class gm_cpplib : public gm_graph_library {
     void set_main(gm_cpp_gen* gen) {main = gen;}
 
     virtual const char* get_header_info() {return "gm_graph.h";}
-    virtual const char* get_type_string(ast_typedecl* t, int usage); 
-    virtual const char* get_type_string(int prim_type, int usage); 
+    virtual const char* get_type_string(ast_typedecl* t);
+    virtual const char* get_type_string(int prim_type);
 
     virtual const char* max_node_index(ast_id* graph);
     virtual const char* max_edge_index(ast_id* graph);
@@ -27,7 +27,6 @@ class gm_cpplib : public gm_graph_library {
     virtual const char* edge_index(ast_id* iter);
 
     virtual bool do_local_optimize();
-
 
     virtual bool need_init_before_iteration_header(ast_foreach* f);
     virtual void generate_init_before_iteration_header(ast_foreach* f);
@@ -43,10 +42,12 @@ class gm_cpplib : public gm_graph_library {
     virtual bool generate_iteration_header_init(
             ast_id* iter, int iter_type, ast_id* source, bool is_parallel);
 
-    virtual bool generate(ast_nop* n); 
-    virtual bool generate_builtin(ast_expr_builtin* e);
+    virtual void generate_sent_nop(ast_nop* n); 
+    virtual void generate_expr_builtin(ast_expr_builtin* e);
 
     virtual bool add_set_def(ast_id* set);
+
+    virtual void build_up_language_voca(gm_vocabulary& V);
 
     protected:
 
@@ -60,14 +61,14 @@ class gm_cpplib : public gm_graph_library {
 //-----------------------------------------------------------------
 // interface for graph library Layer
 //-----------------------------------------------------------------
-class gm_cpp_gen : public gm_backend 
+class gm_cpp_gen : public gm_backend , public gm_code_generator
 {
     friend class nop_reduce_scalar;
     public:
-        gm_cpp_gen() : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL),_target_omp(false), _pblock(false) {
+        gm_cpp_gen() : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL),_target_omp(false), _pblock(false), gm_code_generator(Body) {
             glib = new gm_cpplib(this);
         }
-        gm_cpp_gen(gm_cpplib* l) : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL), _target_omp(false),_pblock(false) {
+        gm_cpp_gen(gm_cpplib* l) : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL), _target_omp(false),_pblock(false), gm_code_generator(Body) {
             glib = l;
             glib->set_main(this);
             assert(l != NULL);
@@ -80,6 +81,8 @@ class gm_cpp_gen : public gm_backend
         virtual bool do_local_optimize_lib();
         virtual bool do_local_optimize();
         virtual bool do_generate();
+        virtual void build_up_language_voca();
+
 
         virtual void add_local_varname(const char* local) {
             // do not add if duplicated
@@ -99,15 +102,13 @@ class gm_cpp_gen : public gm_backend
          }
 
     protected:
-        virtual const char* get_type_string(ast_typedecl* t, int usage);
-        virtual const char* get_type_string(int prim_type, int usage); 
 
         virtual bool do_generate_main();
         virtual bool do_mark_parallel_sents();
         virtual bool do_restore_vardecl();
 
         virtual void prepare_parallel_for();
-        virtual void generate_parallel_for_header(ast_sent* s);
+        //virtual void generate_parallel_for_header(ast_sent* s);
         int _ptr, _indent;
 
         gm_cpplib* get_lib() {return glib;}
@@ -143,37 +144,44 @@ class gm_cpp_gen : public gm_backend
         virtual void add_include( const char* str1, gm_code_writer& Out, bool is_clib = true, const char* str2="");
         virtual void add_ifdef_protection( const char* str);
 
-        virtual bool generate(ast_procdef* p); 
-        virtual bool generate_proc_decl(ast_procdef* proc, bool is_def);
-        virtual bool generate(ast_vardecl* v);
-        virtual bool generate(ast_sentblock* s, bool need_br=true);
-        virtual bool generate(ast_sent* s);
-        virtual bool generate(ast_foreach* f);
-        virtual bool generate(ast_if* f);
-        virtual bool generate(ast_nop* nop);
-        virtual bool generate(ast_while* w);
-        virtual bool generate(ast_return* r);
-        virtual bool generate(ast_id* i);
-        virtual bool generate(ast_idlist* i);
-        virtual bool generate(ast_field* i);
-        virtual bool generate(ast_expr* e);
-        virtual bool generate(ast_assign* s);
-        virtual bool generate(ast_bfs* b);
-        virtual bool generate(ast_call* c);
-        virtual bool generate_reduce_assign(ast_assign *a);
-        // either of lhs1 or lhs2 is NULL
-        virtual bool generate_reduce_main(ast_id* lhs1, ast_field* lhs2, ast_expr* rhs, 
-                const char* temp_var_base, int r_type, ast_typedecl* lhs_target_type);
-        virtual bool generate_lhs(ast_assign *a);
 
-        virtual void declare_prop_def(ast_typedecl* t, ast_id* i);
-
+        //------------------------------------------------------------------------------
+        // Generate Method from gm_code_generator
+        //------------------------------------------------------------------------------
     public:
-        virtual bool generate(std::list<ast_expr*>& L); 
+        virtual void generate_rhs_id(ast_id* i) ; 
+        virtual void generate_rhs_field(ast_field* i) ;
+        virtual void generate_expr_builtin(ast_expr* e) ; 
+        virtual void generate_expr_minmax(ast_expr* e) ;
+        virtual void generate_expr_abs(ast_expr* e);
+        virtual void generate_expr_inf(ast_expr* e);
+
+        virtual const char* get_type_string(ast_typedecl* t);
+        virtual const char* get_type_string(int prim_type); 
+        virtual void generate_lhs_id(ast_id* i) ; 
+        virtual void generate_lhs_field(ast_field* i) ;
+        virtual void generate_sent_nop(ast_nop* n) ;
+        virtual void generate_sent_reduce_assign(ast_assign *a) ;
+        virtual void generate_sent_defer_assign(ast_assign *a) {assert(false);} // should not be here
+        virtual void generate_sent_vardecl(ast_vardecl *a) ;
+        virtual void generate_sent_foreach(ast_foreach *a) ;
+        virtual void generate_sent_bfs(ast_bfs* b) ;
+        virtual void generate_sent_block(ast_sentblock *b);
+        virtual void generate_sent_block(ast_sentblock* b, bool need_br);
+        virtual void generate_sent_return(ast_return *r);
+        virtual void generate_sent_call(ast_call* c);
+
+        virtual void generate_idlist(ast_idlist *i);
+        virtual void generate_proc(ast_procdef* proc);
+        void generate_proc_decl(ast_procdef* proc, bool is_body_file);
+
 
     protected:
         bool is_under_parallel_sentblock() {return _pblock;}
         void set_under_parallel_sentblock(bool b) {_pblock = b;}
+
+        virtual void declare_prop_def(ast_typedecl* t, ast_id* i);
+
         bool _pblock;
 
     protected:
@@ -183,6 +191,7 @@ class gm_cpp_gen : public gm_backend
         bool add_entry_exit(ast_procdef* proc);
         bool select_parallel(ast_procdef* proc);
         bool optimize_reduction(ast_procdef* p);
+
 
         void generate_bfs_top();
         void generate_bfs_init(ast_bfs* bfs);
@@ -198,8 +207,6 @@ class gm_cpp_gen : public gm_backend
 
         const char* i_temp;  // temporary variable name
         char temp[2048];
-
-
 };
 
 //---------------------------------------------------
