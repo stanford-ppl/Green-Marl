@@ -29,14 +29,14 @@ void gm_graph::freeze()
 {
     if (_frozen) return;
 
-    node_t num_nodes = numNodes();
-    edge_t num_edges = numEdges();
+    node_t n_nodes = num_nodes();
+    edge_t n_edges = num_edges();
 
-    allocate_memory(num_nodes, num_edges, _reverse_edge);
+    allocate_memory(n_nodes, n_edges, _reverse_edge);
 
     // iterate over graph and make new structure
     edge_t next = 0;
-    for(node_t i = 0; i< num_nodes; i++)
+    for(node_t i = 0; i< n_nodes; i++)
     {
         std::vector<node_t>& Nbrs = flexible_graph[i];
         begin[i] = next;
@@ -49,12 +49,12 @@ void gm_graph::freeze()
             next++;
         }
     }
-    begin[num_nodes] = next;
+    begin[n_nodes] = next;
 
     if (_reverse_edge)
     {
         edge_t next = 0;
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             std::vector<node_t>& Nbrs = flexible_reverse_graph[i];
             r_begin[i] = next;
@@ -67,7 +67,7 @@ void gm_graph::freeze()
                 next++;
             }
         }
-        r_begin[num_nodes] = next;
+        r_begin[n_nodes] = next;
     }
 
     // free flexible structure
@@ -80,12 +80,12 @@ void gm_graph::freeze()
 void gm_graph::thaw()
 {
     if (!_frozen) return;
-    node_t num_nodes = numNodes();
+    node_t n_nodes = num_nodes();
     
     flexible_graph.clear();
 
     // vect<vect> ==> CSR
-    for(node_t i = 0; i< num_nodes; i++)
+    for(node_t i = 0; i< n_nodes; i++)
     {
         flexible_graph[i].clear();
         flexible_graph[i].reserve(begin[i+1] - begin[i]);
@@ -97,7 +97,7 @@ void gm_graph::thaw()
     }
 
     if (_reverse_edge) {
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             edge_t cnt = 0;
             flexible_graph[i].clear();
@@ -137,25 +137,25 @@ void gm_graph::make_reverse_edges()
 {
     if (_reverse_edge) return;
 
-    node_t num_nodes = numNodes();
+    node_t n_nodes = num_nodes();
 
     if (_frozen) {
         delete [] r_begin;
         delete [] r_node_idx;
 
-        r_begin = new edge_t[numNodes() +1];
-        r_node_idx = new node_t[numEdges()];
+        r_begin = new edge_t[num_nodes() +1];
+        r_node_idx = new node_t[num_edges()];
 
-        edge_t* temp = new edge_t[numNodes()];
+        edge_t* temp = new edge_t[num_nodes()];
 
         // iterate over foward edges but create reverse edges
 
         // step 1 count in-degree
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             temp[i] = 0;
         }
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             for(edge_t e = begin[i]; e < begin[i+1]; e++)
             {
@@ -166,15 +166,15 @@ void gm_graph::make_reverse_edges()
 
         // step 2 set r_begin
         edge_t next = 0;
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             r_begin[i] = next;
             next += temp[i];
         }
-        r_begin[num_nodes] = numEdges();
+        r_begin[n_nodes] = num_edges();
 
         // step 3 set r_node_idx
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             for(edge_t e = begin[i]; e < begin[i+1]; e++)
             {
@@ -184,7 +184,7 @@ void gm_graph::make_reverse_edges()
                 r_node_idx[ptr] = i;
             }
         }
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             assert(temp[i] == 0);
         }
@@ -195,7 +195,7 @@ void gm_graph::make_reverse_edges()
         
         // iterate over foward graph and create reverse edges
         flexible_reverse_graph.clear();
-        for(node_t i = 0; i< num_nodes; i++)
+        for(node_t i = 0; i< n_nodes; i++)
         {
             std::vector<node_t>& Nbrs = flexible_graph[i];
             std::vector<node_t>::iterator I;
@@ -210,6 +210,12 @@ void gm_graph::make_reverse_edges()
     _reverse_edge = true;
 }
 
+void gm_graph::prepare_external_creation(node_t n, edge_t m, bool reverse_edge)
+{
+    clear_graph();
+    allocate_memory(n, m, reverse_edge);
+    _frozen = true;
+}
 void gm_graph::allocate_memory(node_t n, edge_t m, bool reverse_edge)
 {
     delete [] begin;
@@ -395,6 +401,7 @@ void gm_graph::clear_graph()
     _numEdges = 0;
     _frozen = false;
 }
+
 
 bool gm_graph::load_binary(char* filename)
 {

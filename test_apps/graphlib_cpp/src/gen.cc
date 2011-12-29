@@ -8,12 +8,12 @@ gm_graph* create_uniform_random_graph(index_t N, index_t M, int seed=1993,bool n
 gm_graph* create_RMAT_graph(index_t N, index_t M, int rseed=2387, bool need_gackedge = true, double a=0.45, double b=0.25, double c=0.15, bool permute=true);
 bool test_backedge(gm_graph* g)
 {
-    int repeat = g->numNodes()*0.001;
+    int repeat = g->num_nodes()*0.001;
 
     gm_graph&G = *g;
     for(int K = 0; K < repeat; K++)
     {
-        int s = rand() % g->numNodes();
+        int s = rand() % g->num_nodes();
         for(int j=G.begin[s];j<G.begin[s+1];j++) {
             int n = G.node_idx[j];
             //printf("from %d, n = %d\n", s, n);

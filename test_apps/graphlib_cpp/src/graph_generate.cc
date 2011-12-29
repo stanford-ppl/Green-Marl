@@ -15,7 +15,7 @@ gm_graph* create_uniform_random_graph(index_t N, index_t M, index_t seed, bool n
 	srand(seed);
 
    	gm_graph* g = new gm_graph();
-   	g->allocate_memory(N, M, need_back);
+   	g->prepare_external_creation(N, M, need_back);
 
 	index_t* src = new index_t[M];
 	index_t* dest = new index_t[M];
@@ -30,7 +30,7 @@ gm_graph* create_uniform_random_graph(index_t N, index_t M, index_t seed, bool n
 	for(index_t i =0; i < M; i++) {
 		src[i] = rand() % N;
 		dest[i] = rand() % N;
-        if (src[i] == dest[i]) {i=i-1; continue;}
+        if (src[i] == dest[i]) {i=i-1; continue;} // avoid self edge
 		degree[src[i]]++;
         if (need_back)
 		    in_degree[dest[i]]++;
@@ -89,7 +89,7 @@ gm_graph* create_RMAT_graph(index_t N, index_t M,
 	d = 1 - (a + b + c);
 
    	gm_graph* g = new gm_graph();
-   	g->allocate_memory(N, M, need_back);
+   	g->prepare_external_creation(N, M, need_back);
 
 	//----------------------------------------------
    	// generate edges

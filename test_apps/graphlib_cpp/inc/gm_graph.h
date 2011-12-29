@@ -28,8 +28,8 @@ public:
     static const edge_t NIL_EDGE = -1;
 
 public:
-    index_t numNodes() const {return _numNodes;}
-    index_t numEdges() const {return _numEdges;}
+    index_t num_nodes() const {return _numNodes;}
+    index_t num_edges() const {return _numEdges;}
     bool has_reverse_edge() const {return _reverse_edge;}
     bool is_frozen() const    {return _frozen;}
     bool is_directed() const {return _directed;}  
@@ -74,12 +74,13 @@ public:
     // Read and Write the graph from/to a file, 
     // using a custom binary format
     //--------------------------------------------------------------
+	void prepare_external_creation(node_t n, edge_t m, bool allock_reverse_edge=false);
 	bool store_binary(char* filename); // attributes not saved
 	bool load_binary(char* filename);  // call this to an empty graph object
 
-	void allocate_memory(node_t n, edge_t m, bool allock_reverse_edge=false);
 private:
     void clear_graph();
+	void allocate_memory(node_t n, edge_t m, bool allock_reverse_edge=false);
 
     node_t _numNodes;
     edge_t _numEdges;
