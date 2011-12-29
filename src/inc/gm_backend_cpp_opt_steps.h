@@ -8,6 +8,7 @@
 // Add delaration here
 // declaration of optimization steps
 //-------------------------------------------
+GM_COMPILE_STEP(gm_cpp_opt_check_feasible,    "Check compiler feasiblity")
 GM_COMPILE_STEP(gm_cpp_opt_defer,         "Handle deferred writes")
 GM_COMPILE_STEP(gm_cpp_opt_sanitize_name, "Sanitize identifier")
 GM_COMPILE_STEP(gm_cpp_opt_select_par,    "Select parallel regions")

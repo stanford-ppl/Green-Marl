@@ -21,7 +21,6 @@ void gm_print_error_header()
     need_print = false;
 }
 
-
 void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2)
 {
     gm_print_error_header();
@@ -68,6 +67,9 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
     switch(errno) {
+        case GM_ERROR_PAR_RETURN:
+            printf("return inside parallel consistency\n");
+            break;
         case GM_ERROR_GROUP_REDUCTION:
             printf("Group assignment cannot be a reduction\n");
             break;
@@ -254,6 +256,9 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
             break;
         case GM_ERROR_GPS_MULTIPLE_INNER_LOOP:
             printf("There can be only one inner loop\n");
+            break;
+        case GM_ERROR_CPP_UNSUPPORTED_SYNTAX:
+            printf("The compiler does not support nested %s\n",str1);
             break;
     }
 }

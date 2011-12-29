@@ -7,6 +7,7 @@
 // [Step 1]
 // Add delaration here
 //-------------------------------------------
+GM_COMPILE_STEP(gm_fe_check_syntax_rules, "Check syntax rules")
 GM_COMPILE_STEP(gm_fe_syntax_sugar,       "Regularize syntax (without typeinfo)")
 GM_COMPILE_STEP(gm_fe_typecheck_step1,    "Typecheck: check symbols")
 GM_COMPILE_STEP(gm_fe_typecheck_step2,    "Typecheck: find function calls")

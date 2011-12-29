@@ -461,7 +461,7 @@ bool gm_rw_analysis::apply_return(ast_return* r)
     gm_rwinfo_map& R = sets->read_set;
 
     ast_expr* rhs = r->get_expr();
-    if (!rhs) traverse_expr_for_readset_adding(rhs, R);
+    if (rhs!=NULL) traverse_expr_for_readset_adding(rhs, R);
     return true;
 }
 

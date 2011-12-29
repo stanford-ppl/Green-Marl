@@ -14,14 +14,12 @@ void gm_cpp_gen::init_opt_steps()
 {
     std::list<gm_compile_step*>& LIST = this->opt_steps;
 
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_check_feasible));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_defer));
-    //LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_sanitize_name));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_select_par));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl)); // from ind-opt
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_fixup_bound_symbol));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_reduce_scalar));
-    //LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_temp_cleanup));
-    //LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_entry_exit));
 }
 
 

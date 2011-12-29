@@ -512,6 +512,7 @@ void gm_frontend::init_steps()
 {
     std::list<gm_compile_step*>& LIST = this->local_steps;
 
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_check_syntax_rules));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_syntax_sugar));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step1));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step2));

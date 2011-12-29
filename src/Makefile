@@ -48,6 +48,7 @@ SRCS2 =\
        gm_frontend.cc gm_rw_analysis.cc gm_rw_analysis_check2.cc \
        gm_handle_vardecl.cc  gm_fixup_bound_symbol.cc\
        gm_syntax_sugar.cc  \
+       gm_fe_check_syntax.cc \
        gm_typecheck.cc \
        gm_typecheck_oprules.cc \
        gm_new_typecheck_step1.cc \
@@ -62,6 +63,7 @@ SRCS2 =\
        gm_cpp_opt_select_par.cc\
        gm_cpp_opt_defer.cc \
        gm_cpp_opt_reduce_scalar.cc \
+       gm_cpp_opt_check_feasible.cc \
 	   gm_cpp_gen.cc \
        gm_cpp_gen_bfs.cc \
        gm_cpp_gen_buildup_language_voca.cc\
