@@ -37,6 +37,7 @@ SRCS2 =\
        gm_main.cc gm_argopts.cc gm_copy.cc \
        gm_generate_help.cc\
        gm_error.cc gm_builtin.cc \
+       gm_node_info.cc\
 	   gm_traverse.cc gm_transform_helper.cc \
        gm_add_symbol.cc gm_resolve_nc.cc \
        gm_resolve_inf_size.cc \

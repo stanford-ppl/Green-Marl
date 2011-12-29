@@ -49,27 +49,27 @@ class ast_extra_info {
      float fval;
      void* ptr1;
      void* ptr2;
-    ast_extra_info(): ival(0), bval(false), fval(0), ptr1(NULL), ptr2(NULL) {}
-    ast_extra_info(bool b): ival(0), bval(b), fval(0), ptr1(NULL), ptr2(NULL) {}
-    ast_extra_info(int i): ival(i), bval(false), fval(0), ptr1(NULL), ptr2(NULL) {}
-    ast_extra_info(void* p1, void* p2=NULL): ival(0), bval(false), fval(0), ptr1(p1), ptr2(p2) {}
+
+    ast_extra_info();
+    ast_extra_info(bool b);
+    ast_extra_info(int i);
+    ast_extra_info(float f);
+    ast_extra_info(void* p1, void* p2=NULL);
+
     virtual ~ast_extra_info() {}
-    virtual ast_extra_info* copy() {ast_extra_info* i = new ast_extra_info(); i->base_copy(this); return i;}
-    virtual void base_copy(ast_extra_info* from) { *this = *from; }
+    virtual ast_extra_info* copy();
+    virtual void base_copy(ast_extra_info* from);
 };
 
 class ast_extra_info_string : public ast_extra_info {
  public:
     char* str;
-    ast_extra_info_string() : str(NULL) {}
-    ast_extra_info_string(const char* org) { str = gm_strdup(org);}
-    const char* get_string() {return (const char*) str;}
-    virtual ast_extra_info* copy() {
-        ast_extra_info_string * s = new ast_extra_info_string(str);
-        s->base_copy(this);
-        return s;
-    }
-    virtual ~ast_extra_info_string() { delete [] str;}
+    ast_extra_info_string();
+    virtual ~ast_extra_info_string();
+
+    ast_extra_info_string(const char* org);
+    const char* get_string(); 
+    virtual ast_extra_info* copy(); 
 };
 
 class ast_node {
@@ -146,27 +146,26 @@ class ast_node {
         int set_line(int l) {line = l;}
         int set_col(int c) {col = c;}
 
-        // returns *NULL* if not found
-        ast_extra_info* find_info(const char* id) {
-            std::string s(id);
-            std::map<std::string, ast_extra_info*>::iterator i = extra.find(s);
-            if (i == extra.end()) return NULL;
-            else return i->second;
-        }
-        // add new info.
-        // previous info (in the same label) is deleted?
-        // Caller should take care that  there is no duplication. (memory leak might happen, otherwise)
-        void add_info(const char* id, ast_extra_info* e) {
-            std::string s(id);
-            /*
-            std::map<std::string , ast_extra_info*>::iterator I;
-            I = extra.find(s);
-            if (I != extra.end()) {
-                delete I->second;
-            }
-            */
-            extra[s] = e;
-        }
+
+    //--------------------------------------
+    // extra infomation attached to this node
+    //--------------------------------------
+        bool has_info(const char* id);
+        ast_extra_info* find_info(const char*id); // returns NULL if not
+        bool find_info_bool(const char* id);
+        const char* find_info_string(const char* id);
+        float find_info_float(const char* id);
+        int find_info_int(const char* id);
+        void* find_info_ptr(const char* id);
+        void* find_info_ptr2(const char* id);
+        void add_info(const char* id, ast_extra_info* e);
+        void add_info_int(const char* id, int i);
+        void add_info_bool(const char* id, bool b);
+        void add_info_ptr(const char* id, void* ptr1, void*ptr2=NULL);
+        void add_info_float(const char* id, float f);
+        void add_info_string(const char* id, const char* str);
+        void remove_info(const char* id);
+        void remove_all_info();
 
     protected:
         int line;

@@ -58,5 +58,4 @@ void gm_cpp_gen_entry_exit::process(ast_procdef* proc)
             gm_insert_sent_end_of_sb(proc->get_body(), E, GM_NOFIX_SYMTAB);
         }
     }
-
 }

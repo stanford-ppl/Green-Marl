@@ -17,8 +17,8 @@
 #define R_EDGE_IDX  "r_edge_idx"
 #define BEGIN     "begin"
 #define R_BEGIN   "r_begin"
-#define NUM_NODES "numNodes"
-#define NUM_EDGES "numEdges"
+#define NUM_NODES "num_nodes"
+#define NUM_EDGES "num_edges"
 
 //#define INDEX_T      "index_t"
 #define NODE_T       "node_t"
@@ -30,7 +30,7 @@
 #define ORDER_T      "gm_order_set"
 #define IS_IN        "is_in"
 #define MAX_SET_CNT  "max_size"
-#define GET_LIST     "get_List"
+#define GET_LIST     "get_list"
 
 //=========================================================================
 // Code Generation for library
@@ -126,15 +126,12 @@ void gm_cpplib::generate_init_before_iteration_header(
 {
     if (gm_is_iteration_on_ordered_set(iter_type))  {
         // create list reference
-        ast_extra_info_string* alias = (ast_extra_info_string*) 
-            iter->find_info(LABEL_LIST_OF_SET);
-        if (alias == NULL) {
+        if (!iter->has_info(LABEL_LIST_OF_SET)) {
             const char* a_name = FE.voca_temp_name_and_add(source->get_orgname(),"_L");
-            alias = new ast_extra_info_string(a_name);
+            iter->add_info_string(LABEL_LIST_OF_SET, a_name);
             delete [] a_name;
-            iter->add_info(LABEL_LIST_OF_SET, alias);
         }
-        const char* list_name = alias->get_string();
+        const char* list_name = iter->find_info_string(LABEL_LIST_OF_SET);
 
         // [xxx] node set only
         sprintf(str_buf, "std::list<%s>& %s = %s.%s();", NODE_T, list_name, source->get_genname(), GET_LIST);
@@ -172,25 +169,19 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
 
         // NBRS, UP_NBRS, DOWN_NBRS, ...
     } else if (gm_is_iteration_on_neighbors_compatible(type)) {
+
         //-----------------------------------------------
         // create additional information
         //-----------------------------------------------
-        ast_extra_info_string* alias = (ast_extra_info_string*) 
-            iter->find_info(LABEL_ITER_ALIAS);
-        if (alias == NULL) {
+        if (!iter->has_info(LABEL_ITER_ALIAS)) 
+        {
             const char* a_name = FE.voca_temp_name_and_add(iter->get_orgname(),"_idx");
-            alias = new ast_extra_info_string(a_name);
+            iter->add_info_string(LABEL_ITER_ALIAS, a_name);
             delete [] a_name;
-            iter->add_info(LABEL_ITER_ALIAS, alias);
         }
 
         // [todo] check name-conflict
-        if (source->getTypeInfo()->get_target_graph_id()==NULL) {
-            printf("%s %d %d\n", source->get_orgname(), source->get_line(), source->get_col());
-            fflush(stdout);
-
-        }
-        const char* alias_name = alias->get_string();
+        const char* alias_name = iter->find_info_string(LABEL_ITER_ALIAS);
         const char* graph_name = source->getTypeInfo()->get_target_graph_id()->get_genname();
         const char* array_name = gm_is_iteration_use_reverse(type) ? R_BEGIN : BEGIN;
         const char* src_name   = source->get_genname();
@@ -219,9 +210,8 @@ bool gm_cpplib::generate_iteration_header(ast_id* iter, int iter_type, ast_id* s
     } else if (gm_is_iteration_on_ordered_set(iter_type)) {
 
         if (!is_parallel) {
-            ast_extra_info_string* alias = (ast_extra_info_string*) iter->find_info(LABEL_LIST_OF_SET);
-            assert(alias!=NULL);
-            const char* list_name = alias->get_string();
+            assert(iter->has_info(LABEL_LIST_OF_SET));
+            const char* list_name = iter->find_info_string(LABEL_LIST_OF_SET);
             const char* iter_name = iter->get_genname();
 
             // should check if reverse
@@ -251,12 +241,12 @@ bool gm_cpplib::generate_iteration_header_init(ast_id* iter, int iter_type, ast_
 
     if (gm_is_iteration_on_neighbors_compatible(type)) {
         // 1) iterator name, alias name
-        ast_extra_info_string* alias = (ast_extra_info_string*) iter->find_info(LABEL_ITER_ALIAS);
-        assert(alias!=NULL);
+        assert(iter->has_info(LABEL_ITER_ALIAS));
+
         // 2) iterator type
         ast_typedecl* i_type = iter->getTypeInfo();
 
-        const char* alias_name = alias->get_string();
+        const char* alias_name = iter->find_info_string(LABEL_ITER_ALIAS);
         const char* type_name  = get_type_string(i_type);
         const char* graph_name = source->getTypeInfo()->get_target_graph_id()->get_genname();
         const char* var_name   = iter->get_genname();

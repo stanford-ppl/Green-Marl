@@ -39,20 +39,24 @@ class gm_symtab_entry {
         bool isReadable() {return (isRA==GM_READ_AVAILABLE);}
         bool isWriteable() {return (isWA==GM_WRITE_AVAILABLE);}
 
-        void add_info(const char* id, ast_extra_info* e) {
-            std::string s(id);
-            extra[s] = e;
-        }
-        ast_extra_info* find_info(const char* id) {
-            std::string s(id);
-            std::map<std::string, ast_extra_info*>::iterator i = extra.find(s);
-            if (i == extra.end()) return NULL;
-            else return i->second;
-        }
-        void remove_info(const char* id) {
-            std::string s(id);
-            extra.erase(s);
-        }
+        // defined in gm_node_info.cc
+        bool has_info(const char* id);
+        ast_extra_info* find_info(const char*id); // returns NULL if not
+        bool find_info_bool(const char* id);
+        const char* find_info_string(const char* id);
+        float find_info_float(const char* id);
+        int find_info_int(const char* id);
+        void* find_info_ptr(const char* id);
+        void* find_info_ptr2(const char* id);
+        void add_info(const char* id, ast_extra_info* e);
+        void add_info_int(const char* id, int i);
+        void add_info_bool(const char* id, bool b);
+        void add_info_ptr(const char* id, void* ptr1, void*ptr2=NULL);
+        void add_info_float(const char* id, float f);
+        void add_info_string(const char* id, const char* str);
+        void remove_info(const char* id);
+        void remove_all_info();
+
 
     private:
         ast_id* id;

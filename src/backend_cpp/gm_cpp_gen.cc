@@ -411,8 +411,8 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br)
    //Body.push_indent();
 
    if (is_target_omp()) {
-        ast_extra_info* i = sb->find_info(LABEL_PAR_SCOPE);
-        if ((i!= NULL) && (i->bval)) {
+        bool is_par_scope = sb->find_info_bool(LABEL_PAR_SCOPE);
+        if (is_par_scope) {
             assert(is_under_parallel_sentblock() == false);
             set_under_parallel_sentblock(true);
             need_br = true;
@@ -522,9 +522,7 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 
 void gm_cpp_gen::generate_sent_return(ast_return *r)
 {
-    ast_extra_info* info =  FE.get_current_proc()->find_info(LABEL_NEED_MEM);
-    assert(info != NULL);
-    bool need_cleanup = info->bval;
+    bool need_cleanup = FE.get_current_proc()->find_info_bool(LABEL_NEED_MEM);
     if (need_cleanup) { // call cleanup before return
         bool need_para = (r->get_parent()->get_nodetype() != AST_SENTBLOCK);
         if (need_para)
