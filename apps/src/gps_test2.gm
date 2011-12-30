@@ -1,0 +1,7 @@
+Procedure gps_test2(G: Graph, x: Int, A: N_P<Int>(G)) 
+{
+    Int z = x + 1;
+    Foreach(t: G.Nodes) {
+        t.A = z+1;
+    }
+}

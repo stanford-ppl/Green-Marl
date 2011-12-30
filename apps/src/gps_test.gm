@@ -1,0 +1,10 @@
+
+Procedure gps_test (G: Graph, x: Int, A:Node_Property<Int>(G) ) : Int
+{
+    Int z = 0;
+    If (x > 0) {
+        z = Sum(t: G.Nodes) {t.A};
+    }
+
+    Return z;
+}
