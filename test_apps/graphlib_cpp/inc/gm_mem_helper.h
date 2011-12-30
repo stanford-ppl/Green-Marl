@@ -87,5 +87,42 @@ private:
 // defined in gm_runtime.cc
 extern gm_mem_helper _GM_MEM;
 
+static inline int64_t* gm_rt_allocate_long  (size_t sz, int thread_id) 
+{ 
+    int64_t* ptr = new int64_t[sz];
+    _GM_MEM.save(ptr, 0, thread_id); 
+    return ptr;
+}
+
+static inline int32_t* gm_rt_allocate_int   (void* ptr, int thread_id) 
+{
+    int32_t* ptr = new int32_t[sz];
+    _GM_MEM.save(ptr, 0, thread_id); 
+    return ptr;
+}
+
+static inline float*   gm_rt_allocate_float (void* ptr, int thread_id) 
+{
+    float* ptr = new float[sz];
+    _GM_MEM.save(ptr, 0, thread_id); 
+    return ptr;
+}
+
+static inline double*  gm_rt_allocate_double(void* ptr, int thread_id)
+{ 
+    double* ptr = new double[sz];
+    _GM_MEM.save(ptr, 0, thread_id); 
+    return ptr;
+}
+
+static inline void gm_rt_deallocate(void* ptr, int thread_id) 
+{ 
+    _GM_MEM.clear(ptr, 0, thread_id); 
+}
+static inline void gm_rt_cleanup() 
+{ 
+    _GM_MEM.cleanup(); 
+}
+
 
 #endif

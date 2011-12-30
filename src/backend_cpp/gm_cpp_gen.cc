@@ -120,9 +120,30 @@ void gm_cpp_gen::generate_proc(ast_procdef* proc)
     // declare function name 
     //-------------------------------
     generate_proc_decl(proc, false);  // declare in header file
-    generate_proc_decl(proc, true);   // declare in body file
 
+    //-------------------------------
+    // BFS definitions
+    //-------------------------------
+    if (proc->find_info_bool(CPPBE_INFO_HAS_BFS)) 
+    {
+        ast_extra_info_list* L = (ast_extra_info_list*) proc->find_info(CPPBE_INFO_BFS_LIST); 
+        assert(L!=NULL);
+        std::list<void*>::iterator I;
+        Body.NL();
+        Body.pushln("// BFS/DFS definitions for the procedure");
+        for(I=L->get_list().begin(); I!=L->get_list().end(); I++)
+        {
+            ast_bfs* bfs = (ast_bfs*) *I;
+            generate_bfs_def(bfs);
+        }
+    }
+
+    //-------------------------------
+    // function definition
+    //-------------------------------
+    generate_proc_decl(proc, true);   // declare in body file
     generate_sent(proc->get_body());
+    Body.NL();
 
     return ;
 }
@@ -361,6 +382,26 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
     assert(t2!=NULL);
     assert(t2->is_primitive());
 
+    Body.push(" = ");
+    switch(t2->getTypeSummary()) {
+        case GMTYPE_INT:    Body.push(ALLOCATE_INT); break;
+        case GMTYPE_LONG:   Body.push(ALLOCATE_LONG); break;
+        case GMTYPE_BOOL:   Body.push(ALLOCATE_BOOL); break;
+        case GMTYPE_DOUBLE: Body.push(ALLOCATE_DOUBLE); break;
+        case GMTYPE_FLOAT:  Body.push(ALLOCATE_FLOAT); break;
+        default: assert(false);
+    }
+    Body.push('(');
+    if (t->is_node_property()) {
+        Body.push(get_lib()->max_node_index(t->get_target_graph_id()));
+    } else if (t->is_edge_property()) {
+        Body.push(get_lib()->max_edge_index(t->get_target_graph_id()));
+    }
+    Body.push(',');
+    Body.push(THREAD_ID);
+    Body.pushln("());");
+
+    /*
     Body.push(" = new ");
     Body.push(get_type_string(t2));
     Body.push(" [ ");
@@ -372,8 +413,9 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
     else {assert(false);}
     Body.push("]; ");
 
-    sprintf(temp,"_MEM.save(%s, 0, %s);", id->get_genname(), THREAD_ID);
+    sprintf(temp,"%s(%s, %s());", SAVE_PTR, id->get_genname(), THREAD_ID);
     Body.pushln(temp);
+    */
 
     // regeister to memory controller 
 }
@@ -406,10 +448,20 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb)
     generate_sent_block(sb, true);
 }
 
+void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
+{
+    if (sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY))
+    {
+        // initialize procedure
+        Body.pushln("//Initialize runtime (if required)");
+        sprintf(temp,"%s();", RT_INIT);
+        Body.pushln(temp);
+        Body.NL();
+    }
+}
+
 void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br)
 {
-   //Body.push_indent();
-
    if (is_target_omp()) {
         bool is_par_scope = sb->find_info_bool(LABEL_PAR_SCOPE);
         if (is_par_scope) {
@@ -420,25 +472,74 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br)
         }
    }
 
-   if (need_br)
-        Body.pushln("{");
+   if (need_br) Body.pushln("{");
 
+   // sentblock exit
+   generate_sent_block_enter(sb);
 
    std::list<ast_sent*>& sents = sb->get_sents(); 
    std::list<ast_sent*>::iterator it;
+   bool vardecl_started=false;
+   bool other_started=false;
    for(it = sents.begin(); it!= sents.end(); it++)
    {
+       // insert newline after end of VARDECL
+       ast_sent* s = *it;
+       if (!vardecl_started) {
+           if (s->get_nodetype() == AST_VARDECL) 
+               vardecl_started = true;
+       }
+       else {
+           if (other_started == false) {
+               if (s->get_nodetype() != AST_VARDECL) {
+                   Body.NL();
+                   other_started = true;
+               }
+           }
+       }
        generate_sent(*it);
    }
 
-   //Body.pop_indent();
-   if (need_br)
-        Body.pushln("}");
+   // sentblock exit
+   generate_sent_block_exit(sb);
 
-    if (is_under_parallel_sentblock())
+
+   if (need_br) Body.pushln("}");
+
+   if (is_under_parallel_sentblock())
         set_under_parallel_sentblock(false);
 
    return ;
+}
+
+void gm_cpp_gen::generate_sent_block_exit(ast_sentblock* sb)
+{
+    bool has_prop_decl = sb->find_info_bool(CPPBE_INFO_HAS_PROPDECL);
+    bool is_proc_entry = sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY);
+    bool has_return_ahead = gm_check_if_end_with_return(sb);
+
+    if (has_prop_decl && !has_return_ahead)
+    {
+        if (is_proc_entry)
+        {
+            Body.NL();
+            sprintf(temp, "%s();", CLEANUP_PTR);
+            Body.pushln(temp);
+        }
+        else{
+            Body.NL();
+            gm_symtab* tab = sb->get_symtab_field();
+            std::vector<gm_symtab_entry*>& entries = tab->get_entries();
+            std::vector<gm_symtab_entry*>::iterator I;
+            for(I=entries.begin(); I!=entries.end(); I++)
+            {
+                gm_symtab_entry *e = *I;
+                sprintf(temp, "%s(%s,%s());", DEALLOCATE, e->getId()->get_genname(), THREAD_ID);
+                Body.pushln(temp);
+            }
+        }
+    }
+
 }
 
 
@@ -522,6 +623,21 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 
 void gm_cpp_gen::generate_sent_return(ast_return *r)
 {
+    if (FE.get_current_proc()->find_info_bool(CPPBE_INFO_HAS_PROPDECL))
+    {
+        Body.push(CLEANUP_PTR);
+        Body.pushln("();");
+    }
+
+    Body.push("return");
+    if (r->get_expr() != NULL) {
+        Body.SPC();
+        generate_expr(r->get_expr());
+    }
+    Body.pushln("; ");
+}
+
+    /*
     bool need_cleanup = FE.get_current_proc()->find_info_bool(LABEL_NEED_MEM);
     if (need_cleanup) { // call cleanup before return
         bool need_para = (r->get_parent()->get_nodetype() != AST_SENTBLOCK);
@@ -548,37 +664,15 @@ void gm_cpp_gen::generate_sent_return(ast_return *r)
         }
         Body.pushln(";");
     }
-}
+    */
 
 void gm_cpp_gen::generate_sent_nop(ast_nop* n)
 {
     switch(n->get_subtype())
     {
-        case NOP_CLEAR_PROP:
-        {
-            Body.push("_MEM.clear(");
-            Body.push(
-                    ((nop_propdel*) n)->get_target() -> getId()->get_genname());
-            sprintf(temp, ", 0, %s);", THREAD_ID);
-            Body.pushln(temp);
-            break;
-        }
-
         case NOP_BFS_INIT:
         {
-            generate_bfs_top();
-            break;
-        }
-
-        case NOP_FUNC_EXIT:
-        {
-            Body.pushln("_MEM.cleanup();");
-            break;
-        }
-        case NOP_MEM_INIT:
-        {
-            sprintf(temp, "_gm_mem_helper _MEM(%s);", MAX_THREADS);
-            Body.pushln(temp);
+            //generate_bfs_top();
             break;
         }
 

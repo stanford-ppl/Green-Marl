@@ -437,4 +437,21 @@ ast_sent* gm_find_enclosing_seq_loop(ast_node* S)
     return gm_find_enclosing_seq_loop(up);
 }
 
+//--------------------------------------------------------------------
+// check if the last of the sentence block has ended with 'return'
+//--------------------------------------------------------------------
+bool gm_check_if_end_with_return(ast_sentblock* sb)
+{
+    // [XXX]
+    // simply check last sentence only
+    // should be merged with dead-code elimination
 
+    if (sb->get_sents().back()->get_nodetype() == AST_RETURN)
+    {
+        return true;
+    }
+    else {
+        return false;
+    }
+
+}

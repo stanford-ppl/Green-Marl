@@ -7,6 +7,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 #include "gm_frontend_api.h"
 
@@ -71,6 +72,25 @@ class ast_extra_info_string : public ast_extra_info {
     const char* get_string(); 
     virtual ast_extra_info* copy(); 
 };
+
+class ast_extra_info_set : public ast_extra_info {
+ public:
+     std::set<void*> set;
+     ast_extra_info_set() {}
+     ~ast_extra_info_set() {}
+     virtual ast_extra_info* copy() {assert(false); return NULL;}
+     std::set<void*>& get_set() {return set;}
+};
+
+class ast_extra_info_list : public ast_extra_info {
+ public:
+     std::list<void*> list;
+     ast_extra_info_list() {}
+     ~ast_extra_info_list() {}
+     virtual ast_extra_info* copy() {assert(false); return NULL;}
+     std::list<void*>& get_list() {return list;}
+};
+
 
 class ast_node {
     protected:
@@ -1329,6 +1349,7 @@ class ast_bfs: public ast_sent
         ast_id*        get_source()      {return src;}
         ast_id*        get_root()        {return root;}
         bool           is_transpose()    {return use_transpose;}
+        ast_expr*      get_navigator()   {return node_cond;}
 
         void           set_iterator2(ast_id* id) {assert(iter2 == NULL); iter2 = id;}
         void           set_filter(ast_expr* e)  {if (e!=NULL) e->set_parent(this); filter = e;}

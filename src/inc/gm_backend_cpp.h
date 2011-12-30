@@ -167,6 +167,9 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         virtual void generate_sent_return(ast_return *r);
         virtual void generate_sent_call(ast_call* c);
 
+        virtual void generate_sent_block_enter(ast_sentblock *b);
+        virtual void generate_sent_block_exit(ast_sentblock* b);
+
         virtual void generate_idlist(ast_idlist *i);
         virtual void generate_proc(ast_procdef* proc);
         void generate_proc_decl(ast_procdef* proc, bool is_body_file);
@@ -181,16 +184,20 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         bool _pblock;
 
     protected:
+        /*
         void generate_bfs_top();
         void generate_bfs_init(ast_bfs* bfs);
         void generate_bfs_finish(ast_bfs* bfs);
         void generate_bfs_main(ast_bfs* bfs);
         void generate_bfs_main_back(ast_bfs* bfs);
         void generate_bfs_iteration_first(ast_bfs* bfs, bool from_queue, bool is_parallel);
-        void generate_bfs_body_fw(ast_bfs* bfs);
-        void generate_bfs_body_bw(ast_bfs* bfs);
         void generate_bfs_expansion(ast_bfs* bfs, bool to_queue, bool is_parallel);
         void generate_bfs_end_level(ast_bfs* bfs, bool to_queue, bool is_parallel);
+        */
+
+        void generate_bfs_def(ast_bfs* bfs);
+        void generate_bfs_body_fw(ast_bfs* bfs);
+        void generate_bfs_body_bw(ast_bfs* bfs);
 
 
         const char* i_temp;  // temporary variable name
@@ -252,19 +259,34 @@ public:
 };
 
 
-
-
 // LABELS for extra info
 static const char* LABEL_ITER_ALIAS = "LABEL_ITER_ALIAS";
 static const char* LABEL_LIST_OF_SET = "LABEL_LIST_OF_SET";
-static const char* LABEL_NEED_MEM   = "LABEL_NEED_MEM";
+//static const char* LABEL_NEED_MEM   = "LABEL_NEED_MEM";
 static const char* LABEL_PAR_SCOPE  = "LABEL_PAR_SCOPE";
 
-//---------------------------------------------
-// for OMP
-//---------------------------------------------
-#define MAX_THREADS     "omp_get_max_threads()"         
-#define THREAD_ID       "omp_get_thread_num()"         
-#define NUM_THREADS     "omp_get_num_threads()"         
+static const char* CPPBE_INFO_HAS_BFS       = "CPPBE_INFO_HAS_BFS";
+static const char* CPPBE_INFO_HAS_PROPDECL  = "CPPBE_INFO_HAS_PROPDECL";
+static const char* CPPBE_INFO_IS_PROC_ENTRY = "CPPBE_INFO_IS_PROC_ENTRY";
+static const char* CPPBE_INFO_BFS_SYMBOLS   = "CPPBE_INFO_BFS_SYMBOLS";
+static const char* CPPBE_INFO_BFS_NAME      = "CPPBE_INFO_BFS_NAME";
+static const char* CPPBE_INFO_BFS_LIST      = "CPPBE_INFO_BFS_LIST";
+
+//----------------------------------------
+// For runtime
+//----------------------------------------
+#define MAX_THREADS     "gm_rt_get_num_threads"         
+#define THREAD_ID       "gm_rt_thread_id"         
+#define ALLOCATE_BOOL   "gm_rt_allocate_bool"
+#define ALLOCATE_LONG   "gm_rt_allocate_long"
+#define ALLOCATE_INT    "gm_rt_allocate_int"
+#define ALLOCATE_DOUBLE "gm_rt_allocate_double"
+#define ALLOCATE_FLOAT  "gm_rt_allocate_float"
+#define DEALLOCATE      "gm_rt_deallocate"
+#define CLEANUP_PTR     "gm_rt_cleanup"
+#define RT_INIT         "gm_rt_initialize"
+#define BFS_TEMPLATE    "gm_bfs_template"
+#define DO_BFS_FORWARD  "do_bfs_forward"
+#define DO_BFS_REVERSE  "do_bfs_reverse"
 
 #endif

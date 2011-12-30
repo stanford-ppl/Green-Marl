@@ -10,9 +10,9 @@
 // todo: consideration for non small-world graph
 template <typename level_t,
          bool use_multithread, 
-         bool save_child, 
-         bool use_reverse_edge,
          bool has_navigator
+         bool use_reverse_edge,
+         bool save_child, 
          >
 class gm_bfs_template
 {

@@ -24,8 +24,8 @@
 // make the current statement belong to a sentence block, if not already.
 // (e.g. if (cond) s; ==> if (cond) {s;})
 // If already in a sentblock
-// (case. a) do nothing.
-// (case. b) make it a nested sentence block.
+// (case. a) do nothing. => ...belong_to_sentblock(s)
+// (case. b) make it a nested sentence block.  ==> ...belong_to_sentblock_nested(s)
 //--------------------------------------------------------------------
 extern void gm_make_it_belong_to_sentblock(ast_sent* s, bool fix_symtab = true);
 extern void gm_make_it_belong_to_sentblock_nested(ast_sent *s, bool need_fix_symtab= true);
@@ -151,6 +151,12 @@ void gm_merge_sentblock(ast_sentblock* P, ast_sentblock*Q, bool delete_Q_after=f
 //   } While (cond2);
 //---------------------------------------------------------------
 ast_sent* gm_find_enclosing_seq_loop(ast_node* S);
+
+
+//---------------------------------------------------------
+// For dead code elimination
+//---------------------------------------------------------
+bool gm_check_if_end_with_return(ast_sentblock* sb);
 
 
 //-------------------------------------------------------------

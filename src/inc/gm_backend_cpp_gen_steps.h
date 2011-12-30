@@ -5,24 +5,24 @@
 
 //-------------------------------------------
 // [Step 1]
-// Add delaration here
-// declaration of optimization steps
+// Add declaration of step here
 //-------------------------------------------
 GM_COMPILE_STEP(gm_cpp_gen_sanitize_name,     "Sanitize identifier")
-GM_COMPILE_STEP(gm_cpp_gen_temp_cleanup,      "Clean-up routines for temporary properties")
-GM_COMPILE_STEP(gm_cpp_gen_entry_exit,        "Add procedure enter and exit")
+GM_COMPILE_STEP(gm_cpp_gen_regular,           "Regularize code structure for code generation")
+GM_COMPILE_STEP(gm_cpp_gen_prop_decl,         "Check property declaration");
 GM_COMPILE_STEP(gm_cpp_gen_mark_parallel,     "Mark every parallel sentence")
+GM_COMPILE_STEP(gm_cpp_gen_check_bfs,         "Check BFS routines")
 GM_COMPILE_STEP(gm_cpp_gen_proc,              "Creating source for each procedure")
 
 
 //-------------------------------------------
 // [Step 2]
-//   Implement the definition in seperate files
+// Implement step::process in a seperate file
 //-------------------------------------------
 
 //------------------------------------------------------
 // [Step 3]
-//   Include initialization in following steps
+// Add step in module initialization (gm_cpp_gen_main.cc)
 //------------------------------------------------------
 
 #endif

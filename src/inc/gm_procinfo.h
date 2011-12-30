@@ -13,6 +13,7 @@ public:
         body = d;
         temp_no = 0;
     }
+    virtual ~gm_procinfo() {}
 
     //--------------------------------------------
     // vocaburary and temp name generator
@@ -55,10 +56,26 @@ public:
         return gm_strdup(temp);
     }
 
-
+    bool has_info(const char* id) {return body->has_info(id);}
+    ast_extra_info* find_info(const char*id) {return body->find_info(id);}
+    bool find_info_bool(const char* id) {return body->find_info_bool(id);}
+    const char* find_info_string(const char* id) {return body->find_info_string(id);}
+    float find_info_float(const char* id) {return body->find_info_float(id);}
+    int find_info_int(const char* id) {return body->find_info_int(id);}
+    void* find_info_ptr(const char* id) {return body->find_info_ptr(id);}
+    void* find_info_ptr2(const char* id) {return body->find_info_ptr2(id);}
+    void add_info(const char* id, ast_extra_info* e) {body->add_info(id, e);}
+    void add_info_int(const char* id, int i) {body->add_info_int(id, i);}
+    void add_info_bool(const char* id, bool b) {body->add_info_bool(id, b);}
+    void add_info_ptr(const char* id, void* ptr1, void*ptr2=NULL) {body->add_info_ptr(id, ptr1, ptr2);}
+    void add_info_float(const char* id, float f) {body->add_info_float(id, f);}
+    void add_info_string(const char* id, const char* str) {body->add_info_string(id, str);}
+    void remove_info(const char* id) {body->remove_info(id);}
+    void remove_all_info() {body->remove_all_info();}
 
 
 private:
+    gm_procinfo() {} // cannot create without body
     ast_procdef* body;
     int temp_no;
 

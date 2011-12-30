@@ -25,8 +25,8 @@ private:
 
 extern gm_runtime _GM_RT;
 
-static inline void gm_rt_initizlize()            {_GM_RT.initialize();}
-static inline bool gm_rt_is_initizlized()        {return _GM_RT.is_initialized();}
+static inline void gm_rt_initialize()            {_GM_RT.initialize();}
+static inline bool gm_rt_is_initialized()        {return _GM_RT.is_initialized();}
 
 static inline int  gm_rt_get_num_threads()       {return _GM_RT.get_num_threads();}
 static inline void gm_rt_set_num_threads(int n)  {_GM_RT.set_num_threads(n);}

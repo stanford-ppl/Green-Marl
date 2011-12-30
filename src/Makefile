@@ -35,7 +35,7 @@ SRCS1 = gm_grammer.tab.c gm_lex.c
 SRCS2 =\
        gm_reproduce.cc gm_dumptree.cc gm_misc.cc \
        gm_main.cc gm_argopts.cc gm_copy.cc \
-       gm_generate_help.cc\
+       gm_code_generator.cc\
        gm_error.cc gm_builtin.cc \
        gm_node_info.cc\
 	   gm_traverse.cc gm_transform_helper.cc \
@@ -68,11 +68,12 @@ SRCS2 =\
 	   gm_cpp_gen.cc \
        gm_cpp_gen_bfs.cc \
        gm_cpp_gen_buildup_language_voca.cc\
-       gm_cpp_gen_entry_exit.cc\
        gm_cpp_gen_sanitize_name.cc \
-       gm_cpp_gen_temp_cleanup.cc\
+       gm_cpp_gen_prop_decl.cc\
        gm_cpp_gen_main.cc\
        gm_cpp_gen_mark_parallel.cc\
+       gm_cpp_gen_check_bfs.cc\
+       gm_cpp_gen_regular.cc\
        gm_cpplib_gen.cc \
        gm_cpplib_opt.cc\
        gm_gps_create_stages.cc \

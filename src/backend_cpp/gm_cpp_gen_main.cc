@@ -6,10 +6,11 @@ void gm_cpp_gen::init_gen_steps()
     std::list<gm_compile_step*> &LIST = this->gen_steps;
 
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_sanitize_name));
-    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_temp_cleanup));
-    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_entry_exit));
-    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_restore_vardecl));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_regular));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_prop_decl));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_mark_parallel));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_check_bfs));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_restore_vardecl));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_proc));
 }
 

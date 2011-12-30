@@ -166,8 +166,8 @@ void gm_code_generator:: generate_expr_bin(ast_expr * e)
 {
     char* temp = temp_str;
     ast_expr* up = e->get_up_op();
-    bool need_para; 
-    if (up==NULL)
+    bool need_para=false; 
+    if (up==NULL) 
         need_para=false;
     else if (up->is_biop() || up->is_comp()) {  
         need_para = check_need_para(e->get_optype(),
@@ -192,7 +192,7 @@ void gm_code_generator:: generate_expr_comp(ast_expr * e)
 {
     char* temp = temp_str;
     ast_expr* up = e->get_up_op();
-    bool need_para = true; 
+    bool need_para = (up==NULL) ? false : true; 
 
     if (need_para) _Body.push("(");
 

@@ -84,8 +84,8 @@ static int gm_get_range_from_itertype(int itype) {
         case GMTYPE_NODEITER_SEQ:
         case GMTYPE_EDGEITER_SEQ: return GM_RANGE_RANDOM;
         default: 
-                                  printf("type = %d\n", itype);
-                                  assert(false);
+              printf("type = %d\n", itype);
+              assert(false);
     }
     assert(false);
 }
@@ -215,6 +215,9 @@ static gm_rwinfo_sets* get_rwinfo_sets(ast_node* n)
         n->add_info(GM_INFOKEY_RW, rwi);
     }
     return rwi;
+}
+inline static gm_rwinfo_sets* gm_get_rwinfo_sets(ast_node* n)  {
+    return get_rwinfo_sets(n);
 }
 
 
