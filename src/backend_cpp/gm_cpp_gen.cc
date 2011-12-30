@@ -603,7 +603,7 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
             if ((r_type == GMREDUCE_MAX) || (r_type == GMREDUCE_MIN)) {
                 sprintf(temp, "if (%s == %s) break;", temp_var_old, temp_var_new); Body.pushln(temp);
             }
-        Body.push("} while (_gm_CAS(&("); 
+        Body.push("} while (_gm_atomic_compare_and_swap(&("); 
         if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
         else generate_rhs_field(a->get_lhs_field()); 
 

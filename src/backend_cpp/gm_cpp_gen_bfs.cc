@@ -144,7 +144,7 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
 
     generate_bfs_body_fw(bfs);
     generate_bfs_body_bw(bfs);
-    Body.pushln("virtual bool check_navigator() {return true;}");
+    Body.pushln("virtual bool check_navigator(node_t t) {return true;}");
     Body.NL();
 
     Body.NL();
@@ -155,16 +155,6 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
 
 void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs)
 {
-    /*
-    generate_bfs_init(bfs);
-
-    generate_bfs_main(bfs);
-
-    generate_bfs_main_back(bfs);
-
-    generate_bfs_finish(bfs);
-    */
-
     //-------------------------------------------
     // (1) create BFS object
     //-------------------------------------------
@@ -173,6 +163,7 @@ void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs)
     sprintf(temp, "%s %s", bfs_name, bfs_inst_name); 
     Body.push(temp);
     Body.push('(');
+
     //-------------------------------------------
     // give every entry that are used
     //-------------------------------------------
