@@ -9,16 +9,42 @@
 void gm_cpp_gen::generate_bfs_body_fw(ast_bfs* bfs)
 {
     // filters should have been changed into if
-    ast_sentblock *sb = bfs->get_fbody();
-    assert(sb!=NULL);
-    generate_sent_block(sb, false);
+    Body.push("virtual void visit_fw(");
+    Body.push(
+        get_lib()->get_type_string(GMTYPE_NODE));
+    Body.SPC();
+    Body.push(bfs->get_iterator()->get_genname());
+    Body.push(')');
+    if (bfs->get_fbody() == NULL) {
+        Body.pushln("{}");
+    }
+    else {
+        Body.NL();
+        ast_sentblock *sb = bfs->get_fbody();
+        assert(sb!=NULL);
+        generate_sent_block(sb);
+        Body.NL();
+    }
 }
 
 void gm_cpp_gen::generate_bfs_body_bw(ast_bfs* bfs)
 {
-    ast_sentblock *sb = bfs->get_bbody();
-    assert(sb!=NULL);
-    generate_sent_block(sb, false);
+    Body.push("virtual void visit_rv(");
+    Body.push(
+        get_lib()->get_type_string(GMTYPE_NODE));
+    Body.SPC();
+    Body.push(bfs->get_iterator()->get_genname());
+    Body.push(')');
+    if (bfs->get_bbody() == NULL) {
+        Body.pushln("{}");
+    }
+    else {
+        Body.NL();
+        ast_sentblock *sb = bfs->get_fbody();
+        assert(sb!=NULL);
+        generate_sent_block(sb);
+        Body.NL();
+    }
 }
 
 void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs) 
@@ -116,27 +142,8 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
     Body.pushln("protected:");
     Body.push_indent();
 
-    if (bfs->get_fbody() == NULL) {
-        Body.pushln("virtual void visit_fw() {}");
-    }
-    else {
-        Body.pushln("virtual void visit_fw()");
-        generate_bfs_body_fw(bfs);
-        Body.NL();
-    }
-
-    if (bfs->get_fbody() == NULL) {
-        Body.pushln("virtual void visit_rv() {}");
-    }
-    else {
-        Body.pushln("virtual void visit_rv()");
-        generate_bfs_body_bw(bfs);
-        Body.NL();
-    }
-
+    generate_bfs_body_fw(bfs);
     generate_bfs_body_bw(bfs);
-    Body.NL();
-
     Body.pushln("virtual bool check_navigator() {return true;}");
     Body.NL();
 

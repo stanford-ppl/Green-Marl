@@ -20,7 +20,7 @@ class gm_cpplib : public gm_graph_library {
     gm_cpplib(gm_cpp_gen* gen) {main = gen;}
     void set_main(gm_cpp_gen* gen) {main = gen;}
 
-    virtual const char* get_header_info() {return "gm_graph.h";}
+    virtual const char* get_header_info() {return "gm.h";}
     virtual const char* get_type_string(ast_typedecl* t);
     virtual const char* get_type_string(int prim_type);
 
@@ -288,5 +288,6 @@ static const char* CPPBE_INFO_BFS_LIST      = "CPPBE_INFO_BFS_LIST";
 #define BFS_TEMPLATE    "gm_bfs_template"
 #define DO_BFS_FORWARD  "do_bfs_forward"
 #define DO_BFS_REVERSE  "do_bfs_reverse"
+#define RT_INCLUDE      "gm.h"
 
 #endif

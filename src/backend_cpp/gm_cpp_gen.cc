@@ -5,7 +5,6 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 
-#define HELPERS "gm_helper_functions.h"
 
 void gm_cpp_gen::setTargetDir(const char* d)
 {
@@ -92,10 +91,9 @@ void gm_cpp_gen::do_generate_begin()
     add_include("limits.h",Header);
     add_include("cmath", Header);
     add_include("algorithm", Header);
-    if (is_target_omp()) 
-        add_include("omp.h", Header);
-    add_include(HELPERS, Header, false);
-    add_include(get_lib()->get_header_info(), Header, false);
+    add_include("omp.h", Header);
+    //add_include(get_lib()->get_header_info(), Header, false);
+    add_include(RT_INCLUDE,Header, false);
     Header.NL();
 
     //----------------------------------------
@@ -338,7 +336,7 @@ void gm_cpp_gen::generate_sent_foreach(ast_foreach* f)
 
         // [xxx]
         if (need_level_check) {
-            sprintf(temp, "if (_BFS.level[%s] != (_BFS.curr_level %c 1)) continue;",
+            sprintf(temp, "if (get_level(%s) != (get_curr_level() %c 1)) continue;",
                     f->get_iterator()->get_genname(),
                     gm_is_iteration_on_up_neighbors(iter_type) ? '-' : '+');
             Body.pushln(temp);
