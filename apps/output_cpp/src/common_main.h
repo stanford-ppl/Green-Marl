@@ -11,29 +11,38 @@ class main_t
 {
   protected:
     gm_graph G;
-    int method;
-    int repeat;
 
   public:
+    main_t() {time_to_exclude = 0;}
+
     virtual void main(int argc, char** argv)
     {
-        method = 0; 
-        repeat = 0;
+        bool b;
         if (argc < 3) {
-            printf("%s <graph_name> <num_threads> (<repeat>)\n", argv[0]);
+
+            printf("%s <graph_name> <num_threads> ", argv[0]); 
+            print_arg_info();
+            printf("\n");
+
             exit(EXIT_FAILURE);
         }
-        time_to_exclude = 0;
 
-        if (argc >= 5) {
-            repeat = atoi(argv[4]);
+        int new_argc = argc - 3;
+        char** new_argv = &(argv[3]);
+        b = check_args(new_argc, new_argv);
+        if (!b) {
+            printf("error procesing argument\n");
+            printf("%s <graph_name> <num_threads> ", argv[0]); 
+            print_arg_info();
+            printf("\n");
+            exit(EXIT_FAILURE);
         }
 
         //---------------------------------
         // Load graph
         //---------------------------------
         char *fname = argv[1];
-        bool b = G.load_binary(fname);
+        b = G.load_binary(fname);
         if (!b) {
             printf("error reading graph\n");
             exit(EXIT_FAILURE);
@@ -43,43 +52,54 @@ class main_t
         printf("running with threads = %d\n", num);
         gm_rt_set_num_threads(num); // gm_runtime.h
 
-        //----------------------------------------
-        // create data (provided by the user)
-        //----------------------------------------
-        create_data();
-
         //------------------------------------------------
         // Any extra preperation Step (provided by the user)
         //------------------------------------------------
-        prepare();
+        b = prepare();
+        if (!b) {
+            printf("Error prepare data\n");
+            exit(EXIT_FAILURE);
+        }
 
         struct timeval T1, T2;
         gettimeofday(&T1, NULL); 
-        run();
+        b = run();
         gettimeofday(&T2, NULL); 
         printf("time=%lf\n", 
-            (T2.tv_sec - T1.tv_sec)*1000 + (T2.tv_usec - T1.tv_usec)*0.001 
+            (T2.tv_sec - T1.tv_sec)*1000 + 
+            (T2.tv_usec - T1.tv_usec)*0.001 
             - time_to_exclude
         );
+        if (!b) {
+            printf("Error runing algortihm\n");
+            exit(EXIT_FAILURE);
+        }
 
 
-#ifdef CHECK_ANSWER
-        check_answer();
-#endif
+        b = post_process();
+        if (!b) {
+            printf("Error post processing\n");
+            exit(EXIT_FAILURE);
+        }
 
         //----------------------------------------------
         // Clean up routine
         //----------------------------------------------
-        cleanup();
+        b = cleanup();
+        if (!b) exit(EXIT_FAILURE);
     }
 
     virtual bool check_answer() { return true; }
     virtual bool run() = 0;
-    virtual bool prepare() { return true;}
-    virtual bool create_data() = 0;
+    virtual bool prepare()      { return true;}
+    virtual bool post_process() { return true;}
     virtual bool cleanup() {return true;}
-
+    // check remaining arguments
+    virtual bool check_args(int argc, char** argv) {return true;}
+    virtual void print_arg_info() {}
 protected:
+    gm_graph& get_graph() {return G;}
+    void add_time_to_exlude(double ms) {time_to_exclude += ms;}
     double time_to_exclude;
 
 };

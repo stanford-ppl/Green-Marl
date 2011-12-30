@@ -5,31 +5,41 @@
 class my_main: public main_t
 {
 public:
-    double* rank;
+    int32_t* membership;
+    double C;
 
-    virtual bool create_data() {
-        rank = new double[G.num_nodes()];
-        return true;
+    //--------------------------------------------------------
+    // create 4 groups randomly
+    //--------------------------------------------------------
+    virtual bool prepare() {
+        membership = new int32_t[G.num_nodes()];
+        for(int i=0;i<G.num_nodes();i++)
+        {
+            float f = drand48();
+            if (f < 0.1) 
+                membership[i] = 0;  // 10%
+            else if (f < (0.1+0.2)) 
+                membership[i] = 1;  // 20%
+            else if (f < (0.1+0.2+0.3)) 
+                membership[i] = 2;  // 30%
+            else
+                membership[i] = 3;  // 40%
+        }
     }
 
     virtual bool run() {
-        double e = 0.001;
-        double d = 0.85;
-        int max = 100;
-
-        PageRank(G, e,d, max, rank);
+        C = 0;
+        for(int i = 0; i < 4; i++)
+            C += conductance(get_graph(), membership, i);
 
         return true;
     }
 
-    virtual bool check_answer() {
+    virtual bool post_process() {
         //---------------------------------
         // values
         //---------------------------------
-        printf("rank[0] = %0.9lf\n", rank[0]);
-        printf("rank[1] = %0.9lf\n", rank[1]);
-        printf("rank[2] = %0.9lf\n", rank[2]);
-        printf("rank[3] = %0.9lf\n", rank[3]);
+        printf("sum C = %lf\n", C);
     }
 };
 

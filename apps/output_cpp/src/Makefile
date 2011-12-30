@@ -8,7 +8,7 @@ CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp
 LFLAGS = -L$(LIBDIR) -l$(LIB)
 
 ifndef PROGS
-PROGS = pagerank
+PROGS = pagerank conduct
 endif
 
 OUT = $(addprefix $(BINDIR)/, $(PROGS))

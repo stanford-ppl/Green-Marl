@@ -1,4 +1,5 @@
 PROGS=pagerank conduct
+#PROGS=gps_test
 export PROGS
 
 ifndef env
@@ -9,7 +10,7 @@ ifeq ($(env),cpp)
    TARGET=cpp_omp
 else
  ifeq ($(env),gps)
-   TARGET=cpp_gps
+   TARGET=gps
  else
 	@echo "unknown target environment"
 	false

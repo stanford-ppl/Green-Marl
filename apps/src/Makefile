@@ -2,7 +2,7 @@ COMP = ../../bin/gm_comp
 
 # TARGET, PROGS should be defined by test_apps/Makefile
 ifndef TARGET
-TARGET = cpp_omp
+TARGET = gps
 endif
 
 ifndef PROGS
@@ -16,11 +16,7 @@ ifeq ($(TARGET),cpp_omp)
     ODIR = ../output_cpp/generated
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.cc))
 endif
-ifeq ($(TARGET),cpp)
-    ODIR = ../output_cpp/generated
-    OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.cc))
-endif
-ifeq ($(TARGET), cpp_gps)
+ifeq ($(TARGET), gps)
     ODIR = ../output_gps/generated
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java))
 endif
