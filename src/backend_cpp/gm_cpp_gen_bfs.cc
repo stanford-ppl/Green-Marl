@@ -9,26 +9,16 @@
 void gm_cpp_gen::generate_bfs_body_fw(ast_bfs* bfs)
 {
     // filters should have been changed into if
-    if (bfs->get_fbody() != NULL) {
-        Body.NL();
-        Body.pushln("// body");
-        ast_sentblock *sb = bfs->get_fbody();
-        generate_sent_block(sb, false);
-    } else {
-        Body.pushln("// NULL body");
-    }
+    ast_sentblock *sb = bfs->get_fbody();
+    assert(sb!=NULL);
+    generate_sent_block(sb, false);
 }
 
 void gm_cpp_gen::generate_bfs_body_bw(ast_bfs* bfs)
 {
-    if (bfs->get_fbody() != NULL) {
-        Body.NL();
-        Body.pushln("// body");
-        ast_sentblock *sb = bfs->get_bbody();
-        generate_sent_block(sb, false);
-    } else {
-        Body.pushln("// NULL body");
-    }
+    ast_sentblock *sb = bfs->get_bbody();
+    assert(sb!=NULL);
+    generate_sent_block(sb, false);
 }
 
 void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs) 
@@ -126,6 +116,31 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
     Body.pushln("protected:");
     Body.push_indent();
 
+    if (bfs->get_fbody() == NULL) {
+        Body.pushln("virtual void visit_fw() {}");
+    }
+    else {
+        Body.pushln("virtual void visit_fw()");
+        generate_bfs_body_fw(bfs);
+        Body.NL();
+    }
+
+    if (bfs->get_fbody() == NULL) {
+        Body.pushln("virtual void visit_rv() {}");
+    }
+    else {
+        Body.pushln("virtual void visit_rv()");
+        generate_bfs_body_bw(bfs);
+        Body.NL();
+    }
+
+    generate_bfs_body_bw(bfs);
+    Body.NL();
+
+    Body.pushln("virtual bool check_navigator() {return true;}");
+    Body.NL();
+
+    Body.NL();
     Body.pushln("};");
     Body.NL();
 }
