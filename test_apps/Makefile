@@ -1,28 +1,49 @@
+PROGS=pagerank conduct
+export PROGS
 
-.phony: cpp_all cpp_lib cpp_src cpp_bin gps_src
+ifndef env
+env=cpp
+endif
 
-nothing:
-	@echo "make <option>"
-	@echo " <option>: cpp_lib cpp_src cpp_bin cpp_all gps_src"
-	@echo "  cpp_lib: Build runtime and graph library for cpp execution"
-	@echo "  cpp_src: Generate cpp code from green-marl code"
-	@echo "  cpp_bin: Build executilbe from generated cpp code and cpp library"
-	@echo "  cpp_all: cpp_lib + cpp_src + cpp_bin"
-	@echo "  gps_src: Generate java code from green-marl code, for gps framework" 
-
-cpp_lib: 
-	cd graphlib_cpp/src/; make
-
-cpp_src:
-	export TARGET=cpp_omp; cd src/; make
-
-cpp_bin:
-	cd output_cpp/drivers; make
-
-cpp_all: cpp_lib cpp_src cpp_bin
+ifeq ($(env),cpp)
+   TARGET=cpp_omp
+else
+ ifeq ($(env),gps)
+   TARGET=cpp_gps
+ else
+	@echo "unknown target environment"
+	false
+ endif
+endif
+export TARGET
 
 
-gps_src:
-	export TARGET=gps; cd src/; make clean; make
+tdir = output_$(env)
 
+all: lib gen bin
 
+lib:
+	@cd $(tdir); make lib
+
+bin:
+	@cd $(tdir); make 
+
+gen:
+	@cd src; make 
+
+clean:
+	@cd src; make clean
+
+cleanall:
+	@cd $(tdir); make clean
+	@cd src; make clean
+
+help:
+	@echo "make [-env=<env>] <what>"
+	@echo "  env: target execution environment; cpp or gps"
+	@echo "  what: what to build"
+	@echo "     lib: build runtime library for the environment (once)"
+	@echo "     gen: generate target code from Green-Marl"
+	@echo "     bin: build executible binaries from generated source file"
+	@echo "   clean: clean generated target code" 
+	@echo "cleanall: clean generated target code and runtime library" 

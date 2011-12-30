@@ -1,11 +1,16 @@
-
-
 COMP = ../../bin/gm_comp
-#TARGET = cpp_omp
-#TARGET = gps
-ifndef $(TARGET)
+
+# TARGET, PROGS should be defined by test_apps/Makefile
+ifndef TARGET
 TARGET = cpp_omp
 endif
+
+ifndef PROGS
+PROGS = pagerank
+endif
+
+FLAGS = -o=$(ODIR) -t=$(TARGET)
+SRCS = $(addsuffix .gm, $(PROGS))
 
 ifeq ($(TARGET),cpp_omp)
     ODIR = ../output_cpp/generated
@@ -20,9 +25,6 @@ ifeq ($(TARGET), cpp_gps)
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java))
 endif
 
-FLAGS = -o=$(ODIR) -t=$(TARGET)
-
-SRCS = b2.gm #pagerank.gm 
 all: $(OUTS)
 
 $(ODIR)/%.cc: %.gm
