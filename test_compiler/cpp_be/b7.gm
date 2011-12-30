@@ -1,6 +1,0 @@
-Proc foo()
-{
-    Int x;
-    If (x> 0)
-        Return;
-}

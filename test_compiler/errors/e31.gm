@@ -1,8 +1,0 @@
-Proc foo(G:Graph)
-{
-    //Foreach(t:G.Nodes)
-    For(t:G.Nodes)
-    {
-        Return;  // should be an error
-    }
-} 

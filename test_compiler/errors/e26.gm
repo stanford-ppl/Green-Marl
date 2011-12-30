@@ -1,9 +1,0 @@
-Proc Foo()
-{
-    Int x;
-    Int y;
-    Float z;
-
-    Int c = z ? x : y;  // Z should be boolean
-    Int p = (x == 0) ? x : z; // x and y should be type-matched
-}

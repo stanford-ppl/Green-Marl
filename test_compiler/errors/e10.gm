@@ -1,8 +1,0 @@
-Procedure Foo(G: Graph, X: Int)
-{
-    X = 3;
-    Node(G) y;
-    Foreach(t: G.Nodes) {
-        t = y;
-    }
-}

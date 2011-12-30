@@ -1,3 +1,0 @@
-Proc P() {
-    Int x = +INF;       // Test of parsing and TCing INF
-}

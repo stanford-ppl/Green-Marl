@@ -1,6 +1,0 @@
-Proc foo(G: Graph, A:N_P<Int>(G) )
-{
-    Node(G) a;
-    Int X = G.NumNbrs(); // GM_ERROR_INVALID_BUILT_IN
-    X = a.NumNodes(); // GM_ERROR_INVALID_BUILT_IN
-}

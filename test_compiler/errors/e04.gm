@@ -1,3 +1,0 @@
-Procedure foo (G: Graph; X: N_P<Int>(G))  // X cannot be an output argument
-{  
-}

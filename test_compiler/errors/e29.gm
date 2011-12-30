@@ -1,7 +1,0 @@
-// Type Errors Built-in
-Proc p (G:Graph, Order:N_O(G))
-{
-    Node(G) n;
-    Int x = 3;
-    n = Order.Pop(x);     // invalid number of arguments
-}

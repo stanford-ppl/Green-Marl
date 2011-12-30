@@ -1,4 +1,0 @@
-Procedure foo(G: Graph)
-{
-  X = 1;
-}

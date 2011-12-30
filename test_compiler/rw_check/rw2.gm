@@ -1,9 +1,0 @@
-
-Proc f (G:Graph, A,B:N_P<Int>(G))
-{
-    Node(G) s;
-    InBFS(t: G.Nodes ; s)
-    {
-        t.A = t.B;
-    }
-}

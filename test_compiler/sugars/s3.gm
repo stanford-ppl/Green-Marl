@@ -1,6 +1,0 @@
-Proc B() {
-  // Initial Expression
-    Int x = 0;
-    If (x == 0) 
-        Int y = x + 1;
-}

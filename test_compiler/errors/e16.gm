@@ -1,5 +1,0 @@
-Procedure foo(G: Graph)
-{
-    Int Y;
-    Y += 3; // why error? it becomes sequential
-}

@@ -1,8 +1,0 @@
-Proc P(G: Graph, A,B:N_P<Int>(G); Z: Int)
-{
-  G.A = G.B + 1;
-
-  Z = Sum(t:G.Nodes){
-            t.A + Sum(u:t.Nbrs){u.B}};
-
-}

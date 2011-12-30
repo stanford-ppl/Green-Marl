@@ -1,8 +1,0 @@
-Proc e3(G:Graph, A:N_P<Int>(G), n:Node(G))
-{
-    Int x;
-    // BFS is not supported
-    InBFS(t: G.Nodes From n) {
-        x += t.A;
-    }
-}

@@ -1,5 +1,0 @@
-Procedure foo()
-{
-    Int G;
-    Node(G) n;
-}

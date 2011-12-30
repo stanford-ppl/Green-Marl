@@ -1,8 +1,0 @@
-Proc P() {
-    // test of hoist def
-    Int x = 0;
-    Int y = x + 1;
-    x = 3;
-    Int z;
-}
-

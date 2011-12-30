@@ -1,8 +1,0 @@
-Proc P() {
-    // test of hoist def
-    Int x;
-    If (x > 0) {
-        Int z = 3; // this z must be renamed 
-    }
-    Int z= 7; // when hoisting this z.
-}

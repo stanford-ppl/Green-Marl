@@ -1,5 +1,0 @@
-Proc foo(G:Graph, A,B: N_P<Int>(G))
-{
-  // Test of Built-in + Group Assignment
-  G.A = G.NumNodes() + G.NumNbrs() + G.B;
-}

@@ -1,7 +1,0 @@
-// Test of ternary operator
-Proc foo()
-{
-    Int x ;
-    Int y ;
-    x = ( x > y) ? x : y;
-}

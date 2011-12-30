@@ -1,6 +1,0 @@
-// Test of Return
-Proc f (G:Graph) : Int
-{
-    Int Y = 1;
-    Return Y;
-}

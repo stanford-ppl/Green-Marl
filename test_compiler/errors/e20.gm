@@ -1,7 +1,0 @@
-Procedure foo (G: Graph, A: N_P<Int>(G))
-{
-    Foreach(n: G.Nodes)
-    {
-        G.A += n.A @n; // error?
-    }
-}

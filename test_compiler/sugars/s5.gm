@@ -1,5 +1,0 @@
-Proc A(G: Graph, A,B: N_P<Int>(G))
-{
-    Int x;
-    x = 2* Sum(t:G.Nodes)(t.B>0) {t.A} + 1;
-}

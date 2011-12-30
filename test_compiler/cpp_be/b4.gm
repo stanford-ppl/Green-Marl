@@ -1,7 +1,0 @@
-// Test of Built-in Generation
-Proc P (G:Graph, A: N_P<Int>(G))
-{
-    Node_Set(G) S;
-
-    G.NumNodes();
-}

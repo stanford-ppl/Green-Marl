@@ -1,9 +1,0 @@
-
-/// Okay Case
-Proc P(G: Graph, A,B,C:N_P<Int>(G))
-{
-    Foreach(t: G.Nodes) {
-        t.C = Sum(u:t.Nbrs) { u.A }; // read A random
-        t.A <= t.B + 3; // deferring write A. should be okay.
-    }
-}
