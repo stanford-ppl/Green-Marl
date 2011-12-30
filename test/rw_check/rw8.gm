@@ -1,0 +1,22 @@
+
+// Test of write-reduce error
+Proc P(G: Graph, A,B: N_P<Int>(G))
+{
+    Foreach(t:G.Nodes) {
+        Foreach(u: t.Nbrs) {
+            u.B += 1 @ t;  // reduce B
+        }
+        t.B = 1; // write B
+    }
+}
+        
+// Test of read-reduce error
+Proc Q(G: Graph, A,B: N_P<Int>(G))
+{
+    Foreach(t:G.Nodes) {
+        Foreach(u: t.Nbrs) {
+            u.B += 1 @ t;  // reduce B
+        }
+        t.A = t.B + 1; // read B
+    }
+}

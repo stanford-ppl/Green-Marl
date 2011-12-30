@@ -1,0 +1,8 @@
+Procedure foo()
+{
+    Graph G;
+    N_P<Int>(G) X;
+    Int x;
+    x.X = 0;
+
+}

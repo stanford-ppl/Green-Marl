@@ -1,0 +1,11 @@
+Procedure f(G:Graph, A,B: N_P<Int>(G) )
+{
+    Int z,y;
+    z = 0;
+    Foreach(n: G.Nodes) 
+    {
+        Foreach(m:n.Nbrs)
+            n.A <= m.B @ n;
+        n.A = 3;
+    }
+}

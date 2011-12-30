@@ -1,0 +1,9 @@
+Procedure foo()
+{
+    Graph G;
+    Int x;
+    Bool z;
+    z = (Bool) 2.0;
+    x = (Int) True;
+    x = (Int) G;
+}

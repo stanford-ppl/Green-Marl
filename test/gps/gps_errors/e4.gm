@@ -1,0 +1,5 @@
+Proc e4(G:Graph, S: Node_Set(G), E: E_P<Int>(G))
+{
+    // Node_Set is not supported.
+    // Edge_Property is not supported
+}

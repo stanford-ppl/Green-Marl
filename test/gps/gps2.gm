@@ -1,0 +1,7 @@
+Procedure gps2(G: Graph, x: Int, A,B: N_P<Int>(G)) 
+{
+    Int z = x + 1;
+    Foreach(t: G.Nodes) {
+        t.A = t.B*(z+1);
+    }
+}

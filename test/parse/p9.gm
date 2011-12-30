@@ -1,0 +1,16 @@
+Procedure P(G:Graph, A: N_P<Int>(G), B:N_P<Bool>(G))
+{
+    Bool b;
+    b = False;
+    Foreach(t: G.Nodes) {
+         b &= t.B;
+    }
+
+    /*
+    Int c = 0;
+    Foreach(t: G.Nodes) {
+         c &= t.A;
+    }
+    */
+
+}

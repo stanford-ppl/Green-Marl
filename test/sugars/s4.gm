@@ -1,0 +1,9 @@
+Proc foo(G: Graph, A,B: N_P<Int>(G))
+{
+   // vector assignment => should be changed into for-each
+   If (True) 
+        G.A = 1;        
+
+   Int x;
+   G.B = G.A + x;
+}

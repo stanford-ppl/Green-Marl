@@ -1,0 +1,21 @@
+Procedure foo(G: Graph, A: N_P<Int>(G))
+{
+    Int Y; Y = 0;
+    Foreach(n: G.Nodes)
+    {
+        Y += n.A @ n;
+        Foreach(m: n.Nbrs) {
+            Y *= n.A @ n; // Y is bound to += already
+        }
+    }
+}
+
+Procedure bar(G: Graph, A: N_P<Int>(G))
+{
+    Int Y; Y = 0;
+    Foreach(n: G.Nodes)
+    {
+        Y += n.A @ n;
+        Y *= n.A @ n; // Y is bound to n already
+    }
+}

@@ -1,0 +1,17 @@
+
+Proc e8(G:Graph, A,B: N_P<Int>(G)) : Int
+{
+    Int z=0;
+
+    // Inner loop cannot be repeated
+    Foreach (n: G.Nodes) { 
+        Int y=0;
+        Foreach (k: n.Nbrs) { 
+            y += k.A @ n;  // This is a pull syntax
+            n.B = k.A;     // This is another pull syntax
+        }
+
+    }
+
+    Return z;
+}

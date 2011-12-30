@@ -1,0 +1,11 @@
+// Test of Count <-> Foreach
+// Test of Auto bound
+Proc Foo(G:Graph, A:N_P<Bool>(G), B:N_P<Int>(G))
+{
+    Int S0,S1;
+    S0 = Count(t:G.Nodes)(t.A);
+
+    Foreach(t:G.Nodes)(t.B>0) {
+        S1++;             
+    }
+}

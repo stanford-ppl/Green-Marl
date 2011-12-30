@@ -1,0 +1,11 @@
+
+// test of name sanitizing
+Proc foo(int:Int, double:Double, gm_graph: Graph)
+{
+    Double register  = int + double;
+    Int if = int * 3;
+    Double while;
+    Int auto = register * 4;
+    If (int > if) 
+        while = register + auto;
+}

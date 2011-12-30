@@ -1,0 +1,36 @@
+Proc merge(G:Graph, A,B,C:N_P<Int>(G))
+{
+    Int x,y;
+
+    If (x>0) { // should be merged (linear access)
+        Foreach(t:G.Nodes) t.A = x+1;
+        Foreach(t:G.Nodes) t.B = t.A+1;
+    }
+
+    If (x>1) { // should not be merged (random access)
+        Foreach(t:G.Nodes) t.A = x + 1;
+        Foreach(t:G.Nodes) t.B = Sum(r:t.Nbrs){r.A}; 
+    }
+
+    If (x>2) { // should not be merged (A: reduced field)
+        Foreach(t:G.Nodes) {
+            Foreach(r:t.Nbrs) {
+                t.A += r.B +1 @ t;
+            }
+        }
+        Foreach(q:G.Nodes) {
+            q.B = q.A + 1;
+        }
+    }
+
+    If (x>3) { // should be merged ? (currently not. I will think about it later)
+        Foreach(q:G.Nodes) {
+            q.B = q.A + 1;
+        }
+        Foreach(t:G.Nodes) {
+            Foreach(r:t.Nbrs) {
+                t.A += r.B +1 @ t;
+            }
+        }
+    }
+}

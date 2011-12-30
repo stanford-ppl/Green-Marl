@@ -1,0 +1,9 @@
+Proc P(G, G2: Graph, A:N_P<Int>(G), B:N_P<Int>(G2))
+{
+    G.A = G.A + G2.B;  // GM_ERROR_TARGET_MISMATCH
+}
+
+Proc P2(G:Graph, A:N_P<Int>(G), B:E_P<Int>(G))
+{
+    G.A = G.A + G.B;  // GM_ERROR_GROUP_MISMATCH
+}

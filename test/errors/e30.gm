@@ -1,0 +1,6 @@
+// Type Errors Built-in
+Proc p (G:Graph, Order:N_O(G))
+{
+    Int x = Order.Pop();  // return type mismatch
+    Order.Push(x);      // invalid argument type
+}

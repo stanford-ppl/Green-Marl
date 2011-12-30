@@ -1,0 +1,14 @@
+// Test of built-in
+// Test of nested foreach
+Proc P(G:Graph, A:N_P<Int>(G))
+{
+    Int x = G.NumNodes();
+    Node(G) A;
+    Int t = A.NumNbrs();
+
+    Foreach(w:G.Nodes) {
+        Foreach(r:w.Nbrs) {
+            Int y = r.NumNbrs();       
+        }
+    }
+}

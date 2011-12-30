@@ -1,0 +1,4 @@
+Proc C(y: Bool) {
+    Int x = 2 + ( y ? INF : 3);
+    Int z = INF + 3;
+}

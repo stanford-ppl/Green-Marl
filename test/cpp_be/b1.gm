@@ -1,0 +1,10 @@
+
+// Test of 'in_nbrs'
+// Test of Sum/Product/Max/Min
+Proc P(G: Graph, A: N_P<Int>(G), B:N_P<Double>(G))
+{
+    Int Z;
+    Double Z2;
+    Z = Product(t:G.Nodes) { Min(u: t.InNbrs) { u.A }  };
+    Z2 = Sum(t:G.Nodes) { Max(u: t.Nbrs) { u.B }  };
+}

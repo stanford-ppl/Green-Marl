@@ -1,0 +1,20 @@
+Procedure foo()
+{
+    Int x;
+    x = 1;
+
+    Graph G;
+    Node_Property<Int>(G) A;
+
+    If (x) { // Need boolean
+        x = 2;
+    }
+
+    Foreach(n: G.Nodes)(n.A){ // Need boolean for filter
+        x= 3;
+    }
+
+    While (G) { // Need boolean
+        x = 3;
+    }
+}
