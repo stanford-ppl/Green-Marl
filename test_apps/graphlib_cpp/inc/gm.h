@@ -6,8 +6,7 @@
 #include "gm_runtime.h"
 #include "gm_atomic_wrapper.h"
 #include "gm_bitmap.h"
-#include "gm_memory_helper.h"
-#include "gm_bfs_tempate.h"
-
+#include "gm_mem_helper.h"
+#include "gm_bfs_template.h"
 
 #endif

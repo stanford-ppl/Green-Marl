@@ -6,14 +6,13 @@ BINDIR = ../bin
 LIB = gmgraph
 CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp  
 LFLAGS = -L$(LIBDIR) -l$(LIB)
-OUT = $(BINDIR)/pagerank 
+#OUT = $(BINDIR)/pagerank 
+BINS = b2
+OUT = $(addprefix $(BINDIR)/, $(BINS))
 
 all: $(OUT)
 
-$(BINDIR)/conduct: $(GEN_SRC)/conduct.cc conduct_main.cc
-	$(CC) $(CFLAGS) $^ $(LFLAGS)-o $@
-
-$(BINDIR)/pagerank: $(GEN_SRC)/pagerank.cc pagerank_main.cc
+$(BINDIR)/% : $(GEN_SRC)/%.cc %_main.cc
 	$(CC) $(CFLAGS) $^ $(LFLAGS) -o $@
 
 clean:

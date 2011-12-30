@@ -1,12 +1,7 @@
 
-#include "pagerank.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/time.h>
-typedef int32_t attr_id_t;
-
 #include "common_main.h"
-//void PageRank_Ref(gm_graph& G, double e, double d, int32_t max, double* PR);
+#include "pagerank.h"
+
 class my_main: public main_t
 {
 public:
@@ -21,13 +16,9 @@ public:
         double e = 0.001;
         double d = 0.85;
         int max = 100;
-        if (method == 0) {
-            PageRank(G, e,d, max, rank);
-        }
-        else {
-            assert(false);
-            //PageRank_Ref(G, e,d, max, rank);
-        }
+
+        PageRank(G, e,d, max, rank);
+
         return true;
     }
 

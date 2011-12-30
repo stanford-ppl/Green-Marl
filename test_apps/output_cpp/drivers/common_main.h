@@ -5,8 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
-#include "gm_graph.h"
-#include "gm_helper_functions.h"
+#include "gm.h"
 
 class main_t 
 {
@@ -22,7 +21,7 @@ class main_t
         repeat = 0;
         if (argc < 3) {
             printf("%s <graph_name> <num_threads> (<repeat>)\n", argv[0]);
-            exit(0);
+            exit(EXIT_FAILURE);
         }
         time_to_exclude = 0;
 
@@ -34,25 +33,24 @@ class main_t
         // Load graph
         //---------------------------------
         char *fname = argv[1];
-        bool b = G.loadBinary(fname);
+        bool b = G.load_binary(fname);
         if (!b) {
             printf("error reading graph\n");
-            exit(0);
+            exit(EXIT_FAILURE);
         }
-
-        /*
-        method = atoi(argv[2]);
-        if ((method != 0) && (method!=1)) {
-            printf("invalid method\n");
-            exit(0);
-        }
-        */
 
         int num = atoi(argv[2]);
-        //printf("num threads = %d\n", num);
-        omp_set_num_threads(num);
+        printf("running with threads = %d\n", num);
+        gm_rt_set_num_threads(num); // gm_runtime.h
 
+        //----------------------------------------
+        // create data (provided by the user)
+        //----------------------------------------
         create_data();
+
+        //------------------------------------------------
+        // Any extra preperation Step (provided by the user)
+        //------------------------------------------------
         prepare();
 
         struct timeval T1, T2;
@@ -68,6 +66,10 @@ class main_t
 #ifdef CHECK_ANSWER
         check_answer();
 #endif
+
+        //----------------------------------------------
+        // Clean up routine
+        //----------------------------------------------
         cleanup();
     }
 

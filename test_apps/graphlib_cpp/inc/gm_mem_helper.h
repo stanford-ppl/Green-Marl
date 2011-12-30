@@ -2,6 +2,7 @@
 #ifndef GM_MEM_HELPER_H
 #define GM_MEM_HELPER_H
 
+#include <stdint.h>
 #include <list>
 //---------------------------------------------------------
 // A thin runtime for object deletion management
@@ -87,35 +88,35 @@ private:
 // defined in gm_runtime.cc
 extern gm_mem_helper _GM_MEM;
 
-static inline int64_t* gm_rt_allocate_long  (size_t sz, int thread_id) 
+static inline int64_t* gm_rt_allocate_long  (size_t sz, int thread_id=0) 
 { 
     int64_t* ptr = new int64_t[sz];
     _GM_MEM.save(ptr, 0, thread_id); 
     return ptr;
 }
 
-static inline int32_t* gm_rt_allocate_int   (void* ptr, int thread_id) 
+static inline int32_t* gm_rt_allocate_int   (size_t sz, int thread_id=0) 
 {
     int32_t* ptr = new int32_t[sz];
     _GM_MEM.save(ptr, 0, thread_id); 
     return ptr;
 }
 
-static inline float*   gm_rt_allocate_float (void* ptr, int thread_id) 
+static inline float*   gm_rt_allocate_float (size_t sz, int thread_id=0) 
 {
     float* ptr = new float[sz];
     _GM_MEM.save(ptr, 0, thread_id); 
     return ptr;
 }
 
-static inline double*  gm_rt_allocate_double(void* ptr, int thread_id)
+static inline double*  gm_rt_allocate_double(size_t sz, int thread_id=0)
 { 
     double* ptr = new double[sz];
     _GM_MEM.save(ptr, 0, thread_id); 
     return ptr;
 }
 
-static inline void gm_rt_deallocate(void* ptr, int thread_id) 
+static inline void gm_rt_deallocate(void* ptr, int thread_id=0) 
 { 
     _GM_MEM.clear(ptr, 0, thread_id); 
 }

@@ -1,6 +1,6 @@
 
-#ifndef GM_GRAPH_T
-#define GM_GRAPH_T
+#ifndef GM_GRAPH_H
+#define GM_GRAPH_H
 #include <assert.h>
 #include <stdint.h>
 #include <map>

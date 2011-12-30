@@ -4,15 +4,15 @@
 #include "gm_graph.h"
 #include "gm_atomic_wrapper.h"
 #include "gm_bitmap.h"
-#ifndef BFS_TEMPLATE_H
-#define BFS_TEMPLATE_H
+#ifndef GM_BFS_TEMPLATE_H
+#define GM_BFS_TEMPLATE_H
 
 // todo: consideration for non small-world graph
 template <typename level_t,
          bool use_multithread, 
-         bool has_navigator
+         bool has_navigator,
          bool use_reverse_edge,
-         bool save_child, 
+         bool save_child
          >
 class gm_bfs_template
 {
@@ -403,7 +403,6 @@ void do_bfs_reverse()
     {
         node_t count = level_count[level];
         node_t* queue_ptr = level_start_ptr[level];
-        printf("level = %d, count = %d, ptr = %p\n", level, count, queue_ptr);
         if (queue_ptr == NULL) {
             #pragma omp parallel if (use_multithread)
             {
@@ -446,6 +445,11 @@ level_t get_level(node_t t)
     else {
         return visited_level[t];
     }
+}
+
+inline
+level_t get_curr_level() {
+    return curr_level;
 }
 
 
