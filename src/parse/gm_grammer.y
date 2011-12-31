@@ -60,8 +60,8 @@
 %type <ptr> foreach_filter
 %type <ptr> sent_do_while sent_while sent_return sent_call
 %type <ptr> sent_reduce_assignment  sent_defer_assignment
-%type <ptr> sent_bfs bfs_filter2
-%type <pair> bfs_filter1 
+%type <ptr> sent_bfs bfs_filter bfs_navigator
+%type <pair> bfs_reverse bfs_filters
 %type <ival> from_or_semi
 %type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
 %type <ptr> edge_type node_type nodeedge_type set_type
@@ -215,11 +215,14 @@
             | T_DOWN_NBRS                   { $$ = GMTYPE_NODEITER_DOWN_NBRS;}
             | T_ITEMS                       { $$ = GMTYPE_ITER_ANY; /* should be resolved after typechecking */}
 
-            // GM_bfs(it, src,root,   node,edge, filter,   fw, bw,tp)
-  sent_bfs    : T_BFS bfs_header_format bfs_filter1 bfs_filter2 sent_block 
-                { $$ = GM_bfs( $2.p1, $2.p2, $2.p3,   $3.p1, $3.p2, $4,  $5, NULL, $2.b1); GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
-              | T_BFS bfs_header_format bfs_filter1 bfs_filter2 sent_block T_BACK sent_block 
-                { $$ = GM_bfs( $2.p1, $2.p2, $2.p3,   $3.p1, $3.p2, $4,  $5, $7,   $2.b1); GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
+              // GM_bfs(it, src,root,             (navigator, f_filter,b_filter), fw,bw,  tp)
+  sent_bfs    : T_BFS bfs_header_format bfs_filters sent_block bfs_reverse 
+                { $$ = GM_bfs( $2.p1,$2.p2,$2.p3,  $3.p1,$3.p2, $5.p2,   $4,$5.p1,   $2.b1); 
+                  GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
+
+  bfs_reverse  :                               {$$.p1 = NULL; $$.p2 = NULL;}
+               | T_BACK bfs_filter sent_block  {$$.p1 = $2;   $$.p2 = $3;  } 
+               | T_BACK sent_block             {$$.p1 = $2;   $$.p2 = NULL;  }
 
   bfs_header_format :  '(' id ':' id opt_tp '.' T_NODES from_or_semi id ')' {
                            $$.p1 = $2; // it
@@ -234,13 +237,15 @@
   from_or_semi : T_FROM                     {$$ = 0;}
                | ';'                        {$$ = 0;}
 
-  bfs_filter1  :                            {$$.p1 = $$.p2  = NULL;}
-               | '[' expr ']'               {$$.p1 = $2; $$.p2 = NULL;}
-               | '[' ';' expr ']'           {$$.p1 = NULL; $$.p2 = $3;}
-               | '[' expr ';' expr ']'      {$$.p1 = $2; $$.p2 = $4;}
+bfs_filters   :                             {$$.p1 = NULL; $$.p2 = NULL;}
+              |  bfs_navigator              {$$.p1 = $1;   $$.p2 = NULL;}
+              |  bfs_filter                 {$$.p1 = NULL; $$.p2 = $1;}
+              |  bfs_navigator bfs_filter   {$$.p1 = $1;   $$.p2 = $2;}
+              |  bfs_filter bfs_navigator   {$$.p2 = $1;   $$.p1 = $2;}
 
-  bfs_filter2  :                            {$$ = NULL;}
-               | '(' expr ')'               {$$ = $2;}
+bfs_navigator :  '[' expr ']'              {$$ = $2;}                           
+
+  bfs_filter  : '(' expr ')'               {$$ = $2;}
               
 
   sent_variable_decl :  typedecl var_target   { $$ =  GM_vardecl_prim($1, $2); }

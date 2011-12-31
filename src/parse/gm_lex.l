@@ -70,6 +70,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "N_S"      {MarkToken(); return T_NSET;}
 "Node_Order" {MarkToken(); return T_NORDER;}
 "N_O"      {MarkToken(); return T_NORDER;}
+"Node_Seq"      {MarkToken(); return T_NSEQ;}
 "Node_Sequence" {MarkToken(); return T_NSEQ;}
 "N_Q"      {MarkToken(); return T_NSEQ;}
 "Int" {MarkToken(); return T_INT;}

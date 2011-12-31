@@ -372,8 +372,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 84
-#define YY_END_OF_BUFFER 85
+#define YY_NUM_RULES 85
+#define YY_END_OF_BUFFER 86
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -383,35 +383,35 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[265] =
     {   0,
-        0,    0,    3,    3,    0,    0,   85,   83,   81,   82,
-       83,   83,   83,   83,   83,   83,   79,   83,   83,   83,
-       77,   77,   77,   77,   77,   77,   77,   77,   77,   77,
-       77,   77,   77,   77,   77,   77,   77,   77,   77,   77,
-       83,   81,   80,    3,    5,    4,    1,    2,   81,   52,
-       49,   65,   64,   63,   62,    0,    0,    7,    8,   78,
-       79,   53,   51,   54,   77,   77,   77,   77,   61,   77,
-       77,   77,   77,   77,   77,   77,   77,   77,   57,   77,
-       77,   77,   77,   77,   77,   77,   77,   48,   77,   77,
-       77,   77,   16,   77,   77,   77,   77,   77,   66,   50,
+        0,    0,    3,    3,    0,    0,   86,   84,   82,   83,
+       84,   84,   84,   84,   84,   84,   80,   84,   84,   84,
+       78,   78,   78,   78,   78,   78,   78,   78,   78,   78,
+       78,   78,   78,   78,   78,   78,   78,   78,   78,   78,
+       84,   82,   81,    3,    5,    4,    1,    2,   82,   53,
+       50,   66,   65,   64,   63,    0,    0,    7,    8,   79,
+       80,   54,   52,   55,   78,   78,   78,   78,   62,   78,
+       78,   78,   78,   78,   78,   78,   78,   78,   58,   78,
+       78,   78,   78,   78,   78,   78,   78,   49,   78,   78,
+       78,   78,   16,   78,   78,   78,   78,   78,   67,   51,
 
-       81,   80,    3,    4,    4,    6,    0,    0,   78,   47,
-       77,   77,   77,   77,   24,   77,   77,   77,   77,   46,
-       77,   77,   75,   77,   77,   77,   77,   77,   31,   77,
-       77,   72,   73,   28,   22,   30,   26,   77,   77,   77,
-       77,   77,   69,   77,   77,   77,   77,   77,   74,   76,
-       35,   77,   77,   77,   20,   58,   77,   77,   77,   15,
-       77,   77,   77,   77,   77,   77,   77,   77,   32,   77,
-       38,   19,   77,   10,   77,   77,   55,   77,   77,   68,
-       67,   70,   77,   77,   77,   37,   56,   33,   77,   18,
-       11,   12,   77,   77,   77,   77,   43,   77,   77,   36,
+       82,   81,    3,    4,    4,    6,    0,    0,   79,   48,
+       78,   78,   78,   78,   24,   78,   78,   78,   78,   47,
+       78,   78,   76,   78,   78,   78,   78,   78,   32,   78,
+       78,   73,   74,   28,   22,   31,   26,   78,   78,   78,
+       78,   78,   70,   78,   78,   78,   78,   78,   75,   77,
+       36,   78,   78,   78,   20,   59,   78,   78,   78,   15,
+       78,   78,   78,   78,   78,   78,   78,   78,   33,   78,
+       39,   19,   78,   10,   78,   78,   56,   78,   78,   69,
+       68,   71,   78,   78,   78,   38,   57,   34,   78,   18,
+       11,   12,   78,   78,   78,   78,   44,   78,   78,   37,
 
-       77,   77,   77,   77,   77,   59,   34,   77,   77,   77,
-       40,   13,   14,   77,   77,   77,   77,   77,   77,   77,
-       77,   60,   41,   77,   77,   45,   77,   77,   77,   77,
-       77,   39,   77,   71,   42,   77,   77,   77,   77,   77,
-       77,   25,   77,   77,   17,   44,   77,   77,   77,    9,
-       77,   27,   77,   77,   77,   77,   77,   77,   77,   77,
-       23,   21,   29,    0
+       78,   78,   78,   78,   78,   60,   35,   78,   78,   78,
+       41,   13,   14,   78,   78,   78,   78,   78,   78,   78,
+       78,   61,   42,   78,   78,   46,   78,   78,   78,   78,
+       78,   40,   78,   72,   43,   78,   78,   78,   78,   78,
+       29,   25,   78,   78,   17,   45,   78,   78,   78,    9,
+       78,   27,   78,   78,   78,   78,   78,   78,   78,   78,
+       23,   21,   30,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -1088,222 +1088,222 @@ YY_RULE_SETUP
 case 31:
 YY_RULE_SETUP
 #line 75 "parse/gm_lex.l"
-{MarkToken(); return T_INT;}
+{MarkToken(); return T_NSEQ;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 76 "parse/gm_lex.l"
-{MarkToken(); return T_LONG;}
+{MarkToken(); return T_INT;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
 #line 77 "parse/gm_lex.l"
-{MarkToken(); return T_FLOAT;}
+{MarkToken(); return T_LONG;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 78 "parse/gm_lex.l"
-{MarkToken(); return T_DOUBLE;}
+{MarkToken(); return T_FLOAT;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
 #line 79 "parse/gm_lex.l"
-{MarkToken(); return T_BOOL;}
+{MarkToken(); return T_DOUBLE;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
 #line 80 "parse/gm_lex.l"
-{MarkToken(); return T_NODES;}
+{MarkToken(); return T_BOOL;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
 #line 81 "parse/gm_lex.l"
-{MarkToken(); return T_EDGES;}
+{MarkToken(); return T_NODES;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
 #line 82 "parse/gm_lex.l"
-{MarkToken(); return T_NBRS;}
+{MarkToken(); return T_EDGES;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
 #line 83 "parse/gm_lex.l"
-{MarkToken(); return T_NBRS;} 
+{MarkToken(); return T_NBRS;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
 #line 84 "parse/gm_lex.l"
-{MarkToken(); return T_IN_NBRS;} 
+{MarkToken(); return T_NBRS;} 
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
 #line 85 "parse/gm_lex.l"
-{MarkToken(); return T_UP_NBRS;} 
+{MarkToken(); return T_IN_NBRS;} 
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
 #line 86 "parse/gm_lex.l"
-{MarkToken(); return T_DOWN_NBRS;}
+{MarkToken(); return T_UP_NBRS;} 
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
 #line 87 "parse/gm_lex.l"
-{MarkToken(); return T_ITEMS;}
+{MarkToken(); return T_DOWN_NBRS;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
 #line 88 "parse/gm_lex.l"
-{MarkToken(); return T_NBR_EDGES;}
+{MarkToken(); return T_ITEMS;}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
 #line 89 "parse/gm_lex.l"
-{MarkToken(); return T_FOREACH;}
+{MarkToken(); return T_NBR_EDGES;}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
 #line 90 "parse/gm_lex.l"
-{MarkToken(); return T_FOR;}
+{MarkToken(); return T_FOREACH;}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
 #line 91 "parse/gm_lex.l"
-{MarkToken(); return T_AND;}
+{MarkToken(); return T_FOR;}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
 #line 92 "parse/gm_lex.l"
-{MarkToken(); return T_OR;}
+{MarkToken(); return T_AND;}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
 #line 93 "parse/gm_lex.l"
-{MarkToken(); return T_AND;}
+{MarkToken(); return T_OR;}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
 #line 94 "parse/gm_lex.l"
-{MarkToken(); return T_OR;}
+{MarkToken(); return T_AND;}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
 #line 95 "parse/gm_lex.l"
-{MarkToken(); return T_EQ;}
+{MarkToken(); return T_OR;}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
 #line 96 "parse/gm_lex.l"
-{MarkToken(); return T_NEQ;}
+{MarkToken(); return T_EQ;}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
 #line 97 "parse/gm_lex.l"
-{MarkToken(); return T_LE;}
+{MarkToken(); return T_NEQ;}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
 #line 98 "parse/gm_lex.l"
-{MarkToken(); return T_GE;}
+{MarkToken(); return T_LE;}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
 #line 99 "parse/gm_lex.l"
-{MarkToken(); yylval.bval = true;  return BOOL_VAL;}
+{MarkToken(); return T_GE;}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
 #line 100 "parse/gm_lex.l"
-{MarkToken(); yylval.bval = false; return BOOL_VAL;}
+{MarkToken(); yylval.bval = true;  return BOOL_VAL;}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
 #line 101 "parse/gm_lex.l"
-{MarkToken(); return T_IF;}
+{MarkToken(); yylval.bval = false; return BOOL_VAL;}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
 #line 102 "parse/gm_lex.l"
-{MarkToken(); return T_ELSE;}
+{MarkToken(); return T_IF;}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
 #line 103 "parse/gm_lex.l"
-{MarkToken(); return T_WHILE;}
+{MarkToken(); return T_ELSE;}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
 #line 104 "parse/gm_lex.l"
-{MarkToken(); return T_RETURN;}
+{MarkToken(); return T_WHILE;}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
 #line 105 "parse/gm_lex.l"
-{MarkToken(); return T_DO;}
+{MarkToken(); return T_RETURN;}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
 #line 106 "parse/gm_lex.l"
-{MarkToken(); return T_PLUSEQ;}
+{MarkToken(); return T_DO;}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
 #line 107 "parse/gm_lex.l"
-{MarkToken(); return T_PLUSPLUS;}
+{MarkToken(); return T_PLUSEQ;}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
 #line 108 "parse/gm_lex.l"
-{MarkToken(); return T_MULTEQ;}
+{MarkToken(); return T_PLUSPLUS;}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
 #line 109 "parse/gm_lex.l"
-{MarkToken(); return T_ANDEQ;}
+{MarkToken(); return T_MULTEQ;}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
 #line 110 "parse/gm_lex.l"
-{MarkToken(); return T_OREQ;}
+{MarkToken(); return T_ANDEQ;}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
 #line 111 "parse/gm_lex.l"
-{MarkToken(); return T_MINEQ;}
+{MarkToken(); return T_OREQ;}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
 #line 112 "parse/gm_lex.l"
-{MarkToken(); return T_MAXEQ;}
+{MarkToken(); return T_MINEQ;}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
 #line 113 "parse/gm_lex.l"
-{MarkToken(); return T_SUM;}
+{MarkToken(); return T_MAXEQ;}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
 #line 114 "parse/gm_lex.l"
-{MarkToken(); return T_COUNT;}
+{MarkToken(); return T_SUM;}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
 #line 115 "parse/gm_lex.l"
-{MarkToken(); return T_PRODUCT;}
+{MarkToken(); return T_COUNT;}
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
 #line 116 "parse/gm_lex.l"
-{MarkToken(); return T_MAX;}
+{MarkToken(); return T_PRODUCT;}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
 #line 117 "parse/gm_lex.l"
-{MarkToken(); return T_MIN;}
+{MarkToken(); return T_MAX;}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
 #line 118 "parse/gm_lex.l"
-{MarkToken(); return T_P_INF;}
+{MarkToken(); return T_MIN;}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
@@ -1313,54 +1313,59 @@ YY_RULE_SETUP
 case 76:
 YY_RULE_SETUP
 #line 120 "parse/gm_lex.l"
+{MarkToken(); return T_P_INF;}
+	YY_BREAK
+case 77:
+YY_RULE_SETUP
+#line 121 "parse/gm_lex.l"
 {MarkToken(); return T_M_INF;}
 	YY_BREAK
 /* Numbers and Identifies */
-case 77:
-YY_RULE_SETUP
-#line 123 "parse/gm_lex.l"
-{MarkToken(); yylval.text = yytext; return ID;}
-	YY_BREAK
 case 78:
 YY_RULE_SETUP
 #line 124 "parse/gm_lex.l"
-{MarkToken(); yylval.fval = atof(yytext); return FLOAT_NUM;}
+{MarkToken(); yylval.text = yytext; return ID;}
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
 #line 125 "parse/gm_lex.l"
+{MarkToken(); yylval.fval = atof(yytext); return FLOAT_NUM;}
+	YY_BREAK
+case 80:
+YY_RULE_SETUP
+#line 126 "parse/gm_lex.l"
 {MarkToken(); yylval.ival = atoi(yytext); return INT_NUM;}
 	YY_BREAK
 /* Spaces and other characters */
-case 80:
-/* rule 80 can match eol */
-YY_RULE_SETUP
-#line 128 "parse/gm_lex.l"
-{find_empty_lines(); lex_lines ++;}
-	YY_BREAK
 case 81:
+/* rule 81 can match eol */
 YY_RULE_SETUP
 #line 129 "parse/gm_lex.l"
-/* eat up white space */
+{find_empty_lines(); lex_lines ++;}
 	YY_BREAK
 case 82:
-/* rule 82 can match eol */
 YY_RULE_SETUP
 #line 130 "parse/gm_lex.l"
+/* eat up white space */
+	YY_BREAK
+case 83:
+/* rule 83 can match eol */
+YY_RULE_SETUP
+#line 131 "parse/gm_lex.l"
 {reset_empty_lines(); lex_lines ++;}
 	YY_BREAK
 /* Any other misc character */
-case 83:
-YY_RULE_SETUP
-#line 133 "parse/gm_lex.l"
-{MarkToken(); return yytext[0];}
-	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 135 "parse/gm_lex.l"
+#line 134 "parse/gm_lex.l"
+{MarkToken(); return yytext[0];}
+	YY_BREAK
+case 85:
+YY_RULE_SETUP
+#line 136 "parse/gm_lex.l"
 ECHO;
 	YY_BREAK
-#line 1364 "./parse/gm_lex.c"
+#line 1369 "./parse/gm_lex.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(BCOMMENT):
 case YY_STATE_EOF(LCOMMENT):
@@ -2363,7 +2368,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 135 "parse/gm_lex.l"
+#line 136 "parse/gm_lex.l"
 
 
 static int is_eof = 0;

@@ -61,19 +61,13 @@ public:
                 // negate all the up-way 
                 gm_traverse_up_sent(s->get_parent(), &T);
             
-            // need to think about this 
-            } else if (gm_is_iteration_on_set (fe->get_iter_type())) {
+            // [XXX] need to think about this 
+            } else if (gm_is_iteration_on_collection (fe->get_iter_type())) {
 
+                // make it sequential always
                 set_to_seq_t T;
 
-                // set parallel
-                fe->set_sequential(false);
-
-                // negate all the up-way 
-                gm_traverse_up_sent(s->get_parent(), &T);
-
-            } else if (gm_is_iteration_on_set (fe->get_iter_type())) {
-
+                fe->set_sequential(true);
 
             } else {
                 // sequential

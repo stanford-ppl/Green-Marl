@@ -101,14 +101,14 @@ extern "C" {
         return gm_is_all_graph_edge_iter_type(i) || gm_is_any_nbr_edge_iter_type(i);
     }
 
-    inline static bool gm_is_node_set_iter_type(int i) { 
-        return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
-    inline static bool gm_is_edge_set_iter_type(int i) { 
-        return ((i==GMTYPE_EDGEITER_SET) || (i==GMTYPE_EDGEITER_SEQ) || (i==GMTYPE_EDGEITER_ORDER));}
-    inline static bool gm_is_set_iter_type(int i) {
-        return gm_is_node_set_iter_type(i) || gm_is_edge_set_iter_type(i) || (i == GMTYPE_ITER_ANY); }
-    inline static bool gm_is_unknown_set_iter_type(int i) {
-        return (i==GMTYPE_ITER_ANY); }
+    //inline static bool gm_is_node_set_iter_type(int i) { 
+    //    return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
+    //inline static bool gm_is_edge_set_iter_type(int i) { 
+    //    return ((i==GMTYPE_EDGEITER_SET) || (i==GMTYPE_EDGEITER_SEQ) || (i==GMTYPE_EDGEITER_ORDER));}
+    //inline static bool gm_is_set_iter_type(int i) {
+    //    return gm_is_node_set_iter_type(i) || gm_is_edge_set_iter_type(i) || (i == GMTYPE_ITER_ANY); }
+    //inline static bool gm_is_unknown_set_iter_type(int i) {
+    //    return (i==GMTYPE_ITER_ANY); }
 
     inline static bool gm_is_node_collection_iter_type(int i) { 
         return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
@@ -331,11 +331,10 @@ extern "C" {
     extern ast_node* GM_defer_assign(ast_node* lhs, ast_node* rhs, ast_node* itor);
 
     // todo: clarify following macros
-    inline static bool gm_is_iteration_on_set(int itype) {return gm_is_collection_iter_type(itype);}
     inline static bool gm_is_iteration_on_collection(int itype) {return gm_is_collection_iter_type(itype);}
-    inline static bool gm_is_iteration_on_true_set(int itype)   {return (itype == GMTYPE_NODEITER_SET) || (itype == GMTYPE_EDGEITER_SET);}
-    inline static bool gm_is_iteration_on_ordered_set(int itype) {return (itype == GMTYPE_NODEITER_ORDER) || (itype == GMTYPE_EDGEITER_ORDER);}
-    inline static bool gm_is_iteration_on_sequence_set(int itype) {return (itype == GMTYPE_NODEITER_SEQ) || (itype == GMTYPE_EDGEITER_SEQ);}
+    inline static bool gm_is_iteration_on_set(int itype)   {return (itype == GMTYPE_NODEITER_SET) || (itype == GMTYPE_EDGEITER_SET);}
+    inline static bool gm_is_iteration_on_order(int itype) {return (itype == GMTYPE_NODEITER_ORDER) || (itype == GMTYPE_EDGEITER_ORDER);}
+    inline static bool gm_is_iteration_on_sequence(int itype) {return (itype == GMTYPE_NODEITER_SEQ) || (itype == GMTYPE_EDGEITER_SEQ);}
     inline static bool gm_is_iteration_on_all_graph(int itype) {return gm_is_all_graph_iter_type(itype);}
     inline static bool gm_is_iteration_on_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_NBRS)||(itype==GMTYPE_NODEITER_NBRS);}
     inline static bool gm_is_iteration_on_in_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_IN_NBRS)||(itype==GMTYPE_NODEITER_IN_NBRS);}
@@ -364,7 +363,7 @@ extern "C" {
     extern ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sent, ast_node* expr, bool is_seq, bool is_backward);
     extern ast_node* GM_bfs(
             ast_node* it, ast_node* source, ast_node* root, 
-            ast_node* n_cond, ast_node* e_cond, ast_node* filter,
+            ast_node* navigator, ast_node* f_filter, ast_node* b_filter,
             ast_node* f_sent, ast_node* b_sent, bool use_tp);
 
     extern ast_node* GM_graphtype_ref(int graph_type_id);

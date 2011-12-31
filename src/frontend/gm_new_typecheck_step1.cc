@@ -353,7 +353,7 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header( ast_id* it, ast_id* sr
     // create iterator
     //--------------------------------------
     ast_typedecl* type;
-    if (gm_is_iteration_on_set(iter_type))
+    if (gm_is_iteration_on_collection(iter_type))
     {
         type = ast_typedecl::new_set_iterator(src->copy(true), iter_type);
     }
@@ -521,7 +521,9 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
             is_okay = find_symbol_id(bound);
             if (is_okay) {
                 // bound symbol must be iterator
-                if (!bound->getTypeInfo()->is_node_edge_iterator()) {
+                if (!bound->getTypeInfo()->is_node_edge_iterator() &&
+                    !bound->getTypeInfo()->is_collection_iterator()
+                   ) {
                     gm_type_error(GM_ERROR_NEED_ITERATOR, bound);
                     is_okay = false;
                 }

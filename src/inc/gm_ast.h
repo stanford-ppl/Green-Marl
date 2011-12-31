@@ -510,9 +510,7 @@ class ast_typedecl : public ast_node {  // property or type
         bool is_collection()      {return gm_is_collection_type(type_id);}
         bool is_node_collection()    {return gm_is_node_collection_type(type_id);}
         bool is_edge_collection()    {return gm_is_edge_collection_type(type_id);}
-        bool is_set_iterator()          {return gm_is_set_iter_type(type_id);} // [xxx] to be not used
         bool is_collection_iterator()   {return gm_is_collection_iter_type(type_id);}
-        bool is_unknown_set_iterator()   {return gm_is_unknown_set_iter_type(type_id);} // not to be used
         bool is_unknown_collection_iterator()   {return gm_is_unknown_collection_iter_type(type_id);}
         bool is_node_iterator()   {return gm_is_node_iter_type(type_id);}
         bool is_edge_iterator()   {return gm_is_edge_iter_type(type_id);}
@@ -1308,12 +1306,13 @@ class ast_bfs: public ast_sent
     public:
         ~ast_bfs() {
             delete f_body; delete b_body; 
-            delete edge_cond; delete node_cond; delete filter; 
+            delete f_filter; delete b_filter; delete navigator; 
             delete iter; delete src; delete root; delete iter2;
             delete_symtabs();}
+
         static ast_bfs* new_bfs(
                 ast_id* it, ast_id* src, ast_id* root,
-                ast_expr* node_cond, ast_expr* edge_cond, ast_expr* filter,
+                ast_expr* navigator, ast_expr* f_filter, ast_expr* b_filter,
                 ast_sentblock* fb, ast_sentblock* bb, bool use_tp)
         {
             ast_bfs* d = new ast_bfs();
@@ -1323,37 +1322,38 @@ class ast_bfs: public ast_sent
             d->f_body = fb;
             d->b_body = bb;
             d->use_transpose = use_tp;
-            d->edge_cond = edge_cond;
-            d->node_cond = node_cond;
-            d->filter = filter; 
+            d->b_filter = b_filter;
+            d->f_filter = f_filter;
+            d->navigator = navigator; 
 
             src->set_parent(d);
             it->set_parent(d);
             root->set_parent(d);
             if (fb!=NULL) fb->set_parent(d);
             if (bb!=NULL) bb->set_parent(d);
-            if (filter!= NULL) filter->set_parent(d);
-            if (edge_cond != NULL) edge_cond->set_parent(d);
-            if (node_cond != NULL) node_cond->set_parent(d);
-            if (filter != NULL)    filter->set_parent(d);
+            if (navigator!= NULL)  navigator->set_parent(d);
+            if (f_filter != NULL) f_filter->set_parent(d);
+            if (b_filter != NULL) b_filter->set_parent(d);
             return d;
         } 
 
         ast_sentblock* get_fbody() {return f_body;}
         ast_sentblock* get_bbody() {return b_body;}
-        ast_expr*      get_filter() {return filter;}
-        ast_expr*      get_edge_cond() {return edge_cond;}
-        ast_expr*      get_node_cond() {return node_cond;}
+        ast_expr*      get_navigator() {return navigator;}
+        ast_expr*      get_f_filter() {return f_filter;}
+        ast_expr*      get_b_filter() {return b_filter;}
         ast_id*        get_iterator()      {return iter;}
         ast_id*        get_iterator2()      {return iter2;}
         ast_id*        get_source()      {return src;}
         ast_id*        get_root()        {return root;}
         bool           is_transpose()    {return use_transpose;}
-        ast_expr*      get_navigator()   {return node_cond;}
 
         void           set_iterator2(ast_id* id) {assert(iter2 == NULL); iter2 = id;}
-        void           set_filter(ast_expr* e)  {if (e!=NULL) e->set_parent(this); filter = e;}
+        void           set_navigator(ast_expr* e) {if (e!=NULL) e->set_parent(this); navigator = e;}
+        void           set_f_filter(ast_expr* e)  {if (e!=NULL) e->set_parent(this); f_filter = e;}
+        void           set_b_filter(ast_expr* e)  {if (e!=NULL) e->set_parent(this); b_filter = e;}
         void           set_fbody(ast_sentblock* b) {f_body = b;}
+        void           set_bbody(ast_sentblock* b) {b_body = b;}
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level);
         //virtual bool local_typecheck(gm_scope* context); 
@@ -1368,16 +1368,18 @@ class ast_bfs: public ast_sent
         bool is_parallel() { return true; } // sequential execution
 
     protected:
-        ast_bfs(): ast_sent(AST_BFS), f_body(NULL), b_body(NULL), edge_cond(NULL), node_cond(NULL), 
-                  filter(NULL), use_transpose(false), iter(NULL), src(NULL), iter2(NULL) {create_symtabs();}
+        ast_bfs(): ast_sent(AST_BFS), f_body(NULL), b_body(NULL), f_filter(NULL), b_filter(NULL), 
+                   navigator(NULL), use_transpose(false), iter(NULL), src(NULL), iter2(NULL) {create_symtabs();}
                 
 
     private:
         ast_sentblock* f_body;
         ast_sentblock* b_body;
-        ast_expr*      edge_cond;
-        ast_expr*      node_cond;
-        ast_expr*      filter;
+
+        ast_expr*      f_filter;
+        ast_expr*      b_filter;
+        ast_expr*      navigator;
+
         ast_id*        iter;
         ast_id*        src;
         ast_id*        root;

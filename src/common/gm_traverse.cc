@@ -231,12 +231,12 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     }
 
     // traverse
-    ast_expr *n = get_node_cond(); 
-    ast_expr *e = get_edge_cond(); 
-    ast_expr *f = get_filter(); 
+    ast_expr *n = get_navigator(); 
+    ast_expr *fc = get_f_filter(); 
+    ast_expr *bc = get_b_filter(); 
     if (n!= NULL) n->traverse(a, is_post, is_pre);
-    if (e!= NULL) e->traverse(a, is_post, is_pre);
-    if (f!= NULL) f->traverse(a, is_post, is_pre);
+    if (fc!= NULL) fc->traverse(a, is_post, is_pre);
+    if (bc!= NULL) bc->traverse(a, is_post, is_pre);
 
     ast_sentblock* fb = get_fbody();
     ast_sentblock* bb = get_bbody();

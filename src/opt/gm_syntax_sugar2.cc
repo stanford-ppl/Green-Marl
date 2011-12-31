@@ -362,7 +362,7 @@ void ss2_reduce_op::post_process_body(
 
 }
 
-
+/*
 class ss2_resolve_bfs_node_cond_t : public gm_apply
 {
 public: 
@@ -379,6 +379,7 @@ public:
         return true;
     }
 };
+*/
 
 
 
@@ -402,8 +403,8 @@ void gm_ind_opt_syntax_sugar2::process(ast_procdef* p)
     } while (A.should_repeat());  // if there are nested sums ...
 
     // 3. BFS node-cond
-    ss2_resolve_bfs_node_cond_t B;
-    gm_traverse_sents(p, &B);
+    //ss2_resolve_bfs_node_cond_t B;
+    //gm_traverse_sents(p, &B);
 
     // Should re-do rw-analysis
     gm_redo_rw_analysis(p->get_body()); 

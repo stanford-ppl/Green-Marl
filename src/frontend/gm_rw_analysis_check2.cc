@@ -250,26 +250,25 @@ bool gm_check_conf_t::apply(ast_sent* s)
         //------------------------------------
         // reconstruct read-set filter
         //------------------------------------
-        bool has_filter = false;
         int iter_type = bfs->get_iter_type(); // should be GMTYPE_NODEITER_BFS
-        gm_rwinfo_map R_filter;
-        if (bfs->get_filter()!= NULL) {
-            has_filter = true;
-            traverse_expr_for_readset_adding(bfs->get_filter(), R_filter);
-        }
         gm_symtab_entry* it = bfs->get_source()->getSymInfo();
-        if (bfs->get_edge_cond() != NULL) {
-            has_filter = true;
-            range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+        gm_rwinfo_map R_filter;
+        if (bfs->get_navigator()!= NULL) {
+            range_cond_t R(GM_RANGE_LEVEL_DOWN, true);
             Default_DriverMap[it] = R;
-            traverse_expr_for_readset_adding(bfs->get_edge_cond(), R_filter);
+            traverse_expr_for_readset_adding(bfs->get_navigator(), R_filter);
             Default_DriverMap.erase(it);
         }
-        if (bfs->get_node_cond() != NULL) {
-            has_filter = true;
+        if (bfs->get_f_filter() != NULL) {
             range_cond_t R(gm_get_range_from_itertype(iter_type), true);
             Default_DriverMap[it] = R;
-            traverse_expr_for_readset_adding(bfs->get_node_cond(), R_filter);
+            traverse_expr_for_readset_adding(bfs->get_f_filter(), R_filter);
+            Default_DriverMap.erase(it);
+        }
+        if (bfs->get_b_filter() != NULL) {
+            range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+            Default_DriverMap[it] = R;
+            traverse_expr_for_readset_adding(bfs->get_b_filter(), R_filter);
             Default_DriverMap.erase(it);
 
         }

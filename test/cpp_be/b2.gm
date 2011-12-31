@@ -14,7 +14,9 @@ Proc P(G:Graph, A,B: N_P<Int>(G), k:Node(G))
         }
     }
 
-    InBFS(s:G.Nodes From k)
+    InBFS(s:G.Nodes From k)[s.B > 1]
+    {}
+    InReverse
     {
         z += s.A;
     }

@@ -5,10 +5,12 @@
 #include "gm_transform_helper.h"
 #include "gm_frontend.h"
 
+
+extern gm_cpp_gen CPP_BE;
 //------------------------------------------------------------------
 // Code Regularization
 //   (1) Make sure Return is located inside a sentence block
-//   ...
+//   (2) Make sure Foreach is located inside a sentence block
 //------------------------------------------------------------------
 class cpp_gen_regular_1_t : public gm_apply
 {
@@ -21,22 +23,36 @@ public:
     {
         if (s->get_nodetype() == AST_RETURN) 
         {
-            returns.push_back(s);
+            targets.push_back(s);
+        }
+        else if (s->get_nodetype() == AST_FOREACH)
+        {
+            ast_foreach* fe = (ast_foreach*) s;
+            if (CPP_BE.get_lib()->need_up_initializer(fe))
+            {
+                targets.push_back(fe);
+            }
+
+            if ((fe->get_body()->get_nodetype() != AST_SENTBLOCK) &&
+                CPP_BE.get_lib()->need_down_initializer(fe))
+            {
+                targets.push_back(fe->get_body());
+            }
         }
     }
 
     void post_process()
     {
         std::list<ast_sent*>::iterator I;
-        for(I=returns.begin(); I!=returns.end(); I++)
+        for(I=targets.begin(); I!=targets.end(); I++)
             gm_make_it_belong_to_sentblock(*I);
     }
 
+
 private:
-    std::list<ast_sent*> returns;
+    std::list<ast_sent*> targets;
 
 };
-
 
 
 

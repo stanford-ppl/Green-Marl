@@ -59,7 +59,7 @@ static enum {
     GM_RANGE_SINGLE,     // t.X, t is a fixed iterator
     GM_RANGE_LEVEL,      // BFS iteration
     GM_RANGE_LEVEL_UP,   // BFS iteration, up level
-    GM_RANGE_LEVEL_DOWN, // BFS iteration, up level
+    GM_RANGE_LEVEL_DOWN, // BFS iteration, down level
     GM_RANGE_INVALID,
 } gm_range_type_t;
 

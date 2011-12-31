@@ -52,7 +52,7 @@ void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2)
             printf("Leveled Iteration should start from a bfs iterator instead of %s \n", id->get_orgname()); break;
 
         case GM_ERROR_NEED_ITERATOR:
-            printf("%s is not a iterator name\n", id->get_orgname()); break;
+            printf("%s is not an iterator name\n", id->get_orgname()); break;
 
         case GM_ERROR_UNKNOWN:
         default:

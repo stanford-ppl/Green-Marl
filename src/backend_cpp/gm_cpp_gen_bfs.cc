@@ -8,20 +8,19 @@
 // TODO
 void gm_cpp_gen::generate_bfs_body_fw(ast_bfs* bfs)
 {
-    // filters should have been changed into if
+    assert(bfs->get_f_filter() == NULL); // should be changed into if already 
+
     Body.push("virtual void visit_fw(");
-    Body.push(
-        get_lib()->get_type_string(GMTYPE_NODE));
+    Body.push(get_lib()->get_type_string(GMTYPE_NODE));
     Body.SPC();
     Body.push(bfs->get_iterator()->get_genname());
-    Body.push(')');
-    if (bfs->get_fbody() == NULL) {
+    Body.push(") ");
+    if ((bfs->get_fbody() == NULL) || (bfs->get_fbody()->get_sents().size() == 0)) {
         Body.pushln("{}");
     }
     else {
         Body.NL();
         ast_sentblock *sb = bfs->get_fbody();
-        assert(sb!=NULL);
         generate_sent_block(sb);
         Body.NL();
     }
@@ -29,21 +28,43 @@ void gm_cpp_gen::generate_bfs_body_fw(ast_bfs* bfs)
 
 void gm_cpp_gen::generate_bfs_body_bw(ast_bfs* bfs)
 {
+    assert(bfs->get_b_filter() == NULL); // should be changed into if already
+
     Body.push("virtual void visit_rv(");
-    Body.push(
-        get_lib()->get_type_string(GMTYPE_NODE));
+    Body.push(get_lib()->get_type_string(GMTYPE_NODE));
     Body.SPC();
     Body.push(bfs->get_iterator()->get_genname());
-    Body.push(')');
+    Body.push(") ");
     if (bfs->get_bbody() == NULL) {
         Body.pushln("{}");
     }
     else {
         Body.NL();
-        ast_sentblock *sb = bfs->get_fbody();
-        assert(sb!=NULL);
+        ast_sentblock *sb = bfs->get_bbody();
         generate_sent_block(sb);
         Body.NL();
+    }
+}
+
+void gm_cpp_gen::generate_bfs_navigator(ast_bfs* bfs)
+{
+    Body.push("virtual bool check_navigator(");
+    Body.push(get_lib()->get_type_string(GMTYPE_NODE));
+    Body.SPC();
+    Body.push(bfs->get_iterator()->get_genname());
+    Body.push(") ");
+    if (bfs->get_navigator() == NULL) {
+        Body.pushln("{return true;}");
+
+    }
+    else {
+        Body.NL();
+        Body.pushln("{");
+        Body.push("return (");
+        ast_expr *nv = bfs->get_navigator();
+        generate_expr(nv);
+        Body.pushln(");");
+        Body.pushln("}");
     }
 }
 
@@ -99,7 +120,7 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
     Body.pushln(")");
     sprintf(temp, ": %s", BFS_TEMPLATE);
     Body.push(temp);
-    sprintf(temp, "<%s, %s, %s, %s, %s>(%s),",
+    sprintf(temp, "<%s, %s, %s, %s, %s>(_%s),",
             level_t, use_multithread, has_navigator, use_reverse_edge, save_child,
             graph_sym->getId()->get_genname()); 
     Body.pushln(temp);
@@ -144,7 +165,7 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
 
     generate_bfs_body_fw(bfs);
     generate_bfs_body_bw(bfs);
-    Body.pushln("virtual bool check_navigator(node_t t) {return true;}");
+    generate_bfs_navigator(bfs);
     Body.NL();
 
     Body.NL();
@@ -153,8 +174,11 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
 }
 
 
+
 void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs)
 {
+    Body.NL();
+
     //-------------------------------------------
     // (1) create BFS object
     //-------------------------------------------
@@ -184,17 +208,19 @@ void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs)
     //-------------------------------------------
     // (2) Make a call to it
     //-------------------------------------------
-    Body.push(bfs_inst_name);
-    Body.push(".");
-    Body.push(DO_BFS_FORWARD);
-    Body.pushln("();");
+    sprintf(temp, "%s.%s(%s, %s());", 
+            bfs_inst_name, PREPARE,
+            bfs->get_root()->get_genname(),
+            MAX_THREADS);
+    Body.pushln(temp);
+    sprintf(temp, "%s.%s();", bfs_inst_name, DO_BFS_FORWARD); 
+    Body.pushln(temp);
+
 
     if (bfs->get_bbody() != NULL)
     {
-        Body.push(bfs_inst_name);
-        Body.push(".");
-        Body.push(DO_BFS_REVERSE);
-        Body.pushln("();");
+        sprintf(temp, "%s.%s();", bfs_inst_name, DO_BFS_REVERSE); 
+        Body.pushln(temp);
     }
 
     delete [] bfs_inst_name;

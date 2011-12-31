@@ -308,44 +308,31 @@ void gm_cpp_gen::generate_sent_foreach(ast_foreach* f)
 {
     
     int ptr,indent;
-    bool need_init_before = get_lib()->need_init_before_iteration_header(f);
+    bool need_init_before = get_lib()->need_up_initializer(f);
 
     if (need_init_before)
     {
         assert(f->get_parent() -> get_nodetype() == AST_SENTBLOCK);
-        get_lib()->generate_init_before_iteration_header(f);
+        get_lib()->generate_up_initializer(f, Body);
     }
 
-    //Body.NL();
     if (f->is_parallel()) {
         Body.NL();
         prepare_parallel_for();
     }
 
-    // Iteration header generation is dependent on library
-    bool need_init_inside;
-    int iter_type = f->get_iter_type();;
+    get_lib()->generate_foreach_header(f, Body);
 
-
-    get_lib()->generate_iteration_header(f, need_init_inside);
-    bool need_level_check = gm_is_iteration_on_updown_levels(iter_type);
-    if (need_init_inside)
+    if (get_lib()->need_down_initializer(f))
     {
         Body.pushln("{");
-        get_lib()->generate_iteration_header_init(f);
-
-        // [xxx]
-        if (need_level_check) {
-            sprintf(temp, "if (get_level(%s) != (get_curr_level() %c 1)) continue;",
-                    f->get_iterator()->get_genname(),
-                    gm_is_iteration_on_up_neighbors(iter_type) ? '-' : '+');
-            Body.pushln(temp);
-        }
+        get_lib()->generate_down_initializer(f, Body);
 
         if (f->get_body()->get_nodetype() != AST_SENTBLOCK) {
             generate_sent(f->get_body());
         }
         else {
+            // '{' '} already handled
             generate_sent_block((ast_sentblock*)f->get_body(), false);
         }
         Body.pushln("}");
@@ -433,7 +420,7 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v)
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);
         generate_lhs_id(idl->get_item(0));
-        get_lib()->add_set_def(idl->get_item(0));
+        get_lib()->add_collection_def(idl->get_item(0));
     } else {
         generate_idlist(v->get_idlist());
         Body.pushln(";");
@@ -668,12 +655,6 @@ void gm_cpp_gen::generate_sent_nop(ast_nop* n)
 {
     switch(n->get_subtype())
     {
-        case NOP_BFS_INIT:
-        {
-            //generate_bfs_top();
-            break;
-        }
-
         case NOP_REDUCE_SCALAR:
         {
             ((nop_reduce_scalar*) n)->generate(this);

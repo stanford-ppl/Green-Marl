@@ -371,21 +371,21 @@ ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sen
 }
 
 ast_node* GM_bfs(ast_node* it, ast_node* source, ast_node* root, 
-        ast_node* n_cond, ast_node* e_cond, ast_node* filter,
+        ast_node* navigator, ast_node* f_filter, ast_node* b_filter,
         ast_node* f_sent, ast_node* b_sent, bool use_tp)
 
 {
     assert(it->get_nodetype() == AST_ID);
     assert(source->get_nodetype() == AST_ID);
     assert(root->get_nodetype() == AST_ID);
-    if (n_cond!=NULL) assert(n_cond->is_expr());
-    if (e_cond!=NULL) assert(e_cond->is_expr());
-    if (filter!=NULL) assert(filter->is_expr());
+    if (navigator!=NULL) assert(navigator->is_expr());
+    if (f_filter!=NULL) assert(f_filter->is_expr());
+    if (b_filter!=NULL) assert(b_filter->is_expr());
     if (f_sent!=NULL) assert(f_sent->get_nodetype() == AST_SENTBLOCK);
     if (b_sent!=NULL) assert(b_sent->get_nodetype() == AST_SENTBLOCK);
     
     ast_bfs* bfs = ast_bfs::new_bfs((ast_id*) it, (ast_id*)source, (ast_id*) root,
-            (ast_expr*) n_cond, (ast_expr*) e_cond, (ast_expr*)filter, 
+            (ast_expr*) navigator, (ast_expr*) f_filter, (ast_expr*) b_filter, 
             (ast_sentblock*) f_sent, (ast_sentblock*) b_sent, use_tp);
 
     return bfs;

@@ -12,6 +12,7 @@
 
 //-----------------------------------------------------------------
 // interface for graph library Layer
+//  ==> will be deprecated
 //-----------------------------------------------------------------
 class gm_cpp_gen;
 class gm_cpplib : public gm_graph_library {
@@ -31,26 +32,18 @@ class gm_cpplib : public gm_graph_library {
 
     virtual bool do_local_optimize();
 
-    virtual bool need_init_before_iteration_header(ast_foreach* f);
-    virtual void generate_init_before_iteration_header(ast_foreach* f);
-    virtual bool generate_iteration_header(ast_foreach * f, bool& need_init_inside);
-    virtual bool generate_iteration_header_init(ast_foreach * f);
-
-     virtual bool need_init_before_iteration_header(
-             ast_id* iter, int iter_type, ast_id* source, bool is_parallel);
-     virtual void generate_init_before_iteration_header(
-             ast_id* iter, int iter_type, ast_id* source, bool is_parallel);
-    virtual bool generate_iteration_header(
-            ast_id* iter, int iter_type, ast_id* source, bool is_parallel, bool& need_init_inside, bool use_reverse=false);
-    virtual bool generate_iteration_header_init(
-            ast_id* iter, int iter_type, ast_id* source, bool is_parallel);
-
     virtual void generate_sent_nop(ast_nop* n); 
     virtual void generate_expr_builtin(ast_expr_builtin* e);
 
-    virtual bool add_set_def(ast_id* set);
+    virtual bool add_collection_def(ast_id* set);
 
     virtual void build_up_language_voca(gm_vocabulary& V);
+
+    virtual bool need_up_initializer(ast_foreach* fe);
+    virtual bool need_down_initializer(ast_foreach* fe);
+    virtual void generate_up_initializer(ast_foreach* fe, gm_code_writer& Body);
+    virtual void generate_down_initializer(ast_foreach* fe, gm_code_writer& Body);
+    virtual void generate_foreach_header(ast_foreach* fe, gm_code_writer& Body);
 
     protected:
 
@@ -110,6 +103,7 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         virtual void prepare_parallel_for();
         int _ptr, _indent;
 
+    public:
         gm_cpplib* get_lib() {return glib;}
 
         //std::list<const char*> local_names;
@@ -184,20 +178,10 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         bool _pblock;
 
     protected:
-        /*
-        void generate_bfs_top();
-        void generate_bfs_init(ast_bfs* bfs);
-        void generate_bfs_finish(ast_bfs* bfs);
-        void generate_bfs_main(ast_bfs* bfs);
-        void generate_bfs_main_back(ast_bfs* bfs);
-        void generate_bfs_iteration_first(ast_bfs* bfs, bool from_queue, bool is_parallel);
-        void generate_bfs_expansion(ast_bfs* bfs, bool to_queue, bool is_parallel);
-        void generate_bfs_end_level(ast_bfs* bfs, bool to_queue, bool is_parallel);
-        */
-
         void generate_bfs_def(ast_bfs* bfs);
         void generate_bfs_body_fw(ast_bfs* bfs);
         void generate_bfs_body_bw(ast_bfs* bfs);
+        void generate_bfs_navigator(ast_bfs* bfs);
 
 
         const char* i_temp;  // temporary variable name
@@ -210,37 +194,10 @@ extern gm_cpp_gen CPP_BE;
 // (NOPS) for CPP/CPP_LIB
 //---------------------------------------------------
 static enum {
-    NOP_CLEAR_PROP = 1000,
-    NOP_BFS_INIT,
-    NOP_MEM_INIT,
-    NOP_FUNC_EXIT,
-    NOP_REDUCE_SCALAR,
+    NOP_REDUCE_SCALAR = 1000,
 } nop_enum_cpp;
 
 
-// nop class used
-class nop_propdel : public ast_nop
-{
-    public: 
-        nop_propdel(gm_symtab_entry *e) {
-            set_subtype(NOP_CLEAR_PROP);
-            target = e;
-        }
-        gm_symtab_entry* get_target() {return target;}
-
-    private:
-        gm_symtab_entry* target;
-};
-
-class nop_bfs_init: public ast_nop {
-    public : nop_bfs_init() : ast_nop(NOP_BFS_INIT) {}
-};
-class nop_mem_init: public ast_nop {
-    public : nop_mem_init() : ast_nop(NOP_MEM_INIT) {}
-};
-class nop_func_exit: public ast_nop {
-    public : nop_func_exit() : ast_nop(NOP_FUNC_EXIT) {}
-};
 class nop_reduce_scalar: public ast_nop {
 public : 
     nop_reduce_scalar() : ast_nop(NOP_REDUCE_SCALAR) {}
@@ -260,8 +217,8 @@ public:
 
 
 // LABELS for extra info
-static const char* LABEL_ITER_ALIAS = "LABEL_ITER_ALIAS";
-static const char* LABEL_LIST_OF_SET = "LABEL_LIST_OF_SET";
+//static const char* LABEL_ITER_ALIAS = "LABEL_ITER_ALIAS";
+//static const char* LABEL_LIST_OF_SET = "LABEL_LIST_OF_SET";
 //static const char* LABEL_NEED_MEM   = "LABEL_NEED_MEM";
 static const char* LABEL_PAR_SCOPE  = "LABEL_PAR_SCOPE";
 
@@ -271,6 +228,9 @@ static const char* CPPBE_INFO_IS_PROC_ENTRY = "CPPBE_INFO_IS_PROC_ENTRY";
 static const char* CPPBE_INFO_BFS_SYMBOLS   = "CPPBE_INFO_BFS_SYMBOLS";
 static const char* CPPBE_INFO_BFS_NAME      = "CPPBE_INFO_BFS_NAME";
 static const char* CPPBE_INFO_BFS_LIST      = "CPPBE_INFO_BFS_LIST";
+static const char* CPPBE_INFO_COLLECTION_LIST      = "CPPBE_INFO_COLLECTION_LIST";
+static const char* CPPBE_INFO_COLLECTION_ITERATOR  = "CPPBE_INFO_COLLECTION_ITERATOR";
+static const char* CPPBE_INFO_NEIGHBOR_ITERATOR    = "CPPBE_INFO_NEIGHBOR_ITERATOR";
 
 //----------------------------------------
 // For runtime
@@ -289,5 +249,6 @@ static const char* CPPBE_INFO_BFS_LIST      = "CPPBE_INFO_BFS_LIST";
 #define DO_BFS_FORWARD  "do_bfs_forward"
 #define DO_BFS_REVERSE  "do_bfs_reverse"
 #define RT_INCLUDE      "gm.h"
+#define PREPARE         "prepare"
 
 #endif

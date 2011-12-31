@@ -40,16 +40,17 @@ public:
             ast_bfs* bfs = (ast_bfs*) n->get_parent();
 
             // [TODO] considering filters
-            if (bfs->get_node_cond()!=NULL) return;
-            if (bfs->get_edge_cond()!=NULL) return;
-            if (bfs->get_filter()!=NULL) return ;  // Note. It turned out that if there are filter, things are not so simple.
+            // [TODO] Note. It turned out that if there are filter, things are not so simple.
+            if (bfs->get_navigator()!=NULL) return;
+            if (bfs->get_f_filter()!=NULL) return;
+            if (bfs->get_b_filter()!=NULL) return ; 
 
             _in_bfs= true;
             current  = (ast_sentblock*)n;
             current_bfs_iter = bfs->get_iterator()->getSymInfo();
 
             // todo considering forward and backward filter
-            current_filter = bfs->get_filter(); // can be null
+            //current_filter = bfs->get_filter(); // can be null
         }
     }
     virtual void end_context(ast_node* n)
@@ -60,9 +61,9 @@ public:
         {
             ast_bfs* bfs = (ast_bfs*) n->get_parent();
 
-            //if (bfs->get_filter()!=NULL) return;
-            if (bfs->get_node_cond()!=NULL) return;
-            if (bfs->get_edge_cond()!=NULL) return;
+            if (bfs->get_navigator()!=NULL) return;
+            if (bfs->get_f_filter()!=NULL) return;
+            if (bfs->get_b_filter()!=NULL) return;
             _in_bfs= false; // todo: NESTED BFS
             current_bfs_iter = NULL;
         }
@@ -93,7 +94,7 @@ public:
         // add to target
         _cands.push_back(a);
         _tops.push_back(current);
-        _filters.push_back(current_filter);
+        //_filters.push_back(current_filter);
     }
 
     bool post_process() { // return true if something changed

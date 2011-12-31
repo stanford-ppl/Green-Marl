@@ -57,14 +57,14 @@ public:
             case AST_BFS:
             {
                 ast_bfs* bfs = (ast_bfs*) s;
-                if (bfs->get_filter() != NULL) {
-                    okay = should_be_boolean(bfs->get_filter()) ;
+                if (bfs->get_navigator() != NULL) {
+                    okay = should_be_boolean(bfs->get_navigator()) && okay;
                 }
-                if (bfs->get_edge_cond() != NULL) {
-                    okay = should_be_boolean(bfs->get_edge_cond()) && okay;
+                if (bfs->get_f_filter() != NULL) {
+                    okay = should_be_boolean(bfs->get_f_filter()) && okay;
                 }
-                if (bfs->get_node_cond() != NULL) {
-                    okay = should_be_boolean(bfs->get_node_cond()) && okay;
+                if (bfs->get_b_filter() != NULL) {
+                    okay = should_be_boolean(bfs->get_b_filter()) && okay;
                 }
                 break;
             }

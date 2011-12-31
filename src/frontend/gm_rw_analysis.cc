@@ -319,7 +319,7 @@ void traverse_expr_for_readset_adding(
                 int iter_type = e2->get_iter_type();
                 ast_expr* f = e2->get_filter();
                 ast_expr* b = e2->get_body();
-                bool is_conditional = (f!=NULL) || gm_is_set_iter_type(iter_type);
+                bool is_conditional = (f!=NULL) || gm_is_collection_iter_type(iter_type);
                 range_cond_t R((int)gm_get_range_from_itertype(iter_type), !is_conditional);
                 DrvMap[it] = R;
                 traverse_expr_for_readset_adding(b, rset, DrvMap);
@@ -904,7 +904,7 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a)
     if (a->get_filter() != NULL)
         traverse_expr_for_readset_adding(a->get_filter(), R_temp);
 
-    bool is_conditional = (a->get_filter() != NULL) || (gm_is_set_iter_type(a->get_iter_type()));
+    bool is_conditional = (a->get_filter() != NULL) || (gm_is_collection_iter_type(a->get_iter_type()));
     is_okay = merge_body(R_temp, W_temp, D_temp, a->get_body(), is_conditional);
 
     // 3) Eliminate access driven by the current iterator
@@ -934,27 +934,31 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a)
     gm_rwinfo_map D_temp1;
     gm_rwinfo_map D_temp2;
 
-    int iter_type = a->get_iter_type(); // should be GMTYPE_NODEITER_BFS
+    int iter_type = a->get_iter_type(); // should be GMTYPE_NODEITER_BFS || GMTYPE_NODEIER_DFS
     gm_symtab_entry* it = a->get_iterator()->getSymInfo(); assert(it!=NULL);
 
-    if (a->get_filter() != NULL) {
-        traverse_expr_for_readset_adding(a->get_filter(), R_temp);
-    }
-
-    if (a->get_node_cond() != NULL) {
-        range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+    if (a->get_navigator() != NULL) {
+        range_cond_t R(GM_RANGE_LEVEL_DOWN, true);
         Default_DriverMap[it] = R;
-        traverse_expr_for_readset_adding(a->get_node_cond(), R_temp);
-        Default_DriverMap.erase(it);
-    }
-    if (a->get_edge_cond() != NULL) {
-        range_cond_t R(gm_get_range_from_itertype(iter_type), true);
-        Default_DriverMap[it] = R;
-        traverse_expr_for_readset_adding(a->get_edge_cond(), R_temp);
+        traverse_expr_for_readset_adding(a->get_navigator(), R_temp);
         Default_DriverMap.erase(it);
     }
 
-    bool is_conditional = !((a->get_filter() == NULL)  && (a->get_node_cond() == NULL) && (a->get_edge_cond() == NULL)) ;
+    if (a->get_f_filter() != NULL) {
+        range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+        Default_DriverMap[it] = R;
+        traverse_expr_for_readset_adding(a->get_f_filter(), R_temp);
+        Default_DriverMap.erase(it);
+    }
+    if (a->get_b_filter() != NULL) {
+        range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+        Default_DriverMap[it] = R;
+        traverse_expr_for_readset_adding(a->get_b_filter(), R_temp);
+        Default_DriverMap.erase(it);
+    }
+
+    bool is_conditional = true;
+    //!((a->get_filter() == NULL)  && (a->get_node_cond() == NULL) && (a->get_edge_cond() == NULL)) ;
     if (a->get_fbody() != NULL) {
         is_okay = merge_body(R_temp, W_temp, D_temp1, a->get_fbody(), is_conditional) && is_okay;
     }

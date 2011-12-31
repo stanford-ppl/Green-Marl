@@ -362,6 +362,7 @@ void ast_bfs::reproduce(int ind_level)
     Out.push(" ; ");
     root->reproduce(0);
     Out.push(")");
+    /*
     if ((edge_cond != NULL) || (node_cond != NULL)) {
         Out.push ('[');
         if (node_cond != NULL) node_cond->reproduce(0);
@@ -375,6 +376,15 @@ void ast_bfs::reproduce(int ind_level)
         filter->reproduce(0);
         Out.push(')');
     }
+    */
+    if (navigator != NULL) 
+    {
+        Out.push('['); navigator->reproduce(0);Out.push(']');
+    }
+    if (f_filter != NULL)
+    {
+        Out.push('['); f_filter->reproduce(0);Out.push(']');
+    }
 
     if (f_body != NULL) {
         f_body->reproduce(0);
@@ -383,6 +393,10 @@ void ast_bfs::reproduce(int ind_level)
         Out.pushln("{}");
     }
 
+    if (b_filter != NULL)
+    {
+        Out.push('['); b_filter->reproduce(0);Out.push(']');
+    }
     if (b_body != NULL) {
         Out.pushln("InReverse ");
         b_body->reproduce(0);
