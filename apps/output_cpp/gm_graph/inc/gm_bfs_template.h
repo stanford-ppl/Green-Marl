@@ -398,7 +398,7 @@ void do_bfs_reverse()
 {
     // This function should be called only after do_bfs_foward has finished.
     // assumption: small-world graph
-    level_t level = curr_level;
+    level_t& level = curr_level;
     while(true)
     {
         node_t count = level_count[level];

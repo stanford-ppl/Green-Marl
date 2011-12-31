@@ -116,8 +116,8 @@ private:
     unsigned char* bitmap;
 };
 
-typedef gm_seq<node_t> gm_node_seq;
-typedef gm_seq<edge_t> gm_edge_seq;
+typedef gm_order<node_t> gm_node_order;
+typedef gm_order<edge_t> gm_edge_order;
 
 
 #endif

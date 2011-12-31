@@ -3,15 +3,18 @@
 
 #include <list>
 #include "gm_graph_typedef.h"
+#include "gm_runtime.h"
 
 template<typename T>
 class gm_seq
 {
 public:
-    gm_seq(int _max_thread=16) : max_thread(_max_thread)
+    gm_seq() { 
+        init(gm_rt_get_num_threads());
+    } 
+    gm_seq(int _max_thread) 
     { 
-        local_Q_front = new std::list<T>[max_thread];
-        local_Q_back  = new std::list<T>[max_thread];
+        init(_max_thread);
     }
 
     virtual ~gm_seq()  {
@@ -79,13 +82,24 @@ public:
 
 
 private:
-    gm_seq() {} // initialize without size is prohibited
 
     typename std::list<T> Q;
     typename std::list<T>* local_Q_front;
     typename std::list<T>* local_Q_back;
 
     int max_thread;
+    static const int THRESHOLD=128;
+
+    void init(int _max_thread) 
+    {
+        max_thread = _max_thread;
+        if (_max_thread > THRESHOLD) {
+            printf("warning, too many # threads:%d\n",_max_thread);
+            max_thread = THRESHOLD;
+        }
+        local_Q_front = new std::list<T>[max_thread];
+        local_Q_back  = new std::list<T>[max_thread];
+    }
 };
 
 typedef gm_seq<node_t> gm_node_seq;
