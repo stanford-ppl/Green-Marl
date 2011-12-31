@@ -1,4 +1,4 @@
-PROGS=pagerank conduct
+PROGS=pagerank conduct bc
 #PROGS=gps_test
 export PROGS
 

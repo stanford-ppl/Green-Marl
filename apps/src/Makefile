@@ -2,7 +2,7 @@ COMP = ../../bin/gm_comp
 
 # TARGET, PROGS should be defined by test_apps/Makefile
 ifndef TARGET
-TARGET = gps
+TARGET = cpp
 endif
 
 ifndef PROGS
