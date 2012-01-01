@@ -30,13 +30,13 @@ public:
     choose_parallel_t() : _in_bfs(false) {}
 
     void begin_context(ast_node* n) {
-        if (n->get_nodetype() == AST_BFS) {
+        if ((n->get_nodetype() == AST_BFS) && (((ast_bfs*)n)->is_bfs())) {
             assert(_in_bfs == false);
             _in_bfs = true;
         }
     }
     void end_context(ast_node* n) {
-        if (n->get_nodetype() == AST_BFS) {
+        if ((n->get_nodetype() == AST_BFS) && (((ast_bfs*)n)->is_bfs())) {
             _in_bfs = false;
         }
     }

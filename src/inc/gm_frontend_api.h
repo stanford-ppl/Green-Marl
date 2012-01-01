@@ -364,7 +364,7 @@ extern "C" {
     extern ast_node* GM_bfs(
             ast_node* it, ast_node* source, ast_node* root, 
             ast_node* navigator, ast_node* f_filter, ast_node* b_filter,
-            ast_node* f_sent, ast_node* b_sent, bool use_tp);
+            ast_node* f_sent, ast_node* b_sent, bool use_tp, bool is_bfs);
 
     extern ast_node* GM_graphtype_ref(int graph_type_id);
     extern ast_node* GM_primtype_ref(int prim_type_id);

@@ -74,10 +74,12 @@ public:
 
             s->add_info(CPPBE_INFO_BFS_SYMBOLS, syms);
             has_bfs = true;
+            ast_bfs* bfs = (ast_bfs*) s;
 
             char temp[1024];
-            sprintf(temp,"_%s", proc->get_procname()->get_genname()); 
-            char* c = FE.voca_temp_name_and_add(temp, "_bfs");
+            sprintf(temp,"%s", proc->get_procname()->get_genname()); 
+            const char* suffix = bfs->is_bfs() ? "_bfs" : "_dfs";
+            char* c = FE.voca_temp_name_and_add(temp, suffix);
 
             s->add_info_string(CPPBE_INFO_BFS_NAME, c);
 

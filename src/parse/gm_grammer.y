@@ -35,7 +35,7 @@
  /*  Reserved Words */
 %token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP
 %token T_NSET T_NORDER T_NSEQ T_ITEMS
-%token T_DFS T_POST
+%token T_DFS T_POST 
 %token T_INT T_FLOAT T_BOOL T_DOUBLE  T_LONG
 %token T_RETURN
 %token T_BFS  T_RBFS T_FROM T_TO T_BACK
@@ -60,8 +60,8 @@
 %type <ptr> foreach_filter
 %type <ptr> sent_do_while sent_while sent_return sent_call
 %type <ptr> sent_reduce_assignment  sent_defer_assignment
-%type <ptr> sent_bfs bfs_filter bfs_navigator
-%type <pair> bfs_reverse bfs_filters
+%type <ptr> sent_bfs bfs_filter bfs_navigator sent_dfs
+%type <pair> bfs_reverse bfs_filters dfs_post
 %type <ival> from_or_semi
 %type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
 %type <ptr> edge_type node_type nodeedge_type set_type
@@ -187,6 +187,7 @@
       | sent_while                          { $$ = $1;}
       | sent_return ';'                     { $$ = $1;}
       | sent_bfs                            { $$ = $1;}
+      | sent_dfs                            { $$ = $1;}
       | sent_call ';'                       { $$ = $1;}
 
   sent_call : built_in                      { $$ = GM_new_call_sent($1, true);}
@@ -215,10 +216,17 @@
             | T_DOWN_NBRS                   { $$ = GMTYPE_NODEITER_DOWN_NBRS;}
             | T_ITEMS                       { $$ = GMTYPE_ITER_ANY; /* should be resolved after typechecking */}
 
+  sent_dfs    : T_DFS bfs_header_format bfs_filters sent_block dfs_post
+                { $$ = GM_bfs( $2.p1,$2.p2,$2.p3,  $3.p1,$3.p2, $5.p2,   $4,$5.p1,   $2.b1, false); 
+                  GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
               // GM_bfs(it, src,root,             (navigator, f_filter,b_filter), fw,bw,  tp)
   sent_bfs    : T_BFS bfs_header_format bfs_filters sent_block bfs_reverse 
-                { $$ = GM_bfs( $2.p1,$2.p2,$2.p3,  $3.p1,$3.p2, $5.p2,   $4,$5.p1,   $2.b1); 
+                { $$ = GM_bfs( $2.p1,$2.p2,$2.p3,  $3.p1,$3.p2, $5.p2,   $4,$5.p1,   $2.b1, true); 
                   GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
+
+  dfs_post     :                               {$$.p1 = NULL; $$.p2 = NULL;}
+               | T_POST bfs_filter sent_block  {$$.p1 = $2;   $$.p2 = $3;  } 
+               | T_POST sent_block             {$$.p1 = $2;   $$.p2 = NULL;  }
 
   bfs_reverse  :                               {$$.p1 = NULL; $$.p2 = NULL;}
                | T_BACK bfs_filter sent_block  {$$.p1 = $2;   $$.p2 = $3;  } 
@@ -236,6 +244,7 @@
 
   from_or_semi : T_FROM                     {$$ = 0;}
                | ';'                        {$$ = 0;}
+
 
 bfs_filters   :                             {$$.p1 = NULL; $$.p2 = NULL;}
               |  bfs_navigator              {$$.p1 = $1;   $$.p2 = NULL;}

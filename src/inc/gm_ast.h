@@ -1301,6 +1301,7 @@ class ast_foreach : public ast_sent
         bool use_reverse;
 };
 
+// BFS or DFS
 class ast_bfs: public ast_sent
 {
     public:
@@ -1313,7 +1314,8 @@ class ast_bfs: public ast_sent
         static ast_bfs* new_bfs(
                 ast_id* it, ast_id* src, ast_id* root,
                 ast_expr* navigator, ast_expr* f_filter, ast_expr* b_filter,
-                ast_sentblock* fb, ast_sentblock* bb, bool use_tp)
+                ast_sentblock* fb, ast_sentblock* bb, bool use_tp,
+                bool is_bfs = true)
         {
             ast_bfs* d = new ast_bfs();
             d->iter = it;
@@ -1325,6 +1327,7 @@ class ast_bfs: public ast_sent
             d->b_filter = b_filter;
             d->f_filter = f_filter;
             d->navigator = navigator; 
+            d->_bfs = is_bfs;
 
             src->set_parent(d);
             it->set_parent(d);
@@ -1347,6 +1350,7 @@ class ast_bfs: public ast_sent
         ast_id*        get_source()      {return src;}
         ast_id*        get_root()        {return root;}
         bool           is_transpose()    {return use_transpose;}
+        bool           is_bfs()          {return _bfs;}
 
         void           set_iterator2(ast_id* id) {assert(iter2 == NULL); iter2 = id;}
         void           set_navigator(ast_expr* e) {if (e!=NULL) e->set_parent(this); navigator = e;}
@@ -1364,8 +1368,8 @@ class ast_bfs: public ast_sent
         virtual bool has_scope() {return true;}
 
         // currently BFS is always parallel. (codegen assumes there is only one BFS. also flip-edge opt does)
-        bool is_sequential() { return false; } // sequential execution
-        bool is_parallel() { return true; } // sequential execution
+        bool is_sequential() { return !is_bfs(); } // sequential execution
+        bool is_parallel() { return is_bfs(); } // sequential execution
 
     protected:
         ast_bfs(): ast_sent(AST_BFS), f_body(NULL), b_body(NULL), f_filter(NULL), b_filter(NULL), 
@@ -1385,6 +1389,7 @@ class ast_bfs: public ast_sent
         ast_id*        root;
         ast_id*        iter2; // iterator used for frontier expansion
         bool           use_transpose;
+        bool           _bfs;
 };
 
 class ast_call : public ast_sent

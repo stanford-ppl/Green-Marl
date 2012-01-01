@@ -5,12 +5,15 @@
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 
-// TODO
 void gm_cpp_gen::generate_bfs_body_fw(ast_bfs* bfs)
 {
     assert(bfs->get_f_filter() == NULL); // should be changed into if already 
 
-    Body.push("virtual void visit_fw(");
+    if (bfs->is_bfs()) {
+        Body.push("virtual void visit_fw(");
+    } else {
+        Body.push("virtual void visit_pre(");
+    }
     Body.push(get_lib()->get_type_string(GMTYPE_NODE));
     Body.SPC();
     Body.push(bfs->get_iterator()->get_genname());
@@ -30,7 +33,12 @@ void gm_cpp_gen::generate_bfs_body_bw(ast_bfs* bfs)
 {
     assert(bfs->get_b_filter() == NULL); // should be changed into if already
 
-    Body.push("virtual void visit_rv(");
+    if (bfs->is_bfs()) {
+        Body.push("virtual void visit_rv(");
+    } else {
+        Body.push("virtual void visit_post(");
+    }
+
     Body.push(get_lib()->get_type_string(GMTYPE_NODE));
     Body.SPC();
     Body.push(bfs->get_iterator()->get_genname());
@@ -77,16 +85,29 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
     const char* use_reverse_edge = bfs->is_transpose() ? "true" : "false";
     const char* has_navigator = (bfs->get_navigator()==NULL) ? "false" : "true";
 
+    const char* has_pre_visit = ((bfs->get_fbody()!=NULL) && 
+                                 (bfs->get_fbody()->get_sents().size() >=1)) ? "true" : "false";
+
+    const char* has_post_visit = ((bfs->get_bbody()!=NULL) && 
+                                  (bfs->get_bbody()->get_sents().size() >=1)) ? "true" : "false";
+
     ast_extra_info_set* info = (ast_extra_info_set*)  bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
     std::set<void*>& SET = info->get_set();
     std::set<void*>::iterator S;
     gm_symtab_entry* graph_sym = (gm_symtab_entry*) (*(SET.begin()));
+    const char* template_name = (bfs->is_bfs() ? BFS_TEMPLATE : DFS_TEMPLATE);
 
-    sprintf(temp, "class %s : public %s", bfs_name, BFS_TEMPLATE);
+    sprintf(temp, "class %s : public %s", bfs_name, template_name);
     Body.pushln(temp);
     Body.push_indent();
-    sprintf(temp, "<%s, %s, %s, %s, %s>",
+    if (bfs->is_bfs()) {
+        sprintf(temp, "<%s, %s, %s, %s, %s>",
             level_t, use_multithread, has_navigator, use_reverse_edge, save_child ); 
+    } else {
+        sprintf(temp, "<%s, %s, %s, %s>",
+            has_pre_visit, has_post_visit, has_navigator, use_reverse_edge);
+    }
+
     Body.pushln(temp);
     Body.pop_indent();
     Body.pushln("{");
@@ -118,10 +139,17 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
         Body.push(sym->getId()->get_genname());
     }
     Body.pushln(")");
-    sprintf(temp, ": %s", BFS_TEMPLATE);
+    sprintf(temp, ": %s", template_name);
     Body.push(temp);
-    sprintf(temp, "<%s, %s, %s, %s, %s>(_%s),",
-            level_t, use_multithread, has_navigator, use_reverse_edge, save_child,
+    if (bfs->is_bfs()) {
+        sprintf(temp, "<%s, %s, %s, %s, %s>",
+            level_t, use_multithread, has_navigator, use_reverse_edge, save_child ); 
+    } else {
+        sprintf(temp, "<%s, %s, %s, %s>",
+            has_pre_visit, has_post_visit, has_navigator, use_reverse_edge);
+    }
+    Body.push(temp);
+    sprintf(temp, "(_%s),",
             graph_sym->getId()->get_genname()); 
     Body.pushln(temp);
 
@@ -183,7 +211,9 @@ void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs)
     // (1) create BFS object
     //-------------------------------------------
     const char* bfs_name = bfs->find_info_string(CPPBE_INFO_BFS_NAME);
-    const char* bfs_inst_name = FE.voca_temp_name_and_add("_BFS", "");
+    const char* bfs_inst_name = bfs->is_bfs() ? 
+       FE.voca_temp_name_and_add("_BFS", "") :
+       FE.voca_temp_name_and_add("_DFS", ""); 
     sprintf(temp, "%s %s", bfs_name, bfs_inst_name); 
     Body.push(temp);
     Body.push('(');
@@ -208,18 +238,26 @@ void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs)
     //-------------------------------------------
     // (2) Make a call to it
     //-------------------------------------------
-    sprintf(temp, "%s.%s(%s, %s());", 
-            bfs_inst_name, PREPARE,
-            bfs->get_root()->get_genname(),
-            MAX_THREADS);
-    Body.pushln(temp);
-    sprintf(temp, "%s.%s();", bfs_inst_name, DO_BFS_FORWARD); 
-    Body.pushln(temp);
-
-
-    if (bfs->get_bbody() != NULL)
+    if (bfs->is_bfs())
     {
-        sprintf(temp, "%s.%s();", bfs_inst_name, DO_BFS_REVERSE); 
+        sprintf(temp, "%s.%s(%s, %s());", 
+            bfs_inst_name, PREPARE, bfs->get_root()->get_genname(),
+            MAX_THREADS);
+        Body.pushln(temp);
+        sprintf(temp, "%s.%s();", bfs_inst_name, DO_BFS_FORWARD); 
+        Body.pushln(temp);
+
+        if (bfs->get_bbody() != NULL)
+        {
+            sprintf(temp, "%s.%s();", bfs_inst_name, DO_BFS_REVERSE); 
+            Body.pushln(temp);
+        }
+    }
+    else { // DFS
+        sprintf(temp, "%s.%s(%s);", 
+            bfs_inst_name, PREPARE, bfs->get_root()->get_genname());
+        Body.pushln(temp);
+        sprintf(temp, "%s.%s();", bfs_inst_name, DO_DFS); 
         Body.pushln(temp);
     }
 

@@ -372,7 +372,7 @@ ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sen
 
 ast_node* GM_bfs(ast_node* it, ast_node* source, ast_node* root, 
         ast_node* navigator, ast_node* f_filter, ast_node* b_filter,
-        ast_node* f_sent, ast_node* b_sent, bool use_tp)
+        ast_node* f_sent, ast_node* b_sent, bool use_tp, bool is_bfs)
 
 {
     assert(it->get_nodetype() == AST_ID);
@@ -386,7 +386,7 @@ ast_node* GM_bfs(ast_node* it, ast_node* source, ast_node* root,
     
     ast_bfs* bfs = ast_bfs::new_bfs((ast_id*) it, (ast_id*)source, (ast_id*) root,
             (ast_expr*) navigator, (ast_expr*) f_filter, (ast_expr*) b_filter, 
-            (ast_sentblock*) f_sent, (ast_sentblock*) b_sent, use_tp);
+            (ast_sentblock*) f_sent, (ast_sentblock*) b_sent, use_tp, is_bfs);
 
     return bfs;
 }
