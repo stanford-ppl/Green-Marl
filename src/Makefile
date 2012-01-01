@@ -69,6 +69,7 @@ SRCS2 =\
        gm_cpp_gen_bfs.cc \
        gm_cpp_gen_foreach.cc\
        gm_cpp_gen_buildup_language_voca.cc\
+       gm_cpp_gen_misc_check.cc\
        gm_cpp_gen_sanitize_name.cc \
        gm_cpp_gen_prop_decl.cc\
        gm_cpp_gen_main.cc\

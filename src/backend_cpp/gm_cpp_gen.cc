@@ -387,19 +387,6 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
     Body.pushln("());");
 
     /*
-    Body.push(" = new ");
-    Body.push(get_type_string(t2));
-    Body.push(" [ ");
-    if (t->is_node_property()) {
-        Body.push(get_lib()->max_node_index(t->get_target_graph_id()));
-    } else if (t->is_edge_property()) {
-        Body.push(get_lib()->max_edge_index(t->get_target_graph_id()));
-    }
-    else {assert(false);}
-    Body.push("]; ");
-
-    sprintf(temp,"%s(%s, %s());", SAVE_PTR, id->get_genname(), THREAD_ID);
-    Body.pushln(temp);
     */
 
     // regeister to memory controller 
@@ -437,12 +424,34 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
 {
     if (sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY))
     {
-        // initialize procedure
-        Body.pushln("//Initialize runtime (if required)");
+        Body.pushln("//Initializations");
         sprintf(temp,"%s();", RT_INIT);
         Body.pushln(temp);
+
+        //----------------------------------------------------
+        // freeze graph instances
+        //----------------------------------------------------
+        ast_procdef* proc = FE.get_current_proc();
+        gm_symtab* vars = proc->get_symtab_var();
+        std::vector<gm_symtab_entry*>& E = vars-> get_entries();
+        for(int i=0;i<E.size();i++) {
+            gm_symtab_entry* e = E[i];
+            if (e->getType()->is_graph()) {
+                sprintf(temp, "%s.%s();", e->getId()->get_genname(), FREEZE);
+                Body.pushln(temp);
+
+                // currrently every graph is an argument
+                if (e->find_info_bool(CPPBE_INFO_USE_REVERSE_EDGE))
+                {
+                    sprintf(temp, "%s.%s();", e->getId()->get_genname(), MAKE_REVERSE);
+                    Body.pushln(temp);
+                }
+            }
+        }
         Body.NL();
     }
+
+
 }
 
 void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br)
@@ -551,12 +560,6 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 
       int r_type = a->get_reduce_type();
 
-      /*
-      if (a->get_lhs_type() == GMASSIGN_LHS_SCALA)
-            generate_reduce_main(a->get_lhs_scala(), NULL, a->get_rhs(), temp_var_base, rtype, lhs_target_type);
-      else
-            generate_reduce_main(NULL, a->get_lhs_field(), a->get_rhs(), temp_var_base, rtype, lhs_target_type);
-        */
 
       const char* temp_var_old;
       const char* temp_var_new;
@@ -622,34 +625,6 @@ void gm_cpp_gen::generate_sent_return(ast_return *r)
     Body.pushln("; ");
 }
 
-    /*
-    bool need_cleanup = FE.get_current_proc()->find_info_bool(LABEL_NEED_MEM);
-    if (need_cleanup) { // call cleanup before return
-        bool need_para = (r->get_parent()->get_nodetype() != AST_SENTBLOCK);
-        if (need_para)
-        {
-            Body.pop_indent();
-            Body.push("{");
-        }
-        Body.pushln("_MEM.cleanup();");
-        Body.push("return ");
-        if (r->get_expr() != NULL) {
-            generate_expr(r->get_expr());
-        }
-        Body.pushln("; ");
-        if (need_para)
-        {
-            Body.pushln("}");
-            Body.push_indent();
-        }
-    } else {
-        Body.push("return ");
-        if (r->get_expr() != NULL) {
-            generate_expr(r->get_expr());
-        }
-        Body.pushln(";");
-    }
-    */
 
 void gm_cpp_gen::generate_sent_nop(ast_nop* n)
 {

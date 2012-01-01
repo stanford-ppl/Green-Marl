@@ -231,6 +231,7 @@ static const char* CPPBE_INFO_BFS_LIST      = "CPPBE_INFO_BFS_LIST";
 static const char* CPPBE_INFO_COLLECTION_LIST      = "CPPBE_INFO_COLLECTION_LIST";
 static const char* CPPBE_INFO_COLLECTION_ITERATOR  = "CPPBE_INFO_COLLECTION_ITERATOR";
 static const char* CPPBE_INFO_NEIGHBOR_ITERATOR    = "CPPBE_INFO_NEIGHBOR_ITERATOR";
+static const char* CPPBE_INFO_USE_REVERSE_EDGE     = "CPPBE_INFO_USE_REVERSE_EDGE";
 
 //----------------------------------------
 // For runtime
@@ -250,5 +251,7 @@ static const char* CPPBE_INFO_NEIGHBOR_ITERATOR    = "CPPBE_INFO_NEIGHBOR_ITERAT
 #define DO_BFS_REVERSE  "do_bfs_reverse"
 #define RT_INCLUDE      "gm.h"
 #define PREPARE         "prepare"
+#define FREEZE          "freeze"
+#define MAKE_REVERSE    "make_reverse_edges"
 
 #endif

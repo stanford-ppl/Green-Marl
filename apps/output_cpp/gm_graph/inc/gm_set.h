@@ -142,6 +142,7 @@ private:
     bool is_small;
     size_t est_size;  // estimated size of the set
 
+public:
     //-------------------------------------------------
     // if size becomes larger than THRESHOLD
     // use 'byte-map' implementation

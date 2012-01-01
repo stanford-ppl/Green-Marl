@@ -137,6 +137,8 @@ void gm_graph::make_reverse_edges()
 {
     if (_reverse_edge) return;
 
+    printf("creating reverse edges....\n");
+
     node_t n_nodes = num_nodes();
 
     if (_frozen) {
@@ -208,6 +210,7 @@ void gm_graph::make_reverse_edges()
     }
 
     _reverse_edge = true;
+    printf(".... finished \n");
 }
 
 void gm_graph::prepare_external_creation(node_t n, edge_t m, bool reverse_edge)

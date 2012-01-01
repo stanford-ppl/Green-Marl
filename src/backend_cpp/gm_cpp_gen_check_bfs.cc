@@ -80,15 +80,6 @@ public:
             char* c = FE.voca_temp_name_and_add(temp, "_bfs");
 
             s->add_info_string(CPPBE_INFO_BFS_NAME, c);
-            printf("name = %s\n", c);
-
-            /*
-            std::set<void*>::iterator J;
-            for(J=S.begin(); J!=S.end(); J++) {
-                gm_symtab_entry* e = (gm_symtab_entry*) (*J);
-                printf("adding %s\n", e->getId()->get_orgname());
-            }
-            */
 
             bfs_lists.push_back(s);
         }

@@ -42,8 +42,8 @@ public:
     // Make back edges. After this function, revery added edge will be
     void make_reverse_edges();
     void remove_reverse_edges();
-    void thaw();               // change the graph into flexible form (vector of vectors)
-    void freeze();             // change the graph into CSR form (fast & compact but unmodifiable)
+    void thaw();               // change the graph into flexible form (vector of vectors), nothing done if already thawed.
+    void freeze();             // change the graph into CSR form (fast & compact but unmodifiable), nothing done if already frozen.
 
     //-------------------------------------------------------
     // Graph modification. Graph is thaw automatically.
