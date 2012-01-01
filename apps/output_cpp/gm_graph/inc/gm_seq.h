@@ -1,6 +1,7 @@
 #ifndef GM_SEQ_H
 #define GM_SEQ_H
 
+#include <stdio.h>
 #include <list>
 #include "gm_graph_typedef.h"
 #include "gm_runtime.h"
@@ -62,6 +63,8 @@ public:
         local_Q_front[tid].push_front(e);
     }
 
+    // parallel pop is prohibited
+
     //-------------------------------------------
     // called when parallel addition is finished
     //-------------------------------------------
@@ -77,9 +80,43 @@ public:
         }
     }
 
-    // for sequential iteration
     typename std::list<T>& get_list() {return Q;}
 
+    // [todo] fix as nested template 
+#define ITERATOR_CLASS(CLASS_NAME, LIST_ITER_TYPE) \
+    class CLASS_NAME    \
+    {                   \
+    public:                                             \
+        CLASS_NAME(typename LIST_ITER_TYPE I, typename LIST_ITER_TYPE E)  \
+        : ITER(I), END_ITER(E) {}                       \
+    inline  bool has_next() {                           \
+        if (ITER == END_ITER) return false;             \
+        else return true;}                              \
+    inline T get_next() { return *ITER;  }              \
+    private:                                            \
+        typename LIST_ITER_TYPE ITER;                            \
+        typename LIST_ITER_TYPE END_ITER;                        \
+    };                                      
+
+    ITERATOR_CLASS(seq_iter, std::list<T>::iterator);
+    ITERATOR_CLASS(rev_iter, std::list<T>::reverse_iterator);
+
+#undef ITERATOR_CLASS
+    typedef seq_iter par_iter; // type-alias
+
+    seq_iter prepare_seq_iteration() {
+        seq_iter I(*this, Q.begin(), Q.end());
+        return I; // copy return
+    }
+    rev_iter prepare_rev_iteration() {
+        rev_iter I(*this, Q.rbegin(), Q.rend());
+        return I; // copy return
+    }
+
+    // [xxx] to be implemented
+    par_iter prepare_par_iteration(int thread_id, int max_threads) {
+        assert(false);
+    }
 
 private:
 
@@ -88,13 +125,14 @@ private:
     typename std::list<T>* local_Q_back;
 
     int max_thread;
-    static const int THRESHOLD=128;
+    static const int THRESHOLD=1024;
 
     void init(int _max_thread) 
     {
         max_thread = _max_thread;
         if (_max_thread > THRESHOLD) {
-            printf("warning, too many # threads:%d\n",_max_thread);
+            printf("error, too many # threads:%d\n",_max_thread);
+            abort();
             max_thread = THRESHOLD;
         }
         local_Q_front = new std::list<T>[max_thread];

@@ -104,6 +104,100 @@ public:
     // for sequential iteration
     typename std::list<T>& get_list() {return Q;}
 
+
+    //-----------------------------------------------
+    // for iteration
+    //-----------------------------------------------
+    // todo, correctly use nested template def
+#define ITERATOR_CLASS(CLASS_NAME, LIST_ITER_TYPE) \
+    class CLASS_NAME {\
+    public:          \
+        CLASS_NAME(typename LIST_ITER_TYPE I, typename LIST_ITER_TYPE E) \
+          : ITER(I), END_ITER(E) {}                            \
+        inline bool has_next() {                               \
+            return (ITER != END_ITER);                         \
+        }                                                      \
+        inline T get_next()                                    \
+        {                                                      \
+            return *ITER;                                      \
+        }                                                      \
+        private:                                               \
+            typename LIST_ITER_TYPE ITER;                      \
+            typename LIST_ITER_TYPE END_ITER;                  \
+    };
+
+    ITERATOR_CLASS(seq_iter, std::list<T>::iterator);
+    ITERATOR_CLASS(rev_iter, std::list<T>::reverse_iterator);
+#undef ITERATOR_CLASS
+
+    class par_iter {
+    public:
+        par_iter(typename std::list<T>::iterator I, 
+                 typename std::list<T>::iterator E) 
+                : ITER(I), END_ITER(E), is_small(true) {}
+        par_iter(unsigned char* B,
+                 T I, 
+                 T E) 
+                : bitmap(B), ITER(I), END_ITER(E), is_small(false) {}
+        inline bool has_next() {
+            if (is_small) return (ITER!=END_ITER);
+            else {
+                while (IDX < END_IDX) {
+                    if (_gm_check_bit(bitmap,IDX) == 0) return true; 
+                    IDX++;
+                }
+                return false;
+            }
+        }
+        inline T get_next() {
+            if (is_small) {return *ITER;}
+            else return IDX;
+        }
+        private:
+            bool is_small;
+            unsigned char* bitmap;
+            typename std::set<T>::iterator ITER;  // for small instance use 
+            typename std::set<T>::iterator END_ITER;   // for small instance use 
+            T IDX;
+            T END_IDX;
+    };
+
+
+    seq_iter prepare_seq_iter() 
+    {
+        seq_iter I(Q.begin(), Q.end());
+        return I; 
+    }
+    rev_iter prepare_rev_iter()
+    {
+        seq_iter I(Q.rbegin(), Q.rend());
+        return I; 
+    }
+
+    par_iter prepare_par_iter(int thread_id, int max_threads) 
+    {
+        bool is_small = (Q.size() < THRESHOLD_LARGE);
+        if (is_small)  {
+            // for small instance, use single thread
+            if (thread_id == 0) {
+                par_iter I(Q.begin(), Q.end()); 
+                return I;
+            }
+            else {
+                par_iter I(Q.end(), Q.end());
+                return I;
+            }
+        }
+        else  {
+            size_t cnt = max_sz / max_threads;
+            T begin = cnt * thread_id;
+            T end   = (thread_id == (max_threads-1)) ? max_sz : begin + cnt;
+            par_iter I(bitmap, begin, end); 
+            return I;
+        }
+    }
+
+
 private:
     gm_order() {} // initialize without size is prohibited
 
@@ -114,6 +208,8 @@ private:
     int max_thread;
     int max_sz;
     unsigned char* bitmap;
+
+    static const int THRESHOLD_LARGE   = 4096;
 };
 
 typedef gm_order<node_t> gm_node_order;

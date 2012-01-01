@@ -1,0 +1,12 @@
+// Test of DFS
+Proc P(G: Graph, A,B: N_P<Int>(G), s: Node(G))
+{
+    InDFS(t:G^.Nodes From s)
+    {
+        t.A = t.B + 1;
+    }
+    InPost
+    {
+        t.B = t.A + 1;
+    }
+}

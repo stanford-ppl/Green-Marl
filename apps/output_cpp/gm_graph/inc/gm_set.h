@@ -15,17 +15,18 @@ public:
     }
 
     virtual ~gm_sized_set()  {
+        // [todo] should I use bitmap or bytemap?
+        // [todo] should I decide it based on size of the graph?
         delete [] byte_map;
     }
     bool is_small_set() { return is_small;}
 
     //--------------------------------------------------
-    // Five API
+    // Five API for access
     //   is_in, add, remove, clear, get_size
     //   large set has separate add/remove for seq/par execution
     //   small set cannot be added/removed in parallel
     //--------------------------------------------------
-
     bool is_in(T e) 
     {
         if (is_small) return is_in_small(e);
@@ -133,6 +134,80 @@ public:
         }
     }
 
+    //-----------------------------------------------
+    // for iteration
+    //-----------------------------------------------
+    class seq_iter {
+    public:
+        // for small instance
+        seq_iter(
+                 typename std::set<T>::iterator I, 
+                 typename std::set<T>::iterator E) 
+                : ITER(I), END_ITER(E), is_small(true) {}
+
+        // for large instance
+        seq_iter(unsigned char* B, T I,  T E) 
+                : bytemap(B), IDX(I), END_IDX(E), is_small(false) {}
+
+        inline bool has_next() {
+            if (is_small) {
+                return (ITER != END_ITER); 
+            } else {
+                while (IDX < END_IDX) {
+                    if (bytemap[IDX] == 0) return true; 
+                    IDX++;
+                }
+                return false;
+            }
+        }
+        inline T get_next() {
+            if (is_small) {return *ITER;}
+            else return IDX;
+        }
+        private:
+            bool is_small;
+            unsigned char* bytemap;
+            typename std::set<T>::iterator ITER;  // for small instance use 
+            typename std::set<T>::iterator END_ITER;   // for small instance use 
+            T IDX;
+            T END_IDX;
+    };
+
+    typedef seq_iter par_iter;
+
+    seq_iter prepare_seq_iter() {
+        if (is_small) {
+            seq_iter I(*this, small_set.begin(), small_set.end());
+            return I; // copy return
+        }
+        else  {
+             seq_iter I(*this, 0, max_sz);
+             return I;
+        }
+    }
+
+    par_iter prepare_par_iter(int thread_id, int max_threads) {
+        if (is_small)  {
+            // for small instance, use single thread
+            if (thread_id == 0) {
+                par_iter I(*this, small_set.begin(), small_set.end()); 
+                return I;
+            }
+            else {
+                par_iter I(*this, small_set.end(), small_set.end());
+                return I;
+            }
+        }
+        else  {
+            size_t cnt = max_sz / max_threads;
+            T begin = cnt * thread_id;
+            T end   = (thread_id == (max_threads-1)) ? max_sz : begin + cnt;
+            par_iter I(*this, small_set.begin(), small_set.end()); 
+            return I;
+        }
+    }
+
+
 private:
     gm_sized_set() {} // initialize without size is prohibited
 
@@ -147,10 +222,11 @@ public:
     // if size becomes larger than THRESHOLD
     // use 'byte-map' implementation
     //-------------------------------------------------
-    static const int THRESHOLD_UP   = 16384;
-    static const int THRESHOLD_DOWN = 4096;
+    static const int THRESHOLD_UP   = 4096;
+    static const int THRESHOLD_DOWN = 128;
 
 };
+
 
 typedef gm_sized_set<node_t> gm_node_set;
 typedef gm_sized_set<edge_t> gm_edge_set;

@@ -1,5 +1,14 @@
-include ./Programs.mk
 
+#----------------------------------------
+# Load list of Progams to be compiled
+#----------------------------------------
+ifndef PROGS
+include ./Programs.mk
+endif
+
+#----------------------------------------
+# Set target envrionment (cpp or gps)
+#----------------------------------------
 ifndef env
 env=cpp
 endif
