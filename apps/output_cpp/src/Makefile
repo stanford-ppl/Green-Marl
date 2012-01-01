@@ -7,8 +7,10 @@ LIB = gmgraph
 CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp  
 LFLAGS = -L$(LIBDIR) -l$(LIB)
 
+#include program list
+include ../../Programs.mk
 ifndef PROGS
-PROGS = pagerank conduct
+PROGS = pagerank 
 endif
 
 OUT = $(addprefix $(BINDIR)/, $(PROGS))

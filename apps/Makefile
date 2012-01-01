@@ -1,6 +1,4 @@
-PROGS=pagerank conduct bc
-#PROGS=gps_test
-export PROGS
+include ./Programs.mk
 
 ifndef env
 env=cpp

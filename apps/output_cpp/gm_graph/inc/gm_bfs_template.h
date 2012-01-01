@@ -284,7 +284,7 @@ void prepare_que()
             visited_bitmap[i] = 0;
 
         #pragma omp for nowait
-        for(int i=0;i<(G.num_nodes()+7)/8;i++)
+        for(int i=0;i<G.num_nodes();i++)
             visited_level[i] = __INVALID_LEVEL; 
     }
 
