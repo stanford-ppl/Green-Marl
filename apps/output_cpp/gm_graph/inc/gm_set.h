@@ -139,6 +139,8 @@ public:
     //-----------------------------------------------
     class seq_iter {
     public:
+        seq_iter() {}
+
         // for small instance
         seq_iter(
                  typename std::set<T>::iterator I, 
@@ -161,8 +163,8 @@ public:
             }
         }
         inline T get_next() {
-            if (is_small) {return *ITER;}
-            else return IDX;
+            if (is_small) {T t= *ITER; ITER++; return t;}
+            else {T t =IDX; IDX++; return t; }
         }
         private:
             bool is_small;
@@ -175,18 +177,18 @@ public:
 
     typedef seq_iter par_iter;
 
-    seq_iter prepare_seq_iter() {
+    seq_iter prepare_seq_iteration() {
         if (is_small) {
-            seq_iter I(*this, small_set.begin(), small_set.end());
+            seq_iter I(small_set.begin(), small_set.end());
             return I; // copy return
         }
         else  {
-             seq_iter I(*this, 0, max_sz);
+             seq_iter I(byte_map, 0, max_sz);
              return I;
         }
     }
 
-    par_iter prepare_par_iter(int thread_id, int max_threads) {
+    par_iter prepare_par_iteration(int thread_id, int max_threads) {
         if (is_small)  {
             // for small instance, use single thread
             if (thread_id == 0) {

@@ -122,9 +122,7 @@ public:
             return (ITER != END_ITER);                         \
         }                                                      \
         inline T get_next()                                    \
-        {                                                      \
-            return *ITER;                                      \
-        }                                                      \
+        {   T t = *ITER; ITER++; return t;}                    \
         private:                                               \
             typename LIST_ITER_TYPE ITER;                      \
             typename LIST_ITER_TYPE END_ITER;                  \
@@ -154,8 +152,8 @@ public:
             }
         }
         inline T get_next() {
-            if (is_small) {return *ITER;}
-            else return IDX;
+            if (is_small) {T t = *ITER; ITER++; return t;}
+            else {return IDX++;}
         }
         private:
             bool is_small;
@@ -167,18 +165,18 @@ public:
     };
 
 
-    seq_iter prepare_seq_iter() 
+    seq_iter prepare_seq_iteration() 
     {
         seq_iter I(Q.begin(), Q.end());
         return I; 
     }
-    rev_iter prepare_rev_iter()
+    rev_iter prepare_rev_iteration()
     {
-        seq_iter I(Q.rbegin(), Q.rend());
+        rev_iter I(Q.rbegin(), Q.rend());
         return I; 
     }
 
-    par_iter prepare_par_iter(int thread_id, int max_threads) 
+    par_iter prepare_par_iteration(int thread_id, int max_threads) 
     {
         bool is_small = (Q.size() < THRESHOLD_LARGE);
         if (is_small)  {

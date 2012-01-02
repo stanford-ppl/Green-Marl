@@ -508,3 +508,56 @@ error_return:
     clear_graph();
     return false;
 }
+
+bool gm_graph::is_edge(node_t from, node_t end) {
+    if (!is_node(from)) return false;
+
+    if (_frozen) {
+        edge_t b = this->begin[from];
+        edge_t e = this->begin[from+1];
+        for(edge_t idx = b; idx < e; idx ++)
+        {
+            node_t n = this->node_idx[idx];
+            if (n == end) return true;
+        }
+    }
+    else {
+        if (flexible_graph.find(from) == flexible_graph.end())
+            return false;
+        std::vector<node_t>& NBR = flexible_graph[from];
+        std::vector<node_t>::iterator I;
+        for(I = NBR.begin(); I!= NBR.end(); I++)
+        {
+            if (*I == end) return true;
+        }
+    }
+
+    return false;
+}
+
+bool gm_graph::is_reverse_edge(node_t from, node_t end) {
+    if (!is_node(from)) return false;
+
+    if (_frozen) {
+        edge_t b = this->r_begin[from];
+        edge_t e = this->r_begin[from+1];
+        for(edge_t idx = b; idx < e; idx ++)
+        {
+            node_t n = this->r_node_idx[idx];
+            if (n == end) return true;
+        }
+    }
+    else {
+        if (flexible_reverse_graph.find(from) == flexible_reverse_graph.end())
+            return false;
+        std::vector<node_t>& NBR = flexible_reverse_graph[from];
+        std::vector<node_t>::iterator I;
+        for(I = NBR.begin(); I!= NBR.end(); I++)
+        {
+            if (*I == end) return true;
+        }
+    }
+
+    return false;
+}
+

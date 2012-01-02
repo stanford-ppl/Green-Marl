@@ -92,7 +92,7 @@ public:
     inline  bool has_next() {                           \
         if (ITER == END_ITER) return false;             \
         else return true;}                              \
-    inline T get_next() { return *ITER;  }              \
+    inline T get_next() {T t = *ITER;ITER++;return t; } \
     private:                                            \
         typename LIST_ITER_TYPE ITER;                            \
         typename LIST_ITER_TYPE END_ITER;                        \

@@ -28,8 +28,8 @@ public:
     static const edge_t NIL_EDGE = -1;
 
 public:
-    index_t num_nodes() const {return _numNodes;}
-    index_t num_edges() const {return _numEdges;}
+    node_t num_nodes() const {return _numNodes;}
+    edge_t num_edges() const {return _numEdges;}
     bool has_reverse_edge() const {return _reverse_edge;}
     bool is_frozen() const    {return _frozen;}
     bool is_directed() const {return _directed;}  
@@ -69,6 +69,11 @@ public:
     void compress_graph() {assert(false);}
 
     bool is_node(node_t n) {return (n < _numNodes);}
+    // is there an edge: from->to
+    bool is_edge(node_t from, node_t to); 
+    // is there a reverse edge: from->to
+    // false, if reverse edges are not made yet
+    bool is_reverse_edge(node_t from, node_t to);
 
     //--------------------------------------------------------------
     // Read and Write the graph from/to a file, 
