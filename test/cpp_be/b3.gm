@@ -1,9 +1,10 @@
-// Test  of Set Iteration
+// Test  of Collection Iteration
 Proc P(G:Graph, A,B: N_P<Int>(G))
 {
     Node_Set(G) S;
+    Node_Seq(G) Q;
     Node_Order(G) O;
-    Int X;
+    Int X=0;
 
     Foreach(u: S.Items) {
         X += u.A;
@@ -13,4 +14,7 @@ Proc P(G:Graph, A,B: N_P<Int>(G))
         X += v.A;
     }
 
+    For(z: Q.Items) { 
+        X += z.A;
+    }
 }

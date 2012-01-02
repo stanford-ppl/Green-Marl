@@ -50,37 +50,35 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,  "reverse:1"},
     {"*InDegree",            GM_BLTIN_NODE_IN_DEGREE,  ""}, 
 
+    // Set:
     {"NodeS:Add:Void:1:Node",     GM_BLTIN_SET_ADD,         ""},
     {"NodeS:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,      ""},
     {"NodeS:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,         ""},
-    {"EdgeS:Add:Void:1:Edge",     GM_BLTIN_SET_ADD,         ""},
-    {"NodeS:Remove:Void:1:Edge",  GM_BLTIN_SET_REMOVE,      ""},
-    {"NodeS:Has:Bool:1:Edge",     GM_BLTIN_SET_HAS,         ""},
 
     // Order:
-    // default usage is queue (push-back, pop-front)
-    {"NodeO:PushBack:Void:1:Node", GM_BLTIN_SET_ADD,         ""},
-    {"*Push",                      GM_BLTIN_SET_ADD,         ""},
-    {"NodeO:PushFront:Void:1:Node",GM_BLTIN_SET_ADD_BACK,    ""},
-    {"NodeO:Pop:Node:0",           GM_BLTIN_SET_REMOVE,      ""},
-    {"*PopBack",                   GM_BLTIN_SET_REMOVE,      ""},
-    {"NodeO:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE_BACK, ""},
+    {"NodeO:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
+    {"*Push",                      GM_BLTIN_SET_ADD_BACK,    ""},
+    {"NodeO:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
+    {"NodeO:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
+    {"NodeO:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
+    {"*Pop",                       GM_BLTIN_SET_REMOVE,      ""},
     {"NodeO:Has:Bool:1:Node",      GM_BLTIN_SET_HAS,         ""},
-    {"NodeO:Front:Node:0",         GM_BLTIN_SET_PEEK,         ""},
-    {"NodeO:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,    ""},
+    //{"NodeO:Front:Node:0",         GM_BLTIN_SET_PEEK,         ""},
+    //{"NodeO:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,    ""},
 
-    {"EdgeO:PushBack:Void:1:Edge", GM_BLTIN_SET_ADD,         ""},
-    {"*Push",                      GM_BLTIN_SET_ADD,         ""},
-    {"EdgeO:PushFront:Void:1:Edge",GM_BLTIN_SET_ADD_BACK,    ""},
-    {"EdgeO:Pop:Edge:0",           GM_BLTIN_SET_REMOVE,      ""},
-    {"*Pop_Back",                  GM_BLTIN_SET_REMOVE,      ""},
-    {"EdgeO:PopFront:Edge:1:Edge", GM_BLTIN_SET_REMOVE_BACK, ""},
-    {"EdgeO:Has:Bool:1:Edge",      GM_BLTIN_SET_HAS,         ""},
-    {"EdgeO:Front:Edge:0",         GM_BLTIN_SET_PEEK,        ""},
-    {"EdgeO:Back:Edge:0",          GM_BLTIN_SET_PEEK_BACK,   ""},
+    // Seq:
+    {"NodeQ:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
+    {"*Push",                      GM_BLTIN_SET_ADD_BACK,    ""},
+    {"NodeQ:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
+    {"NodeQ:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
+    {"NodeQ:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
+    {"*Pop",                       GM_BLTIN_SET_REMOVE,      ""},
+    //{"NodeQ:Front:Node:0",         GM_BLTIN_SET_PEEK,        ""},
+    //{"NodeQ:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,   ""},
+
 
     {"_:Uniform:Double:0",         GM_BLTIN_TOP_DRAND,       ""},  // returns [0, 1)
-    {"_:Rand:Int:1:Int",           GM_BLTIN_TOP_IRAND,       ""},  // returns [0, n-1] 
+    {"_:Rand:Long:1:Long",         GM_BLTIN_TOP_IRAND,       ""},  // returns [0, n-1] 
     {"_:Log:Double:1:Double",      GM_BLTIN_TOP_LOG,         ""},  // returns log(d)  // base-e
     {"_:Exp:Double:1:Double",      GM_BLTIN_TOP_EXP,         ""},  // returns e^d
     {"_:Pow:Double:2:Double:Double", GM_BLTIN_TOP_POW,       ""},  // returns a^b

@@ -93,12 +93,27 @@ const char* gm_cpplib::edge_index(ast_id* iter) {
 bool gm_cpplib::add_collection_def(ast_id* i)
 {
     Body->push("(");
-    Body->push(i->getTypeInfo()->get_target_graph_id()->get_genname());
-    if (i->getTypeInfo()->is_node_collection())
-        Body->pushln("."NUM_NODES"());");
-    else if (i->getTypeInfo()->is_edge_collection())
-        Body->pushln("."NUM_EDGES"());");
-    else assert(false);
+
+    ast_typedecl* t = i->getTypeInfo();
+    if (t->is_set_collection() || t->is_order_collection()) 
+    {
+        // total size;
+        Body->push(t->get_target_graph_id()->get_genname());
+        if (t->is_node_collection())
+            Body->push("."NUM_NODES"()");
+        else if (t->is_edge_collection())
+            Body->push("."NUM_EDGES"()");
+        else assert(false);
+    }
+    if (t->is_order_collection())
+        Body->push(", ");
+
+    if ((t->is_order_collection() || t->is_sequence_collection()))
+    {
+        Body->push(MAX_THREADS"()");
+    }
+    
+    Body->pushln(");");
 
     return false;
 }
@@ -113,21 +128,25 @@ void gm_cpplib::generate_sent_nop(ast_nop *f)
     }
 }
 
-void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e)
+void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
 {
     ast_id* i = e->get_driver(); // driver 
     gm_builtin_def* def = e->get_builtin_def();
+    ast_sent * s = gm_find_parent_sentence(e);
     assert(def!=NULL);
+    assert(s!=NULL);
     int src_type = def->get_source_type_summary();
     int method_id = def->get_method_id();
+    bool under_parallel = s->is_under_parallel_execution();
+    bool add_thread_id=false;
+
+    const char* func_name;
     switch(src_type) {
         case GMTYPE_GRAPH:
             switch(method_id) {
-                case GM_BLTIN_GRAPH_NUM_NODES:
-                    sprintf(str_buf,"%s.%s()", i->get_genname(), NUM_NODES); break;
-                case GM_BLTIN_GRAPH_NUM_EDGES:
-                    sprintf(str_buf,"%s.%s()", i->get_genname(), NUM_EDGES); break;
-                default: assert(false); break;
+                case GM_BLTIN_GRAPH_NUM_NODES: func_name = NUM_NODES; break;
+                case GM_BLTIN_GRAPH_NUM_EDGES: func_name = NUM_EDGES; break;
+                default: assert(false); 
             }
             break;
         
@@ -144,20 +163,37 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e)
                             i->getTypeInfo()->get_target_graph_id() -> get_genname(), R_BEGIN, i->get_genname());
                     break;
                 default:assert(false); break;
+            }        
+            Body.push(str_buf);
+            return;
+
+        case GMTYPE_NSET:
+            switch(method_id) {
+                case GM_BLTIN_SET_HAS:      func_name = "is_in";  break;
+                case GM_BLTIN_SET_REMOVE:   func_name = "remove"; break;
+                case GM_BLTIN_SET_ADD:      func_name = "add";    break;
+                default: assert(false);
             }
             break;
 
         case GMTYPE_NORDER:
-        case GMTYPE_EORDER:
             switch(method_id) {
-                case GM_BLTIN_SET_ADD:
-                    sprintf(str_buf, "%s.push_back(", e->get_driver()->get_genname());
-                    Body->push(str_buf);
-                    main->generate_expr_list(e->get_args());
-                    sprintf(str_buf,")");
-                    break;
-                default:
-                    assert(false);
+                case GM_BLTIN_SET_ADD:          func_name = "push_front";   break;
+                case GM_BLTIN_SET_ADD_BACK:     func_name = "push_back";    break;
+                case GM_BLTIN_SET_REMOVE:       func_name = "pop_front";    break;
+                case GM_BLTIN_SET_REMOVE_BACK:  func_name = "pop_back";     break;
+                case GM_BLTIN_SET_HAS:          func_name = "is_in";        break;
+                default: assert(false);
+            }
+            break;
+
+        case GMTYPE_NSEQ:
+            switch(method_id) {
+                case GM_BLTIN_SET_ADD:          func_name = "push_front";   break;
+                case GM_BLTIN_SET_ADD_BACK:     func_name = "push_back";    break;
+                case GM_BLTIN_SET_REMOVE:       func_name = "pop_front";    break;
+                case GM_BLTIN_SET_REMOVE_BACK:  func_name = "pop_back";     break;
+                default: assert(false);
             }
             break;
 
@@ -165,5 +201,11 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e)
             assert(false);
     }   
 
-    Body->push(str_buf);
+    sprintf(str_buf,"%s.%s(", i->get_genname(), func_name); 
+    Body.push(str_buf);
+    main->generate_expr_list(e->get_args());
+    if (add_thread_id) {
+        Body.push(",gm_rt_thread_id()");
+    }
+    Body.push(")");
 }

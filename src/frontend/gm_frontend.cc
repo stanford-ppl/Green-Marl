@@ -167,7 +167,8 @@ ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l)
 {
     ast_id* i = (ast_id*) id; 
     ast_id* i2 = (ast_id*) id2;
-    ast_expr* n = ast_expr_builtin::new_builtin_expr(i, i2->get_orgname(), l);
+    ast_expr* n = ast_expr_builtin::
+        new_builtin_expr(i, i2->get_orgname(), l);
     if (i!=NULL) {
         n->set_line(i->get_line());
         n->set_col(i->get_col());
@@ -431,16 +432,16 @@ void GM_set_lineinfo(ast_node* n, int line, int col) {
 
 
 expr_list* GM_empty_expr_list() {
-    return new expr_list;
+    return new expr_list();
 }
 expr_list* GM_single_expr_list(ast_node* id) {
-    expr_list* e = new expr_list;
+    expr_list* e = new expr_list();
     assert(id->is_expr());
     e->LIST.push_back((ast_expr*)id);
 }
 expr_list* GM_add_expr_front(ast_node* id, expr_list* l) {
     assert(id->is_expr());
-    l->LIST.push_back((ast_expr*)id);
+    l->LIST.push_front((ast_expr*)id);
 }
 
 ast_node* GM_new_call_sent(ast_node* n, bool is_builtin)
@@ -541,60 +542,3 @@ bool gm_frontend::do_local_frontend_process()
 }
 
 
-/*
-bool gm_frontend::do_local_frontend_process()
-{
-   const char* STEP_NAMES[]= {
-       "[regularize syntax sugar (w/o type)]", 
-       //"[type resolution]", 
-       "[typecheck:check symbol]",
-       "[typecheck:find function calls]",
-       "[typecheck:resolve expression]",
-       "[typecheck:determining infinite size]",
-       "[typecheck:check assignments]",
-       "[fixup bound syms]",
-       "[rw analysis]", 
-       "[check_reduce_error]",
-       "[check_rw_analysis]",
-       "[removing vardecl]"
-   };
-   const int NUM_STEP = sizeof(STEP_NAMES)/sizeof(const char*);
-
-   std::vector<ast_procdef*>::iterator it;
-   bool is_okay = true;
-   for(int i = 0; i < NUM_STEP; i++) {
-      gm_begin_minor_compiler_stage(i +1, STEP_NAMES[i]);
-      FE.prepare_proc_iteration(); 
-      ast_procdef* p; 
-      while ((p=FE.get_next_proc()) != NULL)
-      {
-          bool okay = true;
-          switch(i) {
-          case 0: 
-              // initialize proc info
-              proc_info[p] = new gm_procinfo(p);
-              okay = do_syntax_sugar_1(p); break;
-          case 1: okay = do_typecheck_step1_create_symbol_table(p); break;
-          case 2: okay = do_typecheck_step2_find_functions(p);  break;
-          case 3: okay = do_typecheck_step3_resolve_expressions(p); break;
-          case 4: okay = do_typecheck_step4_resolve_inf(p); break;
-          case 5: okay = do_typecheck_step5_check_assign(p); break;
-          case 6: okay = fix_bound_symbols(p); break;
-          case 7: okay = do_rw_analysis(p); break;
-          case 8: okay = do_reduce_error_check(p); break;
-          case 9: okay = do_rw_analysis_check(p); break;
-          case 10: remove_vardecl(p); break;
-
-          case NUM_STEP:
-          default:
-              assert(false);
-              break;
-          }
-          is_okay = is_okay && okay;
-      }
-      gm_end_minor_compiler_stage();
-      if (!is_okay) break;
-   }
-   return is_okay; // returns is_okay
-}
-*/

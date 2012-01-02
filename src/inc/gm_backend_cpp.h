@@ -33,7 +33,7 @@ class gm_cpplib : public gm_graph_library {
     virtual bool do_local_optimize();
 
     virtual void generate_sent_nop(ast_nop* n); 
-    virtual void generate_expr_builtin(ast_expr_builtin* e);
+    virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body);
 
     virtual bool add_collection_def(ast_id* set);
 

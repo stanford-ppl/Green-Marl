@@ -302,5 +302,5 @@ static enum {   // 16 bit bitmap
     GMACCESS_COPY   = 0x0020,
 } GM_ACCESS_T;
 
-inline static bool gm_is_collection_access_none(int i)  {return (i==GM_ACCESS_NONE);}
+inline static bool gm_is_collection_access_none(int i)  {return (i==GMACCESS_NONE);}
 #endif 

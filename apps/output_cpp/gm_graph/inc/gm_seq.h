@@ -105,11 +105,11 @@ public:
     typedef seq_iter par_iter; // type-alias
 
     seq_iter prepare_seq_iteration() {
-        seq_iter I(*this, Q.begin(), Q.end());
+        seq_iter I(Q.begin(), Q.end());
         return I; // copy return
     }
     rev_iter prepare_rev_iteration() {
-        rev_iter I(*this, Q.rbegin(), Q.rend());
+        rev_iter I(Q.rbegin(), Q.rend());
         return I; // copy return
     }
 

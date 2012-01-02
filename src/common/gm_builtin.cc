@@ -18,6 +18,8 @@ static int gm_get_type_from_string(const char* s) {
     else if (gm_is_same_string(s, "EdgeS")) return GMTYPE_ESET;
     else if (gm_is_same_string(s, "NodeO")) return GMTYPE_NORDER;
     else if (gm_is_same_string(s, "EdgeO")) return GMTYPE_EORDER;
+    else if (gm_is_same_string(s, "NodeQ")) return GMTYPE_NSEQ;
+    else if (gm_is_same_string(s, "EdgeQ")) return GMTYPE_ESEQ;
     else if (gm_is_same_string(s, "Void"))  return GMTYPE_VOID;
     else if (gm_is_same_string(s, "Bool"))  return GMTYPE_BOOL;
     else assert(false);

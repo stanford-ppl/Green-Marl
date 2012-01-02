@@ -16,10 +16,12 @@ syn keyword GMKeyword For Foreach If Else Proc Procedure Do While Return
 syn keyword GMKeyword InNbrs OutNbrs Nbrs Nodes Edges Nbr_Edges
 syn keyword GMKeyword Items
 syn keyword GMBuiltin NumNbrs NumOutNbrs NumInNbrs NumNodes NumEdges Degree InDegree OutDegree
-syn keyword GMKeyword InBFS InRBFS UpNbrs DownNbrs From To InReverse
-syn keyword GMKeyword Sum Product Max Min Count ArgMax ArgMin
-syn keyword GMType Int Float Double Bool Graph Node Edge  DGraph UGraph
-syn keyword GMType Node_Set N_S Node_Order N_O Node_Sequence N_Q
+syn keyword GMBuiltin Log Rand Pow Exp Uniform
+syn keyword GMBuiltin PushBack PopBack PushFront PopFront Has Add Remove
+syn keyword GMKeyword InBFS UpNbrs DownNbrs From InDFS InReverse InPost
+syn keyword GMKeyword Sum Product Max Min Count
+syn keyword GMType Int Float Double Bool Graph Long Node Edge DGraph UGraph
+syn keyword GMType Node_Set N_S Node_Order N_O Node_Sequence Node_Seq N_Q
 syn keyword GMOP And
 syn keyword GMOP Or
 syn match GMOP "+="
@@ -62,16 +64,9 @@ syn keyword GMBoolean True False
 "syn match scalaType ":\s*\(=>\s*\)\?[._$a-zA-Z0-9]\+\(\[[^]]*\]\+\)\?\(\s*\(<:\|>:\|#\|=>\)\s*[._$a-zA-Z0-9]\+\(\[[^]]*\]\+\)*\)*"ms=s+1
 
 " comments
-syn match scalaTodo "[tT][oO][dD][oO]" contained
-syn match scalaLineComment "//.*" contains=scalaTodo
-syn region scalaComment start="/\*" end="\*/" contains=scalaTodo
-syn case ignore
-syn include @scalaHtml syntax/html.vim
-unlet b:current_syntax
-syn case match
-syn region scalaDocComment start="/\*\*" end="\*/" contains=scalaDocTags,scalaTodo,@scalaHtml keepend
-syn region scalaDocTags start="{@\(link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}" contained
-syn match scalaDocTags "@[a-z]\+" contained
+syn match GMTodo "[tT][oO][dD][oO]" contained
+syn match GMLineComment "//.*" contains=GMTodo
+syn region GMComment start="/\*" end="\*/" contains=GMTodo
 
 "syn match scalaEmptyString "\"\""
 
@@ -100,37 +95,9 @@ hi link GMOP Special
 hi link GMBoolean Boolean
 hi link GMNumber Number
 hi link GMType Type
-hi link scalaPackage Include
-hi link scalaImport Include
-hi link scalaOperator Normal
-hi link scalaEmptyString String
-hi link scalaStringEscape Special
-hi link scalaSymbol Special
-hi link scalaUnicode Special
-hi link scalaComment Comment
-hi link scalaLineComment Comment
-hi link scalaDocComment Comment
-hi link scalaDocTags Special
-hi link scalaTodo Todo
-hi link scalaType Type
-hi link scalaTypeSpecializer scalaType
-hi link scalaDef Keyword
-hi link scalaVar Keyword
-hi link scalaVal Keyword
-hi link scalaClass Keyword
-hi link scalaObject Keyword
-hi link scalaTrait Keyword
-hi link scalaDefName Function
-hi link scalaDefSpecializer Function
-hi link scalaClassName Special
-hi link scalaClassSpecializer Special
+hi link GMComment Comment
+hi link GMLineComment Comment
+hi link GMTodo Todo
 
-let b:current_syntax = "scala"
+let b:current_syntax = "greenmarl"
 
-" you might like to put these lines in your .vimrc
-"
-" customize colors a little bit (should be a different file)
-" hi scalaNew gui=underline
-" hi scalaMethodCall gui=italic
-" hi scalaValName gui=underline
-" hi scalaVarName gui=underline

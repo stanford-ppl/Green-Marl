@@ -368,6 +368,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
   field : id '.' id                       { $$ = GM_field($1, $3); }
 
   built_in : id '.' id arg_list            { $$ = GM_expr_builtin_expr($1, $3, $4);}
+           | id arg_list                   { $$ = GM_expr_builtin_expr(NULL, $1, $2);}
 
   arg_list : '(' expr_list ')'             { $$ = $2;}
            | '(' ')'                       { $$ = GM_empty_expr_list();}

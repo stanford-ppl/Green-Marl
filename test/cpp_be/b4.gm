@@ -2,6 +2,13 @@
 Proc P (G:Graph, A: N_P<Int>(G))
 {
     Node_Set(G) S;
+    Node_Seq(G) Q;
+    Node_Order(G) O;
 
-    G.NumNodes();
+    For(t:G.Nodes)(t.A > 0)
+    {
+        S.Add(t);
+        Q.PushFront(t);
+        O.PushBack(t);
+    }
 }

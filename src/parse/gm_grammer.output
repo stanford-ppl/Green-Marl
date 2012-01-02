@@ -12,10 +12,10 @@ Terminals unused in grammar
 
 Rules useless in grammar
 
-  166 numeric_expr: expr
+  167 numeric_expr: expr
 
 
-State 258 conflicts: 1 shift/reduce
+State 264 conflicts: 1 shift/reduce
 
 
 Grammar
@@ -242,14 +242,15 @@ Grammar
   159 field: id '.' id
 
   160 built_in: id '.' id arg_list
+  161         | id arg_list
 
-  161 arg_list: '(' expr_list ')'
-  162         | '(' ')'
+  162 arg_list: '(' expr_list ')'
+  163         | '(' ')'
 
-  163 expr_list: expr
-  164          | expr ',' expr_list
+  164 expr_list: expr
+  165          | expr ',' expr_list
 
-  165 id: ID
+  166 id: ID
 
 
 Terminals, with rules where they appear
@@ -258,12 +259,12 @@ $end (0) 0
 '!' (33) 121
 '%' (37) 127
 '(' (40) 4 5 31 32 33 34 35 36 37 60 61 64 65 66 68 85 96 116 117 118
-    122 123 124 125 126 161 162
+    122 123 124 125 126 162 163
 ')' (41) 4 5 31 32 33 34 35 36 37 60 61 64 65 66 68 85 96 116 117 118
-    122 123 124 125 126 161 162
+    122 123 124 125 126 162 163
 '*' (42) 128
 '+' (43) 65 130
-',' (44) 10 12 39 164
+',' (44) 10 12 39 165
 '-' (45) 66 120 131
 '.' (46) 64 65 66 85 123 124 125 126 159 160
 '/' (47) 129
@@ -338,7 +339,7 @@ T_ANDEQ (311) 111
 T_OREQ (312) 112
 T_M_INF (313) 155
 T_P_INF (314) 154
-ID (315) 165
+ID (315) 166
 INT_NUM (316) 142
 FLOAT_NUM (317) 143
 BOOL_VAL (318) 141
@@ -459,7 +460,7 @@ expr (141)
     on left: 118 119 120 121 122 123 124 125 126 127 128 129 130 131
     132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147,
     on right: 95 96 113 114 118 119 120 121 122 123 124 125 126 127
-    128 129 130 131 132 133 134 135 136 137 138 139 140 148 163 164
+    128 129 130 131 132 133 134 135 136 137 138 139 140 148 164 165
 bool_expr (142)
     on left: 148, on right: 60 61 68 116 117
 reduce_op (143)
@@ -475,14 +476,14 @@ scala (147)
 field (148)
     on left: 159, on right: 146 157
 built_in (149)
-    on left: 160, on right: 59 147
+    on left: 160 161, on right: 59 147
 arg_list (150)
-    on left: 161 162, on right: 160
+    on left: 162 163, on right: 160 161
 expr_list (151)
-    on left: 163 164, on right: 161 164
+    on left: 164 165, on right: 162 165
 id (152)
-    on left: 165, on right: 6 31 32 33 34 35 36 37 38 39 64 65 66 85
-    98 102 104 106 123 124 125 126 158 159 160
+    on left: 166, on right: 6 31 32 33 34 35 36 37 38 39 64 65 66 85
+    98 102 104 106 123 124 125 126 158 159 160 161
 
 
 state 0
@@ -551,9 +552,9 @@ state 6
 
 state 7
 
-  165 id: ID .
+  166 id: ID .
 
-    $default  reduce using rule 165 (id)
+    $default  reduce using rule 166 (id)
 
 
 state 8
@@ -1128,22 +1129,26 @@ state 70
   158 scala: id .
   159 field: id . '.' id
   160 built_in: id . '.' id arg_list
+  161         | id . arg_list
 
-    '.'  shift, and go to state 133
+    '('  shift, and go to state 133
+    '.'  shift, and go to state 134
 
     $default  reduce using rule 158 (scala)
+
+    arg_list  go to state 135
 
 
 state 71
 
     4 proc_head: proc_name '(' arg_declist1 ')' . proc_return_opt
 
-    ':'  shift, and go to state 134
+    ':'  shift, and go to state 136
 
     $default  reduce using rule 13 (proc_return_opt)
 
-    proc_return_opt  go to state 135
-    proc_return      go to state 136
+    proc_return_opt  go to state 137
+    proc_return      go to state 138
 
 
 state 72
@@ -1152,8 +1157,8 @@ state 72
 
     ID  shift, and go to state 7
 
-    arg_declist2   go to state 137
-    arg_decl       go to state 138
+    arg_declist2   go to state 139
+    arg_decl       go to state 140
     arg_target     go to state 18
     id_comma_list  go to state 19
     id             go to state 20
@@ -1165,7 +1170,7 @@ state 73
 
     ID  shift, and go to state 7
 
-    arg_decl       go to state 139
+    arg_decl       go to state 141
     arg_target     go to state 18
     id_comma_list  go to state 19
     id             go to state 20
@@ -1189,7 +1194,7 @@ state 74
     T_DOUBLE    shift, and go to state 33
     T_LONG      shift, and go to state 34
 
-    typedecl       go to state 140
+    typedecl       go to state 142
     graph_type     go to state 44
     prim_type      go to state 45
     nodeedge_type  go to state 46
@@ -1205,7 +1210,7 @@ state 75
 
     ID  shift, and go to state 7
 
-    id  go to state 141
+    id  go to state 143
 
 
 state 76
@@ -1214,7 +1219,7 @@ state 76
 
     ID  shift, and go to state 7
 
-    id  go to state 142
+    id  go to state 144
 
 
 state 77
@@ -1227,7 +1232,7 @@ state 77
     T_DOUBLE  shift, and go to state 33
     T_LONG    shift, and go to state 34
 
-    prim_type  go to state 143
+    prim_type  go to state 145
 
 
 state 78
@@ -1236,7 +1241,7 @@ state 78
 
     ID  shift, and go to state 7
 
-    id  go to state 144
+    id  go to state 146
 
 
 state 79
@@ -1249,7 +1254,7 @@ state 79
     T_DOUBLE  shift, and go to state 33
     T_LONG    shift, and go to state 34
 
-    prim_type  go to state 145
+    prim_type  go to state 147
 
 
 state 80
@@ -1258,7 +1263,7 @@ state 80
 
     ID  shift, and go to state 7
 
-    id  go to state 146
+    id  go to state 148
 
 
 state 81
@@ -1267,7 +1272,7 @@ state 81
 
     ID  shift, and go to state 7
 
-    id  go to state 147
+    id  go to state 149
 
 
 state 82
@@ -1276,7 +1281,7 @@ state 82
 
     ID  shift, and go to state 7
 
-    id  go to state 148
+    id  go to state 150
 
 
 state 83
@@ -1285,21 +1290,21 @@ state 83
 
     ID  shift, and go to state 7
 
-    id  go to state 149
+    id  go to state 151
 
 
 state 84
 
    77 sent_dfs: T_DFS bfs_header_format . bfs_filters sent_block dfs_post
 
-    '('  shift, and go to state 150
-    '['  shift, and go to state 151
+    '('  shift, and go to state 152
+    '['  shift, and go to state 153
 
     $default  reduce using rule 90 (bfs_filters)
 
-    bfs_filters    go to state 152
-    bfs_navigator  go to state 153
-    bfs_filter     go to state 154
+    bfs_filters    go to state 154
+    bfs_navigator  go to state 155
+    bfs_filter     go to state 156
 
 
 state 85
@@ -1392,7 +1397,7 @@ state 95
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 155
+    expr        go to state 157
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1428,8 +1433,8 @@ state 96
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    prim_type   go to state 156
-    expr        go to state 157
+    prim_type   go to state 158
+    expr        go to state 159
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1459,7 +1464,7 @@ state 97
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 158
+    expr        go to state 160
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1489,7 +1494,7 @@ state 98
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 159
+    expr        go to state 161
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1517,20 +1522,20 @@ state 99
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
 
     $default  reduce using rule 114 (sent_return)
 
@@ -1540,7 +1545,7 @@ state 100
   123 expr: reduce_op . '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}'
   124     | reduce_op . '(' id ':' id '.' iterator1 ')' '{' expr '}'
 
-    '('  shift, and go to state 174
+    '('  shift, and go to state 176
 
 
 state 101
@@ -1548,7 +1553,7 @@ state 101
   125 expr: reduce_op2 . '(' id ':' id '.' iterator1 ')' '(' expr ')'
   126     | reduce_op2 . '(' id ':' id '.' iterator1 ')' '{' expr '}'
 
-    '('  shift, and go to state 175
+    '('  shift, and go to state 177
 
 
 state 102
@@ -1583,14 +1588,14 @@ state 106
 
    78 sent_bfs: T_BFS bfs_header_format . bfs_filters sent_block bfs_reverse
 
-    '('  shift, and go to state 150
-    '['  shift, and go to state 151
+    '('  shift, and go to state 152
+    '['  shift, and go to state 153
 
     $default  reduce using rule 90 (bfs_filters)
 
-    bfs_filters    go to state 176
-    bfs_navigator  go to state 153
-    bfs_filter     go to state 154
+    bfs_filters    go to state 178
+    bfs_navigator  go to state 155
+    bfs_filter     go to state 156
 
 
 state 107
@@ -1601,29 +1606,29 @@ state 107
 
     ID  shift, and go to state 7
 
-    id  go to state 177
+    id  go to state 179
 
 
 state 108
 
    62 sent_foreach: T_FOREACH foreach_header . foreach_filter sent
 
-    '('  shift, and go to state 178
+    '('  shift, and go to state 180
 
     $default  reduce using rule 67 (foreach_filter)
 
-    foreach_filter  go to state 179
+    foreach_filter  go to state 181
 
 
 state 109
 
    63 sent_foreach: T_FOR foreach_header . foreach_filter sent
 
-    '('  shift, and go to state 178
+    '('  shift, and go to state 180
 
     $default  reduce using rule 67 (foreach_filter)
 
-    foreach_filter  go to state 180
+    foreach_filter  go to state 182
 
 
 state 110
@@ -1647,8 +1652,8 @@ state 110
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 181
-    bool_expr   go to state 182
+    expr        go to state 183
+    bool_expr   go to state 184
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1662,7 +1667,7 @@ state 111
 
    61 sent_do_while: T_DO sent_block . T_WHILE '(' bool_expr ')'
 
-    T_WHILE  shift, and go to state 183
+    T_WHILE  shift, and go to state 185
 
 
 state 112
@@ -1685,8 +1690,8 @@ state 112
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 181
-    bool_expr   go to state 184
+    expr        go to state 183
+    bool_expr   go to state 186
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1718,7 +1723,7 @@ state 115
    38 id_comma_list: id .
    98 sent_variable_decl: typedecl id . '=' rhs
 
-    '='  shift, and go to state 185
+    '='  shift, and go to state 187
 
     $default  reduce using rule 38 (id_comma_list)
 
@@ -1793,8 +1798,8 @@ state 123
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    rhs         go to state 186
-    expr        go to state 187
+    rhs         go to state 188
+    expr        go to state 189
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1837,7 +1842,7 @@ state 128
   103 sent_reduce_assignment: lhs T_PLUSPLUS .
   104                       | lhs T_PLUSPLUS . '@' id
 
-    '@'  shift, and go to state 188
+    '@'  shift, and go to state 190
 
     $default  reduce using rule 103 (sent_reduce_assignment)
 
@@ -1876,8 +1881,8 @@ state 131
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    rhs         go to state 189
-    expr        go to state 187
+    rhs         go to state 191
+    expr        go to state 189
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1908,8 +1913,8 @@ state 132
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    rhs         go to state 190
-    expr        go to state 187
+    rhs         go to state 192
+    expr        go to state 189
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -1921,15 +1926,55 @@ state 132
 
 state 133
 
+  162 arg_list: '(' . expr_list ')'
+  163         | '(' . ')'
+
+    T_SUM      shift, and go to state 85
+    T_PRODUCT  shift, and go to state 86
+    T_MIN      shift, and go to state 87
+    T_MAX      shift, and go to state 88
+    T_COUNT    shift, and go to state 89
+    T_M_INF    shift, and go to state 90
+    T_P_INF    shift, and go to state 91
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 92
+    FLOAT_NUM  shift, and go to state 93
+    BOOL_VAL   shift, and go to state 94
+    '-'        shift, and go to state 95
+    '('        shift, and go to state 96
+    ')'        shift, and go to state 193
+    '|'        shift, and go to state 97
+    '!'        shift, and go to state 98
+
+    expr        go to state 194
+    reduce_op   go to state 100
+    reduce_op2  go to state 101
+    inf         go to state 102
+    scala       go to state 103
+    field       go to state 104
+    built_in    go to state 105
+    expr_list   go to state 195
+    id          go to state 70
+
+
+state 134
+
   159 field: id '.' . id
   160 built_in: id '.' . id arg_list
 
     ID  shift, and go to state 7
 
-    id  go to state 191
+    id  go to state 196
 
 
-state 134
+state 135
+
+  161 built_in: id arg_list .
+
+    $default  reduce using rule 161 (built_in)
+
+
+state 136
 
    15 proc_return: ':' . prim_type
 
@@ -1939,117 +1984,117 @@ state 134
     T_DOUBLE  shift, and go to state 33
     T_LONG    shift, and go to state 34
 
-    prim_type  go to state 192
+    prim_type  go to state 197
 
 
-state 135
+state 137
 
     4 proc_head: proc_name '(' arg_declist1 ')' proc_return_opt .
 
     $default  reduce using rule 4 (proc_head)
 
 
-state 136
+state 138
 
    14 proc_return_opt: proc_return .
 
     $default  reduce using rule 14 (proc_return_opt)
 
 
-state 137
+state 139
 
     5 proc_head: proc_name '(' arg_declist1 ';' arg_declist2 . ')' proc_return_opt
    12 arg_declist2: arg_declist2 . ',' arg_decl
 
-    ')'  shift, and go to state 193
-    ','  shift, and go to state 194
+    ')'  shift, and go to state 198
+    ','  shift, and go to state 199
 
 
-state 138
+state 140
 
    11 arg_declist2: arg_decl .
 
     $default  reduce using rule 11 (arg_declist2)
 
 
-state 139
+state 141
 
    10 arg_declist: arg_declist ',' arg_decl .
 
     $default  reduce using rule 10 (arg_declist)
 
 
-state 140
+state 142
 
    16 arg_decl: arg_target ':' typedecl .
 
     $default  reduce using rule 16 (arg_decl)
 
 
-state 141
+state 143
 
    39 id_comma_list: id_comma_list ',' id .
 
     $default  reduce using rule 39 (id_comma_list)
 
 
-state 142
-
-   31 node_type: T_NODE '(' id . ')'
-
-    ')'  shift, and go to state 195
-
-
-state 143
-
-   36 property: T_NODEPROP '<' prim_type . '>' '(' id ')'
-
-    '>'  shift, and go to state 196
-
-
 state 144
 
-   32 edge_type: T_EDGE '(' id . ')'
-
-    ')'  shift, and go to state 197
-
-
-state 145
-
-   37 property: T_EDGEPROP '<' prim_type . '>' '(' id ')'
-
-    '>'  shift, and go to state 198
-
-
-state 146
-
-   33 set_type: T_NSET '(' id . ')'
-
-    ')'  shift, and go to state 199
-
-
-state 147
-
-   35 set_type: T_NORDER '(' id . ')'
+   31 node_type: T_NODE '(' id . ')'
 
     ')'  shift, and go to state 200
 
 
+state 145
+
+   36 property: T_NODEPROP '<' prim_type . '>' '(' id ')'
+
+    '>'  shift, and go to state 201
+
+
+state 146
+
+   32 edge_type: T_EDGE '(' id . ')'
+
+    ')'  shift, and go to state 202
+
+
+state 147
+
+   37 property: T_EDGEPROP '<' prim_type . '>' '(' id ')'
+
+    '>'  shift, and go to state 203
+
+
 state 148
 
-   34 set_type: T_NSEQ '(' id . ')'
+   33 set_type: T_NSET '(' id . ')'
 
-    ')'  shift, and go to state 201
+    ')'  shift, and go to state 204
 
 
 state 149
 
-   85 bfs_header_format: '(' id . ':' id opt_tp '.' T_NODES from_or_semi id ')'
+   35 set_type: T_NORDER '(' id . ')'
 
-    ':'  shift, and go to state 202
+    ')'  shift, and go to state 205
 
 
 state 150
+
+   34 set_type: T_NSEQ '(' id . ')'
+
+    ')'  shift, and go to state 206
+
+
+state 151
+
+   85 bfs_header_format: '(' id . ':' id opt_tp '.' T_NODES from_or_semi id ')'
+
+    ':'  shift, and go to state 207
+
+
+state 152
 
    96 bfs_filter: '(' . expr ')'
 
@@ -2069,7 +2114,7 @@ state 150
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 203
+    expr        go to state 208
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -2079,7 +2124,7 @@ state 150
     id          go to state 70
 
 
-state 151
+state 153
 
    95 bfs_navigator: '[' . expr ']'
 
@@ -2099,7 +2144,7 @@ state 151
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 204
+    expr        go to state 209
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -2109,41 +2154,41 @@ state 151
     id          go to state 70
 
 
-state 152
+state 154
 
    77 sent_dfs: T_DFS bfs_header_format bfs_filters . sent_block dfs_post
 
     '{'  shift, and go to state 9
 
-    sent_block  go to state 205
+    sent_block  go to state 210
     sb_begin    go to state 12
 
 
-state 153
+state 155
 
    91 bfs_filters: bfs_navigator .
    93            | bfs_navigator . bfs_filter
 
-    '('  shift, and go to state 150
+    '('  shift, and go to state 152
 
     $default  reduce using rule 91 (bfs_filters)
 
-    bfs_filter  go to state 206
+    bfs_filter  go to state 211
 
 
-state 154
+state 156
 
    92 bfs_filters: bfs_filter .
    94            | bfs_filter . bfs_navigator
 
-    '['  shift, and go to state 151
+    '['  shift, and go to state 153
 
     $default  reduce using rule 92 (bfs_filters)
 
-    bfs_navigator  go to state 207
+    bfs_navigator  go to state 212
 
 
-state 155
+state 157
 
   120 expr: '-' expr .
   127     | expr . '%' expr
@@ -2164,14 +2209,14 @@ state 155
     $default  reduce using rule 120 (expr)
 
 
-state 156
+state 158
 
   122 expr: '(' prim_type . ')' expr
 
-    ')'  shift, and go to state 208
+    ')'  shift, and go to state 213
 
 
-state 157
+state 159
 
   118 expr: '(' expr . ')'
   127     | expr . '%' expr
@@ -2189,24 +2234,24 @@ state 157
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    ')'    shift, and go to state 209
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    ')'    shift, and go to state 214
 
 
-state 158
+state 160
 
   119 expr: '|' expr . '|'
   127     | expr . '%' expr
@@ -2224,24 +2269,24 @@ state 158
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    '|'    shift, and go to state 210
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    '|'    shift, and go to state 215
 
 
-state 159
+state 161
 
   121 expr: '!' expr .
   127     | expr . '%' expr
@@ -2262,159 +2307,9 @@ state 159
     $default  reduce using rule 121 (expr)
 
 
-state 160
-
-  138 expr: expr T_AND . expr
-
-    T_SUM      shift, and go to state 85
-    T_PRODUCT  shift, and go to state 86
-    T_MIN      shift, and go to state 87
-    T_MAX      shift, and go to state 88
-    T_COUNT    shift, and go to state 89
-    T_M_INF    shift, and go to state 90
-    T_P_INF    shift, and go to state 91
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 92
-    FLOAT_NUM  shift, and go to state 93
-    BOOL_VAL   shift, and go to state 94
-    '-'        shift, and go to state 95
-    '('        shift, and go to state 96
-    '|'        shift, and go to state 97
-    '!'        shift, and go to state 98
-
-    expr        go to state 211
-    reduce_op   go to state 100
-    reduce_op2  go to state 101
-    inf         go to state 102
-    scala       go to state 103
-    field       go to state 104
-    built_in    go to state 105
-    id          go to state 70
-
-
-state 161
-
-  139 expr: expr T_OR . expr
-
-    T_SUM      shift, and go to state 85
-    T_PRODUCT  shift, and go to state 86
-    T_MIN      shift, and go to state 87
-    T_MAX      shift, and go to state 88
-    T_COUNT    shift, and go to state 89
-    T_M_INF    shift, and go to state 90
-    T_P_INF    shift, and go to state 91
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 92
-    FLOAT_NUM  shift, and go to state 93
-    BOOL_VAL   shift, and go to state 94
-    '-'        shift, and go to state 95
-    '('        shift, and go to state 96
-    '|'        shift, and go to state 97
-    '!'        shift, and go to state 98
-
-    expr        go to state 212
-    reduce_op   go to state 100
-    reduce_op2  go to state 101
-    inf         go to state 102
-    scala       go to state 103
-    field       go to state 104
-    built_in    go to state 105
-    id          go to state 70
-
-
 state 162
 
-  136 expr: expr T_EQ . expr
-
-    T_SUM      shift, and go to state 85
-    T_PRODUCT  shift, and go to state 86
-    T_MIN      shift, and go to state 87
-    T_MAX      shift, and go to state 88
-    T_COUNT    shift, and go to state 89
-    T_M_INF    shift, and go to state 90
-    T_P_INF    shift, and go to state 91
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 92
-    FLOAT_NUM  shift, and go to state 93
-    BOOL_VAL   shift, and go to state 94
-    '-'        shift, and go to state 95
-    '('        shift, and go to state 96
-    '|'        shift, and go to state 97
-    '!'        shift, and go to state 98
-
-    expr        go to state 213
-    reduce_op   go to state 100
-    reduce_op2  go to state 101
-    inf         go to state 102
-    scala       go to state 103
-    field       go to state 104
-    built_in    go to state 105
-    id          go to state 70
-
-
-state 163
-
-  137 expr: expr T_NEQ . expr
-
-    T_SUM      shift, and go to state 85
-    T_PRODUCT  shift, and go to state 86
-    T_MIN      shift, and go to state 87
-    T_MAX      shift, and go to state 88
-    T_COUNT    shift, and go to state 89
-    T_M_INF    shift, and go to state 90
-    T_P_INF    shift, and go to state 91
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 92
-    FLOAT_NUM  shift, and go to state 93
-    BOOL_VAL   shift, and go to state 94
-    '-'        shift, and go to state 95
-    '('        shift, and go to state 96
-    '|'        shift, and go to state 97
-    '!'        shift, and go to state 98
-
-    expr        go to state 214
-    reduce_op   go to state 100
-    reduce_op2  go to state 101
-    inf         go to state 102
-    scala       go to state 103
-    field       go to state 104
-    built_in    go to state 105
-    id          go to state 70
-
-
-state 164
-
-  132 expr: expr T_LE . expr
-
-    T_SUM      shift, and go to state 85
-    T_PRODUCT  shift, and go to state 86
-    T_MIN      shift, and go to state 87
-    T_MAX      shift, and go to state 88
-    T_COUNT    shift, and go to state 89
-    T_M_INF    shift, and go to state 90
-    T_P_INF    shift, and go to state 91
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 92
-    FLOAT_NUM  shift, and go to state 93
-    BOOL_VAL   shift, and go to state 94
-    '-'        shift, and go to state 95
-    '('        shift, and go to state 96
-    '|'        shift, and go to state 97
-    '!'        shift, and go to state 98
-
-    expr        go to state 215
-    reduce_op   go to state 100
-    reduce_op2  go to state 101
-    inf         go to state 102
-    scala       go to state 103
-    field       go to state 104
-    built_in    go to state 105
-    id          go to state 70
-
-
-state 165
-
-  133 expr: expr T_GE . expr
+  138 expr: expr T_AND . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2442,9 +2337,9 @@ state 165
     id          go to state 70
 
 
-state 166
+state 163
 
-  140 expr: expr '?' . expr ':' expr
+  139 expr: expr T_OR . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2472,9 +2367,9 @@ state 166
     id          go to state 70
 
 
-state 167
+state 164
 
-  134 expr: expr '<' . expr
+  136 expr: expr T_EQ . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2502,9 +2397,9 @@ state 167
     id          go to state 70
 
 
-state 168
+state 165
 
-  135 expr: expr '>' . expr
+  137 expr: expr T_NEQ . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2532,9 +2427,9 @@ state 168
     id          go to state 70
 
 
-state 169
+state 166
 
-  130 expr: expr '+' . expr
+  132 expr: expr T_LE . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2562,9 +2457,9 @@ state 169
     id          go to state 70
 
 
-state 170
+state 167
 
-  131 expr: expr '-' . expr
+  133 expr: expr T_GE . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2592,9 +2487,9 @@ state 170
     id          go to state 70
 
 
-state 171
+state 168
 
-  128 expr: expr '*' . expr
+  140 expr: expr '?' . expr ':' expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2622,9 +2517,9 @@ state 171
     id          go to state 70
 
 
-state 172
+state 169
 
-  129 expr: expr '/' . expr
+  134 expr: expr '<' . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2652,9 +2547,9 @@ state 172
     id          go to state 70
 
 
-state 173
+state 170
 
-  127 expr: expr '%' . expr
+  135 expr: expr '>' . expr
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -2682,46 +2577,196 @@ state 173
     id          go to state 70
 
 
+state 171
+
+  130 expr: expr '+' . expr
+
+    T_SUM      shift, and go to state 85
+    T_PRODUCT  shift, and go to state 86
+    T_MIN      shift, and go to state 87
+    T_MAX      shift, and go to state 88
+    T_COUNT    shift, and go to state 89
+    T_M_INF    shift, and go to state 90
+    T_P_INF    shift, and go to state 91
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 92
+    FLOAT_NUM  shift, and go to state 93
+    BOOL_VAL   shift, and go to state 94
+    '-'        shift, and go to state 95
+    '('        shift, and go to state 96
+    '|'        shift, and go to state 97
+    '!'        shift, and go to state 98
+
+    expr        go to state 225
+    reduce_op   go to state 100
+    reduce_op2  go to state 101
+    inf         go to state 102
+    scala       go to state 103
+    field       go to state 104
+    built_in    go to state 105
+    id          go to state 70
+
+
+state 172
+
+  131 expr: expr '-' . expr
+
+    T_SUM      shift, and go to state 85
+    T_PRODUCT  shift, and go to state 86
+    T_MIN      shift, and go to state 87
+    T_MAX      shift, and go to state 88
+    T_COUNT    shift, and go to state 89
+    T_M_INF    shift, and go to state 90
+    T_P_INF    shift, and go to state 91
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 92
+    FLOAT_NUM  shift, and go to state 93
+    BOOL_VAL   shift, and go to state 94
+    '-'        shift, and go to state 95
+    '('        shift, and go to state 96
+    '|'        shift, and go to state 97
+    '!'        shift, and go to state 98
+
+    expr        go to state 226
+    reduce_op   go to state 100
+    reduce_op2  go to state 101
+    inf         go to state 102
+    scala       go to state 103
+    field       go to state 104
+    built_in    go to state 105
+    id          go to state 70
+
+
+state 173
+
+  128 expr: expr '*' . expr
+
+    T_SUM      shift, and go to state 85
+    T_PRODUCT  shift, and go to state 86
+    T_MIN      shift, and go to state 87
+    T_MAX      shift, and go to state 88
+    T_COUNT    shift, and go to state 89
+    T_M_INF    shift, and go to state 90
+    T_P_INF    shift, and go to state 91
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 92
+    FLOAT_NUM  shift, and go to state 93
+    BOOL_VAL   shift, and go to state 94
+    '-'        shift, and go to state 95
+    '('        shift, and go to state 96
+    '|'        shift, and go to state 97
+    '!'        shift, and go to state 98
+
+    expr        go to state 227
+    reduce_op   go to state 100
+    reduce_op2  go to state 101
+    inf         go to state 102
+    scala       go to state 103
+    field       go to state 104
+    built_in    go to state 105
+    id          go to state 70
+
+
 state 174
+
+  129 expr: expr '/' . expr
+
+    T_SUM      shift, and go to state 85
+    T_PRODUCT  shift, and go to state 86
+    T_MIN      shift, and go to state 87
+    T_MAX      shift, and go to state 88
+    T_COUNT    shift, and go to state 89
+    T_M_INF    shift, and go to state 90
+    T_P_INF    shift, and go to state 91
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 92
+    FLOAT_NUM  shift, and go to state 93
+    BOOL_VAL   shift, and go to state 94
+    '-'        shift, and go to state 95
+    '('        shift, and go to state 96
+    '|'        shift, and go to state 97
+    '!'        shift, and go to state 98
+
+    expr        go to state 228
+    reduce_op   go to state 100
+    reduce_op2  go to state 101
+    inf         go to state 102
+    scala       go to state 103
+    field       go to state 104
+    built_in    go to state 105
+    id          go to state 70
+
+
+state 175
+
+  127 expr: expr '%' . expr
+
+    T_SUM      shift, and go to state 85
+    T_PRODUCT  shift, and go to state 86
+    T_MIN      shift, and go to state 87
+    T_MAX      shift, and go to state 88
+    T_COUNT    shift, and go to state 89
+    T_M_INF    shift, and go to state 90
+    T_P_INF    shift, and go to state 91
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 92
+    FLOAT_NUM  shift, and go to state 93
+    BOOL_VAL   shift, and go to state 94
+    '-'        shift, and go to state 95
+    '('        shift, and go to state 96
+    '|'        shift, and go to state 97
+    '!'        shift, and go to state 98
+
+    expr        go to state 229
+    reduce_op   go to state 100
+    reduce_op2  go to state 101
+    inf         go to state 102
+    scala       go to state 103
+    field       go to state 104
+    built_in    go to state 105
+    id          go to state 70
+
+
+state 176
 
   123 expr: reduce_op '(' . id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}'
   124     | reduce_op '(' . id ':' id '.' iterator1 ')' '{' expr '}'
 
     ID  shift, and go to state 7
 
-    id  go to state 225
+    id  go to state 230
 
 
-state 175
+state 177
 
   125 expr: reduce_op2 '(' . id ':' id '.' iterator1 ')' '(' expr ')'
   126     | reduce_op2 '(' . id ':' id '.' iterator1 ')' '{' expr '}'
 
     ID  shift, and go to state 7
 
-    id  go to state 226
+    id  go to state 231
 
 
-state 176
+state 178
 
    78 sent_bfs: T_BFS bfs_header_format bfs_filters . sent_block bfs_reverse
 
     '{'  shift, and go to state 9
 
-    sent_block  go to state 227
+    sent_block  go to state 232
     sb_begin    go to state 12
 
 
-state 177
+state 179
 
    64 foreach_header: '(' id . ':' id '.' iterator1 ')'
    65               | '(' id . ':' id '+' '.' iterator1 ')'
    66               | '(' id . ':' id '-' '.' iterator1 ')'
 
-    ':'  shift, and go to state 228
+    ':'  shift, and go to state 233
 
 
-state 178
+state 180
 
    68 foreach_filter: '(' . bool_expr ')'
 
@@ -2741,8 +2786,8 @@ state 178
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 181
-    bool_expr   go to state 229
+    expr        go to state 183
+    bool_expr   go to state 234
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -2752,7 +2797,7 @@ state 178
     id          go to state 70
 
 
-state 179
+state 181
 
    62 sent_foreach: T_FOREACH foreach_header foreach_filter . sent
 
@@ -2790,7 +2835,7 @@ state 179
     property                go to state 50
     sent_block              go to state 51
     sb_begin                go to state 12
-    sent                    go to state 230
+    sent                    go to state 235
     sent_call               go to state 54
     sent_while              go to state 55
     sent_do_while           go to state 56
@@ -2810,7 +2855,7 @@ state 179
     id                      go to state 70
 
 
-state 180
+state 182
 
    63 sent_foreach: T_FOR foreach_header foreach_filter . sent
 
@@ -2848,7 +2893,7 @@ state 180
     property                go to state 50
     sent_block              go to state 51
     sb_begin                go to state 12
-    sent                    go to state 231
+    sent                    go to state 236
     sent_call               go to state 54
     sent_while              go to state 55
     sent_do_while           go to state 56
@@ -2868,7 +2913,7 @@ state 180
     id                      go to state 70
 
 
-state 181
+state 183
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -2886,47 +2931,47 @@ state 181
   140     | expr . '?' expr ':' expr
   148 bool_expr: expr .
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
 
     $default  reduce using rule 148 (bool_expr)
 
 
-state 182
+state 184
 
   116 sent_if: T_IF '(' bool_expr . ')' sent
   117        | T_IF '(' bool_expr . ')' sent T_ELSE sent
 
-    ')'  shift, and go to state 232
-
-
-state 183
-
-   61 sent_do_while: T_DO sent_block T_WHILE . '(' bool_expr ')'
-
-    '('  shift, and go to state 233
-
-
-state 184
-
-   60 sent_while: T_WHILE '(' bool_expr . ')' sent_block
-
-    ')'  shift, and go to state 234
+    ')'  shift, and go to state 237
 
 
 state 185
+
+   61 sent_do_while: T_DO sent_block T_WHILE . '(' bool_expr ')'
+
+    '('  shift, and go to state 238
+
+
+state 186
+
+   60 sent_while: T_WHILE '(' bool_expr . ')' sent_block
+
+    ')'  shift, and go to state 239
+
+
+state 187
 
    98 sent_variable_decl: typedecl id '=' . rhs
 
@@ -2946,8 +2991,8 @@ state 185
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    rhs         go to state 235
-    expr        go to state 187
+    rhs         go to state 240
+    expr        go to state 189
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -2957,17 +3002,17 @@ state 185
     id          go to state 70
 
 
-state 186
+state 188
 
   105 sent_defer_assignment: lhs T_LE rhs .
   106                      | lhs T_LE rhs . '@' id
 
-    '@'  shift, and go to state 236
+    '@'  shift, and go to state 241
 
     $default  reduce using rule 105 (sent_defer_assignment)
 
 
-state 187
+state 189
 
   113 rhs: expr .
   127 expr: expr . '%' expr
@@ -2985,152 +3030,204 @@ state 187
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
 
     $default  reduce using rule 113 (rhs)
 
 
-state 188
+state 190
 
   104 sent_reduce_assignment: lhs T_PLUSPLUS '@' . id
 
     ID  shift, and go to state 7
 
-    id  go to state 237
+    id  go to state 242
 
 
-state 189
+state 191
 
   100 sent_assignment: lhs '=' rhs .
 
     $default  reduce using rule 100 (sent_assignment)
 
 
-state 190
+state 192
 
   101 sent_reduce_assignment: lhs reduce_eq rhs .
   102                       | lhs reduce_eq rhs . '@' id
 
-    '@'  shift, and go to state 238
+    '@'  shift, and go to state 243
 
     $default  reduce using rule 101 (sent_reduce_assignment)
 
 
-state 191
+state 193
+
+  163 arg_list: '(' ')' .
+
+    $default  reduce using rule 163 (arg_list)
+
+
+state 194
+
+  127 expr: expr . '%' expr
+  128     | expr . '*' expr
+  129     | expr . '/' expr
+  130     | expr . '+' expr
+  131     | expr . '-' expr
+  132     | expr . T_LE expr
+  133     | expr . T_GE expr
+  134     | expr . '<' expr
+  135     | expr . '>' expr
+  136     | expr . T_EQ expr
+  137     | expr . T_NEQ expr
+  138     | expr . T_AND expr
+  139     | expr . T_OR expr
+  140     | expr . '?' expr ':' expr
+  164 expr_list: expr .
+  165          | expr . ',' expr_list
+
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    ','    shift, and go to state 244
+
+    $default  reduce using rule 164 (expr_list)
+
+
+state 195
+
+  162 arg_list: '(' expr_list . ')'
+
+    ')'  shift, and go to state 245
+
+
+state 196
 
   159 field: id '.' id .
   160 built_in: id '.' id . arg_list
 
-    '('  shift, and go to state 239
+    '('  shift, and go to state 133
 
     $default  reduce using rule 159 (field)
 
-    arg_list  go to state 240
+    arg_list  go to state 246
 
 
-state 192
+state 197
 
    15 proc_return: ':' prim_type .
 
     $default  reduce using rule 15 (proc_return)
 
 
-state 193
+state 198
 
     5 proc_head: proc_name '(' arg_declist1 ';' arg_declist2 ')' . proc_return_opt
 
-    ':'  shift, and go to state 134
+    ':'  shift, and go to state 136
 
     $default  reduce using rule 13 (proc_return_opt)
 
-    proc_return_opt  go to state 241
-    proc_return      go to state 136
+    proc_return_opt  go to state 247
+    proc_return      go to state 138
 
 
-state 194
+state 199
 
    12 arg_declist2: arg_declist2 ',' . arg_decl
 
     ID  shift, and go to state 7
 
-    arg_decl       go to state 242
+    arg_decl       go to state 248
     arg_target     go to state 18
     id_comma_list  go to state 19
     id             go to state 20
 
 
-state 195
+state 200
 
    31 node_type: T_NODE '(' id ')' .
 
     $default  reduce using rule 31 (node_type)
 
 
-state 196
+state 201
 
    36 property: T_NODEPROP '<' prim_type '>' . '(' id ')'
 
-    '('  shift, and go to state 243
+    '('  shift, and go to state 249
 
 
-state 197
+state 202
 
    32 edge_type: T_EDGE '(' id ')' .
 
     $default  reduce using rule 32 (edge_type)
 
 
-state 198
+state 203
 
    37 property: T_EDGEPROP '<' prim_type '>' . '(' id ')'
 
-    '('  shift, and go to state 244
+    '('  shift, and go to state 250
 
 
-state 199
+state 204
 
    33 set_type: T_NSET '(' id ')' .
 
     $default  reduce using rule 33 (set_type)
 
 
-state 200
+state 205
 
    35 set_type: T_NORDER '(' id ')' .
 
     $default  reduce using rule 35 (set_type)
 
 
-state 201
+state 206
 
    34 set_type: T_NSEQ '(' id ')' .
 
     $default  reduce using rule 34 (set_type)
 
 
-state 202
+state 207
 
    85 bfs_header_format: '(' id ':' . id opt_tp '.' T_NODES from_or_semi id ')'
 
     ID  shift, and go to state 7
 
-    id  go to state 245
+    id  go to state 251
 
 
-state 203
+state 208
 
    96 bfs_filter: '(' expr . ')'
   127 expr: expr . '%' expr
@@ -3148,24 +3245,24 @@ state 203
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    ')'    shift, and go to state 246
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    ')'    shift, and go to state 252
 
 
-state 204
+state 209
 
    95 bfs_navigator: '[' expr . ']'
   127 expr: expr . '%' expr
@@ -3183,49 +3280,49 @@ state 204
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    ']'    shift, and go to state 247
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    ']'    shift, and go to state 253
 
 
-state 205
+state 210
 
    77 sent_dfs: T_DFS bfs_header_format bfs_filters sent_block . dfs_post
 
-    T_POST  shift, and go to state 248
+    T_POST  shift, and go to state 254
 
     $default  reduce using rule 79 (dfs_post)
 
-    dfs_post  go to state 249
+    dfs_post  go to state 255
 
 
-state 206
+state 211
 
    93 bfs_filters: bfs_navigator bfs_filter .
 
     $default  reduce using rule 93 (bfs_filters)
 
 
-state 207
+state 212
 
    94 bfs_filters: bfs_filter bfs_navigator .
 
     $default  reduce using rule 94 (bfs_filters)
 
 
-state 208
+state 213
 
   122 expr: '(' prim_type ')' . expr
 
@@ -3245,7 +3342,7 @@ state 208
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 250
+    expr        go to state 256
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -3255,21 +3352,21 @@ state 208
     id          go to state 70
 
 
-state 209
+state 214
 
   118 expr: '(' expr ')' .
 
     $default  reduce using rule 118 (expr)
 
 
-state 210
+state 215
 
   119 expr: '|' expr '|' .
 
     $default  reduce using rule 119 (expr)
 
 
-state 211
+state 216
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -3287,169 +3384,19 @@ state 211
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
 
     $default  reduce using rule 138 (expr)
-
-
-state 212
-
-  127 expr: expr . '%' expr
-  128     | expr . '*' expr
-  129     | expr . '/' expr
-  130     | expr . '+' expr
-  131     | expr . '-' expr
-  132     | expr . T_LE expr
-  133     | expr . T_GE expr
-  134     | expr . '<' expr
-  135     | expr . '>' expr
-  136     | expr . T_EQ expr
-  137     | expr . T_NEQ expr
-  138     | expr . T_AND expr
-  139     | expr . T_OR expr
-  139     | expr T_OR expr .
-  140     | expr . '?' expr ':' expr
-
-    T_AND  shift, and go to state 160
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-
-    $default  reduce using rule 139 (expr)
-
-
-state 213
-
-  127 expr: expr . '%' expr
-  128     | expr . '*' expr
-  129     | expr . '/' expr
-  130     | expr . '+' expr
-  131     | expr . '-' expr
-  132     | expr . T_LE expr
-  133     | expr . T_GE expr
-  134     | expr . '<' expr
-  135     | expr . '>' expr
-  136     | expr . T_EQ expr
-  136     | expr T_EQ expr .
-  137     | expr . T_NEQ expr
-  138     | expr . T_AND expr
-  139     | expr . T_OR expr
-  140     | expr . '?' expr ':' expr
-
-    T_LE  shift, and go to state 164
-    T_GE  shift, and go to state 165
-    '<'   shift, and go to state 167
-    '>'   shift, and go to state 168
-    '+'   shift, and go to state 169
-    '-'   shift, and go to state 170
-    '*'   shift, and go to state 171
-    '/'   shift, and go to state 172
-    '%'   shift, and go to state 173
-
-    $default  reduce using rule 136 (expr)
-
-
-state 214
-
-  127 expr: expr . '%' expr
-  128     | expr . '*' expr
-  129     | expr . '/' expr
-  130     | expr . '+' expr
-  131     | expr . '-' expr
-  132     | expr . T_LE expr
-  133     | expr . T_GE expr
-  134     | expr . '<' expr
-  135     | expr . '>' expr
-  136     | expr . T_EQ expr
-  137     | expr . T_NEQ expr
-  137     | expr T_NEQ expr .
-  138     | expr . T_AND expr
-  139     | expr . T_OR expr
-  140     | expr . '?' expr ':' expr
-
-    T_LE  shift, and go to state 164
-    T_GE  shift, and go to state 165
-    '<'   shift, and go to state 167
-    '>'   shift, and go to state 168
-    '+'   shift, and go to state 169
-    '-'   shift, and go to state 170
-    '*'   shift, and go to state 171
-    '/'   shift, and go to state 172
-    '%'   shift, and go to state 173
-
-    $default  reduce using rule 137 (expr)
-
-
-state 215
-
-  127 expr: expr . '%' expr
-  128     | expr . '*' expr
-  129     | expr . '/' expr
-  130     | expr . '+' expr
-  131     | expr . '-' expr
-  132     | expr . T_LE expr
-  132     | expr T_LE expr .
-  133     | expr . T_GE expr
-  134     | expr . '<' expr
-  135     | expr . '>' expr
-  136     | expr . T_EQ expr
-  137     | expr . T_NEQ expr
-  138     | expr . T_AND expr
-  139     | expr . T_OR expr
-  140     | expr . '?' expr ':' expr
-
-    '+'  shift, and go to state 169
-    '-'  shift, and go to state 170
-    '*'  shift, and go to state 171
-    '/'  shift, and go to state 172
-    '%'  shift, and go to state 173
-
-    $default  reduce using rule 132 (expr)
-
-
-state 216
-
-  127 expr: expr . '%' expr
-  128     | expr . '*' expr
-  129     | expr . '/' expr
-  130     | expr . '+' expr
-  131     | expr . '-' expr
-  132     | expr . T_LE expr
-  133     | expr . T_GE expr
-  133     | expr T_GE expr .
-  134     | expr . '<' expr
-  135     | expr . '>' expr
-  136     | expr . T_EQ expr
-  137     | expr . T_NEQ expr
-  138     | expr . T_AND expr
-  139     | expr . T_OR expr
-  140     | expr . '?' expr ':' expr
-
-    '+'  shift, and go to state 169
-    '-'  shift, and go to state 170
-    '*'  shift, and go to state 171
-    '/'  shift, and go to state 172
-    '%'  shift, and go to state 173
-
-    $default  reduce using rule 133 (expr)
 
 
 state 217
@@ -3467,27 +3414,177 @@ state 217
   137     | expr . T_NEQ expr
   138     | expr . T_AND expr
   139     | expr . T_OR expr
+  139     | expr T_OR expr .
   140     | expr . '?' expr ':' expr
-  140     | expr '?' expr . ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    ':'    shift, and go to state 251
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
+    T_AND  shift, and go to state 162
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+
+    $default  reduce using rule 139 (expr)
 
 
 state 218
+
+  127 expr: expr . '%' expr
+  128     | expr . '*' expr
+  129     | expr . '/' expr
+  130     | expr . '+' expr
+  131     | expr . '-' expr
+  132     | expr . T_LE expr
+  133     | expr . T_GE expr
+  134     | expr . '<' expr
+  135     | expr . '>' expr
+  136     | expr . T_EQ expr
+  136     | expr T_EQ expr .
+  137     | expr . T_NEQ expr
+  138     | expr . T_AND expr
+  139     | expr . T_OR expr
+  140     | expr . '?' expr ':' expr
+
+    T_LE  shift, and go to state 166
+    T_GE  shift, and go to state 167
+    '<'   shift, and go to state 169
+    '>'   shift, and go to state 170
+    '+'   shift, and go to state 171
+    '-'   shift, and go to state 172
+    '*'   shift, and go to state 173
+    '/'   shift, and go to state 174
+    '%'   shift, and go to state 175
+
+    $default  reduce using rule 136 (expr)
+
+
+state 219
+
+  127 expr: expr . '%' expr
+  128     | expr . '*' expr
+  129     | expr . '/' expr
+  130     | expr . '+' expr
+  131     | expr . '-' expr
+  132     | expr . T_LE expr
+  133     | expr . T_GE expr
+  134     | expr . '<' expr
+  135     | expr . '>' expr
+  136     | expr . T_EQ expr
+  137     | expr . T_NEQ expr
+  137     | expr T_NEQ expr .
+  138     | expr . T_AND expr
+  139     | expr . T_OR expr
+  140     | expr . '?' expr ':' expr
+
+    T_LE  shift, and go to state 166
+    T_GE  shift, and go to state 167
+    '<'   shift, and go to state 169
+    '>'   shift, and go to state 170
+    '+'   shift, and go to state 171
+    '-'   shift, and go to state 172
+    '*'   shift, and go to state 173
+    '/'   shift, and go to state 174
+    '%'   shift, and go to state 175
+
+    $default  reduce using rule 137 (expr)
+
+
+state 220
+
+  127 expr: expr . '%' expr
+  128     | expr . '*' expr
+  129     | expr . '/' expr
+  130     | expr . '+' expr
+  131     | expr . '-' expr
+  132     | expr . T_LE expr
+  132     | expr T_LE expr .
+  133     | expr . T_GE expr
+  134     | expr . '<' expr
+  135     | expr . '>' expr
+  136     | expr . T_EQ expr
+  137     | expr . T_NEQ expr
+  138     | expr . T_AND expr
+  139     | expr . T_OR expr
+  140     | expr . '?' expr ':' expr
+
+    '+'  shift, and go to state 171
+    '-'  shift, and go to state 172
+    '*'  shift, and go to state 173
+    '/'  shift, and go to state 174
+    '%'  shift, and go to state 175
+
+    $default  reduce using rule 132 (expr)
+
+
+state 221
+
+  127 expr: expr . '%' expr
+  128     | expr . '*' expr
+  129     | expr . '/' expr
+  130     | expr . '+' expr
+  131     | expr . '-' expr
+  132     | expr . T_LE expr
+  133     | expr . T_GE expr
+  133     | expr T_GE expr .
+  134     | expr . '<' expr
+  135     | expr . '>' expr
+  136     | expr . T_EQ expr
+  137     | expr . T_NEQ expr
+  138     | expr . T_AND expr
+  139     | expr . T_OR expr
+  140     | expr . '?' expr ':' expr
+
+    '+'  shift, and go to state 171
+    '-'  shift, and go to state 172
+    '*'  shift, and go to state 173
+    '/'  shift, and go to state 174
+    '%'  shift, and go to state 175
+
+    $default  reduce using rule 133 (expr)
+
+
+state 222
+
+  127 expr: expr . '%' expr
+  128     | expr . '*' expr
+  129     | expr . '/' expr
+  130     | expr . '+' expr
+  131     | expr . '-' expr
+  132     | expr . T_LE expr
+  133     | expr . T_GE expr
+  134     | expr . '<' expr
+  135     | expr . '>' expr
+  136     | expr . T_EQ expr
+  137     | expr . T_NEQ expr
+  138     | expr . T_AND expr
+  139     | expr . T_OR expr
+  140     | expr . '?' expr ':' expr
+  140     | expr '?' expr . ':' expr
+
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    ':'    shift, and go to state 257
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+
+
+state 223
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -3505,16 +3602,16 @@ state 218
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    '+'  shift, and go to state 169
-    '-'  shift, and go to state 170
-    '*'  shift, and go to state 171
-    '/'  shift, and go to state 172
-    '%'  shift, and go to state 173
+    '+'  shift, and go to state 171
+    '-'  shift, and go to state 172
+    '*'  shift, and go to state 173
+    '/'  shift, and go to state 174
+    '%'  shift, and go to state 175
 
     $default  reduce using rule 134 (expr)
 
 
-state 219
+state 224
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -3532,16 +3629,16 @@ state 219
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    '+'  shift, and go to state 169
-    '-'  shift, and go to state 170
-    '*'  shift, and go to state 171
-    '/'  shift, and go to state 172
-    '%'  shift, and go to state 173
+    '+'  shift, and go to state 171
+    '-'  shift, and go to state 172
+    '*'  shift, and go to state 173
+    '/'  shift, and go to state 174
+    '%'  shift, and go to state 175
 
     $default  reduce using rule 135 (expr)
 
 
-state 220
+state 225
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -3559,14 +3656,14 @@ state 220
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    '*'  shift, and go to state 171
-    '/'  shift, and go to state 172
-    '%'  shift, and go to state 173
+    '*'  shift, and go to state 173
+    '/'  shift, and go to state 174
+    '%'  shift, and go to state 175
 
     $default  reduce using rule 130 (expr)
 
 
-state 221
+state 226
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -3584,14 +3681,14 @@ state 221
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    '*'  shift, and go to state 171
-    '/'  shift, and go to state 172
-    '%'  shift, and go to state 173
+    '*'  shift, and go to state 173
+    '/'  shift, and go to state 174
+    '%'  shift, and go to state 175
 
     $default  reduce using rule 131 (expr)
 
 
-state 222
+state 227
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -3612,7 +3709,7 @@ state 222
     $default  reduce using rule 128 (expr)
 
 
-state 223
+state 228
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -3633,7 +3730,7 @@ state 223
     $default  reduce using rule 129 (expr)
 
 
-state 224
+state 229
 
   127 expr: expr . '%' expr
   127     | expr '%' expr .
@@ -3654,34 +3751,34 @@ state 224
     $default  reduce using rule 127 (expr)
 
 
-state 225
+state 230
 
   123 expr: reduce_op '(' id . ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}'
   124     | reduce_op '(' id . ':' id '.' iterator1 ')' '{' expr '}'
 
-    ':'  shift, and go to state 252
+    ':'  shift, and go to state 258
 
 
-state 226
+state 231
 
   125 expr: reduce_op2 '(' id . ':' id '.' iterator1 ')' '(' expr ')'
   126     | reduce_op2 '(' id . ':' id '.' iterator1 ')' '{' expr '}'
 
-    ':'  shift, and go to state 253
+    ':'  shift, and go to state 259
 
 
-state 227
+state 232
 
    78 sent_bfs: T_BFS bfs_header_format bfs_filters sent_block . bfs_reverse
 
-    T_BACK  shift, and go to state 254
+    T_BACK  shift, and go to state 260
 
     $default  reduce using rule 82 (bfs_reverse)
 
-    bfs_reverse  go to state 255
+    bfs_reverse  go to state 261
 
 
-state 228
+state 233
 
    64 foreach_header: '(' id ':' . id '.' iterator1 ')'
    65               | '(' id ':' . id '+' '.' iterator1 ')'
@@ -3689,31 +3786,31 @@ state 228
 
     ID  shift, and go to state 7
 
-    id  go to state 256
+    id  go to state 262
 
 
-state 229
+state 234
 
    68 foreach_filter: '(' bool_expr . ')'
 
-    ')'  shift, and go to state 257
+    ')'  shift, and go to state 263
 
 
-state 230
+state 235
 
    62 sent_foreach: T_FOREACH foreach_header foreach_filter sent .
 
     $default  reduce using rule 62 (sent_foreach)
 
 
-state 231
+state 236
 
    63 sent_foreach: T_FOR foreach_header foreach_filter sent .
 
     $default  reduce using rule 63 (sent_foreach)
 
 
-state 232
+state 237
 
   116 sent_if: T_IF '(' bool_expr ')' . sent
   117        | T_IF '(' bool_expr ')' . sent T_ELSE sent
@@ -3752,7 +3849,7 @@ state 232
     property                go to state 50
     sent_block              go to state 51
     sb_begin                go to state 12
-    sent                    go to state 258
+    sent                    go to state 264
     sent_call               go to state 54
     sent_while              go to state 55
     sent_do_while           go to state 56
@@ -3772,7 +3869,7 @@ state 232
     id                      go to state 70
 
 
-state 233
+state 238
 
    61 sent_do_while: T_DO sent_block T_WHILE '(' . bool_expr ')'
 
@@ -3792,8 +3889,8 @@ state 233
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 181
-    bool_expr   go to state 259
+    expr        go to state 183
+    bool_expr   go to state 265
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -3803,52 +3900,51 @@ state 233
     id          go to state 70
 
 
-state 234
+state 239
 
    60 sent_while: T_WHILE '(' bool_expr ')' . sent_block
 
     '{'  shift, and go to state 9
 
-    sent_block  go to state 260
+    sent_block  go to state 266
     sb_begin    go to state 12
 
 
-state 235
+state 240
 
    98 sent_variable_decl: typedecl id '=' rhs .
 
     $default  reduce using rule 98 (sent_variable_decl)
 
 
-state 236
+state 241
 
   106 sent_defer_assignment: lhs T_LE rhs '@' . id
 
     ID  shift, and go to state 7
 
-    id  go to state 261
+    id  go to state 267
 
 
-state 237
+state 242
 
   104 sent_reduce_assignment: lhs T_PLUSPLUS '@' id .
 
     $default  reduce using rule 104 (sent_reduce_assignment)
 
 
-state 238
+state 243
 
   102 sent_reduce_assignment: lhs reduce_eq rhs '@' . id
 
     ID  shift, and go to state 7
 
-    id  go to state 262
+    id  go to state 268
 
 
-state 239
+state 244
 
-  161 arg_list: '(' . expr_list ')'
-  162         | '(' . ')'
+  165 expr_list: expr ',' . expr_list
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -3863,106 +3959,112 @@ state 239
     BOOL_VAL   shift, and go to state 94
     '-'        shift, and go to state 95
     '('        shift, and go to state 96
-    ')'        shift, and go to state 263
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 264
+    expr        go to state 194
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
     scala       go to state 103
     field       go to state 104
     built_in    go to state 105
-    expr_list   go to state 265
+    expr_list   go to state 269
     id          go to state 70
 
 
-state 240
+state 245
+
+  162 arg_list: '(' expr_list ')' .
+
+    $default  reduce using rule 162 (arg_list)
+
+
+state 246
 
   160 built_in: id '.' id arg_list .
 
     $default  reduce using rule 160 (built_in)
 
 
-state 241
+state 247
 
     5 proc_head: proc_name '(' arg_declist1 ';' arg_declist2 ')' proc_return_opt .
 
     $default  reduce using rule 5 (proc_head)
 
 
-state 242
+state 248
 
    12 arg_declist2: arg_declist2 ',' arg_decl .
 
     $default  reduce using rule 12 (arg_declist2)
 
 
-state 243
+state 249
 
    36 property: T_NODEPROP '<' prim_type '>' '(' . id ')'
 
     ID  shift, and go to state 7
 
-    id  go to state 266
+    id  go to state 270
 
 
-state 244
+state 250
 
    37 property: T_EDGEPROP '<' prim_type '>' '(' . id ')'
 
     ID  shift, and go to state 7
 
-    id  go to state 267
+    id  go to state 271
 
 
-state 245
+state 251
 
    85 bfs_header_format: '(' id ':' id . opt_tp '.' T_NODES from_or_semi id ')'
 
-    '^'  shift, and go to state 268
+    '^'  shift, and go to state 272
 
     $default  reduce using rule 86 (opt_tp)
 
-    opt_tp  go to state 269
+    opt_tp  go to state 273
 
 
-state 246
+state 252
 
    96 bfs_filter: '(' expr ')' .
 
     $default  reduce using rule 96 (bfs_filter)
 
 
-state 247
+state 253
 
    95 bfs_navigator: '[' expr ']' .
 
     $default  reduce using rule 95 (bfs_navigator)
 
 
-state 248
+state 254
 
    80 dfs_post: T_POST . bfs_filter sent_block
    81         | T_POST . sent_block
 
-    '('  shift, and go to state 150
+    '('  shift, and go to state 152
     '{'  shift, and go to state 9
 
-    sent_block  go to state 270
+    sent_block  go to state 274
     sb_begin    go to state 12
-    bfs_filter  go to state 271
+    bfs_filter  go to state 275
 
 
-state 249
+state 255
 
    77 sent_dfs: T_DFS bfs_header_format bfs_filters sent_block dfs_post .
 
     $default  reduce using rule 77 (sent_dfs)
 
 
-state 250
+state 256
 
   122 expr: '(' prim_type ')' expr .
   127     | expr . '%' expr
@@ -3983,7 +4085,7 @@ state 250
     $default  reduce using rule 122 (expr)
 
 
-state 251
+state 257
 
   140 expr: expr '?' expr ':' . expr
 
@@ -4003,7 +4105,7 @@ state 251
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 272
+    expr        go to state 276
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -4013,201 +4115,156 @@ state 251
     id          go to state 70
 
 
-state 252
+state 258
 
   123 expr: reduce_op '(' id ':' . id '.' iterator1 ')' '(' expr ')' '{' expr '}'
   124     | reduce_op '(' id ':' . id '.' iterator1 ')' '{' expr '}'
 
     ID  shift, and go to state 7
 
-    id  go to state 273
+    id  go to state 277
 
 
-state 253
+state 259
 
   125 expr: reduce_op2 '(' id ':' . id '.' iterator1 ')' '(' expr ')'
   126     | reduce_op2 '(' id ':' . id '.' iterator1 ')' '{' expr '}'
 
     ID  shift, and go to state 7
 
-    id  go to state 274
+    id  go to state 278
 
 
-state 254
+state 260
 
    83 bfs_reverse: T_BACK . bfs_filter sent_block
    84            | T_BACK . sent_block
 
-    '('  shift, and go to state 150
+    '('  shift, and go to state 152
     '{'  shift, and go to state 9
 
-    sent_block  go to state 275
+    sent_block  go to state 279
     sb_begin    go to state 12
-    bfs_filter  go to state 276
+    bfs_filter  go to state 280
 
 
-state 255
+state 261
 
    78 sent_bfs: T_BFS bfs_header_format bfs_filters sent_block bfs_reverse .
 
     $default  reduce using rule 78 (sent_bfs)
 
 
-state 256
+state 262
 
    64 foreach_header: '(' id ':' id . '.' iterator1 ')'
    65               | '(' id ':' id . '+' '.' iterator1 ')'
    66               | '(' id ':' id . '-' '.' iterator1 ')'
 
-    '+'  shift, and go to state 277
-    '-'  shift, and go to state 278
-    '.'  shift, and go to state 279
+    '+'  shift, and go to state 281
+    '-'  shift, and go to state 282
+    '.'  shift, and go to state 283
 
 
-state 257
+state 263
 
    68 foreach_filter: '(' bool_expr ')' .
 
     $default  reduce using rule 68 (foreach_filter)
 
 
-state 258
+state 264
 
   116 sent_if: T_IF '(' bool_expr ')' sent .
   117        | T_IF '(' bool_expr ')' sent . T_ELSE sent
 
-    T_ELSE  shift, and go to state 280
+    T_ELSE  shift, and go to state 284
 
     T_ELSE    [reduce using rule 116 (sent_if)]
     $default  reduce using rule 116 (sent_if)
 
 
-state 259
+state 265
 
    61 sent_do_while: T_DO sent_block T_WHILE '(' bool_expr . ')'
 
-    ')'  shift, and go to state 281
+    ')'  shift, and go to state 285
 
 
-state 260
+state 266
 
    60 sent_while: T_WHILE '(' bool_expr ')' sent_block .
 
     $default  reduce using rule 60 (sent_while)
 
 
-state 261
+state 267
 
   106 sent_defer_assignment: lhs T_LE rhs '@' id .
 
     $default  reduce using rule 106 (sent_defer_assignment)
 
 
-state 262
+state 268
 
   102 sent_reduce_assignment: lhs reduce_eq rhs '@' id .
 
     $default  reduce using rule 102 (sent_reduce_assignment)
 
 
-state 263
+state 269
 
-  162 arg_list: '(' ')' .
+  165 expr_list: expr ',' expr_list .
 
-    $default  reduce using rule 162 (arg_list)
-
-
-state 264
-
-  127 expr: expr . '%' expr
-  128     | expr . '*' expr
-  129     | expr . '/' expr
-  130     | expr . '+' expr
-  131     | expr . '-' expr
-  132     | expr . T_LE expr
-  133     | expr . T_GE expr
-  134     | expr . '<' expr
-  135     | expr . '>' expr
-  136     | expr . T_EQ expr
-  137     | expr . T_NEQ expr
-  138     | expr . T_AND expr
-  139     | expr . T_OR expr
-  140     | expr . '?' expr ':' expr
-  163 expr_list: expr .
-  164          | expr . ',' expr_list
-
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    ','    shift, and go to state 282
-
-    $default  reduce using rule 163 (expr_list)
+    $default  reduce using rule 165 (expr_list)
 
 
-state 265
-
-  161 arg_list: '(' expr_list . ')'
-
-    ')'  shift, and go to state 283
-
-
-state 266
+state 270
 
    36 property: T_NODEPROP '<' prim_type '>' '(' id . ')'
 
-    ')'  shift, and go to state 284
+    ')'  shift, and go to state 286
 
 
-state 267
+state 271
 
    37 property: T_EDGEPROP '<' prim_type '>' '(' id . ')'
 
-    ')'  shift, and go to state 285
+    ')'  shift, and go to state 287
 
 
-state 268
+state 272
 
    87 opt_tp: '^' .
 
     $default  reduce using rule 87 (opt_tp)
 
 
-state 269
+state 273
 
    85 bfs_header_format: '(' id ':' id opt_tp . '.' T_NODES from_or_semi id ')'
 
-    '.'  shift, and go to state 286
+    '.'  shift, and go to state 288
 
 
-state 270
+state 274
 
    81 dfs_post: T_POST sent_block .
 
     $default  reduce using rule 81 (dfs_post)
 
 
-state 271
+state 275
 
    80 dfs_post: T_POST bfs_filter . sent_block
 
     '{'  shift, and go to state 9
 
-    sent_block  go to state 287
+    sent_block  go to state 289
     sb_begin    go to state 12
 
 
-state 272
+state 276
 
   127 expr: expr . '%' expr
   128     | expr . '*' expr
@@ -4225,87 +4282,87 @@ state 272
   140     | expr . '?' expr ':' expr
   140     | expr '?' expr ':' expr .
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
 
     $default  reduce using rule 140 (expr)
 
 
-state 273
+state 277
 
   123 expr: reduce_op '(' id ':' id . '.' iterator1 ')' '(' expr ')' '{' expr '}'
   124     | reduce_op '(' id ':' id . '.' iterator1 ')' '{' expr '}'
 
-    '.'  shift, and go to state 288
+    '.'  shift, and go to state 290
 
 
-state 274
+state 278
 
   125 expr: reduce_op2 '(' id ':' id . '.' iterator1 ')' '(' expr ')'
   126     | reduce_op2 '(' id ':' id . '.' iterator1 ')' '{' expr '}'
 
-    '.'  shift, and go to state 289
+    '.'  shift, and go to state 291
 
 
-state 275
+state 279
 
    84 bfs_reverse: T_BACK sent_block .
 
     $default  reduce using rule 84 (bfs_reverse)
 
 
-state 276
+state 280
 
    83 bfs_reverse: T_BACK bfs_filter . sent_block
 
     '{'  shift, and go to state 9
 
-    sent_block  go to state 290
+    sent_block  go to state 292
     sb_begin    go to state 12
 
 
-state 277
+state 281
 
    65 foreach_header: '(' id ':' id '+' . '.' iterator1 ')'
 
-    '.'  shift, and go to state 291
+    '.'  shift, and go to state 293
 
 
-state 278
+state 282
 
    66 foreach_header: '(' id ':' id '-' . '.' iterator1 ')'
 
-    '.'  shift, and go to state 292
+    '.'  shift, and go to state 294
 
 
-state 279
+state 283
 
    64 foreach_header: '(' id ':' id '.' . iterator1 ')'
 
-    T_ITEMS      shift, and go to state 293
-    T_NODES      shift, and go to state 294
-    T_EDGES      shift, and go to state 295
-    T_NBRS       shift, and go to state 296
-    T_IN_NBRS    shift, and go to state 297
-    T_NBR_EDGES  shift, and go to state 298
-    T_UP_NBRS    shift, and go to state 299
-    T_DOWN_NBRS  shift, and go to state 300
+    T_ITEMS      shift, and go to state 295
+    T_NODES      shift, and go to state 296
+    T_EDGES      shift, and go to state 297
+    T_NBRS       shift, and go to state 298
+    T_IN_NBRS    shift, and go to state 299
+    T_NBR_EDGES  shift, and go to state 300
+    T_UP_NBRS    shift, and go to state 301
+    T_DOWN_NBRS  shift, and go to state 302
 
-    iterator1  go to state 301
+    iterator1  go to state 303
 
 
-state 280
+state 284
 
   117 sent_if: T_IF '(' bool_expr ')' sent T_ELSE . sent
 
@@ -4343,7 +4400,7 @@ state 280
     property                go to state 50
     sent_block              go to state 51
     sb_begin                go to state 12
-    sent                    go to state 302
+    sent                    go to state 304
     sent_call               go to state 54
     sent_while              go to state 55
     sent_do_while           go to state 56
@@ -4363,371 +4420,296 @@ state 280
     id                      go to state 70
 
 
-state 281
+state 285
 
    61 sent_do_while: T_DO sent_block T_WHILE '(' bool_expr ')' .
 
     $default  reduce using rule 61 (sent_do_while)
 
 
-state 282
-
-  164 expr_list: expr ',' . expr_list
-
-    T_SUM      shift, and go to state 85
-    T_PRODUCT  shift, and go to state 86
-    T_MIN      shift, and go to state 87
-    T_MAX      shift, and go to state 88
-    T_COUNT    shift, and go to state 89
-    T_M_INF    shift, and go to state 90
-    T_P_INF    shift, and go to state 91
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 92
-    FLOAT_NUM  shift, and go to state 93
-    BOOL_VAL   shift, and go to state 94
-    '-'        shift, and go to state 95
-    '('        shift, and go to state 96
-    '|'        shift, and go to state 97
-    '!'        shift, and go to state 98
-
-    expr        go to state 264
-    reduce_op   go to state 100
-    reduce_op2  go to state 101
-    inf         go to state 102
-    scala       go to state 103
-    field       go to state 104
-    built_in    go to state 105
-    expr_list   go to state 303
-    id          go to state 70
-
-
-state 283
-
-  161 arg_list: '(' expr_list ')' .
-
-    $default  reduce using rule 161 (arg_list)
-
-
-state 284
+state 286
 
    36 property: T_NODEPROP '<' prim_type '>' '(' id ')' .
 
     $default  reduce using rule 36 (property)
 
 
-state 285
+state 287
 
    37 property: T_EDGEPROP '<' prim_type '>' '(' id ')' .
 
     $default  reduce using rule 37 (property)
 
 
-state 286
+state 288
 
    85 bfs_header_format: '(' id ':' id opt_tp '.' . T_NODES from_or_semi id ')'
 
-    T_NODES  shift, and go to state 304
+    T_NODES  shift, and go to state 305
 
 
-state 287
+state 289
 
    80 dfs_post: T_POST bfs_filter sent_block .
 
     $default  reduce using rule 80 (dfs_post)
 
 
-state 288
+state 290
 
   123 expr: reduce_op '(' id ':' id '.' . iterator1 ')' '(' expr ')' '{' expr '}'
   124     | reduce_op '(' id ':' id '.' . iterator1 ')' '{' expr '}'
 
-    T_ITEMS      shift, and go to state 293
-    T_NODES      shift, and go to state 294
-    T_EDGES      shift, and go to state 295
-    T_NBRS       shift, and go to state 296
-    T_IN_NBRS    shift, and go to state 297
-    T_NBR_EDGES  shift, and go to state 298
-    T_UP_NBRS    shift, and go to state 299
-    T_DOWN_NBRS  shift, and go to state 300
-
-    iterator1  go to state 305
-
-
-state 289
-
-  125 expr: reduce_op2 '(' id ':' id '.' . iterator1 ')' '(' expr ')'
-  126     | reduce_op2 '(' id ':' id '.' . iterator1 ')' '{' expr '}'
-
-    T_ITEMS      shift, and go to state 293
-    T_NODES      shift, and go to state 294
-    T_EDGES      shift, and go to state 295
-    T_NBRS       shift, and go to state 296
-    T_IN_NBRS    shift, and go to state 297
-    T_NBR_EDGES  shift, and go to state 298
-    T_UP_NBRS    shift, and go to state 299
-    T_DOWN_NBRS  shift, and go to state 300
+    T_ITEMS      shift, and go to state 295
+    T_NODES      shift, and go to state 296
+    T_EDGES      shift, and go to state 297
+    T_NBRS       shift, and go to state 298
+    T_IN_NBRS    shift, and go to state 299
+    T_NBR_EDGES  shift, and go to state 300
+    T_UP_NBRS    shift, and go to state 301
+    T_DOWN_NBRS  shift, and go to state 302
 
     iterator1  go to state 306
 
 
-state 290
-
-   83 bfs_reverse: T_BACK bfs_filter sent_block .
-
-    $default  reduce using rule 83 (bfs_reverse)
-
-
 state 291
 
-   65 foreach_header: '(' id ':' id '+' '.' . iterator1 ')'
+  125 expr: reduce_op2 '(' id ':' id '.' . iterator1 ')' '(' expr ')'
+  126     | reduce_op2 '(' id ':' id '.' . iterator1 ')' '{' expr '}'
 
-    T_ITEMS      shift, and go to state 293
-    T_NODES      shift, and go to state 294
-    T_EDGES      shift, and go to state 295
-    T_NBRS       shift, and go to state 296
-    T_IN_NBRS    shift, and go to state 297
-    T_NBR_EDGES  shift, and go to state 298
-    T_UP_NBRS    shift, and go to state 299
-    T_DOWN_NBRS  shift, and go to state 300
+    T_ITEMS      shift, and go to state 295
+    T_NODES      shift, and go to state 296
+    T_EDGES      shift, and go to state 297
+    T_NBRS       shift, and go to state 298
+    T_IN_NBRS    shift, and go to state 299
+    T_NBR_EDGES  shift, and go to state 300
+    T_UP_NBRS    shift, and go to state 301
+    T_DOWN_NBRS  shift, and go to state 302
 
     iterator1  go to state 307
 
 
 state 292
 
-   66 foreach_header: '(' id ':' id '-' '.' . iterator1 ')'
+   83 bfs_reverse: T_BACK bfs_filter sent_block .
 
-    T_ITEMS      shift, and go to state 293
-    T_NODES      shift, and go to state 294
-    T_EDGES      shift, and go to state 295
-    T_NBRS       shift, and go to state 296
-    T_IN_NBRS    shift, and go to state 297
-    T_NBR_EDGES  shift, and go to state 298
-    T_UP_NBRS    shift, and go to state 299
-    T_DOWN_NBRS  shift, and go to state 300
+    $default  reduce using rule 83 (bfs_reverse)
+
+
+state 293
+
+   65 foreach_header: '(' id ':' id '+' '.' . iterator1 ')'
+
+    T_ITEMS      shift, and go to state 295
+    T_NODES      shift, and go to state 296
+    T_EDGES      shift, and go to state 297
+    T_NBRS       shift, and go to state 298
+    T_IN_NBRS    shift, and go to state 299
+    T_NBR_EDGES  shift, and go to state 300
+    T_UP_NBRS    shift, and go to state 301
+    T_DOWN_NBRS  shift, and go to state 302
 
     iterator1  go to state 308
 
 
-state 293
+state 294
+
+   66 foreach_header: '(' id ':' id '-' '.' . iterator1 ')'
+
+    T_ITEMS      shift, and go to state 295
+    T_NODES      shift, and go to state 296
+    T_EDGES      shift, and go to state 297
+    T_NBRS       shift, and go to state 298
+    T_IN_NBRS    shift, and go to state 299
+    T_NBR_EDGES  shift, and go to state 300
+    T_UP_NBRS    shift, and go to state 301
+    T_DOWN_NBRS  shift, and go to state 302
+
+    iterator1  go to state 309
+
+
+state 295
 
    76 iterator1: T_ITEMS .
 
     $default  reduce using rule 76 (iterator1)
 
 
-state 294
+state 296
 
    69 iterator1: T_NODES .
 
     $default  reduce using rule 69 (iterator1)
 
 
-state 295
+state 297
 
    70 iterator1: T_EDGES .
 
     $default  reduce using rule 70 (iterator1)
 
 
-state 296
+state 298
 
    71 iterator1: T_NBRS .
 
     $default  reduce using rule 71 (iterator1)
 
 
-state 297
+state 299
 
    73 iterator1: T_IN_NBRS .
 
     $default  reduce using rule 73 (iterator1)
 
 
-state 298
+state 300
 
    72 iterator1: T_NBR_EDGES .
 
     $default  reduce using rule 72 (iterator1)
 
 
-state 299
+state 301
 
    74 iterator1: T_UP_NBRS .
 
     $default  reduce using rule 74 (iterator1)
 
 
-state 300
+state 302
 
    75 iterator1: T_DOWN_NBRS .
 
     $default  reduce using rule 75 (iterator1)
 
 
-state 301
+state 303
 
    64 foreach_header: '(' id ':' id '.' iterator1 . ')'
 
-    ')'  shift, and go to state 309
+    ')'  shift, and go to state 310
 
 
-state 302
+state 304
 
   117 sent_if: T_IF '(' bool_expr ')' sent T_ELSE sent .
 
     $default  reduce using rule 117 (sent_if)
 
 
-state 303
-
-  164 expr_list: expr ',' expr_list .
-
-    $default  reduce using rule 164 (expr_list)
-
-
-state 304
+state 305
 
    85 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES . from_or_semi id ')'
 
-    T_FROM  shift, and go to state 310
-    ';'     shift, and go to state 311
+    T_FROM  shift, and go to state 311
+    ';'     shift, and go to state 312
 
-    from_or_semi  go to state 312
-
-
-state 305
-
-  123 expr: reduce_op '(' id ':' id '.' iterator1 . ')' '(' expr ')' '{' expr '}'
-  124     | reduce_op '(' id ':' id '.' iterator1 . ')' '{' expr '}'
-
-    ')'  shift, and go to state 313
+    from_or_semi  go to state 313
 
 
 state 306
 
-  125 expr: reduce_op2 '(' id ':' id '.' iterator1 . ')' '(' expr ')'
-  126     | reduce_op2 '(' id ':' id '.' iterator1 . ')' '{' expr '}'
+  123 expr: reduce_op '(' id ':' id '.' iterator1 . ')' '(' expr ')' '{' expr '}'
+  124     | reduce_op '(' id ':' id '.' iterator1 . ')' '{' expr '}'
 
     ')'  shift, and go to state 314
 
 
 state 307
 
-   65 foreach_header: '(' id ':' id '+' '.' iterator1 . ')'
+  125 expr: reduce_op2 '(' id ':' id '.' iterator1 . ')' '(' expr ')'
+  126     | reduce_op2 '(' id ':' id '.' iterator1 . ')' '{' expr '}'
 
     ')'  shift, and go to state 315
 
 
 state 308
 
-   66 foreach_header: '(' id ':' id '-' '.' iterator1 . ')'
+   65 foreach_header: '(' id ':' id '+' '.' iterator1 . ')'
 
     ')'  shift, and go to state 316
 
 
 state 309
 
+   66 foreach_header: '(' id ':' id '-' '.' iterator1 . ')'
+
+    ')'  shift, and go to state 317
+
+
+state 310
+
    64 foreach_header: '(' id ':' id '.' iterator1 ')' .
 
     $default  reduce using rule 64 (foreach_header)
 
 
-state 310
+state 311
 
    88 from_or_semi: T_FROM .
 
     $default  reduce using rule 88 (from_or_semi)
 
 
-state 311
+state 312
 
    89 from_or_semi: ';' .
 
     $default  reduce using rule 89 (from_or_semi)
 
 
-state 312
+state 313
 
    85 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES from_or_semi . id ')'
 
     ID  shift, and go to state 7
 
-    id  go to state 317
-
-
-state 313
-
-  123 expr: reduce_op '(' id ':' id '.' iterator1 ')' . '(' expr ')' '{' expr '}'
-  124     | reduce_op '(' id ':' id '.' iterator1 ')' . '{' expr '}'
-
-    '('  shift, and go to state 318
-    '{'  shift, and go to state 319
+    id  go to state 318
 
 
 state 314
 
-  125 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' . '(' expr ')'
-  126     | reduce_op2 '(' id ':' id '.' iterator1 ')' . '{' expr '}'
+  123 expr: reduce_op '(' id ':' id '.' iterator1 ')' . '(' expr ')' '{' expr '}'
+  124     | reduce_op '(' id ':' id '.' iterator1 ')' . '{' expr '}'
 
-    '('  shift, and go to state 320
-    '{'  shift, and go to state 321
+    '('  shift, and go to state 319
+    '{'  shift, and go to state 320
 
 
 state 315
+
+  125 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' . '(' expr ')'
+  126     | reduce_op2 '(' id ':' id '.' iterator1 ')' . '{' expr '}'
+
+    '('  shift, and go to state 321
+    '{'  shift, and go to state 322
+
+
+state 316
 
    65 foreach_header: '(' id ':' id '+' '.' iterator1 ')' .
 
     $default  reduce using rule 65 (foreach_header)
 
 
-state 316
+state 317
 
    66 foreach_header: '(' id ':' id '-' '.' iterator1 ')' .
 
     $default  reduce using rule 66 (foreach_header)
 
 
-state 317
+state 318
 
    85 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES from_or_semi id . ')'
 
-    ')'  shift, and go to state 322
-
-
-state 318
-
-  123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' . expr ')' '{' expr '}'
-
-    T_SUM      shift, and go to state 85
-    T_PRODUCT  shift, and go to state 86
-    T_MIN      shift, and go to state 87
-    T_MAX      shift, and go to state 88
-    T_COUNT    shift, and go to state 89
-    T_M_INF    shift, and go to state 90
-    T_P_INF    shift, and go to state 91
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 92
-    FLOAT_NUM  shift, and go to state 93
-    BOOL_VAL   shift, and go to state 94
-    '-'        shift, and go to state 95
-    '('        shift, and go to state 96
-    '|'        shift, and go to state 97
-    '!'        shift, and go to state 98
-
-    expr        go to state 323
-    reduce_op   go to state 100
-    reduce_op2  go to state 101
-    inf         go to state 102
-    scala       go to state 103
-    field       go to state 104
-    built_in    go to state 105
-    id          go to state 70
+    ')'  shift, and go to state 323
 
 
 state 319
 
-  124 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' . expr '}'
+  123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' . expr ')' '{' expr '}'
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -4757,7 +4739,7 @@ state 319
 
 state 320
 
-  125 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' . expr ')'
+  124 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' . expr '}'
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -4787,7 +4769,7 @@ state 320
 
 state 321
 
-  126 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '{' . expr '}'
+  125 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' . expr ')'
 
     T_SUM      shift, and go to state 85
     T_PRODUCT  shift, and go to state 86
@@ -4817,12 +4799,42 @@ state 321
 
 state 322
 
+  126 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '{' . expr '}'
+
+    T_SUM      shift, and go to state 85
+    T_PRODUCT  shift, and go to state 86
+    T_MIN      shift, and go to state 87
+    T_MAX      shift, and go to state 88
+    T_COUNT    shift, and go to state 89
+    T_M_INF    shift, and go to state 90
+    T_P_INF    shift, and go to state 91
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 92
+    FLOAT_NUM  shift, and go to state 93
+    BOOL_VAL   shift, and go to state 94
+    '-'        shift, and go to state 95
+    '('        shift, and go to state 96
+    '|'        shift, and go to state 97
+    '!'        shift, and go to state 98
+
+    expr        go to state 327
+    reduce_op   go to state 100
+    reduce_op2  go to state 101
+    inf         go to state 102
+    scala       go to state 103
+    field       go to state 104
+    built_in    go to state 105
+    id          go to state 70
+
+
+state 323
+
    85 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES from_or_semi id ')' .
 
     $default  reduce using rule 85 (bfs_header_format)
 
 
-state 323
+state 324
 
   123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr . ')' '{' expr '}'
   127     | expr . '%' expr
@@ -4840,24 +4852,24 @@ state 323
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    ')'    shift, and go to state 327
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    ')'    shift, and go to state 328
 
 
-state 324
+state 325
 
   124 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' expr . '}'
   127     | expr . '%' expr
@@ -4875,24 +4887,24 @@ state 324
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    '}'    shift, and go to state 328
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    '}'    shift, and go to state 329
 
 
-state 325
+state 326
 
   125 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr . ')'
   127     | expr . '%' expr
@@ -4910,24 +4922,24 @@ state 325
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    ')'    shift, and go to state 329
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    ')'    shift, and go to state 330
 
 
-state 326
+state 327
 
   126 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '{' expr . '}'
   127     | expr . '%' expr
@@ -4945,52 +4957,52 @@ state 326
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    '}'    shift, and go to state 330
-
-
-state 327
-
-  123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' . '{' expr '}'
-
-    '{'  shift, and go to state 331
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    '}'    shift, and go to state 331
 
 
 state 328
+
+  123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' . '{' expr '}'
+
+    '{'  shift, and go to state 332
+
+
+state 329
 
   124 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}' .
 
     $default  reduce using rule 124 (expr)
 
 
-state 329
+state 330
 
   125 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr ')' .
 
     $default  reduce using rule 125 (expr)
 
 
-state 330
+state 331
 
   126 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '{' expr '}' .
 
     $default  reduce using rule 126 (expr)
 
 
-state 331
+state 332
 
   123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' . expr '}'
 
@@ -5010,7 +5022,7 @@ state 331
     '|'        shift, and go to state 97
     '!'        shift, and go to state 98
 
-    expr        go to state 332
+    expr        go to state 333
     reduce_op   go to state 100
     reduce_op2  go to state 101
     inf         go to state 102
@@ -5020,7 +5032,7 @@ state 331
     id          go to state 70
 
 
-state 332
+state 333
 
   123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr . '}'
   127     | expr . '%' expr
@@ -5038,24 +5050,24 @@ state 332
   139     | expr . T_OR expr
   140     | expr . '?' expr ':' expr
 
-    T_AND  shift, and go to state 160
-    T_OR   shift, and go to state 161
-    T_EQ   shift, and go to state 162
-    T_NEQ  shift, and go to state 163
-    T_LE   shift, and go to state 164
-    T_GE   shift, and go to state 165
-    '?'    shift, and go to state 166
-    '<'    shift, and go to state 167
-    '>'    shift, and go to state 168
-    '+'    shift, and go to state 169
-    '-'    shift, and go to state 170
-    '*'    shift, and go to state 171
-    '/'    shift, and go to state 172
-    '%'    shift, and go to state 173
-    '}'    shift, and go to state 333
+    T_AND  shift, and go to state 162
+    T_OR   shift, and go to state 163
+    T_EQ   shift, and go to state 164
+    T_NEQ  shift, and go to state 165
+    T_LE   shift, and go to state 166
+    T_GE   shift, and go to state 167
+    '?'    shift, and go to state 168
+    '<'    shift, and go to state 169
+    '>'    shift, and go to state 170
+    '+'    shift, and go to state 171
+    '-'    shift, and go to state 172
+    '*'    shift, and go to state 173
+    '/'    shift, and go to state 174
+    '%'    shift, and go to state 175
+    '}'    shift, and go to state 334
 
 
-state 333
+state 334
 
   123 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}' .
 

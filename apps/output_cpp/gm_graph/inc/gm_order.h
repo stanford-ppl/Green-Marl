@@ -67,6 +67,10 @@ public:
     {
         Q.get_size();
     }
+    bool is_in(T e)
+    {
+        return (_gm_get_bit(bitmap, e) == 1);
+    }
 
     // for parallel execution
     void push_back_par(T e, int tid)

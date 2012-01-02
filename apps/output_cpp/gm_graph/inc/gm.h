@@ -1,5 +1,7 @@
 #ifndef GM_H
 #define GM_H
+#include <math.h>
+#include <stdlib.h>
 
 #include "gm_graph_typedef.h"
 #include "gm_graph.h"

@@ -420,7 +420,6 @@ ast_sent* gm_find_enclosing_seq_loop(ast_node* S)
     if (up->get_nodetype() == AST_IF) return NULL; // conditional
 
     if (up->get_nodetype() == AST_WHILE) {
-        // (hack) I will treat DO-WHILE same as WHILE
         return (ast_sent*)up;
     }
 
@@ -454,4 +453,16 @@ bool gm_check_if_end_with_return(ast_sentblock* sb)
         return false;
     }
 
+}
+
+//--------------------------------------------------------------------
+// find the sentence that contains this expression
+//--------------------------------------------------------------------
+ast_sent* gm_find_parent_sentence(ast_expr* e)
+{
+    ast_node* up = e->get_parent();
+    if (up == NULL) return NULL;
+    else if (up->is_sentence()) return (ast_sent*)up;
+    else if (up->is_expr()) return gm_find_parent_sentence(e);
+    else return NULL;
 }

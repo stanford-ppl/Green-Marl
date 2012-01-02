@@ -1,6 +1,16 @@
-Proc foo()
+
+// Test of built-in functions
+Proc foo(G: Graph, n: Node(G), A : N_P<Int>(G))
 {
-    Int x;
-    If (x> 0)
-        Return;
+    Int  x, y, z;
+    Double  a, b, c;
+
+    //G.A = Rand(100);
+
+    y = |x|;
+    b = Log(a);
+    x = Rand(10);
+    c = Pow(3, x);
+    z = Exp(y);
+
 }
