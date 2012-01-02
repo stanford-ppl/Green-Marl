@@ -3,6 +3,7 @@
 #include <omp.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include "gm_runtime.h"
 #include "gm_mem_helper.h"
 
@@ -22,9 +23,11 @@ gm_runtime::~gm_runtime()
 // Called at each procedure entry
 void gm_runtime::initialize()
 {
-    if (is_init) return;
-    set_num_threads(omp_get_max_threads());
-    is_init = true;
+
+    if ((is_init == false) || (omp_get_max_threads() > num_threads)) {
+        set_num_threads(omp_get_max_threads());
+        is_init = true;
+    }
 
 }
 
@@ -40,11 +43,25 @@ int gm_runtime::get_num_threads()
 
 void gm_runtime::set_num_threads(int n)
 {
-    int old = num_threads;
+    if ((is_init == false) || (n > num_threads)) {
+        int old = num_threads;
+        _GM_MEM.resize(n);
+        expand_random_seeds(old, n);
+
+        //printf("HELLO\n");
+
+        // initialize threads by generationg random numbers
+#pragma omp parallel
+        {
+            //printf("HELLO\n");
+            uniform(gm_rt_thread_id());
+        }
+    }
+
+    num_threads = n;
     omp_set_num_threads(n);
-    _GM_MEM.resize(n);
-    expand_random_seeds(old, n);
 }
+
 int gm_runtime::get_thread_id()
 {
     return omp_get_thread_num();

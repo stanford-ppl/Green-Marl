@@ -72,6 +72,7 @@ void prepare_large()
     delete [] visited_bitmap;
 
     visited_bitmap = new unsigned char[(G.num_nodes()+7)/8];
+
     #pragma omp parallel for
     for(int i=0;i<(G.num_nodes()+7)/8;i++)
         visited_bitmap[i] = 0;
@@ -194,7 +195,7 @@ protected:
     unsigned char* visited_bitmap;
     std::set<node_t> visited_small;
     bool is_small;
-    static const int THRESHOLD_LARGE = 1024;
+    static const int THRESHOLD_LARGE = 4096;
     static const node_t INVALID_NODE = -1;
 
 };

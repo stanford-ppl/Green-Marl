@@ -3,7 +3,7 @@ AR= ar
 LIBDIR = ../lib
 BINDIR = ../../bin
 INCDIR = ../inc
-CFLAGS = -O3 -g  -I$(INCDIR) #-fopenmp  #-DCHECK_ANSWER
+CFLAGS = -O3 -g  -I$(INCDIR) -fopenmp  #-DCHECK_ANSWER
 OUT = $(BINDIR)/gen $(LIBDIR)/libgmgraph.a
 
 all: $(OUT)
