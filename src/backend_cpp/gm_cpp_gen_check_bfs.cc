@@ -9,16 +9,26 @@
 #include "gm_argopts.h"
 #include "gm_rw_analysis.h"
 
-//--------------------------------------------
-// Find every bfs in the procedure
-//   - save rw info (sym entries)
-//--------------------------------------------
+//---------------------------------------------------------------
+// Checking for BFS or DFS
+//---------------------------------------------------------------
+// (1) Check BFS-MAIN
+//   Find every bfs in the procedure
+//   - save sym entries of variables that are used inside each bfs
+//   - give a name to each bfs call-site
+// (2) Check BFS Built-In
+//   For every bfs
+//   - save sym entries of collections that are used inside each bfs
+//---------------------------------------------------------------
 class check_bfs_main_t : public gm_apply
 {
 public:
     check_bfs_main_t(ast_procdef* p) : proc(p) {
         has_bfs = false;
         set_for_sent(true);
+        set_for_expr(true);
+        set_separate_post_apply(true);
+        in_bfs = false;
     }
                          
     void process_rwinfo(gm_rwinfo_map& MAP, std::set<void*>& SET)
@@ -84,21 +94,60 @@ public:
             s->add_info_string(CPPBE_INFO_BFS_NAME, c);
 
             bfs_lists.push_back(s);
+
+            assert(in_bfs == false);
+            in_bfs = true;
+            current_bfs = (ast_bfs*) s;
         }
+
+        return true;
     }
 
+    // [XXX]: should be merged with 'improved RW' analysis (to be done)
+    bool apply(ast_expr* e)
+    {
+        if (!in_bfs) return true;
+        if (e->is_builtin())
+        {
+            ast_expr_builtin* bin =  (ast_expr_builtin*) e;
+            ast_id * driver = bin->get_driver();
+            if (driver != NULL) {
+                
+                std::set<void*>& SET = 
+                    ((ast_extra_info_set*)
+                    current_bfs->find_info(CPPBE_INFO_BFS_SYMBOLS))->get_set();
+                SET.insert(driver->getSymInfo());
+            }
+        }
+        return true;
+    }
+
+    
+    bool apply2(ast_sent * s)
+    {
+        if (s->get_nodetype() == AST_BFS) 
+        {
+            in_bfs = false;
+        }
+        return true;
+    }
+
+    ast_bfs* current_bfs;
     ast_procdef* proc;
     std::list<ast_sent*> bfs_lists;
     bool has_bfs;
+    bool in_bfs;
 };
+
 
 void gm_cpp_gen_check_bfs::process(ast_procdef* d)
 {
     // re-do rw analysis
     gm_redo_rw_analysis(d->get_body());
+
    
     check_bfs_main_t T(d);
-    d->traverse_pre(&T);
+    d->traverse_both(&T);
 
     d->add_info_bool(CPPBE_INFO_HAS_BFS, T.has_bfs);
     if (T.has_bfs) {

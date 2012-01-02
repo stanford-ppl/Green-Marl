@@ -2,12 +2,13 @@
 #include <assert.h>
 #include <omp.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "gm_runtime.h"
 #include "gm_mem_helper.h"
 
 //===============================
+gm_mem_helper _GM_MEM;; //GM_MEM should be initialized first
 gm_runtime _GM_RT;
-gm_mem_helper _GM_MEM;;
 
 //===============================
 gm_runtime::gm_runtime() : is_init(false), num_threads(0), random_seeds(NULL)
@@ -22,8 +23,8 @@ gm_runtime::~gm_runtime()
 void gm_runtime::initialize()
 {
     if (is_init) return;
-    is_init = true;
     set_num_threads(omp_get_max_threads());
+    is_init = true;
 
 }
 
@@ -41,38 +42,42 @@ void gm_runtime::set_num_threads(int n)
 {
     int old = num_threads;
     omp_set_num_threads(n);
-    if (n > old) {
-        _GM_MEM.resize(n);
-        expand_random_seeds(old, n);
-    }
+    _GM_MEM.resize(n);
+    expand_random_seeds(old, n);
 }
 int gm_runtime::get_thread_id()
 {
     return omp_get_thread_num();
 }
 
+
 void gm_runtime::expand_random_seeds(int old, int n)
 {
+    if (is_init && (n <=old)) return;
+
     unsigned short* old_seeds = random_seeds;
-    unsigned short* random_seeds = new unsigned short[n*3];
+    random_seeds = new unsigned short[n*3];
+
+    if (!is_init) old = 0;
 
     // copy old random seeds
-    for(int i=0;i<old*3;i++)
+    for(int i=0;i<old*3;i++) {
         random_seeds[i] = old_seeds[i];
+    }
 
     // new random seeds
     // short[0]   : 0x330E  (arbitary number)
     // short[1~2] : thread id 
-    int base = old*3;
     for(int i=old;i<n;i++)
     {
         int base = i*3;
-        random_seeds[base + 0] = 0x330E;
-        random_seeds[base + 1] = (n & 0xFFFF);
-        random_seeds[base + 2] = ((n>>16) & 0xFFFF);
+        random_seeds[base + 0] = (unsigned short)0x330E;
+        random_seeds[base + 1] = (unsigned short)(n & 0xFFFF);
+        random_seeds[base + 2] = (unsigned short)((n>>16) & 0xFFFF);
+        assert((base+2)<n*3);
     }
 
-    delete old_seeds;
+    delete [] old_seeds;
 }
 
 double gm_runtime::uniform(int tid)

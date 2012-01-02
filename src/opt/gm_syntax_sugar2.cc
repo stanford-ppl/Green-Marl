@@ -315,6 +315,9 @@ void ss2_reduce_op::post_process_body(
 
         ast_if* iff = ast_if::new_if(filter, r_assign , NULL);
         foreach_body = iff;
+        assert(filter->get_parent() != NULL);
+        assert(filter->get_parent()->is_sentence());
+        //printf("filter = %p\n", filter);
     } 
 
     //-------------------------------------------------
@@ -328,7 +331,6 @@ void ss2_reduce_op::post_process_body(
     // see common/new_sent_after_tc.cc
     ast_foreach* fe_new = gm_new_foreach_after_tc(foreach_it, foreach_src, foreach_body, iter_type);
 
-    fflush(stdout);
 
     // 3.2 add foreach 
     gm_add_sent_before(holder, fe_new);

@@ -1,2 +1,2 @@
-PROGS=pagerank conduct bc b2
+PROGS=pagerank conduct bc kosaraju
 export PROGS

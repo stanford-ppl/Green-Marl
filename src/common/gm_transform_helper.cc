@@ -463,6 +463,6 @@ ast_sent* gm_find_parent_sentence(ast_expr* e)
     ast_node* up = e->get_parent();
     if (up == NULL) return NULL;
     else if (up->is_sentence()) return (ast_sent*)up;
-    else if (up->is_expr()) return gm_find_parent_sentence(e);
+    else if (up->is_expr()) return gm_find_parent_sentence((ast_expr*)up);
     else return NULL;
 }
