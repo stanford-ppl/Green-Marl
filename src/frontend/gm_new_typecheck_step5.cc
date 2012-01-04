@@ -87,7 +87,9 @@ public:
 
                 int summary_rhs = r->get_expr()->get_type_summary();
 
-                if (!gm_is_compatible_type_for_assign(summary_lhs, summary_rhs))
+                bool warn;
+                int coed;
+                if (!gm_is_compatible_type_for_assign(summary_lhs, summary_rhs, coed, warn))
                 {
                     gm_type_error(GM_ERROR_RETURN_MISMATCH, 
                         r->get_line(), r->get_col(),
@@ -149,7 +151,9 @@ public:
             printf("ID =%s\n", a->get_lhs_scala()->get_orgname());
         }
         */
-        if (!gm_is_compatible_type_for_assign(summary_lhs, summary_rhs)){
+        bool warn;
+        int coed;
+        if (!gm_is_compatible_type_for_assign(summary_lhs, summary_rhs, coed, warn)){
             gm_type_error(GM_ERROR_ASSIGN_TYPE_MISMATCH,
                 l, c, 
                 gm_get_type_string(summary_lhs),

@@ -64,11 +64,10 @@ public:
                 break;
             case GMEXPR_LBIOP:
             case GMEXPR_BIOP:
-                okay = check_biop(e);
-                break;
             case GMEXPR_COMP:
-                okay = check_comp(e);
+                okay = check_binary(e);
                 break;
+
             case GMEXPR_REDUCE:
                 { 
                     ast_expr_reduce*r = (ast_expr_reduce*) e;
@@ -91,6 +90,11 @@ public:
                     okay = check_builtin(b);
                 }
                 break;
+            case GMEXPR_FOREIGN:
+                {
+                    e->set_type_summary(GMTYPE_FOREIGN_EXPR);
+                    okay = true;
+                }
             default:
                 assert(false);
         }
@@ -105,12 +109,10 @@ public:
     void set_okay(bool b) {_is_okay = b && _is_okay;}
     bool is_okay() {return _is_okay;}
 
-
 private:
     bool _is_okay;
     bool check_uop(ast_expr* e);
-    bool check_biop(ast_expr* e);
-    bool check_comp(ast_expr* e);
+    bool check_binary(ast_expr* e);
     bool check_ter(ast_expr* e);
     bool check_builtin(ast_expr_builtin* e);
 };
@@ -135,38 +137,12 @@ bool gm_typechecker_stage_3::check_ter(ast_expr *e)
         return false;
     }
 
-    // left and right should be comparable
-    int result_type;
-    bool okay = gm_check_biop_rule(GMOP_TER, l_type, r_type, result_type);
-    if (!okay) {
-        gm_type_error(GM_ERROR_OPERATOR_MISMATCH, l, c, ":", 
-                gm_get_type_string(l_type),
-                gm_get_type_string(r_type));
-        return false;
-    }
-
-
-    if (gm_has_target_graph_type(result_type))
-    {
-        gm_symtab_entry* e1 = e->get_left_op()->get_bound_graph();
-        gm_symtab_entry* e2 = e->get_right_op()->get_bound_graph();
-        assert(e1 != NULL);
-        assert(e2 != NULL);
-
-        if (e1!= e2) {
-            gm_type_error(
-                GM_ERROR_TARGET_MISMATCH2,
-                e->get_line(), e->get_col());
-            return false;
-        }
-    }
-
-    e->set_type_summary(result_type);
-    return true;
+    // now check the binary part of the expression
+    return check_binary(e);
 }
 
 // comparison (eq, neq and less)
-bool gm_typechecker_stage_3::check_comp(ast_expr* e)
+bool gm_typechecker_stage_3::check_binary(ast_expr* e)
 {
     int op_type = e->get_optype();
     int l_type = e->get_left_op()->get_type_summary();
@@ -174,21 +150,12 @@ bool gm_typechecker_stage_3::check_comp(ast_expr* e)
     int l = e->get_line(); int c = e->get_col();
 
     // result is always BOOL
-    e->set_type_summary(GMTYPE_BOOL); 
+    if (gm_is_boolean_op(op_type) || gm_is_eq_or_less_op(op_type))
+        e->set_type_summary(GMTYPE_BOOL); 
 
     if (gm_is_unknown_type(l_type) || gm_is_unknown_type(r_type)) {
-        return false; // no need to check
+        return false; // no need to check any further
     }
-
-    // COMP or LESS
-    int result_type; // not used
-    bool okay = gm_check_biop_rule(op_type, l_type,  r_type, result_type);
-    if (!okay) {
-        gm_type_error(GM_ERROR_COMPARE_MISMATCH, 
-            l, c, gm_get_type_string(l_type), gm_get_type_string(r_type));
-        return false;
-    }
-
     // node/edge
     if (gm_has_target_graph_type(l_type))
     {
@@ -204,35 +171,45 @@ bool gm_typechecker_stage_3::check_comp(ast_expr* e)
             gm_type_error( GM_ERROR_TARGET_MISMATCH, l, c);
             return false;
         }
+
+        e->set_bound_graph(l_sym);
     }
+
+    int result_type; 
+    int l_new;
+    int r_new;
+    bool w1_warn;
+    bool w2_warn;
+
+    bool okay = 
+        gm_is_compatible_type(op_type, l_type, r_type,
+                            result_type, l_new, r_new,
+                            w1_warn,w2_warn);
+
+    if (!okay) {
+        gm_type_error(GM_ERROR_OPERATOR_MISMATCH2,
+            l, c,
+            gm_get_op_string(op_type),
+            gm_get_type_string(l_type), 
+            gm_get_type_string(r_type));
+
+        return false;
+    }
+
+    e->set_type_summary(result_type);
+
+    // [XXX]
+    if (w1_warn) {
+        printf("warning: type convresion %s->%s\n", gm_get_type_string(l_type), 
+                                                    gm_get_type_string(l_new) );
+    }
+    if (w2_warn) {
+        printf("warning: type convresion %s->%s\n", gm_get_type_string(r_type), 
+                                                    gm_get_type_string(r_new) );
+    }
+
 
     return true;
-}
-
-bool gm_typechecker_stage_3::check_biop(ast_expr* e)
-{
-    int op_type = e->get_optype();
-    int l_type = e->get_left_op()->get_type_summary();
-    int r_type = e->get_right_op()->get_type_summary();
-    int l = e->get_line(); int c = e->get_col();
-    if (gm_is_unknown_type(l_type) || gm_is_unknown_type(r_type)) {
-        return false; // no need to check
-    }
-
-    //---------------------------------------------------
-    // L and R should be compitlbe for biop
-    //   (L,R) = (numeric, numeric) or (boolean boolean)
-    //---------------------------------------------------
-    int result_type;
-    bool b = gm_check_biop_rule(op_type, l_type, r_type, result_type);
-    if (b) {
-        e->set_type_summary(result_type); // result is always boolean
-        return true;
-    } else {
-        gm_type_error(GM_ERROR_OPERATOR_MISMATCH2, 
-                l, c, gm_get_op_string(op_type), gm_get_type_string(l_type), gm_get_type_string(r_type));
-        return false; // code does not reach here
-    }
 }
 
 bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
@@ -253,7 +230,14 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
         if (gm_is_unknown_type(curr_type)) {okay = false; continue;}
         
         // [xxx] to be improved
-        if (!gm_is_compatible_type_for_assign(def_type, curr_type)) {
+        //if (!gm_is_compatible_type_for_assign(def_type, curr_type)) {
+        int coerced_type;
+        bool warning;
+
+        bool okay = gm_is_compatible_type_for_assign(
+                    def_type, curr_type,coerced_type, warning);
+
+        if (!okay) {
             char temp[20]; sprintf(temp, "%d", j+1);
             gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_TYPE,
                     b->get_line(), b->get_col(),
@@ -267,7 +251,8 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
 
     if (gm_has_target_graph_type(fun_ret_type))
     {
-       assert(false); // to be done
+        b->set_bound_graph(b->get_driver()->getTypeInfo()->get_target_graph_sym());
+       //assert(false); // to be done
     }
     //assert(!gm_has_target_graph_type(fun_ret_type));
     return okay;

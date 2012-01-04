@@ -54,6 +54,7 @@ extern "C" {
     extern ast_node* GM_expr_id_access(ast_node* id);
     extern ast_node* GM_expr_field_access(ast_node* field);
     extern ast_node* GM_expr_conversion(ast_node* left, ast_node* type, int l, int c);
+    extern ast_node* GM_expr_foreign(const char* text, int l, int c);
     extern ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, ast_node* body, ast_node* filter, int l, int c);
     extern ast_node* GM_expr_ternary(ast_node* cond, ast_node* left, ast_node* right, int l, int c);
     extern ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l);

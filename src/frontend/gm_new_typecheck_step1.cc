@@ -614,6 +614,25 @@ bool gm_typechecker_stage_1::apply(ast_expr* p)
         }
         break;
     }
+
+    case GMEXPR_FOREIGN:
+    {
+        ast_expr_foreign* f = (ast_expr_foreign*) p;
+        std::list<ast_node*>& L = f->get_parsed_nodes();
+        std::list<ast_node*>::iterator I;
+        for(I=L.begin(); I!=L.end(); I++) 
+        {
+            ast_node* n = *I;
+            if (n== NULL) continue;
+            if (n->get_nodetype() == AST_FIELD) {
+                is_okay = find_symbol_field((ast_field*)n) && is_okay;
+            }
+            else {
+                printf("checking %s\n", ((ast_id*)n)->get_orgname());
+                is_okay = find_symbol_id((ast_id*)n) && is_okay;
+            }
+        }
+    }
   }
 
   set_okay(is_okay);

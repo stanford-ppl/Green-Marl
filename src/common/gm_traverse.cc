@@ -434,6 +434,48 @@ void ast_expr_builtin::traverse(gm_apply* a, bool is_post, bool is_pre)
     }
 }
 
+void ast_expr_foreign::apply_id(gm_apply* a, bool apply2)
+{
+    std::list<ast_node*>::iterator I;
+    for(I=parsed_gm.begin(); I!=parsed_gm.end(); I++) {
+        ast_node* n = *I;
+        if (n==NULL) continue;
+        if (n->get_nodetype() == AST_ID) {
+            ast_id* id = (ast_id*) n;
+            if (apply2) a->apply2(id);
+            else a->apply(id);
+        }
+        else if (n->get_nodetype() == AST_FIELD) {
+            ast_field* f = (ast_field*) n;
+            if (apply2) {a->apply2(f->get_first()); a->apply2(f->get_second());}
+            else        {a->apply(f->get_first());  a->apply(f->get_second());}
+        }
+    }
+}
+
+void ast_expr_foreign::traverse(gm_apply*a, bool is_post, bool is_pre)
+{
+    bool for_id = a->is_for_id();
+    bool for_expr = a->is_for_expr();
+    if (is_pre) {
+        if (for_id) {
+            apply_id(a, false);
+        } 
+    }
+
+    if (for_expr)
+        a->apply(this);
+
+    if (is_post) {
+        if (for_id) {
+            apply_id(a, a->has_separate_post_apply());
+        } 
+    }
+
+
+
+}
+
 void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre)
 {
     bool for_sent = a->is_for_sent();
@@ -498,9 +540,11 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre)
             break;
 
         case GMEXPR_BUILTIN:
+        case GMEXPR_FOREIGN:
+        case GMEXPR_REDUCE:
             assert(false); // should not be in here
-            //if (for_id) a->apply(get_id());
             break;
+
             
         default:
             assert(false);

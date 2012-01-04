@@ -128,7 +128,7 @@ ast_node* GM_expr_luop(ast_node* left, int op, int l, int c){
     return n;
 }
 ast_node* GM_expr_comp(ast_node* left, ast_node* right, int op, int l, int c){
-   assert(gm_is_comp_op(op));
+   assert(gm_is_eq_or_less_op(op));
    ast_node* n= ast_expr::new_comp_expr(op, (ast_expr*) left, (ast_expr*)right);
    n->set_line(l); n->set_col(c);
    return n;
@@ -162,6 +162,16 @@ ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, a
     return n;
 }
 
+ast_node* GM_expr_foreign(const char * text, int l, int c)
+{
+    ast_expr_foreign *expr =
+        ast_expr_foreign::new_expr_foreign((char*)text);
+   expr->set_line(l);
+   expr->set_col(c);
+   expr->parse_foreign_syntax(); // parse again!
+   return expr;
+
+}
 
 ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l)
 {
@@ -452,6 +462,7 @@ ast_node* GM_new_call_sent(ast_node* n, bool is_builtin)
     }
     assert(false);
 }
+
 
 //------------------------------------------------
 // frontend module implementation

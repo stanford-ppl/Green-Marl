@@ -33,6 +33,7 @@ HEADERS =  \
 SRCS1 = gm_grammer.tab.c gm_lex.c  
 
 SRCS2 =\
+       gm_parse_foreign_syntax.cc \
        gm_reproduce.cc gm_dumptree.cc gm_misc.cc \
        gm_main.cc gm_argopts.cc gm_copy.cc \
        gm_code_generator.cc\

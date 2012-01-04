@@ -18,9 +18,17 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
     static void reset_empty_lines();
     static void find_empty_lines();
     int GM_get_empty_lines();
+    static int bracket_count = 0;
 
     static int GetNextChar(char* buf, int max_size);
     static void MarkToken();
+    void   GM_lex_begin_user_text();
+
+#define USER_TEXT_MAX   (4*1024*1024+1)  // 4 MB of codes should be sufficient
+    static char user_text_buf[USER_TEXT_MAX]; 
+    static int user_text_cnt = 0;
+    static void   save_user_text(char c);
+    static void   end_user_text();
 
     #define YY_INPUT(buf, result, max_size) {\
         result = GetNextChar(buf, max_size); \
@@ -31,6 +39,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 /* Define Section */
 %x BCOMMENT
 %x LCOMMENT
+%x USER_TEXT_MODE
 %option noyywrap
 
 %%
@@ -44,6 +53,18 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 <BCOMMENT>"*"+[^*/\n]*   /* eat up '*'s not followed by '/'s */
 <BCOMMENT>\n             {++lex_lines;}
 <BCOMMENT>"*"+"/"        {BEGIN(INITIAL);}
+
+<USER_TEXT_MODE>\n            {++lex_lines;save_user_text(yytext[0]);}
+<USER_TEXT_MODE>"["           {bracket_count++;save_user_text(yytext[0]);}
+<USER_TEXT_MODE>"]"           {if (bracket_count == 0) {  
+                                    unput(']');
+                                    end_user_text();
+                                    BEGIN(INITIAL); 
+                                    return USER_TEXT;} 
+                                else {bracket_count--; save_user_text(yytext[0]);}
+                               }
+<USER_TEXT_MODE>.              {save_user_text(yytext[0]);}    
+
 
 "/*"    {BEGIN(BCOMMENT);}
 "//"    {BEGIN(LCOMMENT);}
@@ -245,6 +266,25 @@ void GM_print_parse_error(const char* err_msg)
     }
     printf("\n");
     GM_set_parse_error(true);
+
+}
+
+void GM_lex_begin_user_text() {
+    BEGIN(USER_TEXT_MODE);
+    MarkToken();
+}
+
+void save_user_text(char c)
+{
+    assert(user_text_cnt < USER_TEXT_MAX);
+    user_text_buf[user_text_cnt++] = c;
+}
+void end_user_text()
+{
+    assert(user_text_cnt < USER_TEXT_MAX);
+    user_text_buf[user_text_cnt++] = '\0';
+    yylval.text = user_text_buf;
+    user_text_cnt = 0;
 
 }
 

@@ -8,6 +8,7 @@
     #include <assert.h>
     #include "gm_frontend_api.h"
     #define YYERROR_VERBOSE 1
+    extern void   GM_lex_begin_user_text();
 
     void yyerror(const char* str) 
     {
@@ -47,8 +48,10 @@
 %token T_IF  T_ELSE T_DO T_WHILE
 %token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS T_ANDEQ T_OREQ
 %token T_M_INF T_P_INF
+%token T_DOUBLE_COLON
 
 %token <text> ID
+%token <text> USER_TEXT
 %token <ival> INT_NUM
 %token <fval> FLOAT_NUM
 %token <bval> BOOL_VAL
@@ -73,6 +76,7 @@
 %type <ptr>  built_in
 %type <pair> bfs_header_format
 %type <e_list>  arg_list expr_list
+%type <ptr>  expr_user sent_user
 
  /* operator precedence
   * Lower is higher
@@ -189,6 +193,7 @@
       | sent_bfs                            { $$ = $1;}
       | sent_dfs                            { $$ = $1;}
       | sent_call ';'                       { $$ = $1;}
+      | sent_user ';'                       { $$ = $1;}
 
   sent_call : built_in                      { $$ = GM_new_call_sent($1, true);}
 
@@ -302,6 +307,8 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
           | T_IF '(' bool_expr ')' sent T_ELSE sent { $$ = GM_if($3, $5, $7);}
 
   
+  sent_user : expr_user                             { $$= GM_return(NULL, @1.first_line, @1.first_column); }// [XXX] temporary
+
 
 
 
@@ -345,6 +352,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
             | scala                        {$$ = GM_expr_id_access($1);}
             | field                        {$$ = GM_expr_field_access($1);}
             | built_in                     {$$ = $1;}
+            | expr_user                    {$$ = $1;}
 
    /* cannot be distinguished by the syntax, until type is available. due to vars */
    bool_expr : expr                    {$$ = $1; }
@@ -376,6 +384,14 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
   expr_list : expr                        { $$ = GM_single_expr_list($1);}
             | expr ',' expr_list          { $$ = GM_add_expr_front($1, $3);}
 
+
+  expr_user : '['                         {GM_lex_begin_user_text();} 
+              USER_TEXT ']'               { 
+                                            //$$ = (ast_node*) NULL;
+                                            //printf("user syntax = [%s]\n", $3);
+                                            $$ = GM_expr_foreign($3, @3.first_line, @3.first_column);
+                                          }
+                                            //[XXX] temporary
 
   id : ID                                  {$$ = GM_id($1, @1.first_line, @1.first_column); }
 

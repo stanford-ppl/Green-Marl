@@ -96,11 +96,13 @@
      T_OREQ = 312,
      T_M_INF = 313,
      T_P_INF = 314,
-     ID = 315,
-     INT_NUM = 316,
-     FLOAT_NUM = 317,
-     BOOL_VAL = 318,
-     NEG = 319
+     T_DOUBLE_COLON = 315,
+     ID = 316,
+     USER_TEXT = 317,
+     INT_NUM = 318,
+     FLOAT_NUM = 319,
+     BOOL_VAL = 320,
+     NEG = 321
    };
 #endif
 
@@ -111,7 +113,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 23 "parse/gm_grammer.y"
+#line 24 "parse/gm_grammer.y"
 
     int  info;
     long ival;
@@ -125,7 +127,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 129 "./parse/gm_grammer.tab.h"
+#line 131 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

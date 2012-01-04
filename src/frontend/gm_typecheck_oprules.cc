@@ -9,124 +9,203 @@
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
 
-struct gm_op_rule_t {
-    int left_category;
-    int right_category;
-    int result_category;
+//------------------------------------------------------------------------
+// CLASS NUMERIC OP
+
+//------------------------------------------------------------------------
+enum {
+  INT_OP,        // %
+  NUMERIC_OP,    // +,-,*,/, Max, Min
+  BOOL_OP,    // And, Or
+  COMP_OP,       // <,<=,>,>=
+  EQ_OP,         // == !=
+  TER_OP,        // ? t1 : t2
+  ASSIGN_OP,        // =
 };
 
-static std::map<int, std::list<gm_op_rule_t> > gm_op_rules;
-
-
-enum gm_category_enum_t {
-    INT,
-    NUMERIC ,
-    NUMERIC_INF, 
-    NUMERIC_LARGER,
-    BOOLEAN ,
-    NODE ,
-    EDGE,
-    STRICT_SAME
+enum {
+  T_INT,
+  T_BOOL,
+  T_NUMERIC,
+  T_NUMERIC_INF,    // NUMERIC + INF
+  T_COMPATIBLE,
 };
-       
-static void gm_add_op_rule(int op_type, int l, int r, int result)
+
+enum {
+    RESULT_COERCION,        // coercion
+    RESULT_LEFT,
+    RESULT_BOOL
+};
+
+enum {
+    COERCION_ALL,          // coercion
+    COERCION_RIGHT,        // coercion
+    COERCION_NO,           // no-coercion
+};
+
+struct gm_type_rule {
+gm_type_rule(int O,int T1, int T2, int R, int C) : opclass(O), type1(T1), type2(T2), result_type(R), coercion_rule(C) {}
+    int opclass;
+    int type1;
+    int type2;
+    int result_type;
+    int coercion_rule;
+};
+
+static std::vector<gm_type_rule> GM_TYPE_RULES;
+#define NEW_RULE(O, T1,T2, TR, C) \
+{ gm_type_rule R(O, T1, T2, TR, C); GM_TYPE_RULES.push_back(R); }
+
+
+static void init_op_rules()
 {
-    std::list<gm_op_rule_t>& rules = gm_op_rules[op_type];
+    NEW_RULE(INT_OP,      T_INT,            T_INT,          RESULT_COERCION,    COERCION_ALL);
+    NEW_RULE(NUMERIC_OP,  T_NUMERIC,        T_NUMERIC,      RESULT_COERCION,    COERCION_ALL);
+    NEW_RULE(BOOL_OP,     T_BOOL,           T_BOOL,         RESULT_BOOL,        COERCION_NO);
+    NEW_RULE(COMP_OP,      T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_BOOL,        COERCION_ALL);
 
-    gm_op_rule_t T;
-    T.left_category = l;
-    T.right_category = r;
-    T.result_category = result;
+    NEW_RULE(EQ_OP,        T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_BOOL,        COERCION_ALL);
+    NEW_RULE(EQ_OP,        T_COMPATIBLE,     T_COMPATIBLE,   RESULT_BOOL,        COERCION_NO);
 
-    rules.push_back(T);
-}
+    NEW_RULE(TER_OP,       T_COMPATIBLE,     T_COMPATIBLE,   RESULT_LEFT,        COERCION_NO);
+    NEW_RULE(TER_OP,       T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_LEFT,        COERCION_ALL);
 
+    NEW_RULE(ASSIGN_OP,    T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_LEFT,        COERCION_RIGHT);
+    NEW_RULE(ASSIGN_OP,    T_COMPATIBLE,     T_COMPATIBLE,        RESULT_LEFT,        COERCION_RIGHT);
+};
 void gm_frontend::init_op_type_rules()
 {
-    gm_add_op_rule(GMOP_MULT, NUMERIC, NUMERIC, NUMERIC_LARGER);
-    gm_add_op_rule(GMOP_DIV,  NUMERIC, NUMERIC, NUMERIC_LARGER);
-    gm_add_op_rule(GMOP_MOD, INT, INT, NUMERIC_LARGER);
-    gm_add_op_rule(GMOP_MAX, NUMERIC, NUMERIC, NUMERIC_LARGER);
-    gm_add_op_rule(GMOP_MIN, NUMERIC, NUMERIC, NUMERIC_LARGER);
-    gm_add_op_rule(GMOP_ADD, NUMERIC, NUMERIC, NUMERIC_LARGER);
-    gm_add_op_rule(GMOP_SUB, NUMERIC, NUMERIC, NUMERIC_LARGER);
-    gm_add_op_rule(GMOP_AND, BOOLEAN, BOOLEAN, BOOLEAN);
-    gm_add_op_rule(GMOP_OR,  BOOLEAN, BOOLEAN, BOOLEAN);
-    
-    gm_add_op_rule(GMOP_EQ,  NODE,  NODE, BOOLEAN);
-    gm_add_op_rule(GMOP_EQ,  EDGE,  EDGE, BOOLEAN);
-    gm_add_op_rule(GMOP_EQ,  NUMERIC_INF, NUMERIC_INF, BOOLEAN);
-    gm_add_op_rule(GMOP_EQ,  STRICT_SAME,  STRICT_SAME, BOOLEAN);
-
-    gm_add_op_rule(GMOP_NEQ,  NODE,  NODE, BOOLEAN);
-    gm_add_op_rule(GMOP_NEQ,  EDGE,  EDGE, BOOLEAN);
-    gm_add_op_rule(GMOP_NEQ,  NUMERIC_INF, NUMERIC_INF, BOOLEAN);
-    gm_add_op_rule(GMOP_NEQ,  STRICT_SAME,  STRICT_SAME, BOOLEAN);
-
-    gm_add_op_rule(GMOP_LE,  NUMERIC_INF, NUMERIC_INF, BOOLEAN);
-    gm_add_op_rule(GMOP_GE,  NUMERIC_INF, NUMERIC_INF, BOOLEAN);
-    gm_add_op_rule(GMOP_LT,  NUMERIC_INF, NUMERIC_INF, BOOLEAN);
-    gm_add_op_rule(GMOP_GT,  NUMERIC_INF, NUMERIC_INF, BOOLEAN);
-
-    // ternary operator (left and right)
-    gm_add_op_rule(GMOP_TER,  STRICT_SAME,  STRICT_SAME,  STRICT_SAME);
-    gm_add_op_rule(GMOP_TER,  NODE,        NODE,        NODE);
-    gm_add_op_rule(GMOP_TER,  EDGE,        EDGE,        EDGE);
-    gm_add_op_rule(GMOP_TER,  NUMERIC_INF, NUMERIC_INF, NUMERIC_LARGER);
-
+    init_op_rules();
 }
 
-static bool is_appliable(int category, int type)
+
+static inline bool in_typeclass(int tclass, int type)
 {
-    switch(category)
-    {
-        case INT:     return gm_is_int_type(type) || gm_is_long_type(type);
-        case NUMERIC:     return gm_is_numeric_type(type);
-        case NUMERIC_INF: return gm_is_numeric_type(type) || gm_is_inf_type(type);
-        case BOOLEAN: return gm_is_boolean_type(type);
-        case NODE: return gm_is_node_compatible_type(type);
-        case EDGE: return gm_is_edge_compatible_type(type);
-        case STRICT_SAME: return true;
-        default: assert(false);
-     }
+    if (tclass == T_INT)            {return gm_is_long_type(type) || gm_is_int_type(type);}
+    if (tclass == T_NUMERIC)        {return gm_is_numeric_type(type);}
+    if (tclass == T_NUMERIC_INF)    {return gm_is_inf_type(type) || gm_is_numeric_type(type);}
+    if (tclass == T_BOOL)           {return gm_is_boolean_type(type);}
+    assert(false);
 }
 
-static int get_result_type(int category, int l_type, int r_type)
+static inline bool in_opclass(int oclass, int op)
 {
-    switch(category)
-    {
-        case BOOLEAN: return GMTYPE_BOOL; 
-        case NODE:    return GMTYPE_NODE;
-        case EDGE:    return GMTYPE_EDGE;
-        case NUMERIC_LARGER: return std::max(l_type, r_type);
-        case STRICT_SAME: return l_type; // l_type == r_type
-        deafult: assert(false);
+    if (oclass == INT_OP)       {return (op== GMOP_MOD);}
+    if (oclass == NUMERIC_OP)   {return gm_is_numeric_op(op);}
+    if (oclass == BOOL_OP)      {return gm_is_boolean_op(op);}
+    if (oclass == COMP_OP)      {return gm_is_less_op(op);}
+    if (oclass == EQ_OP)        {return gm_is_eq_op(op);}
+    if (oclass == TER_OP)       {return gm_is_ternary_op(op);}
+    if (oclass == ASSIGN_OP)    {return (op==GMOP_ASSIGN);}
+    assert(false);
+}
+
+static inline bool is_applicable_rule(gm_type_rule& R, int op, int type1, int type2)
+{
+    if  (in_opclass(R.opclass, op)) {
+        if (R.type1 == T_COMPATIBLE) 
+            return gm_is_same_type(type1,type2) || 
+                   gm_is_same_node_or_edge_compatible_type(type1, type2);
+        else 
+            return in_typeclass(R.type1, type1) && in_typeclass(R.type2, type2);
     }
 }
 
-// returns is okay
-bool gm_check_biop_rule(int op_type, int l_type, int r_type, int& result_type)
+bool gm_is_t2_equal_or_large_numeric_type(int t1, int t2)
 {
-    result_type = GMTYPE_UNKNOWN;
-    if (gm_is_unknown_type(l_type) || gm_is_unknown_type(r_type)) 
-        return false;
+    if (t1 == t2) return true;
+    if ((t1 == GMTYPE_INT) && (t2 == GMTYPE_LONG)) return true;
+    if ((t1 == GMTYPE_DOUBLE) && (t2 == GMTYPE_FLOAT)) return true;
+    return false;
+}
 
-    // find and apply rules
-    std::list<gm_op_rule_t>& rules = gm_op_rules[op_type];
-    std::list<gm_op_rule_t>::iterator I;
-    for(I=rules.begin();I!=rules.end(); I++) {
-        gm_op_rule_t& T = *I;
-        if (!is_appliable(T.left_category, l_type)) continue;
-        if (!is_appliable(T.right_category, r_type)) continue;
+bool gm_is_losing_precision(int from, int to) 
+{
+    if (from == GMTYPE_FOREIGN_EXPR) return false;
+    if (gm_is_t2_equal_or_large_numeric_type(from, to)) return false;
+    if ((from == GMTYPE_INT) && (to == GMTYPE_DOUBLE)) return false;
+    return true;
+}
 
-        if (T.left_category == STRICT_SAME) {
-            assert (T.right_category == STRICT_SAME); 
-            if (l_type != r_type) continue;
-        }
-        result_type =  get_result_type(T.result_category, l_type, r_type);
+// return false if coercion cannot be done.
+// (lose of precision should be checked separately)
+static inline void apply_coercion(int c_type, int t1, int t2, int& t1_new, int& t2_new, bool& t1_warn, bool& t2_warn)
+{
+    t1_new = t1;
+    t2_new = t2;
+    t1_warn = false;
+    t2_warn = false;
+    if (t1 == t2) return; 
+
+    if (c_type == COERCION_NO) return ;
+
+    // left or right can be converted
+    if (c_type == COERCION_ALL) {
+        if (gm_is_inf_type(t1)) {t1_new = t2; return;}
+        if (gm_is_inf_type(t2)) {t2_new = t1; return;}
+
+        // type-up. (i.e. INT -> LONG)
+        if (gm_is_t2_equal_or_large_numeric_type(t1,t2)) { t1_new = t2; return ; }
+        if (gm_is_t2_equal_or_large_numeric_type(t2,t1)) { t2_new = t1; return ; }
+
+        // floating <-> int
+        // type-up to double.
+        t1_new = t2_new = GMTYPE_DOUBLE; 
+        t1_warn = gm_is_losing_precision(t1, t1_new);
+        t2_warn = gm_is_losing_precision(t2, t2_new);
+
+        return;
+    }
+
+    // only rhs is allowed to be coerced.
+    if (c_type == COERCION_RIGHT) {
+        if (gm_is_inf_type(t2)) {t2_new = t1; return;}
+
+        t2_new = t1;
+        t2_warn = gm_is_losing_precision(t2, t2_new);
+        return;
+    }
+
+    assert(false);
+    return ;
+}
+
+
+bool gm_is_compatible_type(int op, int t1, int t2,
+                            int& op_result_type, int& t1_new, int& t2_new,
+                            bool& t1_warn, bool& t2_warn)
+{
+    // special case 
+    if (gm_is_foreign_expr_type(t1) && gm_is_foreign_expr_type(t2)) 
+    {
+        op_result_type = t1;
+        t1_warn = t2_warn = false;
         return true;
     }
 
-    return false; // cannot find applicable opeator
-}
+    if (gm_is_foreign_expr_type(t1)) {t1 = t2;} // believe that foreign-expression is type-compatible
+    if (gm_is_foreign_expr_type(t2)) {t2 = t1;} 
 
+    for(int i =  0; i < GM_TYPE_RULES.size(); i++) 
+    {
+        gm_type_rule& R = GM_TYPE_RULES[i];
+
+        if (is_applicable_rule(R, op, t1, t2))
+        {
+            // apply coercion
+            apply_coercion(R.coercion_rule, t1, t2, t1_new, t2_new, t1_warn, t2_warn);
+
+            // get result type
+            if (R.result_type == RESULT_BOOL) {
+                op_result_type = GMTYPE_BOOL;
+            }
+            else {
+                op_result_type = t1_new; // always LHS type after coercion
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}

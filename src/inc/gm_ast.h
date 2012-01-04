@@ -21,6 +21,7 @@ enum {
     AST_EXPR,     // c + 3
     AST_EXPR_RDC,       // c + 3
     AST_EXPR_BUILTIN,   // c + 3
+    AST_EXPR_FOREIGN,  // Foreign Expression
     AST_SENT,     // 
     AST_SENTBLOCK, // { ... }
     AST_ASSIGN,   // C =D
@@ -33,6 +34,7 @@ enum {
     AST_BFS,      // InBFS(t: G.Nodes) {....} InReverse {....}
     AST_CALL,     // Call to (built-in) function
     AST_NOP,      // NOP (for backend-only)
+
     AST_END,
 };
 
@@ -761,6 +763,7 @@ static enum {
     GMEXPR_REDUCE,   // reduction ops (Sum, Product, Min, Max)
     GMEXPR_BUILTIN,  // builtin ops (NumNodes, NumNbrs, ...)
     GMEXPR_TER,      // ternary operation
+    GMEXPR_FOREIGN,  // foreign expression
 } GMEXPR_T;
 
 
@@ -896,6 +899,7 @@ class ast_expr : public ast_node
         bool is_reduction() {return expr_class == GMEXPR_REDUCE;}
         bool is_builtin()  {return expr_class == GMEXPR_BUILTIN;}
         bool is_terop()  {return expr_class == GMEXPR_TER;}
+        bool is_foreign() {return expr_class = GMEXPR_FOREIGN;}
 
         //-----------------------------------------------
         // type is set after type-checker execution
@@ -929,11 +933,6 @@ class ast_expr : public ast_node
         void set_cond_op(ast_expr* e) {cond = e;}
 
     protected:
-        //bool local_typecheck_biop(gm_scope* context); 
-        //bool local_typecheck_comp(gm_scope* context); 
-        //bool local_typecheck_uop(gm_scope* context); 
-        //bool local_typecheck_terop(gm_scope* context); 
-
         gm_symtab_entry* bound_graph_sym; // set during typecheck
 };
 
@@ -941,6 +940,41 @@ class expr_list {
  public:
     // temporary class used only during parsing
     std::list<ast_expr*> LIST;
+};
+
+
+class ast_expr_foreign : public ast_expr
+{
+public:
+    ~ast_expr_foreign() {
+        std::list<ast_node*>::iterator I;
+        for (I = parsed_gm.begin(); I!=parsed_gm.end(); I++) {
+            delete *I;
+        }
+        delete [] orig_text;
+    }
+
+    static ast_expr_foreign* new_expr_foreign(char* text) {
+        ast_expr_foreign* aef = new ast_expr_foreign();
+        aef->expr_class = GMEXPR_FOREIGN;
+        aef->orig_text = gm_strdup(text);
+        aef->type_of_expression = GMTYPE_FOREIGN_EXPR;
+        return aef;
+    }
+    virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+
+    std::list<ast_node*>&    get_parsed_nodes() {return parsed_gm;}
+    std::list<std::string>&  get_parsed_text()  {return parsed_foreign;}
+
+    void parse_foreign_syntax();
+private:
+    ast_expr_foreign() : orig_text(NULL) {}
+    char* orig_text;
+
+    // parsed foreign syntax
+    std::list<ast_node*>    parsed_gm;
+    std::list<std::string>  parsed_foreign;
+    void apply_id(gm_apply*a, bool apply2);
 };
 
 class ast_expr_builtin : public ast_expr

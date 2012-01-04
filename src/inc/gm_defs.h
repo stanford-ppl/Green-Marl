@@ -53,6 +53,7 @@ static enum {
     GMTYPE_INF_LONG,
     GMTYPE_INF_FLOAT,
     GMTYPE_INF_DOUBLE,
+    GMTYPE_FOREIGN_EXPR,   // foreign type. Can be matched with any
     GMTYPE_UNKNOWN = 9999,  // expression whose type is not identified yet (variable before typechecking)
     GMTYPE_UNKNOWN_NUMERIC, // expression whose type should be numeric, size not determined yet
     GMTYPE_ITER_ANY,        // iterator to some collection. resolved after type checking
@@ -60,6 +61,7 @@ static enum {
     GMTYPE_INVALID = 99999,
 } GMTYPE_T; 
 
+inline static bool gm_is_foreign_expr_type(int i) { return (i==GMTYPE_FOREIGN_EXPR);}
 inline static bool gm_is_integer_type(int i) { return (i==GMTYPE_INT) || (i==GMTYPE_LONG) || (i==GMTYPE_BYTE) || (i==GMTYPE_SHORT);}
 inline static bool gm_is_float_type(int i) { return (i==GMTYPE_FLOAT) || (i==GMTYPE_DOUBLE);}
 inline static bool gm_is_unknown_type(int i) { return (i==GMTYPE_UNKNOWN) || (i==GMTYPE_UNKNOWN_NUMERIC);}
@@ -195,16 +197,16 @@ inline bool gm_has_target_graph_type(int t)
            gm_is_collection_type(t); 
 }
 
-bool gm_is_compatible_type_for_assign(int lhs, int rhs); // defined in typecheck.cc
-bool gm_is_compatible_type_for_eq(int t1, int t2); // defined in typecheck.cc
-bool gm_is_compatible_type_for_less(int t1, int t2); // defined in typecheck.cc
-bool gm_is_compatible_type_for_biop(int t1, int t2); // defined in typecheck.cc
+inline static bool gm_is_same_type(int i1, int i2) {return (i1 == i2);}
+inline static bool gm_is_same_node_or_edge_compatible_type(int i1, int i2) 
+        {return(gm_is_node_compatible_type(i1) && gm_is_node_compatible_type(i2)) ||
+               (gm_is_edge_compatible_type(i1) && gm_is_edge_compatible_type(i2));}
 
 static enum { // list of operators
     GMOP_ABS,
     GMOP_NEG, 
     GMOP_MULT, GMOP_DIV, GMOP_MOD,
-    GMOP_MAX,  GMOP_MIN,  // used only 
+    GMOP_MAX,  GMOP_MIN,  // 
     GMOP_ADD,  GMOP_SUB,
     GMOP_OR,   GMOP_AND,
     GMOP_NOT,
@@ -212,6 +214,7 @@ static enum { // list of operators
     GMOP_LE,   GMOP_GE,  GMOP_LT, GMOP_GT,
     GMOP_TYPEC,  // TYPE Conversion
     GMOP_TER,    // Ternary op
+    GMOP_ASSIGN,    // used in typechecking only.
     GMOP_END    // a marker indicating end of enum
     } GM_OPS_T;
 
@@ -222,12 +225,13 @@ static int GM_OPPRED_LEVEL[GMOP_END] = {
     5,  5, 5,    // MULT, DIV, MOD
     2,  2,       // MAX, MIN   
     6,  6,       // ADD, SUB
-    13, 13,      // OR, AND,   // Actually AND has higer pred. But for clarity, we regard them to have same prec in code generation.
+    13, 13,      // OR, AND,   // Actually AND has higer pred in parsing. But for clarity, we regard them to have same prec in code generation.
     3,           // NOT,
     9, 9,        // EQ, NEQ
     8, 8, 8, 8,  // LE, GE, LT, GT
     2,           // TYPE
     15,          // ternary
+    99,          // ASSIGN (for type=checking only)
 };
 
 inline static bool gm_is_numeric_op(int i) {return 
@@ -239,9 +243,25 @@ inline static bool gm_is_eq_op(int i) {return
     (i==GMOP_EQ) || (i==GMOP_NEQ);}
 inline static bool gm_is_less_op(int i) {return
     (i==GMOP_GT) || (i==GMOP_LT) || (i==GMOP_GE) || (i==GMOP_LE);}
-inline static bool gm_is_comp_op(int i) {return
+inline static bool gm_is_eq_or_less_op(int i) {return
     gm_is_eq_op(i) || gm_is_less_op(i);}
-inline static bool gm_is_ternary(int i) {return (i==GMOP_TER);}
+inline static bool gm_is_ternary_op(int i) {return (i==GMOP_TER);}
+
+// checking to apply op (including assignment) between two types.
+// (not including target-graph checking)
+bool gm_is_compatible_type         (int op, int t1, int t2, 
+                                    int&  op_result_type,
+                                    int&  t1_coerced,
+                                    int&  t2_coerced,
+                                    bool& t1_coerced_lost_precision,
+                                    bool& t2_coerced_lost_precision
+                                    );
+
+inline bool gm_is_compatible_type_for_assign(int t_lhs, int t_rhs, int& t_new_rhs, bool& warning)
+{
+   int dummy1, dummy2; bool dummy_b;
+   return gm_is_compatible_type(GMOP_ASSIGN, t_lhs, t_rhs, dummy1, dummy2, t_new_rhs, dummy_b, warning);
+}
 
 
 static enum {
