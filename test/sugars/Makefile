@@ -1,6 +1,6 @@
 
 ODIR = output
-COMP = ./gm_comp
+COMP = ../../gm_comp
 FLAGS = -o=$(ODIR) -DS=3 -Ds=2 -Dr
 
 SRCS = s1.gm s2.gm s3.gm s4.gm s5.gm s6.gm s7.gm s8.gm s9.gm s10.gm

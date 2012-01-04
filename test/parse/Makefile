@@ -1,7 +1,7 @@
 
 # stop after parse and typecheck
 ODIR = output
-COMP = ./gm_comp
+COMP = ../../gm_comp
 FLAGS = -o=$(ODIR) -DS=2 -Ds=6 -Dr -V=1
 
 SRCS = p1.gm p2.gm p3.gm p4.gm p5.gm p6.gm p7.gm p8.gm
