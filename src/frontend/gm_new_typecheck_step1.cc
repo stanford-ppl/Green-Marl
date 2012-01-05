@@ -554,7 +554,6 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
         //---------------------------------------------
         // create 2nd iteator 
         //---------------------------------------------
-        //const char* tname = TEMP_GEN.getTempName("nx");
         const char* tname = FE.voca_temp_name("nx");
         ast_id* iter2 = ast_id::new_id(tname, bfs->get_iterator()->get_line(), bfs->get_iterator()->get_col());
         ast_typedecl* type = ast_typedecl::new_nbr_iterator(
@@ -567,11 +566,40 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
         break;
     }
 
-    case AST_CALL:
+    case AST_FOREIGN:
     {
-        // nothing happens here
+        ast_foreign* f = (ast_foreign*) s;
+
+        //-----------------------------------
+        // examine mutation list
+        //-----------------------------------
+        std::list<ast_node*> &L = f->get_modified();
+        std::list<ast_node*>::iterator I;
+        for (I= L.begin(); I!= L.end(); I++) 
+        {
+            if ((*I)->get_nodetype() == AST_ID) {
+                ast_id* id = (ast_id*) (*I);
+                is_okay = find_symbol_id(id) && is_okay;
+            } else if ((*I)->get_nodetype() == AST_FIELD) {
+                ast_field* ff = (ast_field*) (*I);
+                is_okay = find_symbol_field(ff) && is_okay;
+            } else {
+                assert(false);
+            }
+        }
         break;
     }
+
+    // expressions will be considiered when apply(ast_expr*) is invoked
+    case AST_SENTBLOCK:
+    case AST_CALL:
+    case AST_WHILE:
+    case AST_IF:
+    case AST_NOP:
+        break;
+
+    default:
+    assert(false);
   }
   set_okay(is_okay);
 
@@ -628,7 +656,6 @@ bool gm_typechecker_stage_1::apply(ast_expr* p)
                 is_okay = find_symbol_field((ast_field*)n) && is_okay;
             }
             else {
-                printf("checking %s\n", ((ast_id*)n)->get_orgname());
                 is_okay = find_symbol_id((ast_id*)n) && is_okay;
             }
         }
@@ -722,6 +749,6 @@ bool gm_typechecker_stage_1::find_symbol_field(ast_field* f)
 void gm_fe_typecheck_step1::process(ast_procdef* p)
 {
     gm_typechecker_stage_1 T;
-    p->traverse_pre(&T);  // pre-apply
+    p->traverse_pre(&T);  // pre-apply: for SENT and for EXPR
     set_okay(T.is_okay());
 }

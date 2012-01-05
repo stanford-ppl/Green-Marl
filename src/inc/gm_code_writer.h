@@ -197,6 +197,7 @@ public:
     virtual void generate_sent_block(ast_sentblock *b);
     virtual void generate_sent_return(ast_return *b);
     virtual void generate_sent_call(ast_call *c) {assert(false);}
+    virtual void generate_sent_foreign(ast_foreign *f) ;
 
 protected:
     char temp_str[1024*8];

@@ -492,3 +492,23 @@ void ast_nop::reproduce(int ind_level)
     Out.pushln("//NOP");
 }
 
+void ast_foreign::reproduce(int ind_level)
+{
+    expr->reproduce(ind_level);
+    if (modified.size() > 0) 
+    {
+        Out.push("::[");
+        int cnt=0;
+        std::list<ast_node*>::iterator I;
+        for(I= modified.begin(); I!=modified.end(); I++,cnt++)
+        {
+            ast_node* n= *I;
+            n->reproduce(ind_level);
+            if (cnt != (modified.size()-1))
+                Out.push(", ");
+        }
+        Out.push("]");
+    }
+    Out.pushln(";");
+}
+

@@ -36,6 +36,7 @@ class gm_rw_analysis : public gm_apply {
         virtual bool apply_return(ast_return* r);
         virtual bool apply_nop(ast_nop* n);
         virtual bool apply_call(ast_call* c);
+        virtual bool apply_foreign(ast_foreign* f);
         bool _succ;
 };
 
@@ -91,6 +92,11 @@ bool gm_rw_analysis::apply(ast_sent* s)
 
         case AST_RETURN:
             b = apply_return((ast_return*)s);
+            _succ = _succ && b;
+            return b;
+
+        case AST_FOREIGN:
+            b = apply_foreign((ast_foreign*)s);
             _succ = _succ && b;
             return b;
 
@@ -414,6 +420,57 @@ bool gm_rw_analysis::apply_call(ast_call* c)
     traverse_expr_for_readset_adding(e, R);
 
     return true;
+}
+//-----------------------------------------------------------------------------
+// AST_ASSIGN
+// [EXPR]::[LHS list]
+//-----------------------------------------------------------------------------
+bool gm_rw_analysis::apply_foreign(ast_foreign * f)
+{
+    gm_rwinfo_sets* sets = get_rwinfo_sets(f);
+    gm_rwinfo_map& R = sets->read_set;
+    gm_rwinfo_map& W = sets->write_set;
+    gm_rwinfo_map& D = sets->reduce_set;
+
+    gm_symtab_entry* bound_sym = NULL;
+    gm_symtab_entry* target_sym = NULL;
+    int bound_op = GMREDUCE_NULL;
+    bool is_okay = true;
+
+    //-----------------------------------------
+    // Mutation LIST
+    //-----------------------------------------
+    std::list<ast_node*>& L =f->get_modified();
+    std::list<ast_node*>::iterator I;
+    gm_rwinfo* new_entry;
+    for (I= L.begin(); I!= L.end(); I++) {
+        if ((*I)->get_nodetype() == AST_ID) {
+            ast_id* id = (ast_id*) *I;
+            target_sym = id->getSymInfo();
+            assert(target_sym!=NULL);
+            new_entry = gm_rwinfo::new_scala_inst(id, GMREDUCE_NULL, NULL);
+        }
+        else if ((*I)->get_nodetype() == AST_FIELD) {
+            ast_field* fld = (ast_field*) *I;
+            target_sym = fld->get_second()->getSymInfo();
+            gm_symtab_entry* iter_sym = fld->get_first()->getSymInfo();
+            assert(target_sym!=NULL);
+            assert(iter_sym!=NULL);
+            assert (!iter_sym->getType()->is_graph());
+
+            new_entry = gm_rwinfo::new_field_inst(
+                iter_sym, fld->get_first(), bound_op, bound_sym);
+        }
+        is_okay = gm_add_rwinfo_to_set(W, target_sym, new_entry, false) && is_okay;
+    }
+
+    //-----------------------------------------
+    // Expression
+    //-----------------------------------------
+    traverse_expr_for_readset_adding(f->get_expr(), R);
+
+    return is_okay;
+
 }
 
 //-----------------------------------------------------------------------------

@@ -9,6 +9,7 @@ extern "C" {
 
     class ast_node;
     class expr_list;
+    class lhs_list;
     struct parse_temp_t {
         ast_node* p1;
         ast_node* p2;
@@ -103,7 +104,14 @@ extern "C" {
     extern expr_list* GM_single_expr_list(ast_node* id);
     extern expr_list* GM_add_expr_front(ast_node* id, expr_list* list);
 
+    extern lhs_list* GM_single_lhs_list(ast_node* id);
+    extern lhs_list* GM_add_lhs_list_front(ast_node* id, lhs_list* list);
+
+
     extern ast_node* GM_new_call_sent(ast_node* n, bool is_builtin);
+
+    extern ast_node* GM_foreign_sent(ast_node* foreign);
+    extern ast_node* GM_foreign_sent_mut(ast_node* foreign, lhs_list* list);
 
 }
 

@@ -1,6 +1,14 @@
 Procedure P(G:Graph, A: N_P<Int>(G), y:Double)
 {
     Double x;
+
+    // Test of foreign expression
     x = [sin(y) / 2];
+
+    // Test of foreign statement
+    [printf("Hello, world\n")];
+
+    // Test of mutation list
+    [$x = my_function($y)] ::[x];
 
 }

@@ -245,10 +245,13 @@ bool gm_check_conf_t::apply(ast_sent* s)
         is_okay = is_okay && check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
 
     } else if (s->get_nodetype() == AST_BFS) {
+
+        // [TODO] consideration for DFS
+
         ast_bfs* bfs = (ast_bfs*) s;
 
         //------------------------------------
-        // reconstruct read-set filter
+        // reconstruct read-set filter (WHY?)
         //------------------------------------
         int iter_type = bfs->get_iter_type(); // should be GMTYPE_NODEITER_BFS
         gm_symtab_entry* it = bfs->get_source()->getSymInfo();

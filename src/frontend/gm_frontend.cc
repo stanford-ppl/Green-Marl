@@ -448,10 +448,12 @@ expr_list* GM_single_expr_list(ast_node* id) {
     expr_list* e = new expr_list();
     assert(id->is_expr());
     e->LIST.push_back((ast_expr*)id);
+    return e;
 }
 expr_list* GM_add_expr_front(ast_node* id, expr_list* l) {
     assert(id->is_expr());
     l->LIST.push_front((ast_expr*)id);
+    return l;
 }
 
 ast_node* GM_new_call_sent(ast_node* n, bool is_builtin)
@@ -462,6 +464,35 @@ ast_node* GM_new_call_sent(ast_node* n, bool is_builtin)
     }
     assert(false);
 }
+
+lhs_list* GM_single_lhs_list(ast_node* lhs)
+{
+    assert((lhs->get_nodetype() == AST_FIELD) || (lhs->get_nodetype() == AST_ID));
+    lhs_list *l = new lhs_list();
+    l->LIST.push_back(lhs);
+    return l;
+}
+lhs_list* GM_add_lhs_list_front(ast_node* lhs, lhs_list* list)
+{
+    assert((lhs->get_nodetype() == AST_FIELD) || (lhs->get_nodetype() == AST_ID));
+    list->LIST.push_front(lhs);
+    return list;
+}
+
+ast_node* GM_foreign_sent(ast_node* foreign)
+{
+    assert(foreign->get_nodetype() == AST_EXPR_FOREIGN);
+    ast_expr_foreign* f = (ast_expr_foreign*) foreign;
+    return ast_foreign::new_foreign(f);
+
+}
+ast_node* GM_foreign_sent_mut(ast_node* foreign, lhs_list* list)
+{
+    assert(foreign->get_nodetype() == AST_EXPR_FOREIGN);
+    ast_expr_foreign* f = (ast_expr_foreign*) foreign;
+    return ast_foreign::new_foreign_mutate(f,list);
+}
+
 
 
 //------------------------------------------------

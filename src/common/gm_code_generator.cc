@@ -274,9 +274,18 @@ void gm_code_generator::generate_sent(ast_sent* s)
         case AST_CALL:
             generate_sent_call((ast_call*)s);
             break;
+        case AST_FOREIGN:
+            generate_sent_foreign((ast_foreign*)s);
+            break;
         default:
             assert(false);
     }
+}
+void gm_code_generator::generate_sent_foreign(ast_foreign* f)
+{
+    ast_expr_foreign* ff = f->get_expr();
+    generate_expr(ff);
+    _Body.pushln(";");
 }
 
 void gm_code_generator::generate_sent_block(ast_sentblock* sb)

@@ -28,7 +28,8 @@
     char* text;
     bool bval;
     ast_node* ptr;
-    expr_list* e_list;
+    expr_list* e_list;  // list of expressions
+    lhs_list* l_list;   // list of lhs
     struct parse_temp_t pair;
 }
 
@@ -76,6 +77,7 @@
 %type <ptr>  built_in
 %type <pair> bfs_header_format
 %type <e_list>  arg_list expr_list
+%type <l_list>  lhs_list
 %type <ptr>  expr_user sent_user
 
  /* operator precedence
@@ -307,9 +309,8 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
           | T_IF '(' bool_expr ')' sent T_ELSE sent { $$ = GM_if($3, $5, $7);}
 
   
-  sent_user : expr_user                             { $$= GM_return(NULL, @1.first_line, @1.first_column); }// [XXX] temporary
-
-
+  sent_user : expr_user                                     { $$ =  GM_foreign_sent($1);}
+            | expr_user T_DOUBLE_COLON '[' lhs_list ']'     { $$ =  GM_foreign_sent_mut($1, $4);}
 
 
   expr :     '(' expr ')'           {$$ = $2;}
@@ -372,6 +373,9 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
   lhs : scala                             { $$ = $1; }
       | field                             { $$ = $1; }
 
+  lhs_list : lhs                         { $$ = GM_single_lhs_list($1);}
+           | lhs ',' lhs_list            { $$ = GM_add_lhs_list_front($1, $3);}
+
   scala: id                               { $$ = $1; }
   field : id '.' id                       { $$ = GM_field($1, $3); }
 
@@ -387,8 +391,6 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
 
   expr_user : '['                         {GM_lex_begin_user_text();} 
               USER_TEXT ']'               { 
-                                            //$$ = (ast_node*) NULL;
-                                            //printf("user syntax = [%s]\n", $3);
                                             $$ = GM_expr_foreign($3, @3.first_line, @3.first_column);
                                           }
                                             //[XXX] temporary

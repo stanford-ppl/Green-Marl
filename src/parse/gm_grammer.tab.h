@@ -121,13 +121,14 @@ typedef union YYSTYPE
     char* text;
     bool bval;
     ast_node* ptr;
-    expr_list* e_list;
+    expr_list* e_list;  // list of expressions
+    lhs_list* l_list;   // list of lhs
     struct parse_temp_t pair;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 131 "./parse/gm_grammer.tab.h"
+#line 132 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

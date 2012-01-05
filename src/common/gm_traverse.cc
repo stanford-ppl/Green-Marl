@@ -348,6 +348,58 @@ void ast_idlist::apply_id(gm_apply*a, bool is_post_apply)
     }
 }
 
+void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre)
+{
+    bool for_id = a->is_for_id();
+    bool for_expr = a->is_for_expr();
+    bool b = a->has_separate_post_apply();
+    if (is_pre) {
+        if (for_id) {
+            std::list<ast_node*>::iterator I;
+            for(I=modified.begin(); I!= modified.end(); I++) {
+                if ((*I)->get_nodetype() == AST_ID) {
+                    ast_id* id = (ast_id*) (*I);
+                    a->apply(id);
+                }
+                else if ((*I)->get_nodetype() == AST_FIELD) {
+                    ast_id* id1 = ((ast_field*) (*I))->get_first();
+                    ast_id* id2 = ((ast_field*) (*I))->get_second();
+                    a->apply(id1);
+                    a->apply(id2);
+                }
+            }
+        }
+        if (for_expr) a->apply(expr);
+    }
+
+    if (for_expr || for_id) 
+        expr->traverse(a, is_post, is_pre);
+
+    if (is_post) {
+        if (for_id) {
+            std::list<ast_node*>::iterator I;
+            for(I=modified.begin(); I!= modified.end(); I++) {
+                if ((*I)->get_nodetype() == AST_ID) {
+                    ast_id* id = (ast_id*) (*I);
+                    if (b) a->apply2(id);
+                    else   a->apply(id);
+                }
+                else if ((*I)->get_nodetype() == AST_FIELD) {
+                    ast_id* id1 = ((ast_field*) (*I))->get_first();
+                    ast_id* id2 = ((ast_field*) (*I))->get_second();
+                    if (b) {  a->apply2(id1);a->apply2(id2);} 
+                    else   {  a->apply(id1); a->apply(id2);}
+                }
+            }
+        }
+        if (for_expr) {
+            if (b) a->apply2(expr);
+            else   a->apply(expr);
+        }
+    }
+
+}
+
 void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre)
 {
     a->begin_context(this);

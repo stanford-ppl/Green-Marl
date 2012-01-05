@@ -11,9 +11,10 @@
 
 //----------------------------------------------------------------
 // Type-check Step 4: 
-//    Result the size of INF types
+//    Resolve the size of INF types from LHS
+//    Example)
+//       Int A = +INF; // +INF must be Integer infinity.
 //----------------------------------------------------------------
-
 
 // defined in common/gm_resolve_inf_size.cc
 extern bool gm_resolve_size_of_inf_expr(ast_expr* e,int dest_type);

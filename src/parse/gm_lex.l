@@ -140,6 +140,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "+INF"    {MarkToken(); return T_P_INF;}
 "INF"     {MarkToken(); return T_P_INF;}
 "-INF"    {MarkToken(); return T_M_INF;}
+"::"      {MarkToken(); return T_DOUBLE_COLON;}
 
     /* Numbers and Identifies */
 {ALPHANUM}          {MarkToken(); yylval.text = yytext; return ID;}
