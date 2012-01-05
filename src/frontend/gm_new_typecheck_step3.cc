@@ -95,6 +95,7 @@ public:
                     e->set_type_summary(GMTYPE_FOREIGN_EXPR);
                     okay = true;
                 }
+                break;
             default:
                 assert(false);
         }

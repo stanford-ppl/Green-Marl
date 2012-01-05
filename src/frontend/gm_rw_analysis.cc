@@ -346,6 +346,42 @@ void traverse_expr_for_readset_adding(
                 }
             }
             return;
+
+        case GMEXPR_FOREIGN:
+            { // read symbols in the foreign
+              ast_expr_foreign* f = (ast_expr_foreign*) e; 
+    
+              std::list<ast_node*>&   N = f->get_parsed_nodes(); 
+              std::list<ast_node*>::iterator I = N.begin();
+              for(; I!=N.end(); I++) {
+                ast_node * n = *I;
+                if (n==NULL) continue;
+                if (n->get_nodetype() == AST_ID) {
+                    ast_id* id = (ast_id*) n;
+                    new_entry = gm_rwinfo::new_scala_inst(id);
+                    sym = id->getSymInfo(); assert(sym!=NULL);
+                    gm_add_rwinfo_to_set(rset, sym, new_entry, false);
+                } else if (n->get_nodetype() == AST_FIELD) {
+                    ast_field* f = (ast_field*) n;
+                    gm_symtab_entry* iter_sym = f->get_first()->getSymInfo(); 
+                    gm_symtab_entry* field_sym = f->get_second()->getSymInfo(); 
+
+                    temp_map_t::iterator i = DrvMap.find(iter_sym);
+                    if (i == DrvMap.end()) {
+                        new_entry = gm_rwinfo::new_field_inst(
+                                iter_sym, f->get_first() );
+                    } else {  // temporary driver or vector driver
+                        int range_type = i->second.range_type;
+                        bool always = i->second.is_always;
+                        new_entry = gm_rwinfo::new_range_inst( range_type, always,
+                                f->get_first());
+                    }
+                    gm_add_rwinfo_to_set(rset, field_sym, new_entry);
+                }
+              }
+            }
+            break;
+
         case GMEXPR_IVAL:
         case GMEXPR_FVAL:
         case GMEXPR_BVAL:

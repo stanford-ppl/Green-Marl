@@ -111,6 +111,11 @@ bool gm_resolve_size_of_inf_expr(ast_expr* e,int dest_type)
 
           break;
       }
+      case GMEXPR_FOREIGN:
+      {
+          break;
+
+      }
 
       default:
       assert(false);

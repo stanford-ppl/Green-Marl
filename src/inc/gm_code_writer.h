@@ -161,6 +161,7 @@ public:
     // should be overrided
     virtual void generate_rhs_id(ast_id* i) =0; 
     virtual void generate_rhs_field(ast_field* i) =0;
+    virtual void generate_expr_foreign(ast_expr* e) ;
     virtual void generate_expr_builtin(ast_expr* e) =0; 
     virtual void generate_expr_minmax(ast_expr* e) =0;
     virtual void generate_expr_abs(ast_expr* e) =0;

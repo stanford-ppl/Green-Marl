@@ -962,6 +962,7 @@ public:
         return aef;
     }
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+    virtual void reproduce(int id_level);
 
     std::list<ast_node*>&    get_parsed_nodes() {return parsed_gm;}
     std::list<std::string>&  get_parsed_text()  {return parsed_foreign;}

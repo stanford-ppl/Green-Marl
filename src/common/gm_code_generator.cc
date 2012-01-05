@@ -41,6 +41,10 @@ void gm_code_generator::generate_expr(ast_expr*e)
         generate_expr_ter(e);
     else if (e->is_builtin())
         generate_expr_builtin(e);
+    else if (e->is_foreign())
+    {
+        generate_expr_foreign(e);
+    }
     else {
         e->reproduce(0);
         gm_flush_reproduce();
@@ -58,6 +62,29 @@ void gm_code_generator::generate_expr_type_conversion(ast_expr * e)
     _Body.push(RP);
     generate_expr(e->get_left_op());
     _Body.push(RP);
+}
+
+void gm_code_generator::generate_expr_foreign(ast_expr* e)
+{
+    ast_expr_foreign* f = (ast_expr_foreign*) e; 
+    
+    std::list<ast_node*>&   N = f->get_parsed_nodes(); 
+    std::list<std::string>& T = f->get_parsed_text();
+    std::list<ast_node*>::iterator I = N.begin();
+    std::list<std::string>::iterator J = T.begin();
+    for(; I!=N.end(); I++, J++)
+    {
+        _Body.push((*J).c_str());
+        ast_node * n = *I;
+        if (n==NULL) continue;
+        if (n->get_nodetype() == AST_ID) {
+            generate_rhs_id((ast_id*) n);
+        } else if (n->get_nodetype() == AST_FIELD) {
+            generate_rhs_field((ast_field*) n);
+        }
+    }
+
+
 }
 
 void gm_code_generator::generate_expr_val(ast_expr *e)

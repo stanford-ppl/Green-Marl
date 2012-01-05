@@ -1,0 +1,6 @@
+Procedure P(G:Graph, A: N_P<Int>(G), y:Double)
+{
+    Double x;
+    x = [sin(y) / 2];
+
+}

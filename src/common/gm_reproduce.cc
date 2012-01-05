@@ -148,6 +148,30 @@ void ast_procdef::reproduce(int ind_level) {
     Out.flush();
 }
 
+void ast_expr_foreign::reproduce(int ind_lvel)
+{
+    
+    std::list<ast_node*>&   N = this->get_parsed_nodes(); 
+    std::list<std::string>& T = this->get_parsed_text();
+    std::list<ast_node*>::iterator I = N.begin();
+    std::list<std::string>::iterator J = T.begin();
+    Out.push('[');
+    for(; I!=N.end(); I++, J++)
+    {
+        Out.push((*J).c_str());
+        ast_node * n = *I;
+        if (n==NULL) continue;
+        if (n->get_nodetype() == AST_ID) {
+            ((ast_id*)n)->reproduce(0);
+        } else if (n->get_nodetype() == AST_FIELD) {
+            ((ast_field*)n)->reproduce(0);
+        }
+    }
+    Out.push(']');
+
+
+}
+
 void ast_expr::reproduce(int ind_level) {
 
     char buf[1024];
