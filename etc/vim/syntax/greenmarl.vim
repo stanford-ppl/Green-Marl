@@ -38,6 +38,7 @@ syn match GMOP "++"
 " boolean literals
 syn keyword GMBoolean True False
 
+
 " definitions
 "syn keyword scalaDef def nextgroup=scalaDefName skipwhite
 "syn keyword scalaVal val nextgroup=scalaValName skipwhite
@@ -68,6 +69,8 @@ syn match GMTodo "[tT][oO][dD][oO]" contained
 syn match GMLineComment "//.*" contains=GMTodo
 syn region GMComment start="/\*" end="\*/" contains=GMTodo
 
+syn region GMForeign start="\[" end="\]"
+
 "syn match scalaEmptyString "\"\""
 
 " multi-line string literals
@@ -91,13 +94,14 @@ syn sync fromstart
 " map Scala groups to standard groups
 hi link GMKeyword Keyword
 hi link GMBuiltin Function
-hi link GMOP Special
+hi link GMOP Operator
 hi link GMBoolean Boolean
 hi link GMNumber Number
 hi link GMType Type
 hi link GMComment Comment
 hi link GMLineComment Comment
 hi link GMTodo Todo
+hi link GMForeign Macro
 
 let b:current_syntax = "greenmarl"
 
