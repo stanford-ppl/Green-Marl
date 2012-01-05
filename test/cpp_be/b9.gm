@@ -1,0 +1,9 @@
+// Test of foreign syntax
+Proc foo(G: Graph, A,B: N_P<Int>(G), s: Node(G), k: Double)
+{
+    Double f = [sin(k) / 2];
+
+    [printf("Hello World\n")];
+
+    [$s.A = printf("f = %f\n", $f)]::[s.A];
+}
