@@ -1,0 +1,40 @@
+// Find stronglly connected components using Kosaraju's Algorithm
+// Returns number of SCC
+Proc kosaraju (G: Graph, mem: N_P<Int>(G)) : Int
+{
+    // Initialize membership
+    G.mem = -1;
+
+    N_P<Bool>(G) Checked;
+    G.Checked = False;
+
+    // [Phase 1]
+    // Obtain reverse-post-DFS-order of node sequence.
+    // Node_Order can be also used here but Node_Seq is faster
+    Node_Seq(G) Seq; 
+    For(t:G.Nodes) (!t.Checked)
+    {
+        InDFS(n:G.Nodes From t)[!n.Checked] 
+        {} // do nothing at pre-visit
+        InPost{ // check at post-visit
+            n.Checked = True;
+            Seq.PushFront(n);
+        }
+    }
+
+    // [Phase 2]
+    // Starting from each node in the sequence
+    //   Do BFS on the transposed graph G^.
+    //   and every nodes that are (newly) visited compose one SCC.
+    Int compId = 0;
+    For(t:Seq.Items)(t.mem == -1)
+    {
+        InBFS(n:G^.Nodes From t)[n.mem == -1] 
+        {
+            n.mem = compId;
+        }
+        compId++;
+    }
+
+    Return compId;
+}
