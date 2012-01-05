@@ -13,6 +13,8 @@ const char* gm_get_nodetype_string(int t)
         case AST_PROCDEF: return "AST_PROCDEF";
         case AST_EXPR: return "AST_EXPR";
         case AST_EXPR_RDC: return "AST_EXPR_RDC";
+        case AST_EXPR_BUILTIN: return "AST_EXPR_BUILTIN";
+        case AST_EXPR_FOREIGN: return "AST_EXPR_FOREIGN";
         case AST_SENT: return "AST_SENT";
         case AST_SENTBLOCK: return "AST_SENTBLOCK";
         case AST_ASSIGN: return "AST_ASSIGN";
@@ -20,7 +22,11 @@ const char* gm_get_nodetype_string(int t)
         case AST_FOREACH: return "AST_FOREACH";
         case AST_IF: return "AST_IF";
         case AST_WHILE: return "AST_WHILE";
+        case AST_RETURN: return "AST_RETURN";
         case AST_BFS: return "AST_BFS";
+        case AST_CALL: return "AST_CALL";
+        case AST_FOREIGN: return "AST_FOREIGN";
+        case AST_NOP: return "AST_NOP";
         default: return "?";
     }
 }

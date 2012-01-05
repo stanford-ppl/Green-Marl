@@ -596,9 +596,11 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
     case AST_WHILE:
     case AST_IF:
     case AST_NOP:
+    case AST_RETURN:
         break;
 
     default:
+        printf("type = %s\n", gm_get_nodetype_string(s->get_nodetype()));
     assert(false);
   }
   set_okay(is_okay);
