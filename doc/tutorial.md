@@ -119,8 +119,8 @@ Write your main function as follows:
 
 Now we can compile the code with the following command:
 
-    cd $(top)/apps/output_cpp/src
-    make 
+    cd $(top)/apps/
+    make bin
     ls $(top)/apps/output_cpp/bin/hello_world   % check the binary has been created successfully
 
 Before we execute the program, let us review the actual command invoked by the last `make`.
@@ -256,12 +256,19 @@ Edit $(top)/apps/output_cpp/src/hello_world_main.cc ss follows:
         int32_t s = sum_of_nbrs_in_degree(G, nsum);
         
         // print out the results
-        printf("[
+        printf("[");
         for(int i=0;i<5;i++)
            printf("%d ", s[i]);
         printf("]\n");
         printf("total sum = %d\n", s);
     }
+    
+Now compile and execute the code as previous:    
+
+    cd $(top)/apps/
+    make bin
+    $(top)/apps/output_cpp/bin/hello_world  
+
 
 The result should be like as follows:
 
