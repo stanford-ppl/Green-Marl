@@ -7,6 +7,7 @@
 #include <vector>
 #include <assert.h>
 
+extern const char* gm_version_string;
 class gm_procinfo;
 
 extern void gm_set_curr_procname(char* c); // for error print

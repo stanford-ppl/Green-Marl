@@ -39,6 +39,7 @@ SRCS2 =\
        gm_code_generator.cc\
        gm_error.cc gm_builtin.cc \
        gm_node_info.cc\
+       gm_version_string.cc\
 	   gm_traverse.cc gm_transform_helper.cc \
        gm_add_symbol.cc gm_resolve_nc.cc \
        gm_resolve_inf_size.cc \

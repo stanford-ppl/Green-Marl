@@ -35,7 +35,7 @@ static void print_help(char* bin_name)
         {
             t+=printf("=<int>");
         }
-        for(t;t<28;t++)
+        for(t;t<24;t++)
             printf(" ");
         printf("%s", GM_compiler_options[i].help_string);
         if (GM_compiler_options[i].arg_type != GMARG_NULL) {
@@ -52,7 +52,7 @@ static void process_nullargs(char* c, char* bin_name)
         exit(0);
     }
     else if (gm_is_same_string(c, "v")) {
-        printf("version %s\n", GM_version_info);
+        printf("version %s\n", gm_version_string);
         exit(0);
     }
     // add here
@@ -142,11 +142,13 @@ void process_args(int argc, char** argv)
         parse_arg(argv[i], bin_name);
     }
 
+
+
     // check num files
     if (GM_input_lists.size() == 0) {
         print_help(bin_name); exit(0);
     }
     else if (GM_input_lists.size() > 1) {
-        printf("[Warning] Current version only can hanle only one input file (the first version).\n");
+        printf("[Warning] Current version only can hanle only one input file; only the first input will be processed.\n");
     }
 }

@@ -24,7 +24,7 @@
 #include "gm_argopts.h"
 #include "gm_ind_opt.h"
 
-const char* GM_version_info = "0.1";
+//const char* GM_version_info = "0.1"; // moved to common/gm_verion_string
 
 gm_frontend FE;
 gm_cpp_gen CPP_BE;  // CPP Backend
@@ -40,11 +40,36 @@ std::list<char*> GM_input_lists;
 // For debug
 //  Stop at various points during compilation
 //-------------------------------------------------------------
+static int gm_stop_major=0;
+static int gm_stop_minor=0;
 static int gm_stage_major=0;
 static int gm_stage_minor=0;
 static const char* gm_major_desc;
 static const char* gm_minor_desc;
 static void do_compiler_action_at_stop();
+static void parse_stop_string()
+{
+    const char* c = OPTIONS.get_arg_string(GMARGFLAG_STOP_STRING);
+    if (c == NULL) return;
+
+    char* d = strdup(c);
+    char* p = strtok(d, ".");
+    if (p==NULL) return;
+    gm_stop_major = atoi(p);
+    p = strtok(NULL, ".");
+    if (p!= NULL)
+        gm_stop_minor = atoi(p);
+
+    if (gm_stop_minor == 0) 
+    {
+        printf("stopping after stage %d\n",gm_stop_major, gm_stop_minor);
+    }
+    else {
+        printf("stopping at stage %d.%d\n",gm_stop_major, gm_stop_minor);
+    }
+    delete [] d;
+}
+
 void gm_begin_major_compiler_stage(int major, const char* desc)
 {
     assert(major > 0);
@@ -53,10 +78,8 @@ void gm_begin_major_compiler_stage(int major, const char* desc)
 }
 void gm_end_major_compiler_stage()
 {
-    int stop_major = OPTIONS.get_arg_int(GMARGFLAG_STOP_MAJOR);
-    int stop_minor = OPTIONS.get_arg_int(GMARGFLAG_STOP_MINOR);
-    if (stop_major == gm_stage_major) {
-        printf("...Stopping compiler after %d:%s\n", stop_major, gm_major_desc);
+    if (gm_stop_major == gm_stage_major) {
+        printf("...Stopping compiler after Stage %d:%s\n", gm_stop_major, gm_major_desc);
         do_compiler_action_at_stop();
         exit(EXIT_SUCCESS);
     }
@@ -74,12 +97,12 @@ void gm_begin_minor_compiler_stage(int m, const char* desc)
 }
 void gm_end_minor_compiler_stage()
 {
-    int stop_minor = OPTIONS.get_arg_int(GMARGFLAG_STOP_MINOR);
-    if (stop_minor == 0) return;
+    if (gm_stop_minor == 0) return;
 
-    int stop_major = OPTIONS.get_arg_int(GMARGFLAG_STOP_MAJOR);
-    if ((stop_major == gm_stage_major) && (stop_minor == gm_stage_minor)) {
-        printf("...Stopping compiler after %s.[%s]\n", gm_major_desc, gm_minor_desc);
+    if ((gm_stop_major == gm_stage_major) && (gm_stop_minor == gm_stage_minor)) {
+        printf("...Stopping compiler after Stage %d.%d:%s.[%s]\n", 
+                gm_stage_major, gm_stage_minor,
+                gm_major_desc, gm_minor_desc);
         do_compiler_action_at_stop();
         exit(EXIT_SUCCESS);
     }
@@ -91,13 +114,14 @@ void do_compiler_action_at_stop()
     if (FE.is_vardecl_removed())
         FE.restore_vardecl_all();
 
-
+    /*
     if (OPTIONS.get_arg_bool(GMARGFLAG_DUMPIR)) {
         printf("======================================================\n");
         FE.dump_tree();
         printf("======================================================\n");
         printf("\n");
     }
+    */
 
     if (OPTIONS.get_arg_bool(GMARGFLAG_REPRODUCE)) {
         printf("======================================================\n");
@@ -131,7 +155,7 @@ int main (int argc, char** argv)
     Path.parsePath(fname);
 
     const char* name = OPTIONS.get_arg_string(GMARGFLAG_TARGET);
-    if (gm_is_same_string(name, "cpp"))
+    if (gm_is_same_string(name, "cpp_seq"))
     {
         CPP_BE.set_target_omp(false);
         BACK_END = & CPP_BE;
@@ -149,6 +173,12 @@ int main (int argc, char** argv)
         printf("Unsupported target = %s\n", name);
         return 0;
     }
+
+    //---------------------------------------
+    // parse compiler stop string
+    //---------------------------------------
+    parse_stop_string();
+
 
     //-------------------------------------
     // Parse phase
