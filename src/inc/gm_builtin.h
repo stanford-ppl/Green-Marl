@@ -4,6 +4,8 @@
 #include <list>
 #include <map>
 
+#define GM_BLTIN_USE_REVERSE    "use_reverse"
+
 //-----------------------------------------------------
 // for easy extension of compiler
 // [TODO] can be improved.
@@ -47,7 +49,7 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"*NumOutNbrs",          GM_BLTIN_NODE_DEGREE,     ""},   // * means synonym to previous
     {"*Degree",              GM_BLTIN_NODE_DEGREE,     ""},  
     {"*OutDegree",           GM_BLTIN_NODE_DEGREE,     ""},
-    {"Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,  "reverse:1"},
+    {"Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,  GM_BLTIN_USE_REVERSE":true"},
     {"*InDegree",            GM_BLTIN_NODE_IN_DEGREE,  ""}, 
 
     // Set:
@@ -87,7 +89,7 @@ const gm_builtin_desc_t GM_builtins[] = {
 class gm_builtin_def {
     public:
         gm_builtin_def(const gm_builtin_desc_t* def);
-        ~gm_builtin_def() {delete [] orgname;}
+        virtual ~gm_builtin_def() {delete [] orgname;}
 
         int get_num_args() {return num_args;}  // 
         // returns GMTYPE_
@@ -100,6 +102,12 @@ class gm_builtin_def {
         bool is_synonym_def() {return synonym;}
         gm_builtin_def* get_org_def() {return org_def;}
 
+        void add_info_int (const char* key, int v);
+        void add_info_bool(const char* key, bool b);
+        bool has_info(const char* key);
+        bool find_info_bool(const char* key); // return false if key does not exist
+        int find_info_int(const char* key); // return false if key does not exist
+
     private:
         gm_builtin_def() {} // not allow random creation
         int src_type;
@@ -108,6 +116,7 @@ class gm_builtin_def {
         int* arg_types;
         const char* orgname;
         int method_id;
+        std::map<std::string , ast_extra_info> extra_info;
 
         bool synonym;
         gm_builtin_def* org_def;

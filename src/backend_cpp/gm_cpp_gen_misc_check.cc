@@ -8,6 +8,7 @@
 #include "gm_ind_opt.h"
 #include "gm_argopts.h"
 #include "gm_rw_analysis.h"
+#include "gm_builtin.h"
 
 //-------------------------------------------------------------
 // Misc checks before code generation
@@ -18,6 +19,25 @@ class cpp_check_reverse_edge_t : public gm_apply
 public:
     cpp_check_reverse_edge_t() {
         set_for_sent(true);
+        set_for_expr(true);
+    }
+    bool apply(ast_expr* s)
+    {
+        if (s->is_builtin()) {
+            ast_expr_builtin* b = (ast_expr_builtin*) s;
+            gm_builtin_def* def = b->get_builtin_def();
+
+            if (def->find_info_bool(GM_BLTIN_USE_REVERSE)){
+                ast_id* driver = b->get_driver();
+                assert(driver!=NULL);
+                ast_id* G = driver->getTypeInfo()->get_target_graph_id();
+                assert(G!=NULL);
+                gm_symtab_entry* e = G->getSymInfo();
+                e->add_info_bool(CPPBE_INFO_USE_REVERSE_EDGE, true);
+            }
+        }
+
+
     }
                          
     bool apply(ast_sent* s)

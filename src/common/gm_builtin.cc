@@ -71,11 +71,67 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
         //-----------------------------------------------------------
         // now parse the extra info [todo]
         //-----------------------------------------------------------
+        char* extra_info = strdup(def->extra_info);
 
-
+        p = strtok(extra_info, ":");
+        char* p2 = strtok(NULL, ":");
+        while ((p!=NULL) && (p2!=NULL))
+        {
+            char* key = p;
+            if (gm_is_same_string(p2,"true"))
+            {
+                add_info_bool(key, true);
+                assert(find_info_bool(key) == true);
+            } else if (gm_is_same_string(p2,"false")){
+                add_info_bool(key, false);
+            } else {
+                add_info_int(key, atoi(p2));
+            }
+            p = strtok(NULL, ":");
+            p2 = strtok(NULL, ":");
+        }
     }
 
     delete [] temp;
+}
+
+void gm_builtin_def::add_info_int(const char* key, int v)
+{
+    ast_extra_info I; I.ival = v;
+    std::string s(key);
+    extra_info[s] = I;
+}
+
+void gm_builtin_def::add_info_bool(const char* key, bool v)
+{
+    ast_extra_info I; I.bval = v;
+    std::string s(key);
+    extra_info[s] = I;
+}
+
+bool gm_builtin_def::has_info(const char* key)
+{
+    std::string s(key);
+    if (extra_info.find(s) == extra_info.end())
+        return false;
+    return true;
+}
+int gm_builtin_def::find_info_int(const char* key)
+{
+    std::string s(key);
+    if (extra_info.find(s) == extra_info.end())
+        return 0;
+    else return extra_info[s].ival;
+}
+bool gm_builtin_def::find_info_bool(const char* key)
+{
+    std::string s(key);
+    if (extra_info.find(s) == extra_info.end())
+        return false;
+    else {
+        return extra_info[s].bval;
+    }
+
 }
 
 
@@ -150,4 +206,5 @@ found:
     }
     return NULL;
 }
+
 
