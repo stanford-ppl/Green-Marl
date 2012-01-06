@@ -84,8 +84,10 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "Node" {MarkToken(); return T_NODE;}
 "Edge" {MarkToken(); return T_EDGE;}
 "Node_Property" {MarkToken(); return T_NODEPROP;}
+"Node_Prop" {MarkToken(); return T_NODEPROP;}
 "N_P" {MarkToken(); return T_NODEPROP;}
 "Edge_Property" {MarkToken(); return T_EDGEPROP;}
+"Edge_Prop"     {MarkToken(); return T_EDGEPROP;}
 "E_P" {MarkToken(); return T_EDGEPROP;}
 "Node_Set" {MarkToken(); return T_NSET;}
 "N_S"      {MarkToken(); return T_NSET;}
