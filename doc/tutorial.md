@@ -2,7 +2,7 @@
 ======================================
 
 This document provides a walk-through to create your own Green-Marl program, to compile it and to execute it.  
-Before proceed, please read $(top)/Readme.md and follow the steps in the document, 
+Before proceed, please read the [Readme documentation](../README.md)  and follow the steps in the document, 
 which guides you to build up the compiler and runtime library properly.
 
 
@@ -385,6 +385,7 @@ for computing sum of NSum), the compiler merged those two iteration into one for
 
 Please refer to the following documents for further information
 
+* [Readme.md](../README.md): about set-up and installation
 * Green-Marl language specification : about the language (syntax and semantic)
 * compiler.txt : about gm_comp compiler
 * gm_graph.txt : about c++ runtime and graph library.
