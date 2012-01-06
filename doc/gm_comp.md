@@ -60,10 +60,29 @@ Let us try this with an example. Make a short Green-Marl program named foo.gm
         Return X*Y;
     }
 
-Now let us compile it with verbose option
+Now let us compile this with verbosity option; the compiler will print out 
+a message at each stage it is perfoming.
+(The printed result may differ slightly depending on the compiler version).
 
-   ./gm_comp 
+    ./gm_comp -V=1 foo.gm
+    ......
+    ...Stage 2.1: Frontend.[Check syntax rules]
+    ...Stage 2.2: Frontend.[Regularize syntax (without typeinfo)]
+    ......
+    ...Stage 3.2: Indep-Opt.[Regularize syntax]
+    ......
+    ...Stage 3.6: Indep-Opt.[Merge loops]
+    ......
+    ...Stage 6.8: Code Generation.[Creating source for each procedure]
 
+The compiler goes through 6 major steps.
+
+  * 1: Parsing
+  * 2: Type and Data-race Checking
+  * 3: Backend Independant Optimization
+  * 4: Backend Specific Optimization
+  * 5: Library Specific Optimization
+  * 6: Code Generation
 
 
 
