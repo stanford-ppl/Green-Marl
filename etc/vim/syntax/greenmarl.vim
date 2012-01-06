@@ -11,7 +11,7 @@ syn case match
 syn sync minlines=50
 
 " most Scala keywords
-syn keyword GMKeyword Node_Property Edge_Property N_P E_P 
+syn keyword GMKeyword Node_Property Edge_Property N_P E_P  Node_Prop Edge_Prop
 syn keyword GMKeyword For Foreach If Else Proc Procedure Do While Return
 syn keyword GMKeyword InNbrs OutNbrs Nbrs Nodes Edges Nbr_Edges
 syn keyword GMKeyword Items
