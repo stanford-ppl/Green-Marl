@@ -1,10 +1,11 @@
+
 1 Introduction
 ======================================
 
 This document provides a walk-through to write down your own Green-Marl
 program and to execute it.  Before proceed, please read $(top)/Readme.md and
 follow the steps in the document, which guides you to build up the
-compiler properly.
+compiler and runtime library properly.
 
 
 2 First program: Hello World
@@ -144,10 +145,46 @@ Okay, now we are ready to run your hello_world application.
     
 
 
-3 Second program: 
+
+3 Second program: sum of neighbors' in-degree.
 ======================================
 
+Now we will create another Green-Marl program, which performs a more graph-analytic procedure. 
+For the sake of convenience, tnstead of creating another .gm file, we will simply add 
+another procedure in hello_world.gm. 
 
+In this procedure, for each node in the graph, we will sum up its neighbors' in-degree.
+This is like, for example, in Twitter network you are summing up the number of followers of 
+all of your followees. Once we get this number for every node, we will add up all these numbers 
+as the final output value. 
+
+Edit your $(top)/apps/src/hello_world.gm as follows (String after // is comments just like in C++.) :
+
+    // your previous procedure
+    Procedure hello_word() 
+    {      
+       [printf("hello world");]
+    }
+    
+    //-----------------------------------------------------
+    // Your new procedure. (Proc is a short for Procedure)
+    //-----------------------------------------------------
+    //   *  G is a directed graph
+    //   *  NSum is a node property (data associated with each node) of G, the type of each data is Int.
+    //      NSum will be computed by this procedure.
+    //   *  This procedure returns an Int value.
+    //-----------------------------------------------------
+    Proc sum_of_neighbors_in_degree(G: Graph, 
+                                    NSum: Node_Property<Int>(G)) : Int                           
+    {    
+        // For each node s in the graph,
+        Foreach (s: G.Nodes) {                
+            //  assign NbrInSum as, sum of neighbor's in-degree. 
+            s.NbrInSum = Sum(t:s.Nbrs) { t.InDegree() }; 
+        }        
+        // return the sum of NSum. 
+        Return Sum(s: G.Nodes) {s.NSum};     
+    }
 
 
 4 Further information
