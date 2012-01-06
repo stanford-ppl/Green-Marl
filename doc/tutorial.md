@@ -15,7 +15,7 @@ application. (This is not mandatory, however; you are free to create your own
 makefile scripts, once you get accustomed to Green-Marl environment.)
 
 Also, we recommend the readers to use vim as a text editor, because we provide vim
-Syntax-Highlighting support for Green-Marl. See README.md for details.
+Syntax-Highlighting support for Green-Marl. See [Readme documentation](../README.md) for details.
 
 
 2-1 Writing hello_world.gm
@@ -386,7 +386,7 @@ for computing sum of NSum), the compiler merged those two iteration into one for
 Please refer to the following documents for further information
 
 * [Readme.md](../README.md): about set-up and installation
-* Green-Marl language specification : about the language (syntax and semantic)
+* [Green-Marl language specification](./Green_Marl_language_specification_v_0_3_in_progress.pdf) : about the language (syntax and semantic)
 * compiler.txt : about gm_comp compiler
 * gm_graph.txt : about c++ runtime and graph library.
 
