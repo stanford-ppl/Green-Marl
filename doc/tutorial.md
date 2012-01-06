@@ -386,7 +386,7 @@ for computing sum of NSum), the compiler merged those two iteration into one for
 Please refer to the following documents for further information
 
 * [Readme.md](../README.md): about set-up and installation
-* [Green-Marl language specification](Green_Marl_langauge_specification_v_0_3_in_progress.pdf) : about the language (syntax and semantic)
+* [Green-Marl language specification](./Green_Marl_langauge_specification_v_0_3_in_progress.pdf) : about the language (syntax and semantic)
 * compiler.txt : about gm_comp compiler
 * gm_graph.txt : about c++ runtime and graph library.
 
