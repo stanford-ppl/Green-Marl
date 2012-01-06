@@ -44,6 +44,7 @@ is not Green-Marl statements but the statements of the target language (C++ in o
 will simply reproduce this string in the proper place, when generating the target code.
 
 
+
 2-2 Compiling hello_world.gm
 --------------------------------------
 
@@ -120,10 +121,10 @@ Now we can compile the code with the following command:
 
     cd $(top)/apps/
     make bin
-    ls $(top)/apps/output_cpp/bin/hello_world   % check the binary has been created successfully
+    ls $(top)/apps/output_cpp/bin/hello_world   % check if the binary has been created successfully
 
 Before we execute the program, let us review the actual command invoked by the last `make`.
-In fact it has invoked g++ compiler nothing but in a quite normal way:
+In fact, it has invoked g++ compiler nothing but in a quite normal way:
     
     cd $(top)/apps/output_cpp/src
     g++ -O3 -g -I../generated -I../gm_graph/inc -I. -fopenmp   ../generated/hello_world.cc hello_world_main.cc 
@@ -136,12 +137,13 @@ In fact it has invoked g++ compiler nothing but in a quite normal way:
 * The progam is linked with the runtime and graph library (gm_graph). 
   -L options specifice where to find the library.
 
-Okay, now we are ready to run your hello_world application.
+Okay, now we are ready to run your hello_world application: 
 
     cd $(top)/apps/output_cpp/bin/
     ./hello_world     % "hello world" should be printed out. 
     
 
+Congraturation, your first Green-Marl program have been successfully executed. 
 
 
 3 Second program: sum of neighbors in-degree.
@@ -192,9 +194,9 @@ Note that // denotes line-comment just like in C++.
     }
 
 The above code should be self-explantory with the comments. Note that in fact, the code itself can be
-as intuitive as the textual explanation once you understand the syntax. 
+as intuitive as the textual explanation once you become familar with the syntax. 
 
-We can compile this code with gm_comp just the same as in the previous section.
+We can compile this code with gm_comp just as in the previous section:
 
     cd $(top)/apps
     make gen         %% this command generates .cc file out of .gm file
@@ -212,11 +214,19 @@ Before we go, let us check the generated _header_ file:
     #include "gm.h"                   // include for Runtime and Graph library            
     
     void hello_world();               // your 1st procedure
-    int32_t sum_of_nbrs_in_degree(    // your 2nd procedure
+    int32_t sum_of_nbr_in_degree(     // your 2nd procedure
        gm_graph& G, int32_t* G_val);  //   arguments of the procedure
     
     #endif
     
+
+An important thing to note is that the compiler replaced Green-Marl types with C++ types.
+In fact, there is a one-to-one correspondence between Green-Marl types and C++ types, which
+is defined by gm_comp compiler (i.e. not by the language specification). 
+
+Green-Marl Int type has become int32_t type which has 4 bytes in size. Graph became an object
+of gm_graph, which is the graph library gm_comp relies on. 
+
 
 3-2 Another main program
 --------------------------------------
@@ -274,6 +284,8 @@ The result should be like as follows:
      [5 4 4 0 4 ]    %% nsum value for each node
      total sum = 17  %% total sum of nsum
 
+
+Congraturation again, your second Green-Marl program have been successfully executed as well.
 
 3-3 Looking inside the generated code (Optional)
 --------------------------------------
