@@ -55,7 +55,7 @@ If you already know how to fetch via git, please go ahead from the above reposit
    + Go to any local directory and do the following command; 
    It will create a new sub-directory (named Green-Marl) and download the source code there.
 
-            git clone git://github.com/stanford-ppl/Green-Marl.git
+            git pull git://github.com/stanford-ppl/Green-Marl.git
    
   + You can always download most up-to-date package by doing the follwing command at the directory.
 
