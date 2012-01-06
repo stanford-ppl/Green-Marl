@@ -13,7 +13,7 @@ compiler and runtime library properly.
 Now let us write the traditional "Hello World" application with Green-Marl.
 Note that we will re-use the _makefile_ scripts that are already provided with the sample
 application. However, this is not mandatory but you are free to create your own
-makefile scripts, once you're accustomed to Green-Marl environment.
+makefile scripts, once you are accustomed to Green-Marl environment.
 
 Also we recommend to use vim as a text editor, because we provide vim
 Syntax-Highlighting support for Green-Marl. See README.md for details.
@@ -49,7 +49,7 @@ will simply reproduce this string in the proper place, when generating the targe
 --------------------------------------
 
 Now we will compile hello_world.gm into target (i.e. C++) code. 
-First, let's add hello_world progam to our Makefile script.
+First, let us add hello_world progam to our Makefile script.
 
     cd $(top)/apps
     vi Programs.mk
@@ -145,18 +145,18 @@ Okay, now we are ready to run your hello_world application.
 
 
 
-3 Second program: sum of neighbors' in-degree.
+3 Second program: sum of neighbors in-degree.
 ======================================
 
-Now we will create another Green-Marl program, which performs a more graph-analytic procedure. 
-In this procedure, for each node in the graph, we will compute the sum of its neighbors' in-degree.
-This is like, for example, in Twitter network you are summing up the number of followers of 
-all of your followees. Once we get this number for every node, we will add up all these numbers 
-as the final output value. 
+Now we will create another Green-Marl program, which performs a more
+graph-analytic procedure.  In this procedure, for each node in the graph, we
+will compute the sum of neighbors in-degree.  This is like, for example,
+summing up the number of followers of all of your followees, in Twitter
+network. Once we get this number for every node, we will add up all these
+numbers as the final output value. 
 
-
-For the sake of convenience, instead of creating another .gm file, we will simply add 
-another procedure in hello_world.gm. 
+For the sake of convenience, we will simply add 
+another procedure in hello_world.gm, instead of creating another .gm file.
 
 3-1 Another Green-Marl procedure
 --------------------------------------
@@ -287,10 +287,98 @@ However, it is always possible to modify the generated code if it is wanted for 
 because the generated code is nothing but normal c++ code. It is also fairly 
 human-readable. 
 
+Now look at the generated code. However you will find the code is now complicated than before.
+
+    cat $(top)/apps/output_cpp/generated/hello_world.cc
+
+    1:   int32_t sum_of_nbrs_in_degree(gm_graph& G, int32_t* G_NSum)
+    2:   {
+    3:      //Initializations
+    4:      gm_rt_initialize();
+    5:      G.freeze();
+    6:      G.make_reverse_edges();
+
+The first a few lines are initialization routines. Compared to `hello_world()` case, you will
+notice that the compiler has inserted two more initialization routines: `G.freeze()` and 
+`G.make_reverse_edges()`. `freeze()` function ensures that the data representation of the graph  
+is CSR format, which is hard to insert or delete nodes but fast to iterate over. 
+`make_reverse_edges()` ensures the graph has reverse edges; if not, reverse edges are created.
+Note that `make_reverse_edges()` are added only because reverse edge information will be used later
+in the procedure.
+
+    7:      int32_t ret;
+    8:      int32_t _S2;
+
+The two lines declare variables -- varaibles whose name start with underscore(_) 
+are ones that have been inserted by the compiler.
+
+Let us first look at how the neighborhood iteration over all the nodes in the
+graph have been generated:
+
+    11:     #pragma omp parallel
+    12:     {
+                 // ....
+    17:        #pragma omp for nowait
+    18:        for (node_t s = 0; s < G.num_nodes(); s ++) 
+    19:        {
+    21:            int32_t _S1;
+    22:
+    23:            _S1 = 0 ;
+    24:            for (edge_t t_idx = G.begin[s];t_idx < G.begin[s+1] ; t_idx ++) 
+    25:            {
+    26:                node_t t = G.node_idx [t_idx];
+    27:                _S1 = _S1 + (G.r_begin[t+1] - G.r_begin[t]) ;
+    28:            }
+    29:            G_NSum[s] = _S1 ;
+    30:            // ...
+    31:        }
+               // ....       
+    40:     }
+
+In the above vode, line 11 starts an parallel region; line 17 -- 18 is a parallel loop over the 
+ nodes in the graph, where each thread will execute a subset of the nodes in the graph. 
+Line 24 -- 28 performs neighborhood iteration for the node s, and accumulate in-degree 
+(`r_begin[t+1] - r_begin[t]`) into `_S1`. Later, _S1 becomes the NSum value for this node.
 
 
+Now let us consider how the summation of G_NSums is computed.
 
+    10:     _S2 = 0 ;
+    11:     #pragma omp parallel
+    12:     {
+    13:        int32_t _S2_prv;
+    14:    
+    15:        _S2_prv = 0 ;
+    16:    
+    17:        #pragma omp for nowait
+    18:        for (node_t s = 0; s < G.num_nodes(); s ++) 
+    19:        {
+                   // ...
+    29:            G_NSum[s] = _S1 ;
+    30:            _S2_prv = _S2_prv + G_NSum[s] ;
+    31:        }
+    32:        // reduction
+    33:        { 
+    34:            int32_t _S2_old, _S2_new;
+    35:            do {
+    36:                _S2_old = _S2;
+    37:                _S2_new = _S2_old + (_S2_prv);
+    38:            } while (_gm_atomic_compare_and_swap(&(_S2), _S2_old, _S2_new)==false); 
+    39:        }
+    40:     }
 
+The sum of NSum is accumulated into the variable (`_S2`). However inside the parallel region, each thread
+keeps a private partial sum (`_S2_prv`), where it accumulates NSum value (line 30). At the end of the parallel
+region, each thread updates the global sum (`_S2`) by doing atomic addition using compare and swap (line 34--38).
+
+Finally, the accumulated value is returned.
+
+    41:     ret = _S2 ;
+    42:     return ret; 
+    43:  }
+
+Note that although the user sugguested two iteration over the nodes in the graph (one for computing NSum, the other
+for computing sum of NSum), the compiler merged those two iteration into one for the sake of performance improvement.
 
 
 4 Further information
