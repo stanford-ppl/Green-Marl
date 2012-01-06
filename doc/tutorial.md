@@ -257,7 +257,7 @@ Edit $(top)/apps/output_cpp/src/hello_world_main.cc ss follows:
         // print out the results
         printf("[");
         for(int i=0;i<5;i++)
-           printf("%d ", s[i]);
+           printf("%d ", nsum[i]);
         printf("]\n");
         printf("total sum = %d\n", s);
     }
@@ -334,10 +334,10 @@ graph have been generated:
                // ....       
     40:     }
 
-In the above vode, line 11 starts an parallel region; line 17 -- 18 is a parallel loop over the 
+In the above code, line 11 starts an parallel region; line 17 -- 18 is a parallel loop over the 
  nodes in the graph, where each thread will execute a subset of the nodes in the graph. 
 Line 24 -- 28 performs neighborhood iteration for the node s, and accumulate in-degree 
-(`r_begin[t+1] - r_begin[t]`) into `_S1`. Later, _S1 becomes the NSum value for this node.
+(`r_begin[t+1] - r_begin[t]`) into `_S1`. Later, `_S1` becomes the `NSum` value for this node.
 
 
 Now let us consider how the summation of G_NSums is computed.
