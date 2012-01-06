@@ -42,11 +42,20 @@ From there, you can get the current source code package in two ways.
 If you're not familiar with _git_ and do not want to learn it for the time being, 
 you can still download the package as a zip file from the above repository.
 Find and push the button that has labeled as "zip" -- downloading of zipped repository
-will begin momentarily,
+will begin momentarily.  Note that you have to download the 'zip' and unzip it by yourself, 
+whenever you want to fetch fresh version, .
 
-* 
+* via git client:
+If you already know how to fetch via git, please go ahead from the above repository. 
+Otherwise, please do the following command at any local directory (A subdirectory will be created):
 
+    git clone git://github.com/stanford-ppl/Green-Marl.git
+    
+* git is the name of client program; it should have been already installed in any modern linux/unix/cygwin system.
+It will download source codes for you and create a directory named Green-Marl. You can always download most up-to-date
+package by doing the follwing command at the directory.
 
+    git pull
 
 2-2 Directories
 -------------------------------------
