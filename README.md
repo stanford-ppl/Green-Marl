@@ -40,22 +40,26 @@ From there, you can get the current source code package in two ways.
 
 * as a zip file (not recommended) :
 If you're not familiar with _git_ and do not want to learn it for the time being, 
-you can still download the package as a zip file from the above repository.
-Find and push the button that has labeled as "zip" -- downloading of zipped repository
-will begin momentarily.  Note that you have to download the 'zip' and unzip it by yourself, 
-whenever you want to fetch fresh version, .
+you can still download the package as a zip file. Go to the above http address,
+find the button that is labeled as "zip". Pushing the button,  zipped source package
+will be downloaded momentarily.  Note that you have to download the zip package and 
+unzip it by yourself, whenever you want to fetch a fresh version. .
 
 * via git client:
 If you already know how to fetch via git, please go ahead from the above repository. 
-Otherwise, please do the following command at any local directory (A subdirectory will be created):
 
-    git clone git://github.com/stanford-ppl/Green-Marl.git
-    
-* git is the name of client program; it should have been already installed in any modern linux/unix/cygwin system.
-It will download source codes for you and create a directory named Green-Marl. You can always download most up-to-date
-package by doing the follwing command at the directory.
+   + git is the name of client program, which allows you to download the source code package
+   from the repository and to maintain it up-to-date. The git client program (git) should have 
+   been already installed in any modern linux/unix/cygwin system.
 
-    git pull
+   + Go to any local directory and do the following command; 
+   It will create a new sub-directory (named Green-Marl) and download the source code there.
+
+            git clone git://github.com/stanford-ppl/Green-Marl.git
+   
+  + You can always download most up-to-date package by doing the follwing command at the directory.
+
+            git pull
 
 2-2 Directories
 -------------------------------------
