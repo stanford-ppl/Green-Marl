@@ -239,27 +239,33 @@ Edit $(top)/apps/output_cpp/src/hello_world_main.cc ss follows:
         for(int i=0;i<5;i++) 
             G.add_node();
 
-        // Add following Edges
-        //  0->3
-        //  1->3
-        //  2->3
-        //  4->3
-        //  0->4
-        // Thus, node 3 has four in-neighbors (node 0,1,2,4) while 4 has one (node 0).
-        G.add_edge(0,3);
-        G.add_edge(1,3);
-        G.add_edge(2,3);
-        G.add_edge(4,3);
-        G.add_edge(0,4);
-        
+        // Add following Edges such that
+        //  node 3 has four in-neighbors (node 0,1,2,4) while 4 has one (node 0).
+        G.add_edge(0,3); //  0->3
+        G.add_edge(1,3); //  1->3
+        G.add_edge(2,3); //  2->3
+        G.add_edge(4,3); //  4->3
+        G.add_edge(0,4); //  0->4
+
+
         // Create an array to hold the node property
         int32_t nsum = new int32_t[G.num_nodes()];
         
+        // call to your procedure
+        int32_t s = sum_of_nbrs_in_degree(G, nsum);
+        
+        // print out the results
+        printf("[
+        for(int i=0;i<5;i++)
+           printf("%d ", s[i]);
+        printf("]\n");
+        printf("total sum = %d\n", s);
+    }
 
-}
+The result should be like as follows:
 
-
-
+     [5 4 4 0 4 ]    %% nsum value for each node
+     total sum = 17  %% total sum of nsum
 
 
 3-3 Looking inside the generated code
