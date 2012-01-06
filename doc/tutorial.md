@@ -1,4 +1,3 @@
-
 1 Introduction
 ======================================
 
@@ -150,15 +149,20 @@ Okay, now we are ready to run your hello_world application.
 ======================================
 
 Now we will create another Green-Marl program, which performs a more graph-analytic procedure. 
-For the sake of convenience, tnstead of creating another .gm file, we will simply add 
-another procedure in hello_world.gm. 
-
-In this procedure, for each node in the graph, we will sum up its neighbors' in-degree.
+In this procedure, for each node in the graph, we will compute the sum of its neighbors' in-degree.
 This is like, for example, in Twitter network you are summing up the number of followers of 
 all of your followees. Once we get this number for every node, we will add up all these numbers 
 as the final output value. 
 
-Edit your $(top)/apps/src/hello_world.gm as follows (String after // is comments just like in C++.) :
+
+For the sake of convenience, instead of creating another .gm file, we will simply add 
+another procedure in hello_world.gm. 
+
+3-1 Another Green-Marl procedure
+--------------------------------------
+
+Edit your $(top)/apps/src/hello_world.gm in following ocde. 
+Note that // denotes line-comment just like in C++.
 
     // your previous procedure
     Procedure hello_word() 
@@ -167,24 +171,100 @@ Edit your $(top)/apps/src/hello_world.gm as follows (String after // is comments
     }
     
     //-----------------------------------------------------
-    // Your new procedure. (Proc is a short for Procedure)
+    // Your new procedure. (Proc is a short-hand for Procedure)
     //-----------------------------------------------------
     //   *  G is a directed graph
-    //   *  NSum is a node property (data associated with each node) of G, the type of each data is Int.
-    //      NSum will be computed by this procedure.
-    //   *  This procedure returns an Int value.
+    //   *  NSum is a node property (i.e. data associated with each node) of G, 
+    //      where the type of each data is Int; NSum will be computed by this procedure.
+    //   *  This procedure returns an Int value as well (sum of NSum).
     //-----------------------------------------------------
-    Proc sum_of_neighbors_in_degree(G: Graph, 
-                                    NSum: Node_Property<Int>(G)) : Int                           
-    {    
+    Proc sum_of_nbr_in_degree(G: Graph, 
+                              NSum: Node_Prop<Int>(G)) : Int                           
+    {   
         // For each node s in the graph,
+        //    assign NSum as the sum of neighbor's in-degree. 
         Foreach (s: G.Nodes) {                
-            //  assign NbrInSum as, sum of neighbor's in-degree. 
-            s.NbrInSum = Sum(t:s.Nbrs) { t.InDegree() }; 
+            s.NSum = Sum(t:s.Nbrs) { t.InDegree() }; 
         }        
-        // return the sum of NSum. 
+        
+        // return the sum of NSum over all nodes
         Return Sum(s: G.Nodes) {s.NSum};     
     }
+
+The above code should be self-explantory with the comments. Note that in fact, the code itself can be
+as intuitive as the textual explanation once you understand the syntax. 
+
+We can compile this code with gm_comp just the same as in the previous section.
+
+    cd $(top)/apps
+    make gen         %% this command generates .cc file out of .gm file
+    
+Before we go, let us check the generated _header_ file:
+
+    cat $(top)/apps/output_cpp/generated/hello_world.h
+    %% It should look like as follows:
+    #ifndef GM_GENERATED_CPP_HELLO_WORLD_H
+    #define GM_GENERATED_CPP_HELLO_WORLD_H
+    
+    #include <stdio>                  // include for standard C/C++ libraries
+       // .... a few more includes
+    #include <omp.h>                  // include for OpenMP
+    #include "gm.h"                   // include for Runtime and Graph library            
+    
+    void hello_world();               // your 1st procedure
+    int32_t sum_of_nbrs_in_degree(    // your 2nd procedure
+       gm_graph& G, int32_t* G_val);  //   arguments of the procedure
+    
+    #endif
+    
+
+3-2 Another main program
+--------------------------------------
+
+Now let us modify main function as well. In this new main function, we will build up a graph 
+and make a call to `sum_of_nbr_ini_degree()` function. 
+
+Edit $(top)/apps/output_cpp/src/hello_world_main.cc ss follows:
+
+
+    int main(int argc, char** argv)
+    {
+        hello_world();               // call to the generated function
+        
+        // create an empty graph
+        gm_graph G;
+        
+        // Add 5 nodes in the graph; 
+        // Node 0~4 is created.
+        for(int i=0;i<5;i++) 
+            G.add_node();
+
+        // Add following Edges
+        //  0->3
+        //  1->3
+        //  2->3
+        //  4->3
+        //  0->4
+        // Thus, node 3 has four in-neighbors (node 0,1,2,4) while 4 has one (node 0).
+        G.add_edge(0,3);
+        G.add_edge(1,3);
+        G.add_edge(2,3);
+        G.add_edge(4,3);
+        G.add_edge(0,4);
+        
+        // Create an array to hold the node property
+        int32_t nsum = new int32_t[G.num_nodes()];
+        
+
+}
+
+
+
+
+
+3-3 Looking inside the generated code
+--------------------------------------
+
 
 
 4 Further information
