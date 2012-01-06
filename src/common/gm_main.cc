@@ -60,6 +60,7 @@ static void parse_stop_string()
     if (p!= NULL)
         gm_stop_minor = atoi(p);
 
+    if (gm_stop_major == 0) return;
     if (gm_stop_minor == 0) 
     {
         printf("stopping after stage %d\n",gm_stop_major, gm_stop_minor);
