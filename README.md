@@ -29,10 +29,23 @@ the third one is included in this source package.
 2 The Package 
 ====================================
 
-2-1 Obtaining this package
+2-1 Obtaining source package
 -------------------------------------
 
-  (TODO: describe how to get this package.)
+The source code repository of gm_comp, a Green-Marl compiler is as follows:
+    
+    http://github.com/stanford-ppl/Green-Marl/
+
+From there, you can get the current source code package in two ways.
+
+* as a zip file (not recommended) :
+If you're not familiar with _git_ and do not want to learn it for the time being, 
+you can still download the package as a zip file from the above repository.
+Find and push the button that has labeled as "zip" -- downloading of zipped repository
+will begin momentarily,
+
+* 
+
 
 
 2-2 Directories
