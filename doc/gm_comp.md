@@ -84,6 +84,65 @@ The compiler goes through 6 major steps.
   * 5: Library Specific Optimization
   * 6: Code Generation
 
+For example, you can stop the compiler after Stage 2 by the following command. 
+When stopped, the compiler will reproduce the program as -Dr=1 is the default option.
+
+    ./gm_comp -V=1 -DS=2 -foo.gm
+    ......
+    ...Stage 2.11: Frontend.[Check RW conflict errors]
+    ...Stage 2.12: Frontend.[Remove variable declarations (Use Symtab)]
+    ...Stopping compiler after Stage 2:Frontend
+    ======================================================
+    Procedure foo(
+        G : Graph,
+        A : N_P <Int>(G),
+        B : N_P <Int>(G)) : Int
+    {
+        Int X;
+        Int Y;
+        X =  Sum(s: G.Nodes){s.A} ;
+        Y =  Sum(t: G.Nodes){t.B} ;
+        Return X * Y;
+    }
+    ======================================================
+
+Now let us trace the compiler optimization a little bit more. 
+Let's stop the compiler after Stage 3.2 (Regularize Syntax), where the in-place reductions are
+expanded into explicit loops.
+
+    ./gm_comp -V=1 -DS=2 -foo.gm
+    ......
+    ...Stage 3.2: Indep-Opt.[Regularize syntax]
+    ...Stopping compiler after Stage 3.2:Indep-Opt.[Regularize syntax]
+    ======================================================
+    Procedure foo(
+        G : Graph,
+        A : N_P <Int>(G),
+        B : N_P <Int>(G)) : Int
+    {
+        Int X;
+        Int Y;
+        Int _S0;
+        Int _S1;
+        _S0 = 0;
+        Foreach (s : G.Nodes)
+            _S0 += s.A @ s ;
+
+        X = _S0;
+        _S1 = 0;
+        Foreach (t : G.Nodes)
+            _S1 += t.B @ t ;
+
+        Y = _S1;
+        Return X * Y;
+    }
+    ======================================================
+    
+    
+
+
+
+
 
 
 2.3 Using vi + make + gm_comp
