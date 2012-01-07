@@ -212,8 +212,9 @@ and C++ types.
 | Node_Seq   | gm_node_seq& |
 | Node_Set   | gm_node_set& |
 
-Each node_t and edge_t is type-defined as either int32_t or int64_t.
-
+* gm_graph, gm_node_order, gm_node_set, gm_node_seq is defined in gm_graph library.
+* Each node_t and edge_t is type-defined as either int32_t or int64_t.
+* Node_Propery and Edge_Property is mapped into arrays having O(N) and O(E) size, respectively.
 
 
 4 GPS Backend
