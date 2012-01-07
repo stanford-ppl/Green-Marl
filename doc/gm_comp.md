@@ -87,7 +87,7 @@ The compiler goes through 6 major steps.
 For example, you can stop the compiler after Stage 2 by the following command. 
 When stopped, the compiler will reproduce the program as -Dr=1 is the default option.
 
-    ./gm_comp -V=1 -DS=2 -foo.gm
+    ./gm_comp -V=1 -DS=2 foo.gm
     ......
     ...Stage 2.11: Frontend.[Check RW conflict errors]
     ...Stage 2.12: Frontend.[Remove variable declarations (Use Symtab)]
@@ -110,7 +110,7 @@ Now let us trace the compiler optimization a little bit more.
 Let's stop the compiler after Stage 3.2 (Regularize Syntax), where the in-place reductions are
 expanded into explicit loops.
 
-    ./gm_comp -V=1 -DS=2 -foo.gm
+    ./gm_comp -V=1 -DS=3.2 foo.gm
     ......
     ...Stage 3.2: Indep-Opt.[Regularize syntax]
     ...Stopping compiler after Stage 3.2:Indep-Opt.[Regularize syntax]
@@ -138,10 +138,34 @@ expanded into explicit loops.
     }
     ======================================================
     
-    
+Now, let the compiler proceed a little bit more so that it can re-arrange the statements and merge the loops.
 
+    ./gm_comp -V=1 -DS=3.6 foo.gm
+    ......
+    ...Stopping compiler after Stage 3.6:Indep-Opt.[Merge loops]
+    ======================================================
+    Procedure foo(
+        G : Graph,
+        A : N_P <Int>(G),
+        B : N_P <Int>(G)) : Int
+    {
+        Int X;
+        Int Y;
+        Int _S0;
+        Int _S1;
+        _S0 = 0;
+        _S1 = 0;
+        Foreach (s : G.Nodes)
+        {
+            _S0 += s.A @ s ;
+            _S1 += s.B @ s ;
+        }
 
-
+        X = _S0;
+        Y = _S1;
+        Return X * Y;
+    }
+    ======================================================
 
 
 
