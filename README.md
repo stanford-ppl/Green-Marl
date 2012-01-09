@@ -99,6 +99,7 @@ The compiler(gm_comp) and runtime(gm_graph) requires the following environments:
  * POSIX environment: linux or unix, (not tested with cygwin)
  * x86 instruction-set architecture (i386 or x86_64)
  * gcc (version >= 4.2), which supports OpenMp
+ * g++ 
  * GNU flex and bison 
 
 3-2 Directory Generation
@@ -138,7 +139,7 @@ through the following steps:
 4-1 The Applications
 -------------------------------------
 
-Foru Green-Marl sample programs are included in the package. The codes can be found
+Four Green-Marl sample programs are included in the package. The codes can be found
 in the following location:
     $(top)/apps/src/ 
     
@@ -171,11 +172,11 @@ The following steps compiles sample Green-Marl programs into C++:
     %%%% The actual Green-Marl programs are located at $(top)/apps/srcs.
     cat Programs.mk  
     
-    %%%% The follwing invokes gm_comp and generates c++ implementation (.cc, .h file)
+    %%%% The following invokes gm_comp and generates c++ implementation (.cc, .h file)
     %%%% out of Green-Marl programs (.gm file)
     make gen
     
-    %%%% Source codes are geneated in the following location.
+    %%%% Source codes are generated in the following location.
     %%%% Check if source codes are successfully generated.
     cd $(top)/apps/output_cpp/generated/     
 
@@ -244,7 +245,7 @@ copied into $(top)/apps/output_cpp/bin/.
 
      (TODO)
      * Currently graph_gen is created together when gm_graph is built
-     * We weill make graph_gen as a separate package; one routine is polluted by GPL. 
+     * We will make graph_gen a separate package; one routine is polluted by GPL. 
  
 Now, do the following steps and execute sample programs:
 
@@ -256,7 +257,7 @@ Now, do the following steps and execute sample programs:
     %%%% Run conductance algorithm on the uniform graph with one thread.
     bin/conduct data/u1m_8m.bin 1
     
-    %%%% Run conductace algorithm on the uniorm graph with 8 threads.
+    %%%% Run conductance algorithm on the uniorm graph with 8 threads.
     bin/conduct data/u1m_8m.bin 8
     
     %%%% Try remaining sample applications (pagerank, bc, kosaraju)
