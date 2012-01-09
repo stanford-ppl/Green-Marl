@@ -249,7 +249,7 @@ Edit $(top)/apps/output_cpp/src/hello_world_main.cc ss follows:
 
 
         // Create an array to hold the node property
-        int32_t nsum = new int32_t[G.num_nodes()];
+        int32_t* nsum = new int32_t[G.num_nodes()];
         
         // call to your procedure
         int32_t s = sum_of_nbrs_in_degree(G, nsum);
