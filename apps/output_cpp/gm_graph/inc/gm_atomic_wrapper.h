@@ -90,7 +90,7 @@ static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, dou
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
 { 
-#warn "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
+#warning "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
 
     bool ret = false;
     if (*dest != old_val) return false;
@@ -108,7 +108,7 @@ static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, i
 
 static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
 { 
-#warn "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
+#warning "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
 
     bool ret = false;
     if (*dest != old_val) return false;
