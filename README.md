@@ -268,7 +268,7 @@ Now, do the following steps and execute sample programs:
 4-7 Adding your own Green-Marl Program
 -------------------------------------
 
-Refer to [tutorial document](stanford-ppl/Green-Marl/blob/master/doc/tutorial.md) which provides a walk-through to write your own Green-Marl
+Refer to [tutorial document](Green-Marl/blob/master/doc/tutorial.md) which provides a walk-through to write your own Green-Marl
 program, to compile it, and to execute it.
 
 
