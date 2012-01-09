@@ -27,16 +27,13 @@
 #define _gm_atomic_or  __sync_fetch_and_or
 #define _gm_atomic_and __sync_fetch_and_and
 
-#ifdef __x86_64__
+#else
+#error "GM_Graph library requires gcc for now" 
+#endif // no GNUC
 
-static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val)
-{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
-static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
-{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+#if defined(__x86_64__) || defined(__i386__)
 
-// It is not possible to use gcc's inherent CAS for double and float
-// (Reinterpret_cast does not work here)
-#  define __asm_sync_bool_compare_and_swap(ptr,oldval,newval) \
+#define __asm_sync_bool_compare_and_swap(ptr,oldval,newval) \
     ({ \
       typeof(ptr) __p = (ptr); \
       typeof(*__p) __oldval = (oldval); \
@@ -58,30 +55,76 @@ static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, i
       } \
       __result; \
     })
+
+static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val)
+{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+
+// It is not possible to use gcc's inherent CAS for double and float
+// (Reinterpret_cast does not work here)
 static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float new_val)
 { unsigned char  c = __asm_sync_bool_compare_and_swap(dest, old_val, new_val);
   return (c==1);
 }
 
+#else
+#error "We need x86 (32bit or 64bit environment" 
+#endif
+
+
+#ifdef __x86_64__
+
+static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
+{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+
 static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
-{ unsigned char c =  __asm_sync_bool_compare_and_swap(dest, old_val, new_val);
+{ 
+  unsigned char c =  __asm_sync_bool_compare_and_swap(dest, old_val, new_val);
   return (c==1);
 }
 
 #endif
 
-#if __i386__
+#ifdef __i386__
 
-#error "You should compile with -m64 flag. (x86_64 architecture required)" 
+#include "gm_lock.h"
+
+static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
+{ 
+#warn "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
+
+    bool ret = false;
+    if (*dest != old_val) return false;
+
+    gm_spinlock_acquire_for_ptr(dest);
+
+    if (*dest == old_val) {
+        *dest = new_val;
+        ret = true;
+    }
+
+    gm_spinlock_release_for_ptr(dest);
+    return ret;
+}
+
+static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
+{ 
+#warn "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
+
+    bool ret = false;
+    if (*dest != old_val) return false;
+
+    gm_spinlock_acquire_for_ptr(dest);
+
+    if (*dest == old_val) {
+        *dest = new_val;
+        ret = true;
+    }
+
+    gm_spinlock_release_for_ptr(dest);
+}
 
 #endif
 
 
 
-#else // no GNUC
-
-#error "GM_Graph library requires gcc for now" 
-
-#endif // no GNUC
-
-#endif
+#endif // end of file

@@ -3,7 +3,7 @@ AR= ar
 LIBDIR = ../lib
 BINDIR = ../../bin
 INCDIR = ../inc
-CFLAGS = -O3 -g  -I$(INCDIR) -fopenmp -m64 
+CFLAGS = -O3 -g  -I$(INCDIR) -fopenmp 
 OUT = $(BINDIR)/graph_gen $(LIBDIR)/libgmgraph.a
 
 all: $(OUT)
@@ -11,7 +11,7 @@ all: $(OUT)
 $(BINDIR)/graph_gen: gen.o graph_generate.o  gm_graph.o
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(LIBDIR)/libgmgraph.a: gm_graph.o gm_runtime.o
+$(LIBDIR)/libgmgraph.a: gm_graph.o gm_runtime.o gm_lock.o
 	$(AR) r $@ $^ 
     
 

@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include "gm_runtime.h"
 #include "gm_mem_helper.h"
+#include "gm_lock.h"
 
 //===============================
 gm_mem_helper _GM_MEM;; //GM_MEM should be initialized first
@@ -14,6 +15,7 @@ gm_runtime _GM_RT;
 //===============================
 gm_runtime::gm_runtime() : is_init(false), num_threads(0), random_seeds(NULL)
 {
+    gm_spinlock_table_init();
     initialize();
 }
 gm_runtime::~gm_runtime()
