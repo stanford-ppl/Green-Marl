@@ -27,26 +27,56 @@
 #define _gm_atomic_or  __sync_fetch_and_or
 #define _gm_atomic_and __sync_fetch_and_and
 
+#ifdef __x86_64__
+
 static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val)
 { return __sync_bool_compare_and_swap(dest, old_val, new_val);}
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
 { return __sync_bool_compare_and_swap(dest, old_val, new_val);}
 
-static inline bool _gm_atomic_compare_and_swap(double  *dest, double old_valp,  double new_valp) 
-{   
-    uint64_t* D = reinterpret_cast<uint64_t*> (dest); 
-    uint64_t* O = reinterpret_cast<uint64_t*> (&old_valp); 
-    uint64_t* P = reinterpret_cast<uint64_t*> (&new_valp); 
-    return __sync_bool_compare_and_swap(D, *O, *P);
+// It is not possible to use gcc's inherent CAS for double and float
+// (Reinterpret_cast does not work here)
+#  define __asm_sync_bool_compare_and_swap(ptr,oldval,newval) \
+    ({ \
+      typeof(ptr) __p = (ptr); \
+      typeof(*__p) __oldval = (oldval); \
+      typeof(*__p) __newval = (newval); \
+      register unsigned char __result; \
+      register typeof(*__p) __readval; \
+      if (sizeof(*__p) == 4) { \
+        __asm__ __volatile__ ("lock; cmpxchgl %3,%1; sete %0" \
+                              : "=q"(__result), "=m"(*__p), "=a"(__readval) \
+                              : "r"(__newval), "m"(*__p), "2"(__oldval) \
+                              : "memory"); \
+      } else if (sizeof(*__p) == 8) { \
+        __asm__ __volatile__ ("lock; cmpxchgq %3,%1; sete %0" \
+                              : "=q"(__result), "=m"(*__p), "=a"(__readval) \
+                              : "r"(__newval), "m"(*__p), "2"(__oldval) \
+                              : "memory"); \
+      } else { \
+        abort(); \
+      } \
+      __result; \
+    })
+static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float new_val)
+{ unsigned char  c = __asm_sync_bool_compare_and_swap(dest, old_val, new_val);
+  return (c==1);
 }
 
-static inline bool _gm_atomic_compare_and_swap(float   *dest, float  old_valp,  float new_valp) 
-{
-    uint32_t* D = reinterpret_cast<uint32_t*> (dest); 
-    uint32_t* O = reinterpret_cast<uint32_t*> (&old_valp); 
-    uint32_t* P = reinterpret_cast<uint32_t*> (&new_valp); 
-    return __sync_bool_compare_and_swap(D, *O, *P);
+static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
+{ unsigned char c =  __asm_sync_bool_compare_and_swap(dest, old_val, new_val);
+  return (c==1);
 }
+
+#endif
+
+#if __i386__
+
+#error "You should compile with -m64 flag. (x86_64 architecture required)" 
+
+#endif
+
+
 
 #else // no GNUC
 

@@ -4,7 +4,7 @@ INCDIR = ../gm_graph/inc
 LIBDIR = ../gm_graph/lib
 BINDIR = ../bin
 LIB = gmgraph
-CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp  
+CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -m64 -fopenmp  
 LFLAGS = -L$(LIBDIR) -l$(LIB)
 
 #include program list
