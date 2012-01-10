@@ -1,5 +1,5 @@
 ifndef PROGS
-PROGS=pagerank conduct bc kosaraju hello_world
+PROGS=pagerank conduct bc kosaraju 
 endif
 export PROGS
 
