@@ -55,7 +55,7 @@ If you already know how to fetch via git, please go ahead from the above reposit
    + Go to any local directory and do the following command; 
    It will create a new sub-directory (named Green-Marl) and download the source code there.
 
-            git pull git://github.com/stanford-ppl/Green-Marl.git
+            git clone git://github.com/stanford-ppl/Green-Marl.git
    
   + You can always download most up-to-date package by doing the follwing command at the directory.
 
@@ -121,7 +121,7 @@ The following steps build up 'gm_comp', a Green-Marl compiler:
     cd $(top)/bin 
     ./gm_comp -h          %% this command shows available compiler options
 
-A more detailed documentation about the gm_comp compiler can be found in etc/compiler.txt in this package
+A more detailed documentation about the gm_comp compiler can be found in [doc/gm_comp.md](Green-Marl/blob/master/doc/gm_comp.md) in this package
 
 3-4 Installing Syntax Highlighting for vi
 -------------------------------------
