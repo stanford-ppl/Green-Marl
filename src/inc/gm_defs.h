@@ -20,11 +20,11 @@ static enum {
 
     // iterators
     GMTYPE_NODEITER_ALL=100,
-    GMTYPE_NODEITER_NBRS,
-    GMTYPE_NODEITER_IN_NBRS,
-    GMTYPE_NODEITER_BFS,
-    GMTYPE_NODEITER_UP_NBRS,
-    GMTYPE_NODEITER_DOWN_NBRS,
+    GMTYPE_NODEITER_NBRS,           // out nbr
+    GMTYPE_NODEITER_IN_NBRS,        // in nbr
+    GMTYPE_NODEITER_BFS,            // bfs
+    GMTYPE_NODEITER_UP_NBRS,        // up nbr
+    GMTYPE_NODEITER_DOWN_NBRS,      // doen nbr
     GMTYPE_NODEITER_SET,            // set
     GMTYPE_NODEITER_SEQ,            // sequence
     GMTYPE_NODEITER_ORDER,          // order

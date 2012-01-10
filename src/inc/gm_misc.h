@@ -113,42 +113,6 @@ private:
 
 
 /*
-//------------------------------------------------
-// Temporary variable name generator
-// should be a singleton
-//------------------------------------------------
-class gm_tempNameGen {
-    public:
-        gm_tempNameGen() {
-            _idx = 0; }
-        virtual ~gm_tempNameGen() {}
-
-        void resetTempIdx() {_idx = 0;}
-
-        // create name as _<base><number>
-        // returns a new string with new name.
-        // (caller should delete new name)
-        const char* getTempName(const char* base=NULL, const char* base2="") {
-            if (base == NULL) base = "t";
-            if (base2 == NULL) base2 = "";
-            int sz = strlen(base) + strlen(base2) + 8 + 1 + 1; // 8 digit should be enough. 1 for _.  1 for \0.
-            char* tempName = new char[sz];
-            assert(_idx >= 0 );
-            assert(_idx < 99999999);
-            if (base[0] == '_') {
-                if (strlen(base2) > 0)
-                    sprintf(tempName,"%s%s", base, base2);
-                else 
-                    sprintf(tempName,"%s%d", base, _idx++);
-            }
-            else
-                sprintf(tempName,"_%s%s%d", base, base2, _idx++);
-            return (const char*) tempName;
-        }
-    private:
-        int _idx;
-};
-extern gm_tempNameGen TEMP_GEN;
 */
 
 #endif

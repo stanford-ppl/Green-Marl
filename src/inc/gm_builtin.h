@@ -21,6 +21,7 @@ static enum {
     GM_BLTIN_GRAPH_NUM_EDGES,   // number of edges in graph
     GM_BLTIN_NODE_DEGREE,       // (out-)degree of a node
     GM_BLTIN_NODE_IN_DEGREE,    // in-degree of a node
+    GM_BLTIN_NODE_TO_EDGE,      // edge to that node-iterator
 
     GM_BLTIN_TOP_DRAND,         // rand function
     GM_BLTIN_TOP_IRAND,         // rand function
@@ -52,28 +53,31 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,  GM_BLTIN_USE_REVERSE":true"},
     {"*InDegree",            GM_BLTIN_NODE_IN_DEGREE,  ""}, 
 
+    {"NI_Out:Edge:Node:0",    GM_BLTIN_NODE_TO_EDGE,     ""},
+    {"NI_Down:Edge:Node:0",   GM_BLTIN_NODE_TO_EDGE,     ""},
+
     // Set:
-    {"NodeS:Add:Void:1:Node",     GM_BLTIN_SET_ADD,         ""},
-    {"NodeS:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,      ""},
-    {"NodeS:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,         ""},
+    {"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,         ""},
+    {"N_S:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,      ""},
+    {"N_S:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,         ""},
 
     // Order:
-    {"NodeO:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
+    {"N_O:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
     {"*Push",                      GM_BLTIN_SET_ADD_BACK,    ""},
-    {"NodeO:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
-    {"NodeO:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
-    {"NodeO:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
+    {"N_O:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
+    {"N_O:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
+    {"N_O:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
     {"*Pop",                       GM_BLTIN_SET_REMOVE,      ""},
-    {"NodeO:Has:Bool:1:Node",      GM_BLTIN_SET_HAS,         ""},
+    {"N_O:Has:Bool:1:Node",      GM_BLTIN_SET_HAS,         ""},
     //{"NodeO:Front:Node:0",         GM_BLTIN_SET_PEEK,         ""},
     //{"NodeO:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,    ""},
 
     // Seq:
-    {"NodeQ:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
+    {"N_Q:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
     {"*Push",                      GM_BLTIN_SET_ADD_BACK,    ""},
-    {"NodeQ:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
-    {"NodeQ:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
-    {"NodeQ:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
+    {"N_Q:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
+    {"N_Q:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
+    {"N_Q:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
     {"*Pop",                       GM_BLTIN_SET_REMOVE,      ""},
     //{"NodeQ:Front:Node:0",         GM_BLTIN_SET_PEEK,        ""},
     //{"NodeQ:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,   ""},
