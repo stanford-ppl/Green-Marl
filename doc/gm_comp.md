@@ -243,6 +243,7 @@ GPS output.
   However, this can be circumvented a little bit, since the main function can make
   function calls to those procedures.
 
+* Only the directed graphs are supported.
 
 * Implementation of parallel addition/removal to the collection has not finished. 
      + Compiler should check the mutation gender inside parallel region.
