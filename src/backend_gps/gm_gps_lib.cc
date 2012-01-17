@@ -194,10 +194,13 @@ void gm_gpslib::generate_vertex_prop_class_details(
             gm_code_writer& Body)
 {
     char temp[1024];
+    int total = 
+        ((gm_gps_beinfo*)FE.get_current_backend_info())->
+            get_total_property_size();
 
     Body.pushln("@override");
     Body.push("public int numBytes() {return ");
-    sprintf(temp, "%d;}", get_main()->get_total_property_size());
+    sprintf(temp, "%d;}", total);
     Body.pushln(temp);
 
     std::set<gm_symtab_entry* >::iterator I;
@@ -279,15 +282,15 @@ void gm_gpslib::generate_vertex_prop_class_details(
             default: assert(false);
         }
     }
-    sprintf(temp, "return %d;", get_main()->get_total_property_size());
+    sprintf(temp, "return %d;", total);
     Body.pushln(temp);
     Body.pushln("}");
 
     Body.pushln("@override");
     Body.pushln("public int read(IoBuffer ioBuffer, byte[] _BA, int _idx) {");
-    sprintf(temp, "ioBuffer.get(_BA, _idx, %d);", get_main()->get_total_property_size());
+    sprintf(temp, "ioBuffer.get(_BA, _idx, %d);", total);
     Body.pushln(temp);
-    sprintf(temp, "return %d;", get_main()->get_total_property_size());
+    sprintf(temp, "return %d;", total);
     Body.pushln(temp);
     Body.pushln("}");
 
@@ -315,3 +318,28 @@ void gm_gpslib::generate_vertex_prop_access_rhs(ast_id* id, gm_code_writer& Body
 {
     generate_vertex_prop_access_lhs(id, Body);
 }
+
+bool gm_gpslib::do_local_optimize()
+{
+    const char* NAMES[]= { "[(nothing)]"};
+    const int COUNT = sizeof(NAMES)/sizeof(const char*);
+
+    bool is_okay = true;
+
+    for(int i=0;i<COUNT;i++) {
+        gm_begin_minor_compiler_stage(i +1, NAMES[i]);
+        {
+            switch(i) {
+                case 0:
+                     break;
+                case COUNT:
+                default:
+                     assert(false);
+            }
+        }
+        gm_end_minor_compiler_stage();
+        if (!is_okay) break;
+    }
+    return is_okay;
+}
+

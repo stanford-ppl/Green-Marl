@@ -93,6 +93,7 @@ private:
 };
 
 
+/*
 bool gm_gps_gen::do_simplify_reduce(ast_procdef* p)
 {
     gps_opt_reduce_simplify T;
@@ -101,3 +102,4 @@ bool gm_gps_gen::do_simplify_reduce(ast_procdef* p)
 
     return true;
 }
+*/

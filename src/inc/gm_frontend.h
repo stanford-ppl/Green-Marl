@@ -86,6 +86,9 @@ class gm_frontend
         gm_procinfo* get_proc_info(ast_procdef* proc) {return proc_info[proc];}
         gm_procinfo* get_current_proc_info() {return proc_info[_curr_proc];}
 
+        gm_backend_info* get_backend_info(ast_procdef* proc) {return proc_info[proc]->get_be_info();}
+        gm_backend_info* get_current_backend_info() {return proc_info[_curr_proc]->get_be_info();}
+
     public:
         //-------------------------------------------------------
         // short-cut to current procedure's vocaburary 

@@ -14,12 +14,9 @@ void gm_gps_gen::write_headers()
 }
 void gm_gps_gen::begin_class()
 {
-    ast_procdef* proc = get_current_proc(); assert(proc != NULL);
+    ast_procdef* proc = FE.get_current_proc();
     char temp[1024];
     Body.push("public class ");
-    //sprintf(temp, "%sVertex", proc->get_procname()->get_genname());
-    //Body.push(temp);
-    //Body.push(" extends Vertex ");
     Body.push(proc->get_procname()->get_genname());
     Body.push("{");
     Body.NL();
@@ -41,6 +38,8 @@ void gm_gps_gen::do_generate_master()
 
 void gm_gps_gen::do_generate_master_class()
 {
+    ast_procdef* proc = FE.get_current_proc();
+
     // create master state machine
     char temp[1024];
     sprintf(temp, "public static class %sMaster extends Master {", proc->get_procname()->get_genname());
@@ -65,7 +64,11 @@ void gm_gps_gen::do_generate_master_scalar()
     Body.pushln("// Scalar Variables ");
     Body.pushln("//----------------------------------------------------------");
     char temp[1024];
+    gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+    std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
     std::set<gm_symtab_entry* >::iterator I;
+
     for (I = scalar.begin(); I!=scalar.end();I++)
     {
         gm_symtab_entry *e = *I;
@@ -87,9 +90,11 @@ void gm_gps_gen::do_generate_master_scalar()
 void gm_gps_gen::do_generate_shared_variables_keys()
 {
     Body.pushln("// Keys for shared_variables ");
+    gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+    std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
+    std::set<gm_symtab_entry* >::iterator I;
 
-    std::set<gm_symtab_entry*>::iterator I;
-    std::set<gm_symtab_entry*>& scalar = this->scalar;
     char temp[256];
     for(I=scalar.begin(); I!=scalar.end();I++)
     {
@@ -132,7 +137,12 @@ void gm_gps_gen::do_generate_master_states()
     Body.pushln("do {");
     Body.pushln("_master_state = _master_state_nxt ;");
     Body.pushln("switch(_master_state) {");
+    gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+
+    std::list<gm_gps_basic_block*>& bb_blocks = info->get_basic_blocks();
     std::list<gm_gps_basic_block*>::iterator I;
+
     for(I = bb_blocks.begin(); I!= bb_blocks.end(); I++)
     {
         gm_gps_basic_block* b = *I;

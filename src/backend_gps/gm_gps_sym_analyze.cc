@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <set>
 #include "gm_backend_gps.h"
 #include "gm_error.h"
 #include "gm_code_writer.h"
@@ -7,21 +8,6 @@
 #include "gm_transform_helper.h"
 #include "gm_typecheck.h"
 #include "gps_syminfo.h"
-
-#include <set>
-/*
-class gps_clear_symbol_scope_t : public gm_apply
-{
-    public:
-    gps_clear_symbol_scope_t() {
-        set_for_symtab(true);
-    }
-    virtual bool apply(gm_symtab_entry* e, int symtab_type)
-    {
-        e->remove_info(TAG_BB_USAGE);
-    }
-};
-*/
 
 class gps_check_symbol_scope_t : public gm_apply
 {
@@ -91,47 +77,45 @@ private:
 
 
 // This function may be called multiple times
-bool gm_gps_gen::do_analyze_symbol_scope(ast_procdef* p)
+void gm_gps_gen::do_analyze_symbol_scope(ast_procdef* p)
 {
-    /*
-    // clean up previous symbol analysis
-    gps_clear_symbol_scope_t T0;
-    p->traverse(&T0, true, false);
-    */
-
-    // assumption: Proc is synthesizable. i.e. having only two levels of loops
+    // [Todo]
+    // [assumption] Proc is synthesizable. i.e. having only two levels of loops
     gps_check_symbol_scope_t T;
     p->traverse(&T, true, true);
-
 }
 
 
 
+static void do_merge_symbol_usages(ast_procdef* p);
+static void do_make_symbol_summary(ast_procdef* p);
 
-bool gm_gps_gen::do_analyze_symbols()
+void gm_gps_opt_check_syms::process(ast_procdef* p)
 {
-    bool is_okay = true;
-
     //-------------------------------------
     // Check the scope of each symbol (except iterators)
     // (a) Defined globally 
     // (b) Defined in outer loop
     // (c) Defined in inner loop
     //-------------------------------------
-    do_analyze_symbol_scope(get_current_proc());  // may have done already. [XXX: no need to repeat]
+    gm_gps_gen::do_analyze_symbol_scope(p);  // may have done already. [XXX: no need to repeat]
 
-    // (2) check each BB. How each symbol is used and how
-    do_merge_symbol_usages();  
+    // (2) check each BB; how each symbol is used 
+    do_merge_symbol_usages(p);  
 
     // (3) Make a big flat list of symbols for code generation
-    do_make_symbol_summary();
+    do_make_symbol_summary(p);
 
-    return is_okay;
+    set_okay(true);
 }
 
 
 
 
+//---------------------------------------------------------------------
+// Traverse AST per each BB
+//  - figure out how each symbol is being used.
+//---------------------------------------------------------------------
 class gps_merge_symbol_usage_t : public gps_apply_bb_ast  
 {
     static bool const IS_SCALAR = true;
@@ -196,7 +180,6 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS);
         } 
         else if (e->is_field()) {
-            // [XXX] to be done
             ast_id* i = e->get_field()->get_second();
             update_access_information(i, IS_FIELD, GPS_SYM_USED_AS_RHS);
         }
@@ -279,18 +262,18 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 };
 
 
-bool gm_gps_gen::do_merge_symbol_usages()
+void do_merge_symbol_usages(ast_procdef* p)
 {
-    ast_procdef* p = get_current_proc();
-    gm_gps_basic_block* entry_BB = get_entry_basic_block();
+    
+    gm_gps_beinfo * beinfo = 
+        (gm_gps_beinfo *) FE.get_backend_info(p);
+    gm_gps_basic_block* entry_BB = beinfo->get_entry_basic_block();
     assert(p!= NULL);
     assert(entry_BB!=NULL);
 
     // traverse BB
     gps_merge_symbol_usage_t T;
     gps_bb_traverse_ast(entry_BB, &T, false, true);
-
-    return true;
 
 }
 
@@ -347,10 +330,8 @@ private:
 };
 
 
-bool gm_gps_gen::do_make_symbol_summary()
+void do_make_symbol_summary(ast_procdef* p)
 {
-    ast_procdef* p = get_current_proc();
-
 
     //-----------------------------------------------
     // mark special markers to the property arguments
@@ -369,7 +350,12 @@ bool gm_gps_gen::do_make_symbol_summary()
     //-------------------------------------
     // make a flat symbol table
     //-------------------------------------
-    gps_flat_symbol_t T(scalar, prop);
+    gm_gps_beinfo * beinfo = 
+        (gm_gps_beinfo *) FE.get_backend_info(p);
+
+    std::set<gm_symtab_entry* >& prop =
+            beinfo->get_prop_symbols();
+    gps_flat_symbol_t T( beinfo->get_scalar_symbols(), prop); 
     p->traverse(&T, false, true);
 
     //-----------------------------------------------------------
@@ -382,11 +368,10 @@ bool gm_gps_gen::do_make_symbol_summary()
         gm_symtab_entry * sym = *I; 
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
 
-        int size = get_lib()->get_type_size(sym->getType()->get_target_type());
+        int size = GPS_BE.get_lib()->get_type_size(sym->getType()->get_target_type());
         syminfo->set_start_byte(byte_begin);
         byte_begin += size;
     }
-    set_total_property_size(byte_begin);
+    beinfo->set_total_property_size(byte_begin);
 
-    return true;
 }

@@ -51,9 +51,11 @@ void gm_gps_gen::close_output_files()
     if (f_body!=NULL) {Body.flush();fclose(f_body); f_body = NULL;}
 }
 
-
-
-
+void gm_gps_gen::init_gen_steps()
+{
+    std::list<gm_compile_step*>& L = get_gen_steps();
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_gen_class));
+}
 
 //----------------------------------------------------
 // Main Generator
@@ -64,52 +66,11 @@ bool gm_gps_gen::do_generate()
     if (!open_output_files())
         return false;
 
-    assert(get_current_proc() != NULL);
+    bool b = gm_apply_compiler_stage(get_gen_steps());
+    assert(b == true);
 
-    // sub-steps
-    const char* NAMES[]= {
-        "[Merging Information]",    // ... what was I thinking again?
-        "[Generating Skeleton/Master]",    // create class header and state machine
-        "[Generting Vertex]"         // generate java code for vertex/master compute
-    };
+    close_output_files();
 
-    bool is_okay = true;
-
-    const int COUNT = sizeof(NAMES)/sizeof(const char*);
-    for(int i=0;i<COUNT;i++) {
-        gm_begin_minor_compiler_stage(i +1, NAMES[i]);
-        switch(i) {
-            case 0:
-                is_okay = do_merge_msg_information();
-                break;
-
-            case 1:
-                write_headers();
-                begin_class();
-                do_generate_master();
-                break;
-
-            case 2:
-                //do_generate_main(); 
-                do_generate_vertex();
-                end_class();
-                close_output_files();
-                break;
-
-            case COUNT:
-            default:
-                assert(false);
-        }
-
-        gm_end_minor_compiler_stage();
-        if (!is_okay) return is_okay;
-    }
-    return is_okay;
-}
-
-
-bool gm_gps_gen::do_merge_msg_information()
-{
     return true;
 }
 
@@ -119,3 +80,17 @@ void gm_gps_gen::end_class()
     Body.pushln("}");
 }
 
+void gm_gps_gen::generate_proc(ast_procdef* proc)
+{
+    write_headers();
+    begin_class();
+    do_generate_master();
+
+    do_generate_vertex();
+    end_class();
+}
+
+void gm_gps_gen_class::process(ast_procdef* proc)
+{
+    GPS_BE.generate_proc(proc);
+}

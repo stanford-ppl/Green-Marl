@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include "gm_backend_gps.h"
 #include "gm_error.h"
@@ -161,14 +159,13 @@ private:
 };
 
 
-bool gm_gps_gen::do_check_canonical(ast_procdef* proc)
+void gm_gps_opt_check_canonical::process(ast_procdef* proc)
 {
     // (re-do) scope analysis
-    do_analyze_symbol_scope(proc);
+    gm_gps_gen::do_analyze_symbol_scope(proc);
 
     gps_check_canonical_t T;
     proc->traverse(&T, true, true);
 
-    return !T.is_error();
-
+    set_okay(!T.is_error());
 }

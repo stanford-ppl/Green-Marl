@@ -5,6 +5,9 @@
 #include "gm_misc.h"
 #include "gm_code_writer.h"
 #include "gm_gps_basicblock.h"
+#include "gm_gps_beinfo.h"
+#include "gm_backend_gps_opt_steps.h"
+#include "gm_backend_gps_gen_steps.h"
 
 #include <list>
 #include <map>
@@ -27,7 +30,7 @@ class gm_gpslib : public gm_graph_library {
     virtual bool generate_builtin(ast_expr_builtin* e) {return true;}
 
 
-    virtual bool do_local_optimize() {return true;}
+    virtual bool do_local_optimize(); 
 
     // note: consume the return string immedately
     virtual const char* create_key_string(ast_id* id) {
@@ -74,29 +77,30 @@ class gm_gpslib : public gm_graph_library {
 class gm_gps_gen : public gm_backend , public gm_code_generator
 {
     public:
-        gm_gps_gen() : gm_code_generator(Body), dname(NULL), fname(NULL), f_body(NULL), proc(NULL), bb_entry(NULL) {
+        gm_gps_gen() : gm_code_generator(Body), dname(NULL), fname(NULL), f_body(NULL)        {
             glib = new gm_gpslib(this);
-            comm_id = 0;
-            basicblock_id = 0;
+            init_opt_steps();
+            init_gen_steps();
         }
-        virtual ~gm_gps_gen() { close_output_files(); delete_comms(); delete [] dname; delete [] fname; }
+        virtual ~gm_gps_gen() { close_output_files(); delete [] dname; delete [] fname; }
         virtual void setTargetDir(const char* dname) ;
         virtual void setFileName(const char* fname) ;
 
-        virtual bool do_local_optimize_lib() {return true;}
+        virtual bool do_local_optimize_lib() {return get_lib()->do_local_optimize();}
         virtual bool do_local_optimize() ;
         virtual bool do_generate(); 
 
-
-    protected:
         gm_gpslib* get_lib() {return glib;}
 
-        void set_current_proc(ast_procdef* p) {proc = p;}
-        ast_procdef* get_current_proc() {return proc;}
-        void set_entry_basic_block(gm_gps_basic_block* b); // set entry and creat list
-        gm_gps_basic_block* get_entry_basic_block() {return bb_entry;}
-        std::list<gm_gps_basic_block*>& get_basic_blocks() {return bb_blocks;}
-        
+    protected:
+        void init_opt_steps();
+        void init_gen_steps();
+        std::list<gm_compile_step*>& get_opt_steps() {return opt_steps;}
+        std::list<gm_compile_step*>& get_gen_steps() {return gen_steps;}
+
+    protected:
+        std::list<gm_compile_step*> opt_steps; 
+        std::list<gm_compile_step*> gen_steps; 
 
     protected:
         //----------------------------------
@@ -132,17 +136,17 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         //----------------------------------
         // stages in backend opt
         //----------------------------------
-    protected:
-        void do_create_stages();
-        bool do_check_synthesizable();
-        void merge_basic_blocks(gm_gps_basic_block* entry);
-        void split_communication_basic_blocks(gm_gps_basic_block* entry);
-        bool do_analyze_symbols();
-        bool do_merge_symbol_usages();
-        bool do_make_symbol_summary();
-        bool do_analyze_symbol_scope(ast_procdef* p);
-        bool do_simplify_reduce(ast_procdef* p);
-        bool do_check_canonical(ast_procdef* proc);
+    public:
+        void split_communication_basic_blocks(ast_procdef* entry);
+        static void do_analyze_symbol_scope(ast_procdef* p);
+
+    public:
+        //static bool do_analyze_symbols(ast_procdef*);
+        //static bool do_merge_symbol_usages(ast_procdef*);
+        //static bool do_make_symbol_summary();
+        //static bool do_simplify_reduce(ast_procdef* p);
+        //static void merge_basic_blocks(gm_gps_basic_block* entry);
+
     public:
         gm_code_writer& get_code() {return Body;}
 
@@ -153,65 +157,10 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         FILE* f_body;
         gm_gpslib* glib; // graph library
 
-        //---------------------------------------
-        // procedure and related information
-        // : there should be only one procedure
-        //---------------------------------------
-        ast_procdef* proc;
-
-        gm_gps_basic_block* bb_entry;               // entry for the procedure basic blocks (DAG)
-        std::list<gm_gps_basic_block*> bb_blocks;   // same as above DAG, but flattened as list 
-
-        std::set<gm_symtab_entry* > scalar;         // list of persistent master symbols 
-        std::set<gm_symtab_entry* > prop;           // list of persistent property symbols
-        int total_prop_size;                    
-
-        // map of 
-        // inner loops (possible communications) and
-        // symbols used in the communication
-        std::map<ast_foreach*, std::set<gm_symtab_entry*>* >  comms;
-        int comm_id;
-        int basicblock_id;
-
-    public:
-        int issue_comm_id() {return comm_id++;}
-        int issue_basicblock_id() {return basicblock_id++;}
-
-    public:
-        std::map<ast_foreach*, std::set<gm_symtab_entry*>* >&  get_communication_loops() {return comms;}
-        void add_commnication_loop(ast_foreach* fe) {
-            assert(comms.find(fe) == comms.end());
-            std::set<gm_symtab_entry*>* new_set = new std::set<gm_symtab_entry*>();
-            comms[fe] = new_set;
-            assert(fe->find_info(GPS_TAG_COMM_ID) == NULL);
-            fe->add_info(GPS_TAG_COMM_ID, new ast_extra_info(issue_comm_id()));
-        }
-        void delete_comms() {
-            std::map<ast_foreach*, std::set<gm_symtab_entry*>* >::iterator I;
-            for(I=comms.begin(); I!=comms.end();I++)
-                delete (I->second);
-        }
-        void add_comminication_symbol(ast_foreach* fe, gm_symtab_entry* sym)
-        {
-            assert(comms.find(fe) != comms.end());
-            std::set<gm_symtab_entry*>* set = comms.find(fe)->second;
-            set->insert(sym);
-        }
-        std::set<gm_symtab_entry*>* find_comminication_symbols(ast_foreach* fe)
-        {
-            assert(comms.find(fe) != comms.end());
-            std::set<gm_symtab_entry*>* set = comms.find(fe)->second;
-            return set;
-        }
-
-
-    public:
-        void set_total_property_size(int s) {total_prop_size = s;}
-        int  get_total_property_size() {return total_prop_size;}
-
     public: // from code generator interface
         const char* get_type_string(ast_typedecl* T, bool is_master);
 
+        virtual void generate_proc(ast_procdef* p);
 
         virtual void generate_rhs_id(ast_id* i); 
         virtual void generate_rhs_field(ast_field* i) ;
@@ -239,6 +188,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 
 };
 
+extern gm_gps_gen GPS_BE;
 
 
 #endif

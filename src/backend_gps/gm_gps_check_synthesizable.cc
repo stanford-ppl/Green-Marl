@@ -117,17 +117,17 @@ private:
 };
 
 
-bool gm_gps_gen::do_check_synthesizable()
+void gm_gps_opt_check_synthesizable::process(ast_procdef* proc)
 {
-    assert(get_current_proc() != NULL);
-    ast_procdef* proc = get_current_proc();
-
     //----------------------------------
     // check condition (1) to (4)
     //----------------------------------
     gps_check_synth_t T;
     proc->traverse(&T, true, true); // pre & post visit
-    if (T.is_error()) return false; // return is_okay
+    if (T.is_error()) {
+        set_okay(false);
+        return ; // return is_okay
+    }
 
     if (!T.is_graph_defined()) 
     {
@@ -136,8 +136,7 @@ bool gm_gps_gen::do_check_synthesizable()
             proc->get_procname()->get_line(),
             proc->get_procname()->get_col());
 
-        return false;
+        set_okay(false);
+        return ; // return is_okay
     }
-
-    return true;
 }

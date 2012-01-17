@@ -83,7 +83,7 @@ SRCS2 =\
        gm_gps_create_stages.cc \
        gm_gps_check_canonical.cc gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc gm_gps_bb_merge.cc\
-       gm_gps_opt_simplify_reduce_rhs.cc\
+       gm_gps_beinfo.cc\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
        gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
        gps_syminfo.cc gm_gps_sym_analyze.cc\

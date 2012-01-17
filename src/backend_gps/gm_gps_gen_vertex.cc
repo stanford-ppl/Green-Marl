@@ -24,7 +24,7 @@ void gm_gps_gen::do_generate_vertex_property_class()
     Body.pushln("// Vertex Property Class");
     Body.pushln("//----------------------------------------------");
    char temp[1024];
-   ast_procdef* proc = get_current_proc(); assert(proc != NULL);
+   ast_procdef* proc = FE.get_current_proc(); assert(proc != NULL);
    sprintf(temp, 
            "public static class VertexData extends MinaWritable {"
            //,proc->get_procname()->get_genname()
@@ -33,6 +33,9 @@ void gm_gps_gen::do_generate_vertex_property_class()
 
   // list out property
   Body.pushln("// node properties");
+  gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+  std::set<gm_symtab_entry*>& prop = info->get_prop_symbols();
   std::set<gm_symtab_entry* >::iterator I;
   for(I=prop.begin(); I!=prop.end(); I++)
   {
@@ -61,7 +64,7 @@ void gm_gps_gen::do_generate_message_class()
     Body.pushln("//----------------------------------------------");
 
    char temp[1024];
-   ast_procdef* proc = get_current_proc(); assert(proc != NULL);
+   ast_procdef* proc = FE.get_current_proc(); assert(proc != NULL);
    sprintf(temp, 
            "public static class MessageData extends IntWritable {"
            ); 
@@ -73,7 +76,8 @@ void gm_gps_gen::do_generate_message_class()
 void gm_gps_gen::do_generate_vertex_class()
 {
     char temp[1024];
-    const char* proc_name = proc->get_procname()->get_genname();
+    const char* proc_name = FE.get_current_proc()
+        ->get_procname()->get_genname();
     Body.pushln("//----------------------------------------------");
     Body.pushln("// Main Vertex Class");
     Body.pushln("//----------------------------------------------");
@@ -125,7 +129,7 @@ void gm_gps_gen::do_generate_vertex_class()
 void gm_gps_gen::do_generate_vertex_states()
 {
     char temp[1024];
-    const char* proc_name = proc->get_procname()->get_genname();
+    const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
     Body.NL();
     Body.pushln("@override");
     sprintf(temp,"public void compute(iterable<%s.MessageData> _msgs, int _superStepNo) {",proc_name);
@@ -135,6 +139,9 @@ void gm_gps_gen::do_generate_vertex_states()
     get_lib()->generate_receive_state_vertex("_state_vertex", Body);
 
     Body.pushln("switch(_state_vertex) { ");
+    gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+    std::list<gm_gps_basic_block*>& bb_blocks = info->get_basic_blocks();
     std::list<gm_gps_basic_block*>::iterator I;
     for(I = bb_blocks.begin(); I!= bb_blocks.end(); I++)
     {
@@ -168,7 +175,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     char temp[1024];
     sprintf(temp,"private void _vertex_state_%d(iteratable<%s.MessageData> _msgs, int _superStepNo) {", 
             id, 
-            proc->get_procname()->get_genname());
+            FE.get_current_proc()->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("/*------");
     Body.flush();

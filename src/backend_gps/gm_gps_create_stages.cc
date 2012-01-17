@@ -121,7 +121,7 @@ private:
 
 class gm_gps_create_basic_block1_t : public gm_apply {
 public:
-    gm_gps_create_basic_block1_t (std::map<ast_sent*, int>* s, gm_gps_gen* _gen)
+    gm_gps_create_basic_block1_t (std::map<ast_sent*, int>* s, gm_gps_beinfo* _gen)
     {
         already_added = false;
         added_depth = 0;
@@ -354,16 +354,13 @@ private:
 
     bool already_added;
     int added_depth;
-    gm_gps_gen* gen;
+    gm_gps_beinfo* gen;
 };
 
+extern void gm_gps_merge_basic_blocks(gm_gps_basic_block* entry);
 
-void gm_gps_gen::do_create_stages()
+void gm_gps_opt_create_ebb::process(ast_procdef* proc)
 {
-    // current procedure
-    assert(get_current_proc() != NULL);
-    ast_procdef* proc = get_current_proc();
-
     //--------------------------------
     // STEP 1:
     //   trasverse AST and mark each sentence
@@ -376,7 +373,9 @@ void gm_gps_gen::do_create_stages()
     // STEP 2:
     //   create Basic Blocks
     //--------------------------------
-    gm_gps_create_basic_block1_t T2(&s_mark, this);
+    gm_gps_beinfo* beinfo =
+            (gm_gps_beinfo*) FE.get_backend_info(proc);
+    gm_gps_create_basic_block1_t T2(&s_mark,  beinfo);
     gm_traverse_sents_pre_post(proc, &T2);
 
     // Debug Print
@@ -389,12 +388,9 @@ void gm_gps_gen::do_create_stages()
     // STEP 3:
     //   merge BASIC BLOCKS
     //--------------------------------
-    merge_basic_blocks(T2.get_entry());
-    /*
-    gps_bb_print_all(T2.get_entry()); // return or of has_changed
-    exit(0);
-    */
+    gm_gps_merge_basic_blocks(T2.get_entry());
 
     // Now add entry
-    set_entry_basic_block(T2.get_entry());
+    beinfo->set_entry_basic_block(T2.get_entry());
+
 }

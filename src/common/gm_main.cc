@@ -226,6 +226,7 @@ int main (int argc, char** argv)
     }
     gm_end_major_compiler_stage();
 
+
     //-------------------------------------
     // Backend-Specific Code Modification
     //-------------------------------------
@@ -236,6 +237,7 @@ int main (int argc, char** argv)
     }
     gm_end_major_compiler_stage();
 
+
     //-------------------------------------
     // Library specific Backend-Specific Code Modification
     //-------------------------------------
@@ -245,7 +247,6 @@ int main (int argc, char** argv)
         if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
-
 
     //-------------------------------------------------
     // Final Code Generation
@@ -263,7 +264,7 @@ int main (int argc, char** argv)
     }
     gm_end_major_compiler_stage();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 

@@ -60,7 +60,7 @@ public:
 };
 
 
-void gm_gps_gen::merge_basic_blocks(gps_bb* entry)
+void gm_gps_merge_basic_blocks(gps_bb* entry)
 {
     gps_merge_simple_t T;
     gps_bb_apply_until_no_change(entry, &T);

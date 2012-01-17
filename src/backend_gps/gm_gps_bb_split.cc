@@ -19,7 +19,7 @@ class gps_find_comm_vertex_bb: public gps_apply_bb_ast
 {
 public:
 
-    gps_find_comm_vertex_bb(gm_gps_gen* g) 
+    gps_find_comm_vertex_bb(gm_gps_beinfo* g) 
     {
         gen = g;
         set_for_sent(true);
@@ -42,7 +42,7 @@ public:
             ast_foreach* fe = (ast_foreach*) s;
             curr->set_has_sender(true);
 
-            gen->add_commnication_loop(fe);
+            gen->add_communication_loop(fe);
 
             // add the foreach loop as 'receiver'
             // (this list will be migrated after split)
@@ -56,19 +56,26 @@ public:
     std::set<gps_bb*>& get_target_basic_blocks()  {return target_bb;}
 
 private:
-    gm_gps_gen* gen;
+    gm_gps_beinfo* gen;
     std::set<gps_bb*> target_bb;
 
 };
 
 
-static void split_vertex_BB(gps_bb* BB, gm_gps_gen* gen);
+static void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen);
 
 
-void gm_gps_gen::split_communication_basic_blocks(gps_bb* entry)
+// [todo]
+// who call this?
+void gm_gps_gen::split_communication_basic_blocks(ast_procdef* p)
 {
+    gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);
+    gps_bb* entry = info->get_entry_basic_block();
+
+    //-------------------------------
     // find bb vertex
-    gps_find_comm_vertex_bb T(this);
+    //-------------------------------
+    gps_find_comm_vertex_bb T(info);
     gps_bb_apply_only_once(entry, &T);
 
     std::set<gps_bb*>& BB_list = T.get_target_basic_blocks() ;
@@ -78,15 +85,13 @@ void gm_gps_gen::split_communication_basic_blocks(gps_bb* entry)
     std::set<gps_bb*>::iterator I;
     for(I=BB_list.begin(); I!= BB_list.end(); I++) {
         gps_bb* BB = *I;
-        split_vertex_BB(BB, this);
+        split_vertex_BB(BB, info);
     }
 }
 
-//
 // [prev -> BB -> next] ==>
-// [prev -> BB(S) -> new_seq -> BB(R) -> next]
-
-void split_vertex_BB(gps_bb* BB, gm_gps_gen* gen)
+//    [prev -> BB(S) -> new_seq -> BB(R) -> next]
+void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
 {
     assert(BB->is_vertex());
     assert(BB->has_sender());

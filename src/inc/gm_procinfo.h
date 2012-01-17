@@ -6,12 +6,16 @@
 
 // additional information about procedure
 
+class gm_backend_info {
+};  // empty class
+
 class gm_procinfo {
     
 public:
     gm_procinfo(ast_procdef* d) {
         body = d;
         temp_no = 0;
+        be_info = NULL;
     }
     virtual ~gm_procinfo() {}
 
@@ -50,12 +54,12 @@ public:
             }
 
         } while (true);
-
-        //flat.add_word(temp);
-
         return gm_strdup(temp);
     }
 
+    //-------------------------------------------------------------------
+    // adding extra information to procdef
+    //-------------------------------------------------------------------
     bool has_info(const char* id) {return body->has_info(id);}
     ast_extra_info* find_info(const char*id) {return body->find_info(id);}
     bool find_info_bool(const char* id) {return body->find_info_bool(id);}
@@ -73,11 +77,19 @@ public:
     void remove_info(const char* id) {body->remove_info(id);}
     void remove_all_info() {body->remove_all_info();}
 
+    ast_procdef* get_body() {return body;}
+
+    //--------------------------------------------------------------
+    // Any backend strucut
+    //--------------------------------------------------------------
+    gm_backend_info* get_be_info() {return be_info;}
+    void set_be_info(gm_backend_info* i) {be_info = i;}
 
 private:
     gm_procinfo() {} // cannot create without body
     ast_procdef* body;
     int temp_no;
+    gm_backend_info* be_info;
 
     gm_vocabulary flat; // flat
 

@@ -6,7 +6,39 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 
+void gm_gps_gen::init_opt_steps()
+{
+    std::list<gm_compile_step*>& L = get_opt_steps();
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_synthesizable));
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_canonical));
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_syms));
+}
 
+bool gm_gps_gen::do_local_optimize()
+{
+    // [TODO]
+    // currently, there should be one and only one top-level for Pregel Back-end
+    if (FE.get_num_procs() != 1) {
+        gm_backend_error(GM_ERROR_GPS_NUM_PROCS,"");
+        return false;
+    }
+    
+    // prepare backend information
+    FE.prepare_proc_iteration();
+    ast_procdef* p;
+    while ((p = FE.get_next_proc()) != NULL)
+    {
+        FE.get_proc_info(p)->set_be_info(new gm_gps_beinfo(p));
+    }
+
+
+    // Now apply all the steps to procedures
+    return gm_apply_compiler_stage(get_opt_steps());
+}
+
+
+/*
 bool gm_gps_gen::do_local_optimize()
 {
     // SUB STEPS
@@ -60,28 +92,5 @@ bool gm_gps_gen::do_local_optimize()
 
     return is_okay;
 }
-
-class gps_get_bb_list_t : public gps_apply_bb {
-    public:
-    gps_get_bb_list_t(std::list<gm_gps_basic_block*>* bb_blocks) :blist (bb_blocks) {}
-    virtual void apply(gm_gps_basic_block* b) {
-        blist->push_back(b);
-    }
-    std::list<gm_gps_basic_block*>* blist;
-};
-
-//-----------------------------------------
-// Add basic block
-//-----------------------------------------
-void gm_gps_gen::set_entry_basic_block(gm_gps_basic_block* b)
-{
-
-    // set entry
-    bb_entry = b;
-
-    // set list of reachable BBs
-    gps_get_bb_list_t T( &bb_blocks);
-    gps_bb_apply_only_once(bb_entry, &T);
-
-}
+*/
 
