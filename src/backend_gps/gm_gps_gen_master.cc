@@ -102,9 +102,15 @@ void gm_gps_gen::do_generate_shared_variables_keys()
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
         assert(syminfo!=NULL);
 
+        /*
+        printf("%s, used_in_vertex = %c, used_in_master =%c\n",
+                sym->getId()->get_orgname(), 
+                syminfo->is_used_in_vertex() ? 'Y' : 'N',
+                syminfo->is_used_in_master() ? 'Y' : 'N');
+                */
+
         // if the symbol is used in vertex and master
         // we need shared variable
-
         if (syminfo->is_used_in_vertex() &&
             syminfo->is_used_in_master())
         {

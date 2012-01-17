@@ -203,13 +203,22 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                 }
                 else {
                     if (foreach_depth == 0) {
-                        context = GPS_CONTEXT_SENDER;
+                        context = GPS_CONTEXT_VERTEX;
                     } 
                     else {
-                        context = GPS_CONTEXT_VERTEX;
+                        context = GPS_CONTEXT_SENDER;
                     }
                 }
             }
+
+            /*
+            printf("%s used_context = %s\n",
+                    i->get_orgname(),
+                    (context == GPS_CONTEXT_MASTER) ? "master" :
+                    (context == GPS_CONTEXT_VERTEX) ? "vertex" :
+                    (context == GPS_CONTEXT_RECEIVER) ? "receiver" :
+                    (context == GPS_CONTEXT_SENDER) ? "sender" : " ?? ");
+                    */
 
             // update global information
             syminfo->add_usage_in_BB(
