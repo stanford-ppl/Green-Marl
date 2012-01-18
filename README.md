@@ -1,6 +1,6 @@
 1 Introduction
 ====================================
-
+ 
 Green-Marl [1] is a domain-specific language that is specially designed for
 graph data analysis. For the further information for the Green-Marl language,
 refer to the language specification draft [2], which can also  be found in
