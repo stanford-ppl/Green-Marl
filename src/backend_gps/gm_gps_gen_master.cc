@@ -5,6 +5,8 @@
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
+
+
 void gm_gps_gen::write_headers()
 {
     Body.pushln("package gps.examples;");       // hardcodede
@@ -40,7 +42,9 @@ void gm_gps_gen::do_generate_master_class()
 {
     ast_procdef* proc = FE.get_current_proc();
 
-    // create master state machine
+    //--------------------------------------------------------------------
+    // create master class
+    //--------------------------------------------------------------------
     char temp[1024];
     sprintf(temp, "public static class %sMaster extends Master {", proc->get_procname()->get_genname());
     Body.pushln(temp);
@@ -49,12 +53,79 @@ void gm_gps_gen::do_generate_master_class()
     Body.pushln("private int     _master_state_nxt            = 0;");
     Body.pushln("private boolean _master_should_start_workers = false;");
     Body.pushln("private boolean _master_should_finish        = false;");
-    //Body.pushln("private int  get_master_state()      {return _maser_state;}");
-    //Body.pushln("private void set_master_state(int s) {_maser_state = s;}");
-    //Body.pushln("private boolean get_master_cond_result()       {return _master_cond_result ;}");
-    //Body.pushln("private void set_master_cond_result(bool b)    {_master_cond_result = b;}");
     Body.NL();
 
+    //--------------------------------------------------------------------
+    // constructor  
+    // (with command-line argument parsing)
+    //--------------------------------------------------------------------
+    sprintf(temp, "public %sMaster (CommandLine line) {", proc->get_procname()->get_genname());
+    Body.pushln(temp);
+
+    Body.pushln("// parse command-line arguments (if any)");
+    Body.pushln("java.util.HashMap<String,String> arg_map = new java.util.HashMap<String,String>()"); 
+    Body.pushln("gps.node.Utils.parseOtherOptions(line, arg_map);");
+    Body.NL();
+
+    // Iterate symbol table  and
+    gm_symtab* args = proc->get_symtab_var(); assert(args != NULL);
+    std::vector<gm_symtab_entry*>& syms = args->get_entries();
+    std::vector<gm_symtab_entry*>::iterator I;
+    for (I=syms.begin(); I!=syms.end(); I++)
+    {
+        gm_symtab_entry* s = *I;
+
+        // input argument
+        if (!s->getType()->is_primitive()) continue;
+        if (s->isReadable()) {
+            sprintf(temp, "if (arg_map.containsKey(\"%s\")) {", s->getId()->get_genname());
+            Body.pushln(temp);
+            sprintf(temp, "String s = arg_map.get(\"%s\");", s->getId()->get_genname());
+            Body.pushln(temp);
+            sprintf(temp, "%s = ", s->getId()->get_genname());
+            Body.push(temp);
+            switch(s->getType()->getTypeSummary())
+            {
+                case GMTYPE_BOOL:  Body.pushln("Boolean.parseBoolean(s);"); break;
+                case GMTYPE_INT:   Body.pushln("Integer.parseInt(s);"); break;
+                case GMTYPE_LONG:  Body.pushln("Long.parseLong(s);"); break;
+                case GMTYPE_FLOAT: Body.pushln("Float.parseFloat(s);"); break;
+                case GMTYPE_DOUBLE: Body.pushln("Double.parseDouble(s);"); break;
+                default: assert(false);
+            }
+            Body.pushln("}");
+        }
+    }
+    Body.pushln("}");
+    Body.NL();
+
+    //--------------------------------------------------------------------
+    // A method that saves final output values
+    //--------------------------------------------------------------------
+    Body.pushln("//save output");
+    Body.pushln("public void writeOutput(BufferedWrite bw) throws IOException {");
+    ast_typedecl* t = proc->get_return_type();
+    if ((t!= NULL) && (!t->is_void())) {
+        sprintf(temp, "bw.write(\"%s:\\t\" + %s + \"\\n\");", 
+                GPS_RET_VALUE,
+                GPS_RET_VALUE);
+        Body.pushln(temp);
+    }
+    for (I=syms.begin(); I!=syms.end(); I++)
+    {
+        gm_symtab_entry* s = *I;
+
+        // output arguments
+        if (!s->getType()->is_primitive()) continue;
+        if (s->isWriteable()) {
+            sprintf(temp, "bw.write(\"%s:\\t\" + %s + \"\\n\");", 
+                s->getId()->get_genname(),
+                s->getId()->get_genname());
+            Body.pushln(temp);
+        }
+    }
+    Body.pushln("}");
+    Body.NL();
 }
 
 
@@ -81,6 +152,15 @@ void gm_gps_gen::do_generate_master_scalar()
                     true),
                 e->getId()->get_genname()
                );
+        Body.pushln(temp);
+    }
+
+    ast_procdef* proc = FE.get_current_proc();
+    ast_typedecl* t = proc->get_return_type();
+    if ((t!= NULL) && (!t->is_void())) {
+        sprintf(temp, "private %s %s; // the final return value of the procedure",
+           get_type_string(t, true),
+           GPS_RET_VALUE);
         Body.pushln(temp);
     }
 

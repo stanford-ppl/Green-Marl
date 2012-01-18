@@ -3,7 +3,8 @@ OJB=obj
 BIN=bin
 CPP=apps/output_cpp
 LIB=apps/output_cpp/gm_graph
-BUILD_DIRS="bin obj $CPP/bin $CPP/generated $CPP/bin $CPP/data $LIB/lib"
+GPS=apps/output_gps
+BUILD_DIRS="bin obj $CPP/bin $CPP/generated $CPP/bin $CPP/data $LIB/lib $GPS/generated"
 for D in $BUILD_DIRS
 do
     if [ ! -d  ${D} ]

@@ -177,7 +177,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_sent_vardecl(ast_vardecl *a) {assert(false);}
         virtual void generate_sent_bfs(ast_bfs *a) {assert(false);}
         virtual void generate_sent_foreach(ast_foreach *f) {assert(false);}
-        virtual void generate_sent_return(ast_return *r) {}
+        virtual void generate_sent_return(ast_return *r);
         virtual void generate_sent_assign(ast_assign *a);
 
         virtual const char* get_type_string(int prim_type) {assert(false);}
@@ -189,6 +189,9 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 };
 
 extern gm_gps_gen GPS_BE;
+
+// string used in code generator
+static const char* GPS_RET_VALUE = "_ret_value";
 
 
 #endif

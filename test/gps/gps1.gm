@@ -1,4 +1,5 @@
 
+// Test of basic structure creation
 Procedure gps (G: Graph, x: Int, A,B:Node_Property<Int>(G) ) : Int
 {
     Int z = 0;
@@ -7,6 +8,6 @@ Procedure gps (G: Graph, x: Int, A,B:Node_Property<Int>(G) ) : Int
         z = Sum(t: G.Nodes) {t.A + t.B};
     }
 
-    // Test of Returen
+    // Test of Return
     Return z;
 }

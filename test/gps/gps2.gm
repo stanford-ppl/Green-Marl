@@ -1,6 +1,9 @@
-Procedure gps2(G: Graph, x: Int, A,B: N_P<Int>(G)) 
+
+Procedure gps2(G: Graph, x: Int, A,B: N_P<Int>(G); z: Int)  // z is an output parameter
 {
-    Int z = x + 1;
+    // test of output parameter
+    z = x + 1;
+
     Foreach(t: G.Nodes) {
         t.A = t.B*(z+1);
     }
