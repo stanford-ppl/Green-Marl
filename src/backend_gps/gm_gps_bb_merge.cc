@@ -11,15 +11,16 @@ typedef gm_gps_basic_block gps_bb;
 
 //------------------------------------------------------------------
 // Merge siple basic blocks
+//    B -> C
+//      C does not have any other predecessor
+//      B does not have any other successor
+//      B and C are SEQUENTIAL_TYPE
 //------------------------------------------------------------------
-
 class gps_merge_simple_t : public gps_apply_bb 
 {
 public:
     virtual void apply(gps_bb* B) {
         // B -> C
-        // C does not have any other predecessor
-        // B does not have any other successor
         if (B->get_num_exits() == 1)  {
             gps_bb* C = B->get_nth_exit(0);
             if (C->get_num_entries() == 1)  {

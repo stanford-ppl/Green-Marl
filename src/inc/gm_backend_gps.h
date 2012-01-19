@@ -133,19 +133,8 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 
         void generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent);
 
-        //----------------------------------
-        // stages in backend opt
-        //----------------------------------
     public:
-        void split_communication_basic_blocks(ast_procdef* entry);
         static void do_analyze_symbol_scope(ast_procdef* p);
-
-    public:
-        //static bool do_analyze_symbols(ast_procdef*);
-        //static bool do_merge_symbol_usages(ast_procdef*);
-        //static bool do_make_symbol_summary();
-        //static bool do_simplify_reduce(ast_procdef* p);
-        //static void merge_basic_blocks(gm_gps_basic_block* entry);
 
     public:
         gm_code_writer& get_code() {return Body;}
@@ -176,7 +165,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_sent_defer_assign(ast_assign *a) {assert(false);}
         virtual void generate_sent_vardecl(ast_vardecl *a) {assert(false);}
         virtual void generate_sent_bfs(ast_bfs *a) {assert(false);}
-        virtual void generate_sent_foreach(ast_foreach *f) {assert(false);}
+        virtual void generate_sent_foreach(ast_foreach *f) {Body.pushln("\n//Inner loop");}
         virtual void generate_sent_return(ast_return *r);
         virtual void generate_sent_assign(ast_assign *a);
 

@@ -27,7 +27,7 @@ public:
 
     virtual bool apply(ast_sent* s) 
     {
-        // receiver should have not set up yet.
+        // receiver should be empty.
         assert(is_under_receiver_traverse() == false);
 
         gps_bb* curr = get_curr_BB();
@@ -64,24 +64,26 @@ private:
 
 static void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen);
 
-
 // [todo]
 // who call this?
-void gm_gps_gen::split_communication_basic_blocks(ast_procdef* p)
+void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
 {
     gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);
     gps_bb* entry = info->get_entry_basic_block();
 
-    //-------------------------------
-    // find bb vertex
-    //-------------------------------
+    //-------------------------------------------
+    // find Basic Blocks that contain communication
+    //-------------------------------------------
     gps_find_comm_vertex_bb T(info);
     gps_bb_apply_only_once(entry, &T);
 
     std::set<gps_bb*>& BB_list = T.get_target_basic_blocks() ;
 
-    // split BB in the list 
-    //  [seq] -> [VERTEX_BB] -> 
+    //-------------------------------------------
+    // split BB into two
+    ///  BB => 
+    //   BB1 (send) -> seq -> BB2 (receive) 
+    //-------------------------------------------
     std::set<gps_bb*>::iterator I;
     for(I=BB_list.begin(); I!= BB_list.end(); I++) {
         gps_bb* BB = *I;
@@ -89,10 +91,12 @@ void gm_gps_gen::split_communication_basic_blocks(ast_procdef* p)
     }
 }
 
-// [prev -> BB -> next] ==>
+//    [prev -> BB -> next] ==>
 //    [prev -> BB(S) -> new_seq -> BB(R) -> next]
 void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
 {
+    //printf("splitting BB id = %d\n", BB->get_id());
+
     assert(BB->is_vertex());
     assert(BB->has_sender());
     assert(BB->has_receiver_loops());
@@ -111,7 +115,9 @@ void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
 
     gps_bb* new_BB = new gps_bb(gen->issue_basicblock_id(), GM_GPS_BBTYPE_BEGIN_VERTEX);
 
+    //--------------------------------------
     // migrate receiver list to new_BB
+    //--------------------------------------
     std::list<ast_foreach*>& L = BB->get_receiver_loops(); 
     std::list<ast_foreach*>::iterator I;
     for(I=L.begin(); I!= L.end(); I++)
@@ -128,6 +134,12 @@ void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
     BB->add_exit(new_seq);
     new_seq->add_exit(new_BB);
     new_BB->add_exit(next);
+
+    //printf("new BB id = %d, %d\n", new_seq->get_id(), new_BB->get_id());
+
+    std::list<gm_gps_basic_block*>& BBLIST = gen->get_basic_blocks();
+    BBLIST.push_back(new_seq);
+    BBLIST.push_back(new_BB);
 
 }
 

@@ -161,19 +161,7 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
     }
     else if (type==GM_GPS_BBTYPE_BEGIN_VERTEX)
     {
-        // traverse sentences inside foreach
-        assert(_curr->get_num_sents() == 1);
-        ast_sent* s = _curr->get_1st_sent();
-        assert(s->get_nodetype() == AST_FOREACH);
-        ast_foreach* fe = (ast_foreach*) s;
-        assert(fe->get_filter() == NULL); // should be changed into if
 
-        // traverse body
-        set_under_receiver_traverse(false);
-        ast_sent* b = fe->get_body();
-        b->traverse(this, is_post(), is_pre());
-
-        // traverse sender
         // traverse receiver
         if (_curr->has_receiver_loops())
         {
@@ -188,6 +176,18 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
             }
             set_under_receiver_traverse(false);
         }
+
+        // traverse body
+        if (_curr->get_num_sents() == 0) return;
+
+        assert(_curr->get_num_sents() == 1);
+        ast_sent* s = _curr->get_1st_sent();
+        assert(s->get_nodetype() == AST_FOREACH);
+        ast_foreach* fe = (ast_foreach*) s;
+        // traverse sentences inside foreach
+        assert(fe->get_filter() == NULL); // should be changed into if
+        ast_sent* b = fe->get_body();
+        b->traverse(this, is_post(), is_pre());
 
     }
     else if (type==GM_GPS_BBTYPE_IF_COND)

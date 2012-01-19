@@ -21,8 +21,11 @@ public:
         delete_comms();
     }
 
-    void set_entry_basic_block(gm_gps_basic_block* b); // set entry and creat list
+    void set_entry_basic_block(gm_gps_basic_block* b) {bb_entry = b;}
     gm_gps_basic_block* get_entry_basic_block() {return bb_entry;}
+
+    // list of reachable basic blocks.
+    // should be created by gm_gps_bb_find_reachalbe.cc
     std::list<gm_gps_basic_block*>& get_basic_blocks() {return bb_blocks;}
 
 public:
@@ -33,6 +36,7 @@ public:
     std::set<gm_symtab_entry*>* find_communication_symbols(ast_foreach* fe);
     void set_total_property_size(int s) {total_prop_size = s;}
     int  get_total_property_size() {return total_prop_size;}
+
 
 public:
     int issue_comm_id() {return comm_id++;}

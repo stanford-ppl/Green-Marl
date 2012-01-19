@@ -87,6 +87,7 @@ SRCS2 =\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
        gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
        gps_syminfo.cc gm_gps_sym_analyze.cc\
+       gm_gps_bb_find_reachable.cc\
        gm_gps_java.cc gm_gps_lib.cc\
 
 
