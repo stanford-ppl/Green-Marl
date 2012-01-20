@@ -1,22 +1,22 @@
 
 // Test of Communication
-Procedure gps3 (G: Graph, A,B:N_P<Int>(G) ) 
+Procedure gps4 (G: Graph, A,B:N_P<Int>(G) ) 
 {
     Int x=0;
     Foreach(s:G.Nodes)
     {
+        Float y = 1 ;
         Foreach(t:s.Nbrs) 
         {
-            t.A += 1;           // Count number of in-neighbors
+            t.A += y;                // y should be transported
         }
-        x += 1;
     }
 
     Foreach(s:G.Nodes)
     {
         Foreach(t:s.Nbrs) 
         {
-            t.A += s.B + x + 1;           // Count number of in-neighbors
+            t.A += s.B + x + 1;      // s.B should be transported
         }
     }
 }

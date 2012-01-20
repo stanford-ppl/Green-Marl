@@ -60,15 +60,24 @@ void gm_gps_gen::do_generate_vertex_property_class()
 void gm_gps_gen::do_generate_message_class()
 {
     Body.pushln("//----------------------------------------------");
-    Body.pushln("// Message Data (For Temporary)");
+    Body.pushln("// Message Data ");
     Body.pushln("//----------------------------------------------");
 
    char temp[1024];
    ast_procdef* proc = FE.get_current_proc(); assert(proc != NULL);
    sprintf(temp, 
-           "public static class MessageData extends IntWritable {"
+           "public static class MessageData extends MinaWritable {"
            ); 
     Body.pushln(temp);
+    Body.pushln("byte m_type;");
+    Body.pushln("public MessageData(byte type) {m_type = type;}");
+    Body.NL();
+
+    gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+    get_lib()->generate_message_class_details(info, Body);
+
+
     Body.pushln("} // end of message-data");
     Body.NL();
 }

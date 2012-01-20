@@ -390,7 +390,7 @@ void gm_gps_opt_create_ebb::process(ast_procdef* proc)
     //--------------------------------
     gm_gps_merge_basic_blocks(T2.get_entry());
 
-    // Now add entry
+    // set entry block
     beinfo->set_entry_basic_block(T2.get_entry());
 
 }

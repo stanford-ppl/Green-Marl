@@ -75,6 +75,10 @@ class gps_syminfo : public ast_extra_info
         int get_scope()  {return scope;}
         void set_scope(int s) {scope = s;}
 
+        bool is_scoped_global() {return scope == GPS_SCOPE_GLOBAL;}
+        bool is_scoped_outer() {return scope == GPS_SCOPE_OUTER;}
+        bool is_scoped_inner() {return scope == GPS_SCOPE_INNER;}
+
     private:
         bool _used_in_multiple_BB;
         int last_BB;
@@ -83,7 +87,7 @@ class gps_syminfo : public ast_extra_info
         std::vector<int> used_BB;
         std::vector<int> used_type;
         std::vector<int> used_context;
-        int scope; // where it is defined
+        int scope; // GPS_SCOPE_XX
 
 
         bool used_as_rhs;

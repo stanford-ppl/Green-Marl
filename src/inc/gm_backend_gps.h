@@ -16,7 +16,10 @@
 //-----------------------------------------------------------------
 // interface for graph library Layer
 //-----------------------------------------------------------------
+class gm_gps_beinfo;
+class gm_gps_communication_size_info;
 class gm_gps_gen;
+
 // Nothing happens in this class
 class gm_gpslib : public gm_graph_library {
     public:
@@ -26,8 +29,12 @@ class gm_gpslib : public gm_graph_library {
     gm_gps_gen* get_main() {return main;}
 
     virtual const char* get_header_info() {return "";}
-    virtual const char* get_type_string(ast_typedecl* t) {return "";}
-    virtual bool generate_builtin(ast_expr_builtin* e) {return true;}
+    /*
+    virtual const char* get_type_string(ast_typedecl* t) {get_type_string(t, true);}
+    virtual const char* get_type_string_primitive(int gm_type); 
+    virtual const char* get_type_string(ast_typedecl* t, bool is_master);
+    */
+    virtual bool generate_builtin(ast_expr_builtin* e) { assert(false); return true;}
 
 
     virtual bool do_local_optimize(); 
@@ -52,17 +59,23 @@ class gm_gpslib : public gm_graph_library {
             std::set<gm_symtab_entry* >& props, gm_code_writer& Body);
     virtual void generate_receive_state_vertex( const char* state_var, gm_code_writer& Body);
 
+    virtual void generate_message_fields_details(int gm_type, int count, gm_code_writer& Body);
+    virtual void generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body);
+    virtual void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer& Body);
+
     virtual void generate_vertex_prop_access_lhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_rhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_prepare(gm_code_writer& Body);
 
     virtual int get_type_size(ast_typedecl* t); 
+    virtual int get_type_size(int gm_type); 
 
     protected:
 
     private:
         char str_buf[1024*8];
         gm_gps_gen* main;
+        int get_total_size(gm_gps_communication_size_info& I);
 };
 
 
@@ -91,6 +104,8 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual bool do_generate(); 
 
         gm_gpslib* get_lib() {return glib;}
+
+        void print_basicblock();
 
     protected:
         void init_opt_steps();
@@ -134,9 +149,6 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent);
 
     public:
-        static void do_analyze_symbol_scope(ast_procdef* p);
-
-    public:
         gm_code_writer& get_code() {return Body;}
 
     private:
@@ -147,7 +159,8 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         gm_gpslib* glib; // graph library
 
     public: // from code generator interface
-        const char* get_type_string(ast_typedecl* T, bool is_master);
+        virtual const char* get_type_string(ast_typedecl* T, bool is_master);
+        virtual const char* get_type_string(int prim_type) ;
 
         virtual void generate_proc(ast_procdef* p);
 
@@ -169,7 +182,6 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_sent_return(ast_return *r);
         virtual void generate_sent_assign(ast_assign *a);
 
-        virtual const char* get_type_string(int prim_type) {assert(false);}
 
         void set_master_generate(bool b) {_is_master_gen = b;}
         bool is_master_generate() {return _is_master_gen;} 

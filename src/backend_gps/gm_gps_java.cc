@@ -5,19 +5,23 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 
-const char* gm_gps_gen::get_type_string(ast_typedecl* T, bool is_master)
+const char* gm_gps_gen::get_type_string(int gm_type)
 {
-    if (T->is_primitive()) 
-    {
-        switch(T->get_typeid())
-        {
+    switch(gm_type) {
             case GMTYPE_INT: return "int";
             case GMTYPE_LONG: return "long";
             case GMTYPE_FLOAT: return "float";
             case GMTYPE_DOUBLE: return "double";
             case GMTYPE_BOOL: return "boolean";
             default: assert(false);
-        }
+    }
+}
+
+const char* gm_gps_gen::get_type_string(ast_typedecl* T, bool is_master)
+{
+    if (T->is_primitive()) 
+    {
+        return (get_type_string(T->get_typeid()));
     }
     else {
         assert(false); // to be done
@@ -98,7 +102,8 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
             i->getSymInfo()->find_info(TAG_BB_USAGE);
 
         // normal assign
-        if ((syminfo == NULL) || (!syminfo->is_used_in_multiple_BB()))
+        //if ((syminfo == NULL) || (!syminfo->is_used_in_multiple_BB()))
+        if (!syminfo->is_scoped_global())
         {
             this->gm_code_generator::generate_sent_assign(a);
             return;
@@ -107,6 +112,7 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
             // write to global scalar
 
             // to be done
+            printf("error: %s\n", i->get_genname());
             assert(false);
         }
     }

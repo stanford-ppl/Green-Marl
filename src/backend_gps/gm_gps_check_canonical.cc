@@ -161,8 +161,7 @@ private:
 
 void gm_gps_opt_check_canonical::process(ast_procdef* proc)
 {
-    // (re-do) scope analysis
-    gm_gps_gen::do_analyze_symbol_scope(proc);
+    // analyze_symbol_scope should be done before.
 
     gps_check_canonical_t T;
     proc->traverse(&T, true, true);

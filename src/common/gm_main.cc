@@ -138,6 +138,13 @@ void do_compiler_action_at_stop()
         printf("======================================================\n");
         printf("\n");
     }
+
+    if (OPTIONS.get_arg_bool(GMARGFLAG_PRINTBB)) {
+        printf("======================================================\n");
+        GPS_BE.print_basicblock();
+        printf("======================================================\n");
+        printf("\n");
+    }
 }
 // gm_argopts.cc
 extern void process_args(int argc, char** argv);

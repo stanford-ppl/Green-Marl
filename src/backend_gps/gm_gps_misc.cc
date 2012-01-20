@@ -171,8 +171,9 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
             for(I=R.begin(); I!=R.end(); I++)
             {
                 ast_foreach* fe = *I;
-                ast_sent* b = fe->get_body();
-                b->traverse(this, is_post(), is_pre());
+                //ast_sent* b = fe->get_body();
+                //b->traverse(this, is_post(), is_pre());
+                fe->traverse(this, is_post(), is_pre());
             }
             set_under_receiver_traverse(false);
         }
@@ -186,8 +187,10 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
         ast_foreach* fe = (ast_foreach*) s;
         // traverse sentences inside foreach
         assert(fe->get_filter() == NULL); // should be changed into if
-        ast_sent* b = fe->get_body();
-        b->traverse(this, is_post(), is_pre());
+
+        //ast_sent* b = fe->get_body(); // body of foreach only?
+        //b->traverse(this, is_post(), is_pre());
+        fe->traverse(this, is_post(), is_pre());
 
     }
     else if (type==GM_GPS_BBTYPE_IF_COND)

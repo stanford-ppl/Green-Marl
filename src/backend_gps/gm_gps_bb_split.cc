@@ -36,10 +36,13 @@ public:
         if (!curr->is_vertex()) 
             return true;
 
-        // foreach statement inside vertex BB is a communication BB
+        // neighborhood looking foreach statement is a communicating bb
         if (s->get_nodetype() == AST_FOREACH)
         {
             ast_foreach* fe = (ast_foreach*) s;
+
+            if (gm_is_all_graph_iter_type(fe->get_iter_type())) return true;
+
             curr->set_has_sender(true);
 
             gen->add_communication_loop(fe);
@@ -51,6 +54,8 @@ public:
             // list of bbs that should be splited
             target_bb.insert(curr);
         }
+
+        return true;
     }
 
     std::set<gps_bb*>& get_target_basic_blocks()  {return target_bb;}

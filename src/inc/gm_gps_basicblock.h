@@ -154,9 +154,9 @@ protected:
 };
 
 bool gps_bb_apply_until_no_change(gm_gps_basic_block* entry, gps_apply_bb* apply);
-void gps_bb_apply_only_once(gm_gps_basic_block* entry, gps_apply_bb* apply); // return or of has_changed
+void gps_bb_apply_only_once(gm_gps_basic_block* entry, gps_apply_bb* apply); 
 
-void gps_bb_print_all(gm_gps_basic_block* entry); // return or of has_changed
+void gps_bb_print_all(gm_gps_basic_block* entry); 
 void gps_bb_traverse_ast(gm_gps_basic_block* entry, 
                          gps_apply_bb_ast* apply, bool is_post, bool is_pre);
 
