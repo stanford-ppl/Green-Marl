@@ -155,15 +155,7 @@ void gm_gpslib::generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& Bod
     Body.pushln(");");
 }
 
-
-
-
-int gm_gpslib::get_type_size(ast_typedecl* t)
-{
-    return get_type_size(t->getTypeSummary());
-}
-
-int gm_gpslib::get_type_size(int gm_type )
+static int get_java_type_size(int gm_type )
 {
     switch(gm_type)
     {
@@ -174,27 +166,23 @@ int gm_gpslib::get_type_size(int gm_type )
         case GMTYPE_BOOL:   return 1;
         default: assert(false); return 0;
     }
-
 }
 
-// fetch the number using big-endianness
-static void genFetchNBytesBE(gm_code_writer& Body, const char* BA, const char* index, int N, int base)
+
+int gm_gpslib::get_type_size(ast_typedecl* t)
 {
-    char temp[1024];
-    int count = 0;
-    for(count = 0; count < N; count ++)
-    {
-        int shift = (N-1-count) * 8;
-        sprintf(temp, "((%s[%s + %d + %d] & 0xff) << %d)", BA, index, base, count, shift);
-        Body.push(temp);
-        if (count != N-1)
-            Body.pushln("|");
-    }
+    return get_type_size(t->getTypeSummary());
 }
+
+int gm_gpslib::get_type_size(int gm_type )
+{
+    return get_java_type_size(gm_type);
+}
+
 static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body)
 {
-    // assumtion: IOB name is ioBuffer
-    Body.push("ioBuffer.");
+    // assumtion: IOB name is IOB
+    Body.push("IOB.");
     switch(gm_type) {
         case GMTYPE_INT:    Body.push("putInt"); break;
         case GMTYPE_LONG:   Body.push("putLong"); break;
@@ -214,9 +202,9 @@ static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body)
 }
 static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body)
 {
-    // assumtion: IOB name is ioBuffer
+    // assumtion: IOB name is IOB
     Body.push(name);
-    Body.push("= ioBuffer.");
+    Body.push("= IOB.");
     switch(gm_type) {
         case GMTYPE_INT:    Body.push("getInt()"); break;
         case GMTYPE_LONG:   Body.push("getLong()"); break;
@@ -263,7 +251,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     std::set<gm_symtab_entry* >::iterator I;
 
     Body.pushln("@override");
-    Body.pushln("public void write(IoBuffer ioBuffer) {");
+    Body.pushln("public void write(IoBuffer IOB) {");
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I; 
@@ -273,7 +261,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     Body.pushln("}");
 
     Body.pushln("@override");
-    Body.pushln("public void read(IoBuffer iobuffer) {");
+    Body.pushln("public void read(IoBuffer IOB) {");
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I; 
@@ -298,8 +286,8 @@ void gm_gpslib::generate_vertex_prop_class_details(
     Body.pushln("}");
 
     Body.pushln("@override");
-    Body.pushln("public int read(IoBuffer ioBuffer, byte[] _BA, int _idx) {");
-    sprintf(temp, "ioBuffer.get(_BA, _idx, %d);", total);
+    Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
+    sprintf(temp, "IOB.get(_BA, _idx, %d);", total);
     Body.pushln(temp);
     sprintf(temp, "return %d;", total);
     Body.pushln(temp);
@@ -330,60 +318,194 @@ void gm_gpslib::generate_vertex_prop_access_rhs(ast_id* id, gm_code_writer& Body
     generate_vertex_prop_access_lhs(id, Body);
 }
 
+const char* gm_gpslib::get_message_field_var_name(
+        int gm_type, int index)
+{
 
-void gm_gpslib::generate_message_fields_details(int gm_type, int count, gm_code_writer & Body)
+    char temp[1024];
+    const char* str = main->get_type_string(gm_type);
+    sprintf(temp,"%c%d", str[0], index);
+    return gm_strdup(temp);
+}
+
+void gm_gpslib::generate_message_fields_define(int gm_type, int count, gm_code_writer & Body)
 {
     for(int i=0;i<count; i++)
     {
         const char* str = main ->get_type_string(gm_type);
-        sprintf(str_buf, "%s %c%d;", str, str[0], i);
+        const char* vname = get_message_field_var_name(gm_type, i);
+        sprintf(str_buf,"%s %s;", str, vname);
         Body.pushln(str_buf);
+        delete [] vname;
     }
 }
 
-int gm_gpslib::get_total_size(gm_gps_communication_size_info& I)
+static int get_total_size(gm_gps_communication_size_info& I)
 {
     int sz = 0;
-    sz += get_type_size(GMTYPE_INT) * I.num_int;
-    sz += get_type_size(GMTYPE_BOOL) * I.num_bool;
-    sz += get_type_size(GMTYPE_LONG) * I.num_long;
-    sz += get_type_size(GMTYPE_DOUBLE) * I.num_double;
-    sz += get_type_size(GMTYPE_FLOAT) * I.num_float;
+    sz += get_java_type_size(GMTYPE_INT) * I.num_int;
+    sz += get_java_type_size(GMTYPE_BOOL) * I.num_bool;
+    sz += get_java_type_size(GMTYPE_LONG) * I.num_long;
+    sz += get_java_type_size(GMTYPE_DOUBLE) * I.num_double;
+    sz += get_java_type_size(GMTYPE_FLOAT) * I.num_float;
 
     return sz;
 }
 
-void gm_gpslib::generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer& Body)
-{
-    Body.pushln("//Helping java compiler's inlining");
-    Body.pushln("private int getSizePerType() {");
+#define MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf) \
+    std::list<ast_foreach*>& LOOPS = info->get_communication_loops(); \
+    std::list<ast_foreach*>::iterator I;\
+    bool is_first = true;\
+    for(I=LOOPS.begin(); I!=LOOPS.end(); I++) {\
+        gm_gps_communication_size_info& SYMS = \
+          info->find_communication_size_info(*I); \
+        int sz = get_total_size(SYMS); \
+        if (sz == 0) continue;\
+        if (is_first) {             \
+            is_first = false;       \
+            sprintf(str_buf,"if (m_type == %d) ", SYMS.id);\
+            Body.push(str_buf);\
+        }\
+        else {\
+            sprintf(str_buf,"else if (m_type == %d) ", SYMS.id);\
+            Body.push(str_buf);\
+        }\
 
-    std::list<ast_foreach*>& LOOPS = info->get_communication_loops(); 
-    std::list<ast_foreach*>::iterator I;
-    bool is_first = true;
-    for(I=LOOPS.begin(); I!=LOOPS.end(); I++) {
-        gm_gps_communication_size_info& SYMS = info->find_communication_size_info(*I);
-        int sz = get_total_size(SYMS);
-        if (sz == 0) continue;
-        if (is_first) {
-            is_first = false;
-            Body.push("if");
-        }
-        else {
-            Body.push("else if");
-        }
-        sprintf(str_buf, " (m_type == %d) return %d;", 
-                SYMS.id, sz);
-        Body.pushln(str_buf);
+#define MESSAGE_PER_TYPE_LOOP_END() \
+    }\
+    Body.pushln("//code never reach here");\
+
+static void generate_message_write_each(gm_gpslib* lib, int cnt, int gm_type, gm_code_writer& Body)
+{ 
+    for(int i=0;i<cnt; i++) {
+        const char* vname = 
+            lib->get_message_field_var_name(gm_type, i);
+        genPutIOB(vname, gm_type, Body);
+        delete [] vname;
     }
-    Body.pushln("return 0; // code never reach here");
+}
+static void generate_message_read1_each(gm_gpslib* lib, int cnt, int gm_type, gm_code_writer& Body)
+{ 
+    for(int i=0;i<cnt; i++) {
+        const char* vname = 
+            lib->get_message_field_var_name(gm_type, i);
+        genGetIOB(vname, gm_type, Body);
+        delete [] vname;
+    }
+}
+static void generate_message_read2_each(gm_gpslib* lib, int cnt, int gm_type, gm_code_writer& Body, int& offset)
+{ 
+    for(int i=0;i<cnt; i++) {
+        const char* vname = 
+            lib->get_message_field_var_name(gm_type, i);
+        genReadByte(vname, gm_type, offset, Body);
+        offset += get_java_type_size(gm_type);
+        delete [] vname;
+    }
+}
+
+
+
+static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer& Body)
+{
+    Body.pushln("@override");
+    Body.pushln("public int numBytes() {");
+    char str_buf[1024];
+
+    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf);
+        sprintf(str_buf, "return (1+%d); // type + data", get_total_size(SYMS));
+        Body.pushln(str_buf);
+    MESSAGE_PER_TYPE_LOOP_END() 
+    Body.pushln("return 0; ");
+    Body.pushln("}");
+}
+
+static void generate_message_class_write(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
+{
+    Body.pushln("@override");
+    Body.pushln("public void write(IoBuffer IOB) {");
+    Body.pushln("IOB.put(m_type);");
+    char str_buf[1024];
+    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
+        Body.pushln("{");
+        generate_message_write_each(lib, SYMS.num_int, GMTYPE_INT,Body);
+        generate_message_write_each(lib, SYMS.num_long, GMTYPE_LONG,Body);
+        generate_message_write_each(lib, SYMS.num_float, GMTYPE_FLOAT,Body);
+        generate_message_write_each(lib, SYMS.num_double, GMTYPE_DOUBLE,Body);
+        generate_message_write_each(lib, SYMS.num_bool, GMTYPE_BOOL,Body);
+        Body.pushln("}");
+    MESSAGE_PER_TYPE_LOOP_END() 
+    Body.pushln("}");
+}
+
+static void generate_message_class_read1(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
+{
+    Body.pushln("@override");
+    Body.pushln("public void read(IoBuffer IOB) {");
+    Body.pushln("m_type = IOB.get();");
+    char str_buf[1024];
+    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
+        Body.pushln("{");
+        generate_message_read1_each(lib, SYMS.num_int, GMTYPE_INT,Body);
+        generate_message_read1_each(lib, SYMS.num_long, GMTYPE_LONG,Body);
+        generate_message_read1_each(lib, SYMS.num_float, GMTYPE_FLOAT,Body);
+        generate_message_read1_each(lib, SYMS.num_double, GMTYPE_DOUBLE,Body);
+        generate_message_read1_each(lib, SYMS.num_bool, GMTYPE_BOOL,Body);
+        Body.pushln("}");
+    MESSAGE_PER_TYPE_LOOP_END() 
+    Body.pushln("}");
+}
+
+static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
+{
+    Body.pushln("@override");
+    Body.pushln("public int read(byte[] _BA, int _idx) {");
+    Body.pushln("m_type = _BA[_idx];");
+    char str_buf[1024];
+    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
+        int offset = 1;
+        Body.pushln("{");
+        generate_message_read2_each(lib, SYMS.num_int, GMTYPE_INT,Body, offset);
+        generate_message_read2_each(lib, SYMS.num_long, GMTYPE_LONG,Body, offset);
+        generate_message_read2_each(lib, SYMS.num_float, GMTYPE_FLOAT,Body, offset);
+        generate_message_read2_each(lib, SYMS.num_double, GMTYPE_DOUBLE,Body, offset);
+        generate_message_read2_each(lib, SYMS.num_bool, GMTYPE_BOOL,Body, offset);
+        sprintf(str_buf,"return 1 + %d;", 
+            get_total_size(SYMS));
+        Body.pushln(str_buf);
+        Body.pushln("}");
+    MESSAGE_PER_TYPE_LOOP_END() 
+    Body.pushln("return 1;");
+    Body.pushln("}");
+}
+
+static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
+{
+    Body.pushln("@override");
+    Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
+    Body.pushln("byte m_type = _BA[_idx];");
+    char str_buf[1024];
+    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
+        int offset = 1;
+        Body.pushln("{");
+        int sz2 = get_total_size(SYMS);
+        sprintf(str_buf,"IOB.get(_BA, _idx+1, %d);",sz); 
+        Body.pushln(str_buf);
+        sprintf(str_buf,"return 1 + %d;",sz2);
+        Body.pushln(str_buf);
+        Body.pushln("}");
+    MESSAGE_PER_TYPE_LOOP_END() 
+    Body.pushln("return 1;");
+    Body.pushln("}");
+}
+
+static void generate_message_class_combine(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
+{
+    Body.pushln("@override");
+    Body.pushln("public int read(byts[] _MQ, byte [] _tA) {");
+    Body.pushln("//do nothing");
 
     Body.pushln("}");
-    Body.NL();
-
-    Body.pushln("@override");
-    Body.pushln("public int numBytes() {return getSizePerType();}");
-    Body.NL();
 }
 
 
@@ -394,14 +516,19 @@ void gm_gpslib::generate_message_class_details(gm_gps_beinfo* info, gm_code_writ
     gm_gps_communication_size_info& size_info =
         info->get_max_communication_size(); 
 
-    generate_message_fields_details(GMTYPE_INT,    size_info.num_int,    Body);
-    generate_message_fields_details(GMTYPE_LONG,   size_info.num_long,   Body);
-    generate_message_fields_details(GMTYPE_FLOAT,  size_info.num_float,  Body);
-    generate_message_fields_details(GMTYPE_DOUBLE, size_info.num_double, Body);
-    generate_message_fields_details(GMTYPE_BOOL,   size_info.num_bool,   Body);
+    generate_message_fields_define(GMTYPE_INT,    size_info.num_int,    Body);
+    generate_message_fields_define(GMTYPE_LONG,   size_info.num_long,   Body);
+    generate_message_fields_define(GMTYPE_FLOAT,  size_info.num_float,  Body);
+    generate_message_fields_define(GMTYPE_DOUBLE, size_info.num_double, Body);
+    generate_message_fields_define(GMTYPE_BOOL,   size_info.num_bool,   Body);
     Body.NL();
 
     generate_message_class_get_size(info, Body);
+    generate_message_class_write(this, info, Body);
+    generate_message_class_read1(this, info, Body);
+    generate_message_class_read2(this, info, Body);
+    generate_message_class_read3(this, info, Body);
+    generate_message_class_combine(this, info, Body);
     Body.NL();
 }
 

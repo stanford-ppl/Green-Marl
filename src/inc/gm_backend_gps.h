@@ -59,9 +59,8 @@ class gm_gpslib : public gm_graph_library {
             std::set<gm_symtab_entry* >& props, gm_code_writer& Body);
     virtual void generate_receive_state_vertex( const char* state_var, gm_code_writer& Body);
 
-    virtual void generate_message_fields_details(int gm_type, int count, gm_code_writer& Body);
+    virtual void generate_message_fields_define(int gm_type, int count, gm_code_writer& Body);
     virtual void generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body);
-    virtual void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer& Body);
 
     virtual void generate_vertex_prop_access_lhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_rhs(ast_id *id, gm_code_writer& Body);
@@ -70,12 +69,14 @@ class gm_gpslib : public gm_graph_library {
     virtual int get_type_size(ast_typedecl* t); 
     virtual int get_type_size(int gm_type); 
 
+    // caller should delete var_name later
+    const char* get_message_field_var_name(int gm_type, int idx);
+
     protected:
 
     private:
         char str_buf[1024*8];
         gm_gps_gen* main;
-        int get_total_size(gm_gps_communication_size_info& I);
 };
 
 
