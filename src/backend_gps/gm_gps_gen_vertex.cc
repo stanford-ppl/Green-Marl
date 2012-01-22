@@ -8,6 +8,7 @@
 #include "gm_transform_helper.h"
 extern void gm_redirect_reproduce(FILE *f); 
 extern void gm_baseindent_reproduce(int i); 
+extern void gm_flush_reproduce(); 
 
 void gm_gps_gen::do_generate_vertex()
 {
@@ -141,7 +142,7 @@ void gm_gps_gen::do_generate_vertex_states()
     const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
     Body.NL();
     Body.pushln("@override");
-    sprintf(temp,"public void compute(iterable<%s.MessageData> _msgs, int _superStepNo) {",proc_name);
+    sprintf(temp,"public void compute(Iterable<%s.MessageData> _msgs, int _superStepNo) {",proc_name);
     Body.pushln(temp);
     Body.pushln("// todo: is there any way to get this value quickly?");
     Body.pushln("// (this can be done by the first node and saved into a static field)");
@@ -157,7 +158,7 @@ void gm_gps_gen::do_generate_vertex_states()
         gm_gps_basic_block* b = *I;
         if (!b->is_vertex()) continue;
         int id = b->get_id();
-        sprintf(temp,"case %d: _vertex_state_%d(_msgs, _superStepNo); break;", id, id);
+        sprintf(temp,"case %d: _vertex_state_%d(_msgs); break;", id, id);
         Body.pushln(temp);
     }
     Body.pushln("}");
@@ -182,7 +183,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     int type = b->get_type();
 
     char temp[1024];
-    sprintf(temp,"private void _vertex_state_%d(iteratable<%s.MessageData> _msgs, int _superStepNo) {", 
+    sprintf(temp,"private void _vertex_state_%d(Iterable<%s.MessageData> _msgs) {", 
             id, 
             FE.get_current_proc()->get_procname()->get_genname());
     Body.pushln(temp);
@@ -193,6 +194,29 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     //---------------------------------------------------------
     // Generate Receiver Routine
     //---------------------------------------------------------
+    if (b->has_receiver_loops())
+    {
+        set_receiver_generate(true);
+        std::list<ast_foreach*>& R = b->get_receiver_loops();
+        std::list<ast_foreach*>::iterator I;
+        for(I=R.begin(); I!=R.end(); I++)
+        {
+            ast_foreach* fe = *I;
+            Body.pushln("/*------");
+            Body.flush();
+            fe->reproduce(0);
+            gm_flush_reproduce(); 
+            Body.pushln("-----*/");
+            get_lib()->generate_message_receive_begin(
+                    fe, Body);
+
+            generate_sent(fe->get_body());
+
+            get_lib()->generate_message_receive_end(
+                    fe, Body);
+        }
+        set_receiver_generate(false);
+    }
 
     //---------------------------------------------------------
     // Generate Main Routine
@@ -259,3 +283,4 @@ void gm_gps_gen::generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent)
     if (finish_sent)
         Body.pushln(";");
 }
+

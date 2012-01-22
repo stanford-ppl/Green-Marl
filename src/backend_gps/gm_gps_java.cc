@@ -50,41 +50,103 @@ void gm_gps_gen::generate_lhs_id(ast_id* i)
 }
 void gm_gps_gen::generate_lhs_field(ast_field* f)
 {
-    assert(!is_master_generate());
-    
-    // temporary
-    assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
-
     ast_id* prop = f->get_second();
-    get_lib()->generate_vertex_prop_access_rhs(prop, Body);
+    if (is_master_generate()) {
+       assert(false);
+    } 
+    else if (is_receiver_generate()) {
+        if (f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL)
+        {
+            get_lib()->generate_vertex_prop_access_remote_lhs(prop, Body);
+        }
+        else 
+        {
+            get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+        }
+    }
+    else {// vertex generate;
+        assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
+        get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+    }
 }
 
 void gm_gps_gen::generate_rhs_id(ast_id* i) 
 {
-    _Body.push(i->get_genname());
+    generate_lhs_id(i);
 } 
 
 void gm_gps_gen::generate_rhs_field(ast_field* f)
 {
-    assert(!is_master_generate());
-
-    // temporary
-    assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
-
-    ast_id* prop = f->get_second();
-    get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+    generate_lhs_field(f);
 }
 
 
 void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a) 
 {
-    assert(!is_master_generate());
+    if (is_master_generate())
+    {
+        assert(false);
+    }
+    else if (a->is_target_scalar()) 
+    {
+        // check target is global
+        {
+            get_lib()->generate_reduce_assign_vertex(a, Body, a->get_reduce_type());
+        }
+        return;
+    }
 
-    assert(a->is_target_scalar());  // xxx: temporary assertion
+    // use normal read/write
+    if (a->is_target_scalar())
+    {
+        generate_lhs_id(a->get_lhs_scala());
+    }
+    else {
+        generate_lhs_field(a->get_lhs_field());
+    }
 
-    get_lib()->generate_reduce_assign_vertex(a, Body, a->get_reduce_type());
+    Body.push(" = ");
 
+    if ((a->get_reduce_type() == GMREDUCE_PLUS) ||
+        (a->get_reduce_type() == GMREDUCE_MULT) ||
+        (a->get_reduce_type() == GMREDUCE_AND) ||
+        (a->get_reduce_type() == GMREDUCE_OR))
+    {
+        if (a->is_target_scalar())
+            generate_rhs_id(a->get_lhs_scala());
+        else 
+            generate_rhs_field(a->get_lhs_field());
+
+        switch(a->get_reduce_type()) {
+            case GMREDUCE_PLUS: Body.push(" + ("); break;
+            case GMREDUCE_MULT: Body.push(" * ("); break;
+            case GMREDUCE_AND: Body.push(" && ("); break;
+            case GMREDUCE_OR: Body.push(" || ("); break;
+            default: assert(false);
+        }
+
+        generate_expr(a->get_rhs());
+
+        Body.pushln(");");
+    }
+    else if ((a->get_reduce_type() == GMREDUCE_MIN) ||
+             (a->get_reduce_type() == GMREDUCE_MAX))
+    {
+        Body.push("java.lang.Max(");
+        if (a->is_target_scalar())
+            generate_rhs_id(a->get_lhs_scala());
+        else 
+            generate_rhs_field(a->get_lhs_field());
+        Body.push(",");
+        generate_expr(a->get_rhs());
+
+        Body.pushln(");");
+    }
+    else {
+        assert(false);
+    }
 }
+
 
 void gm_gps_gen::generate_sent_assign(ast_assign *a)
 {
@@ -135,5 +197,13 @@ void gm_gps_gen::generate_sent_return(ast_return *r)
         generate_expr(r->get_expr());
         _Body.pushln(";");
     }
+}
 
+void gm_gps_gen::generate_sent_foreach(ast_foreach* fe)
+{
+    // must be a sending foreach
+    assert(gm_is_iteration_on_neighbors(fe->get_iter_type()) ||
+           gm_is_iteration_on_down_neighbors(fe->get_iter_type()));
+
+    get_lib()->generate_message_send(fe, Body);
 }

@@ -313,9 +313,20 @@ void gm_gpslib::generate_vertex_prop_access_lhs(ast_id* id, gm_code_writer& Body
     sprintf(temp,"%s.%s", STATE_SHORT_CUT, id->get_genname());
     Body.push(temp);
 }
+void gm_gpslib::generate_vertex_prop_access_remote_lhs(ast_id* id, gm_code_writer& Body)
+{
+    char temp[1024];
+    sprintf(temp,"_remote_%s", id->get_genname());
+    Body.push(temp);
+}
 void gm_gpslib::generate_vertex_prop_access_rhs(ast_id* id, gm_code_writer& Body)
 {
     generate_vertex_prop_access_lhs(id, Body);
+}
+
+void gm_gpslib::generate_vertex_prop_access_remote_rhs(ast_id* id, gm_code_writer& Body)
+{
+    generate_vertex_prop_access_remote_lhs(id, Body);
 }
 
 const char* gm_gpslib::get_message_field_var_name(
@@ -531,6 +542,91 @@ void gm_gpslib::generate_message_class_details(gm_gps_beinfo* info, gm_code_writ
     generate_message_class_combine(this, info, Body);
     Body.NL();
 }
+
+void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
+{
+  gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+
+  std::list<gm_gps_communication_symbol_info>& LIST
+      = info->get_all_communication_symbols(fe);
+
+  gm_gps_communication_size_info& SINFO
+      = info->find_communication_size_info(fe);
+
+  Body.NL();
+  Body.pushln("// Sending messages");
+  Body.push("MessageData _msg = new MessageData(");
+  sprintf(str_buf,"%d",SINFO.id);
+  Body.push(str_buf);
+  Body.pushln(");");
+
+  std::list<gm_gps_communication_symbol_info>::iterator I;
+  for(I=LIST.begin(); I!=LIST.end(); I++)
+  {
+    gm_gps_communication_symbol_info& SYM = *I;
+    Body.push("_msg.");
+    const char* fname = gm_gpslib::get_message_field_var_name(
+            SYM.gm_type, SYM.idx);
+    Body.push(fname); delete [] fname;
+    Body.push(" = ");
+    gm_symtab_entry * e = SYM.symbol;
+    if (e->getType()->is_property())
+    {
+        generate_vertex_prop_access_rhs(e->getId(), Body);
+    }
+    else 
+    {
+        Body.push(e->getId()->get_genname());
+    }
+    Body.pushln(";");
+  }
+
+  Body.pushln("SendAllNeighbors(_msg);");
+  Body.NL();
+}
+
+void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body)
+{
+  gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+
+  std::list<gm_gps_communication_symbol_info>& LIST
+      = info->get_all_communication_symbols(fe);
+
+  Body.NL();
+  Body.pushln("// Begin msg receive");
+  Body.pushln("for(MessageData _msg : _msgs) {");
+  std::list<gm_gps_communication_symbol_info>::iterator I;
+  for(I=LIST.begin(); I!=LIST.end(); I++)
+  {
+    gm_gps_communication_symbol_info& SYM = *I;
+    const char* str = main->get_type_string(SYM.gm_type);
+    Body.push(str);
+    Body.SPC();
+    gm_symtab_entry * e = SYM.symbol;
+    if (e->getType()->is_property())
+    {
+        generate_vertex_prop_access_remote_lhs(e->getId(), Body);
+    }
+    else 
+    {
+        Body.push(e->getId()->get_genname());
+    }
+    Body.push(" = ");
+    Body.push("_msg.");
+    const char* fname = gm_gpslib::get_message_field_var_name(
+            SYM.gm_type, SYM.idx);
+    Body.push(fname); delete [] fname;
+    Body.pushln(";");
+  }
+}
+void gm_gpslib::generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body)
+{
+  Body.pushln("} // end of msg receive");
+}
+
+
 
 
 //-----------------------------------------------------------------------------

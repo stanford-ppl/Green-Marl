@@ -64,6 +64,9 @@ class gm_gpslib : public gm_graph_library {
 
     virtual void generate_vertex_prop_access_lhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_rhs(ast_id *id, gm_code_writer& Body);
+    
+    virtual void generate_vertex_prop_access_remote_lhs(ast_id *id, gm_code_writer& Body);
+    virtual void generate_vertex_prop_access_remote_rhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_prepare(gm_code_writer& Body);
 
     virtual int get_type_size(ast_typedecl* t); 
@@ -71,6 +74,9 @@ class gm_gpslib : public gm_graph_library {
 
     // caller should delete var_name later
     const char* get_message_field_var_name(int gm_type, int idx);
+    virtual void generate_message_send(ast_foreach* fe, gm_code_writer& Body);
+    virtual void generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body);
+    virtual void generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body);
 
     protected:
 
@@ -179,14 +185,16 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_sent_defer_assign(ast_assign *a) {assert(false);}
         virtual void generate_sent_vardecl(ast_vardecl *a) {assert(false);}
         virtual void generate_sent_bfs(ast_bfs *a) {assert(false);}
-        virtual void generate_sent_foreach(ast_foreach *f) {Body.pushln("\n//Inner loop");}
+        virtual void generate_sent_foreach(ast_foreach *f); 
         virtual void generate_sent_return(ast_return *r);
         virtual void generate_sent_assign(ast_assign *a);
-
 
         void set_master_generate(bool b) {_is_master_gen = b;}
         bool is_master_generate() {return _is_master_gen;} 
         bool _is_master_gen;
+        bool _is_receiver_gen;
+        void set_receiver_generate(bool b) {_is_receiver_gen = b;}
+        bool is_receiver_generate() {return _is_receiver_gen;} 
 
 };
 

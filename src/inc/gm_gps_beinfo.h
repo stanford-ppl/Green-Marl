@@ -52,7 +52,7 @@ public:
     void add_communication_symbol(ast_foreach* fe, gm_symtab_entry* sym);
 
     std::list<gm_gps_communication_symbol_info>& 
-        get_all_communication_info(ast_foreach* fe) {return comm_symbol_info[fe];}
+        get_all_communication_symbols(ast_foreach* fe) {return comm_symbol_info[fe];}
 
     gm_gps_communication_symbol_info& 
         find_communication_symbol_info(ast_foreach* fe, gm_symtab_entry* sym);

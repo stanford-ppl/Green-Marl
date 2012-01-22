@@ -411,8 +411,6 @@ void gm_gps_gen::do_generate_scalar_broadcast_receive(gm_gps_basic_block* b)
         if (!global_info->is_scalar()) continue;
         if (!global_info->is_used_in_master()) continue;
         if (local_info->is_used_as_lhs() || local_info->is_used_as_reduce()) {
-
-
             // create a broad cast variable
             get_lib()->generate_broadcast_receive_master(
                     I->first->getId(), Body, 
