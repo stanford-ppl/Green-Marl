@@ -290,6 +290,7 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
 
         // generate Broadcast
         do_generate_scalar_broadcast_send(b);
+        get_lib()->generate_broadcast_state_master("_master_state", Body);
         Body.NL();
 
         // generate next statement
@@ -298,8 +299,6 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         sprintf(temp,"_master_state_nxt = %d;", n);
         Body.pushln(temp);
         Body.pushln("_master_should_start_workers = true;");
-        Body.pushln("//broadcast state");
-        get_lib()->generate_broadcast_state_master("_master_state", Body);
     }
     else if (type == GM_GPS_BBTYPE_SEQ) 
     {
@@ -327,7 +326,6 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         }
     }
     else if (type == GM_GPS_BBTYPE_IF_COND) {
-        Body.NL();
 
         Body.push("boolean _expression_result = ");
 
@@ -340,7 +338,7 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         Body.pushln(";");
 
 
-        sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;\n",
+        sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;",
                 b->get_nth_exit(0)->get_id(), 
                 b->get_nth_exit(1)->get_id());
         Body.pushln(temp);

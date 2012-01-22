@@ -370,7 +370,6 @@ void ast_foreach::reproduce(int ind_level)
     else {
         Out.push_indent();
         body->reproduce(0);
-        Out.NL();
         Out.pop_indent();
     }
 }
@@ -440,7 +439,6 @@ void ast_if::reproduce(int ind_level)
     else {
         Out.push_indent();
         then_part->reproduce(ind_level+1);
-        Out.NL();
         Out.pop_indent();
     }
 
@@ -453,7 +451,6 @@ void ast_if::reproduce(int ind_level)
         else {
             Out.push_indent();
             else_part->reproduce(ind_level+1);
-            Out.NL();
             Out.pop_indent();
         }
     }
