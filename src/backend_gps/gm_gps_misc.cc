@@ -38,8 +38,7 @@ void gm_gps_basic_block::reproduce_sents()
             for(I=L.begin();I!=L.end();I++)
             {
                 ast_foreach* s = *I;
-                s->reproduce(1);
-                gm_newline_reproduce(); 
+                s->reproduce(0);
             }
         }
 
@@ -47,9 +46,8 @@ void gm_gps_basic_block::reproduce_sents()
         ast_sent* s = get_next();
         while (s!=NULL)
         { 
-            s->reproduce(1);
+            s->reproduce(0);
             s = get_next();
-            gm_newline_reproduce(); 
         }
         gm_flush_reproduce(); 
    } else {

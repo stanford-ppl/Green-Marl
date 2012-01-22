@@ -105,7 +105,7 @@ void ast_sentblock::reproduce(int ind_level) {
     std::list<ast_sent*>::iterator it;
     for(it = sents.begin(); it!= sents.end(); it++)
     {
-        (*it)->reproduce(0); Out.NL();
+        (*it)->reproduce(0);
     }
     Out.pushln("}");
 }
@@ -336,7 +336,7 @@ void ast_assign::reproduce(int ind_level)
             Out.SPC();
       }
    }
-   Out.push(";");
+   Out.pushln(";");
 }
 
 void ast_vardecl::reproduce(int ind_level) 
@@ -344,7 +344,7 @@ void ast_vardecl::reproduce(int ind_level)
     type->reproduce(0);
     Out.SPC();
     idlist->reproduce(0);
-    Out.push(";");
+    Out.pushln(";");
 }
 
 void ast_foreach::reproduce(int ind_level)

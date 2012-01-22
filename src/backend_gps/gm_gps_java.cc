@@ -150,8 +150,6 @@ void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a)
 
 void gm_gps_gen::generate_sent_assign(ast_assign *a)
 {
-    printf("."); fflush(stdout);
-
     // normal assign
     if (is_master_generate()) {
         this->gm_code_generator::generate_sent_assign(a);

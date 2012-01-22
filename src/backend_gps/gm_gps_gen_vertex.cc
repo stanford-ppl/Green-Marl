@@ -177,6 +177,38 @@ void gm_gps_gen::do_generate_vertex_states()
     gm_baseindent_reproduce(0);
 }
 
+void gm_gps_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *b)
+{
+
+    // l. load scalar variable
+    std::map<gm_symtab_entry*, gps_syminfo*>& symbols = b->get_symbols();
+    std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
+    for(I=symbols.begin(); I!=symbols.end(); I ++)
+    {
+        gm_symtab_entry* sym = I->first;
+        gps_syminfo* local_info = I->second;
+        if (!local_info->is_scalar()) continue;
+
+        gps_syminfo* global_info = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+        //if (global_info->is_used_in_multiple_BB())
+        if (global_info->is_scoped_global())
+        {
+            if (local_info->is_used_as_rhs()) {
+                // receive it from Broadcast
+                generate_scalar_var_def(sym, false);
+                Body.push(" = ");
+                get_lib()->generate_broadcast_receive_vertex(sym->getId(), Body);
+                Body.pushln(";");
+            }
+        }
+        else 
+        {
+            // temporary scalar variables. Define it here
+            generate_scalar_var_def(sym, true);
+        }
+    }
+}
+
 void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
 {
     int id = b->get_id();
@@ -189,7 +221,9 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     Body.pushln(temp);
 
     assert (type == GM_GPS_BBTYPE_BEGIN_VERTEX); 
+
     get_lib()->generate_vertex_prop_access_prepare(Body);
+    do_generate_vertex_state_receive_global(b);
 
     //---------------------------------------------------------
     // Generate Receiver Routine
@@ -226,41 +260,12 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
         Body.flush();
         b->reproduce_sents();
         Body.pushln("-----*/");
-
+        Body.NL();
+    
         ast_sent* s = b->get_1st_sent();
         assert(s->get_nodetype() == AST_FOREACH);
         ast_foreach * fe = (ast_foreach*) s;
         ast_sent* body = fe->get_body();
-
-        // todo: local variable generation here
-
-        // l. load scalar variable
-        std::map<gm_symtab_entry*, gps_syminfo*>& symbols = b->get_symbols();
-        std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
-        for(I=symbols.begin(); I!=symbols.end(); I ++)
-        {
-            gm_symtab_entry* sym = I->first;
-            gps_syminfo* local_info = I->second;
-            if (!local_info->is_scalar()) continue;
-
-            gps_syminfo* global_info = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
-            if (global_info->is_used_in_multiple_BB())
-            {
-                if (local_info->is_used_as_rhs()) {
-                    // receive it from Broadcast
-                    generate_scalar_var_def(sym, false);
-                    Body.push(" = ");
-                    get_lib()->generate_broadcast_receive_vertex(sym->getId(), Body);
-                    Body.pushln(";");
-                }
-            }
-            else 
-            {
-                // temporary scalar variables. Define it here
-                generate_scalar_var_def(sym, true);
-            }
-        }
-        Body.NL();
 
         // 2. generate sents
         generate_sent(body);

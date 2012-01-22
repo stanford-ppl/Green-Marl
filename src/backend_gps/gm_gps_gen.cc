@@ -86,6 +86,7 @@ void gm_gps_gen::generate_proc(ast_procdef* proc)
     begin_class();
     do_generate_master();
 
+
     do_generate_vertex();
     end_class();
 }

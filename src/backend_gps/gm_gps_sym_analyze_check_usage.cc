@@ -163,6 +163,11 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                     usage,
                     context,
                     r_type);
+            /*
+            printf("Add usage : %s for BB : %d\n", 
+                    i->get_genname(),
+                    get_curr_BB()->get_id());
+             */
         }
 
         gps_syminfo* get_or_create_global_syminfo(ast_id *i, bool is_scalar)

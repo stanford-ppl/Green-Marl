@@ -67,7 +67,7 @@ private:
 };
 
 
-static void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen);
+static gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen);
 
 // [todo]
 // who call this?
@@ -92,13 +92,14 @@ void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
     std::set<gps_bb*>::iterator I;
     for(I=BB_list.begin(); I!= BB_list.end(); I++) {
         gps_bb* BB = *I;
-        split_vertex_BB(BB, info);
+        gps_bb* BB2 = split_vertex_BB(BB, info);
+
     }
 }
 
 //    [prev -> BB -> next] ==>
 //    [prev -> BB(S) -> new_seq -> BB(R) -> next]
-void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
+gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
 {
     //printf("splitting BB id = %d\n", BB->get_id());
 
@@ -140,11 +141,11 @@ void split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
     new_seq->add_exit(new_BB);
     new_BB->add_exit(next);
 
-    //printf("new BB id = %d, %d\n", new_seq->get_id(), new_BB->get_id());
-
     std::list<gm_gps_basic_block*>& BBLIST = gen->get_basic_blocks();
     BBLIST.push_back(new_seq);
     BBLIST.push_back(new_BB);
+
+    return new_BB;
 
 }
 
