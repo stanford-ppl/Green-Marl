@@ -138,7 +138,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                     context = GPS_CONTEXT_RECEIVER;
                 }
                 else {
-                    if (foreach_depth == 0) {
+                    if (foreach_depth == 1) {
                         context = GPS_CONTEXT_VERTEX;
                     } 
                     else {

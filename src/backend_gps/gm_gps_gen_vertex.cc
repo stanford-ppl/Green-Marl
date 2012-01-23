@@ -120,14 +120,14 @@ void gm_gps_gen::do_generate_vertex_class()
             );
     Body.pushln(temp);
     Body.pop_indent();
-    Body.pushln("@override");
+    Body.pushln("@Override");
     sprintf(temp,
-            "Vertex< %s.VertexData, %s.MessageData > newInstance(){",
+            "public Vertex< %s.VertexData, %s.MessageData > newInstance(CommandLine line ){",
             proc_name,
             proc_name
             );
     Body.pushln(temp);
-    sprintf(temp,"return new %sVertex();", proc_name);
+    sprintf(temp,"return new %sVertex(line);", proc_name);
     Body.pushln(temp);
     Body.pushln("}");
 
@@ -141,7 +141,7 @@ void gm_gps_gen::do_generate_vertex_states()
     char temp[1024];
     const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
     Body.NL();
-    Body.pushln("@override");
+    Body.pushln("@Override");
     sprintf(temp,"public void compute(Iterable<%s.MessageData> _msgs, int _superStepNo) {",proc_name);
     Body.pushln(temp);
     Body.pushln("// todo: is there any way to get this value quickly?");

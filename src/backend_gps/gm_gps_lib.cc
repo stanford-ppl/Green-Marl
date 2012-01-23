@@ -13,22 +13,29 @@ void gm_gpslib::generate_headers(gm_code_writer& Body)
     Body.pushln("import gps.*;");
     Body.pushln("import gps.graph.*;");
     Body.pushln("import gps.node.*;");
+    Body.pushln("import gps.node.*;");
+    Body.pushln("import gps.writable.*;");
+    Body.pushln("import gps.globalobjects.*;");
+    Body.pushln("import gps.apache.common.cli.CommandLine;");
+    Body.pushln("import gps.apache.mina.core.buffer.IoBuffer;");
+    Body.pushln("import java.io.IOException;");
+    Body.pushln("import java.io.BufferedWriter;");
 }
 
 // scalar variable broadcast
 // master --> vertex
 void gm_gpslib::generate_broadcast_prepare(gm_code_writer& Body)
 {
-    Body.pushln("BVmap.removeAll();");
+    Body.pushln("getGlobalObjectMap().removeAll();");
 }
 
 void gm_gpslib::generate_broadcast_state_master(
     const char* state_var, gm_code_writer& Body)
 {
-    Body.push("BVmap.putBV(");
+    Body.push("getGlobalObjectMap().putGlobalObject(");
     Body.push(GPS_KEY_FOR_STATE);
     Body.push(",");
-    Body.push("new IntAnyBv(");
+    Body.push("new IntOverwriteGlobalObject(");
     Body.push(state_var);
     Body.pushln("));");
 }
@@ -36,10 +43,10 @@ void gm_gpslib::generate_receive_state_vertex(
     const char* state_var, gm_code_writer& Body)
 {
     char temp[1024];
-    sprintf(temp, "int %s = ((IntAnyBv) getBVMap().getBV(", state_var);
+    sprintf(temp, "int %s = ((IntOverwriteGlobalObject) getGlobalObjectsMap().getGlobalObject(", state_var);
     Body.push(temp);
     Body.push(GPS_KEY_FOR_STATE);
-    Body.pushln(")).getValue();");
+    Body.pushln(")).getValue().getValue();");
 }
 
 
@@ -48,7 +55,7 @@ void gm_gpslib::generate_broadcast_send_master(ast_id* id, gm_code_writer& Body)
     //---------------------------------------------------
     // create new BV
     //---------------------------------------------------
-    Body.push("BVmap.putBV(");
+    Body.push("getGlobalObjectMap().putGlobalObject(");
     Body.push(create_key_string(id));
     Body.push(",");
     Body.push("new ");
@@ -68,9 +75,9 @@ void gm_gpslib::generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Bo
     Body.push("((");
     generate_broadcast_variable_type(id->getTypeSummary(), Body);
     Body.push(")");
-    Body.push("getBVmap().getBV(");
+    Body.push("getGlobalObjectmap().getGlobalObject(");
     Body.push(create_key_string(id));
-    Body.push(")).getValue()");
+    Body.push(")).getValue().getValue()");
 }
 
 
@@ -94,7 +101,7 @@ void gm_gpslib::generate_broadcast_variable_type(
             case GMTYPE_DOUBLE: Body.push("Double"); break;
             case GMTYPE_LONG:   Body.push("Long"); break;
             case GMTYPE_FLOAT:  Body.push("Float"); break;
-            case GMTYPE_BOOL:  Body.push("Bool"); break;
+            case GMTYPE_BOOL:  Body.push("Boolean"); break;
             default:
                assert(false);
                break;
@@ -105,18 +112,18 @@ void gm_gpslib::generate_broadcast_variable_type(
     //---------------------------------------------------
     switch(reduce_op)
     {
-        case GMREDUCE_NULL: Body.push("Any"); break;
+        case GMREDUCE_NULL: Body.push("Overwrite"); break;
         case GMREDUCE_PLUS: Body.push("Sum"); break;
-        case GMREDUCE_MULT: 
-        case GMREDUCE_MIN: 
-        case GMREDUCE_MAX: 
-        case GMREDUCE_AND: 
-        case GMREDUCE_OR: 
+        case GMREDUCE_MULT: Body.push("Product"); break;
+        case GMREDUCE_MIN:  Body.push("Min"); break;
+        case GMREDUCE_MAX:  Body.push("Max"); break;
+        case GMREDUCE_AND:  Body.push("And"); break;
+        case GMREDUCE_OR:   Body.push("Or"); break;
         default:
             assert(false);
             break;
     } 
-    Body.push("BV");
+    Body.push("GlobalObject");
 }
 
 void gm_gpslib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Body, int reduce_op_type)
@@ -128,10 +135,10 @@ void gm_gpslib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Bo
     Body.push("((");
     generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
     Body.push(") ");
-    Body.push("BVmap.getBV(");
+    Body.push("getGlobalObjectMap().getGlobalObject(");
     Body.push(create_key_string(id));
     Body.push("))");
-    Body.pushln(".getValue();");
+    Body.pushln(".getValue().getValue();");
 }
 
 
@@ -140,7 +147,7 @@ void gm_gpslib::generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& Bod
     assert(a->is_target_scalar());
     ast_id* id = a->get_lhs_scala();
 
-    Body.push("getBVMap().putBV(");
+    Body.push("getGlobalObjectsMap().putGlobalObject(");
     Body.push(create_key_string(id));
     Body.push(",");
     Body.push("new ");
@@ -243,14 +250,14 @@ void gm_gpslib::generate_vertex_prop_class_details(
         ((gm_gps_beinfo*)FE.get_current_backend_info())->
             get_total_property_size();
 
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.push("public int numBytes() {return ");
     sprintf(temp, "%d;}", total);
     Body.pushln(temp);
 
     std::set<gm_symtab_entry* >::iterator I;
 
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public void write(IoBuffer IOB) {");
     for(I=prop.begin(); I!=prop.end(); I++)
     {
@@ -260,7 +267,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     }
     Body.pushln("}");
 
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public void read(IoBuffer IOB) {");
     for(I=prop.begin(); I!=prop.end(); I++)
     {
@@ -270,7 +277,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     }
     Body.pushln("}");
 
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public int read(byte[] _BA, int _idx) {");
     for(I=prop.begin(); I!=prop.end(); I++)
     {
@@ -285,7 +292,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     Body.pushln(temp);
     Body.pushln("}");
 
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
     sprintf(temp, "IOB.get(_BA, _idx, %d);", total);
     Body.pushln(temp);
@@ -293,7 +300,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     Body.pushln(temp);
     Body.pushln("}");
 
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public void combine(byte[] _MQ, byte [] _tA) {");
     Body.pushln(" // do nothing");
     Body.pushln("}");
@@ -304,7 +311,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
 void gm_gpslib::generate_vertex_prop_access_prepare(gm_code_writer& Body)
 {
     char temp[1024];
-    sprintf(temp,"VertexData %s = getState();", STATE_SHORT_CUT);
+    sprintf(temp,"VertexData %s = getValue();", STATE_SHORT_CUT);
     Body.pushln(temp);
 }
 void gm_gpslib::generate_vertex_prop_access_lhs(ast_id* id, gm_code_writer& Body)
@@ -419,7 +426,7 @@ static void generate_message_read2_each(gm_gpslib* lib, int cnt, int gm_type, gm
 
 static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer& Body)
 {
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public int numBytes() {");
     char str_buf[1024];
 
@@ -433,7 +440,7 @@ static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer&
 
 static void generate_message_class_write(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public void write(IoBuffer IOB) {");
     Body.pushln("IOB.put(m_type);");
     char str_buf[1024];
@@ -451,7 +458,7 @@ static void generate_message_class_write(gm_gpslib* lib, gm_gps_beinfo* info, gm
 
 static void generate_message_class_read1(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public void read(IoBuffer IOB) {");
     Body.pushln("m_type = IOB.get();");
     char str_buf[1024];
@@ -469,7 +476,7 @@ static void generate_message_class_read1(gm_gpslib* lib, gm_gps_beinfo* info, gm
 
 static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public int read(byte[] _BA, int _idx) {");
     Body.pushln("m_type = _BA[_idx];");
     char str_buf[1024];
@@ -492,7 +499,7 @@ static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm
 
 static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
-    Body.pushln("@override");
+    Body.pushln("@Override");
     Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
     Body.pushln("byte m_type = _BA[_idx];");
     char str_buf[1024];
@@ -512,8 +519,8 @@ static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm
 
 static void generate_message_class_combine(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
-    Body.pushln("@override");
-    Body.pushln("public int read(byts[] _MQ, byte [] _tA) {");
+    Body.pushln("@Override");
+    Body.pushln("public void combine(byts[] _MQ, byte [] _tA) {");
     Body.pushln("//do nothing");
 
     Body.pushln("}");

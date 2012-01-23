@@ -1,6 +1,6 @@
 
 // Test of basic structure creation
-Procedure gps (G: Graph, x: Int, A,B:Node_Property<Int>(G) ) : Int
+Procedure gps1 (G: Graph, x: Int, A,B:Node_Property<Int>(G) ) : Int
 {
     Int z = 0;
     If (x > 0) {

@@ -9,7 +9,10 @@
 
 void gm_gps_gen::write_headers()
 {
-    Body.pushln("package gps.examples;");       // hardcodede
+    ast_procdef* proc = FE.get_current_proc();
+    char temp[1024];
+    sprintf(temp, "package gps.examples.%s;", proc->get_procname()->get_genname());
+    Body.pushln(temp);       // hardcodede
     get_lib()->generate_headers(Body);
     Body.NL();
 
@@ -103,7 +106,7 @@ void gm_gps_gen::do_generate_master_class()
     // A method that saves final output values
     //--------------------------------------------------------------------
     Body.pushln("//save output");
-    Body.pushln("public void writeOutput(BufferedWrite bw) throws IOException {");
+    Body.pushln("public void writeOutput(BufferedWriter bw) throws IOException {");
     ast_typedecl* t = proc->get_return_type();
     if ((t!= NULL) && (!t->is_void())) {
         sprintf(temp, "bw.write(\"%s:\\t\" + %s + \"\\n\");", 
@@ -191,7 +194,9 @@ void gm_gps_gen::do_generate_shared_variables_keys()
 
         // if the symbol is used in vertex and master
         // we need shared variable
-        if (syminfo->is_used_in_vertex() &&
+        if ((syminfo->is_used_in_vertex() ||
+             syminfo->is_used_in_sender() ||
+             syminfo->is_used_in_receiver()) &&
             syminfo->is_used_in_master())
         {
             Body.push("private static final String ");
@@ -243,7 +248,7 @@ void gm_gps_gen::do_generate_master_states()
     Body.NL();
 
 
-    Body.pushln("//@ override");
+    Body.pushln("//@ Override");
     Body.pushln("public void compute(int superStepNo) {"); 
 
     Body.pushln("_master_state_machine();");
