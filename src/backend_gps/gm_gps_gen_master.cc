@@ -44,6 +44,8 @@ void gm_gps_gen::do_generate_master()
 void gm_gps_gen::do_generate_master_class()
 {
     ast_procdef* proc = FE.get_current_proc();
+    gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
 
     //--------------------------------------------------------------------
     // create master class
@@ -255,7 +257,8 @@ void gm_gps_gen::do_generate_master_states()
     Body.NL();
 
     Body.pushln("if (_master_should_finish) { ");
-    Body.pushln(" // stop the system ");
+    Body.pushln("// stop the system ");
+    Body.pushln("this.continueComputation = false;");
     Body.pushln("return;");
     Body.pushln("}");
     Body.NL();

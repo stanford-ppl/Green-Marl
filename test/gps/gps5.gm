@@ -1,0 +1,11 @@
+
+// Test of built-in functions
+Proc gps5(G: Graph, A,B,C: N_P<Float>(G))
+{
+    Int x = Rand(100);  // Integer 0 ~ 99;
+    Foreach(n: G.Nodes)
+    {
+        n.B = x * Uniform();  // Float 0~1.0
+        n.C = Log(n.A) + Pow(0.5, n.A) + Exp(2);
+    }
+}

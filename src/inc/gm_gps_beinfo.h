@@ -34,6 +34,7 @@ public:
         comm_id = 0;
         basicblock_id = 0;
         total_prop_size = 0;
+        rand_used = false;
     }
     virtual ~gm_gps_beinfo() {
     }
@@ -62,6 +63,10 @@ public:
 
     void compute_max_communication_size();
     gm_gps_communication_size_info& get_max_communication_size() {return max_comm_size;}
+
+public:
+    void set_rand_used(bool b) {rand_used = b;}
+    bool is_rand_used() {return rand_used;}
 
 
 public:
@@ -95,6 +100,7 @@ private:
 
     int comm_id;
     int basicblock_id;
+    bool rand_used;
 
 };
 

@@ -4,6 +4,7 @@
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
+#include "gm_builtin.h"
 
 const char* gm_gps_gen::get_type_string(int gm_type)
 {
@@ -204,4 +205,43 @@ void gm_gps_gen::generate_sent_foreach(ast_foreach* fe)
            gm_is_iteration_on_down_neighbors(fe->get_iter_type()));
 
     get_lib()->generate_message_send(fe, Body);
+}
+
+void gm_gps_gen::generate_expr_builtin(ast_expr *e)
+{
+    ast_expr_builtin * be = (ast_expr_builtin*) e;
+    gm_builtin_def* def = be->get_builtin_def(); 
+    std::list<ast_expr*>& ARGS = be->get_args();
+    
+    switch(def->get_method_id())
+    {
+    case GM_BLTIN_TOP_DRAND:         // rand function
+    case GM_BLTIN_TOP_IRAND:         // rand function
+        get_lib()->generate_expr_builtin(be, Body, is_master_generate());
+        break;
+
+    case GM_BLTIN_TOP_LOG:           // log function
+        Body.push("Math.log(");
+        assert(ARGS.front()!=NULL);
+        generate_expr(ARGS.front());
+        Body.push(")");
+        break;
+    case GM_BLTIN_TOP_EXP:           // exp function
+        Body.push("Math.exp(");
+        assert(ARGS.front()!=NULL);
+        generate_expr(ARGS.front());
+        Body.push(")");
+        break;
+    case GM_BLTIN_TOP_POW:           // pow function
+        Body.push("Math.pow(");
+        assert(ARGS.front()!=NULL);
+        generate_expr(ARGS.front());
+        Body.push(",");
+        assert(ARGS.back()!=NULL);
+        generate_expr(ARGS.back());
+        Body.push(")");
+        break;
+    default:
+        assert(false);
+    }
 }

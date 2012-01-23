@@ -7,6 +7,7 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 #include "gm_traverse.h"
+#include "gm_builtin.h"
 
 //------------------------------------------------
 // Check basic things about if the program is synthesizable
@@ -19,6 +20,8 @@
 //  3. There should be one and only one Graph (as in argument)
 //
 //  4. There must be not 'Return' in non-master context
+//
+//  5. Somebuilt-in functions are not supported
 //------------------------------------------------
 
 // check condition 1-4
@@ -116,6 +119,52 @@ private:
     int foreach_depth;
 };
 
+class gps_check_synth2_t : public gm_apply 
+{
+public:
+    gps_check_synth2_t()  {
+        _error = false;
+        _rand_used = false;
+        set_for_expr(true);
+    }
+    bool is_error() {return _error;}
+    bool is_rand_used() {return _rand_used;}
+
+    virtual bool apply(ast_expr *e) 
+    {
+        if (e->get_nodetype() == AST_EXPR_BUILTIN) {
+            ast_expr_builtin * be = (ast_expr_builtin*) e;
+            gm_builtin_def* def = be->get_builtin_def(); 
+            switch(def->get_method_id())
+            {
+            case GM_BLTIN_TOP_DRAND:         // rand function
+            case GM_BLTIN_TOP_IRAND:         // rand function
+                _rand_used = true;
+                break;
+
+            /*
+            case GM_BLTIN_GRAPH_NUM_NODES:
+            case GM_BLTIN_GRAPH_NUM_EDGES:
+            case GM_BLTIN_NODE_DEGREE:
+            case GM_BLTIN_NODE_IN_DEGREE:
+            */
+
+            case GM_BLTIN_TOP_LOG:           // log function
+            case GM_BLTIN_TOP_EXP:           // exp function
+            case GM_BLTIN_TOP_POW:           // pow function
+                break;
+            default:
+                gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_OP, 
+                    e->get_line(), e->get_col(), "unsupported builtin function");
+                _error = true;
+            }
+        }
+    }
+private:
+    bool _error;
+    bool _rand_used;
+};
+
 
 void gm_gps_opt_check_synthesizable::process(ast_procdef* proc)
 {
@@ -139,4 +188,17 @@ void gm_gps_opt_check_synthesizable::process(ast_procdef* proc)
         set_okay(false);
         return ; // return is_okay
     }
+
+    gps_check_synth2_t T2;
+    proc->traverse_pre(&T2); // pre & post visit
+    if (T2.is_error()) {
+        set_okay(false);
+        return;
+    }
+
+    gm_gps_beinfo * beinfo =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+
+    if (T2.is_rand_used())
+        beinfo->set_rand_used(true);
 }

@@ -34,7 +34,7 @@ class gm_gpslib : public gm_graph_library {
     virtual const char* get_type_string_primitive(int gm_type); 
     virtual const char* get_type_string(ast_typedecl* t, bool is_master);
     */
-    virtual bool generate_builtin(ast_expr_builtin* e) { assert(false); return true;}
+    //virtual bool generate_builtin(ast_expr_builtin* e) 
 
 
     virtual bool do_local_optimize(); 
@@ -78,6 +78,7 @@ class gm_gpslib : public gm_graph_library {
     virtual void generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body);
     virtual void generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body);
 
+    virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master); 
     protected:
 
     private:
@@ -156,6 +157,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 
         void generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent);
 
+
     public:
         gm_code_writer& get_code() {return Body;}
 
@@ -174,7 +176,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 
         virtual void generate_rhs_id(ast_id* i); 
         virtual void generate_rhs_field(ast_field* i) ;
-        virtual void generate_expr_builtin(ast_expr* e) {assert(false);}
+        virtual void generate_expr_builtin(ast_expr* e); 
         virtual void generate_expr_minmax(ast_expr* e);
         virtual void generate_expr_type_conversion(ast_expr *e) {assert(false);}
         virtual void generate_expr_abs(ast_expr*e) {assert(false);}

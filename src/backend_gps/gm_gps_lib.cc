@@ -5,6 +5,7 @@
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
+#include "gm_builtin.h"
 
 #define GPS_KEY_FOR_STATE       "\"__gm_gps_state\""
 
@@ -20,13 +21,15 @@ void gm_gpslib::generate_headers(gm_code_writer& Body)
     Body.pushln("import gps.apache.mina.core.buffer.IoBuffer;");
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.io.BufferedWriter;");
+    Body.pushln("import java.util.Random;");
+    Body.pushln("import java.lang.Math;");
 }
 
 // scalar variable broadcast
 // master --> vertex
 void gm_gpslib::generate_broadcast_prepare(gm_code_writer& Body)
 {
-    Body.pushln("getGlobalObjectMap().removeAll();");
+    Body.pushln("getGlobalObjectMap().clear();");
 }
 
 void gm_gpslib::generate_broadcast_state_master(
@@ -633,6 +636,27 @@ void gm_gpslib::generate_message_receive_end(ast_foreach* fe, gm_code_writer& Bo
   Body.pushln("} // end of msg receive");
 }
 
+void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body, bool is_master)
+{
+    gm_builtin_def* def = be->get_builtin_def(); 
+    std::list<ast_expr*>& ARGS = be->get_args();
+    
+    switch(def->get_method_id())
+    {
+    case GM_BLTIN_TOP_DRAND:         // rand function
+        Body.push("getRandom().nextDouble()");
+        break;
+
+    case GM_BLTIN_TOP_IRAND:         // rand function
+        Body.push("getRandom().nextInt(");
+        get_main()->generate_expr(ARGS.front());
+        Body.push(")");
+        break;
+
+    default:
+        assert(false);
+    }
+}
 
 
 
