@@ -76,20 +76,25 @@ void gm_cpp_gen::generate_bfs_navigator(ast_bfs* bfs)
     }
 }
 
+static const char* bool_string(bool b) {
+    if (b) return "true";
+    else return "false";
+}
+
 void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs) 
 {
     const char* bfs_name = bfs->find_info_string(CPPBE_INFO_BFS_NAME);
     const char* level_t = "short";
-    const char* use_multithread = is_target_omp() ? "true" : "false";
-    const char* save_child = "false"; // [XXX]
-    const char* use_reverse_edge = bfs->is_transpose() ? "true" : "false";
-    const char* has_navigator = (bfs->get_navigator()==NULL) ? "false" : "true";
+    const char* use_multithread = bool_string(is_target_omp());
+    const char* save_child = bool_string(bfs->find_info_bool(CPPBE_INFO_USE_DOWN_NBR)); 
+    const char* use_reverse_edge = bool_string(bfs->is_transpose());
+    const char* has_navigator = bool_string(bfs->get_navigator()!=NULL);
 
-    const char* has_pre_visit = ((bfs->get_fbody()!=NULL) && 
-                                 (bfs->get_fbody()->get_sents().size() >=1)) ? "true" : "false";
+    const char* has_pre_visit = bool_string((bfs->get_fbody()!=NULL) && 
+                                 (bfs->get_fbody()->get_sents().size() >=1));
 
-    const char* has_post_visit = ((bfs->get_bbody()!=NULL) && 
-                                  (bfs->get_bbody()->get_sents().size() >=1)) ? "true" : "false";
+    const char* has_post_visit = bool_string((bfs->get_bbody()!=NULL) && 
+                                  (bfs->get_bbody()->get_sents().size() >=1));
 
     ast_extra_info_set* info = (ast_extra_info_set*)  bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
     std::set<void*>& SET = info->get_set();

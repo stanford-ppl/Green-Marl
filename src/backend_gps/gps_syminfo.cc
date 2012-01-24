@@ -1,5 +1,6 @@
 #include "gps_syminfo.h"
 
+
 void gps_syminfo::add_usage_in_BB(int bb_no, int usage, int context , int reduce_type)
 {
     // if not already in
@@ -19,6 +20,7 @@ void gps_syminfo::add_usage_in_BB(int bb_no, int usage, int context , int reduce
     used_BB.push_back(bb_no);
     used_type.push_back(usage);
     used_context.push_back(context);
+
 
     if (usage == GPS_SYM_USED_AS_RHS) 
         used_as_rhs = true;

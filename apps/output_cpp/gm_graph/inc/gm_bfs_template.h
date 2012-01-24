@@ -1,6 +1,9 @@
 
 #include <omp.h>
 #include <string.h>
+#include <map>
+#include <set>
+
 #include "gm_graph.h"
 #include "gm_atomic_wrapper.h"
 #include "gm_bitmap.h"
@@ -31,6 +34,11 @@ gm_bfs_template(gm_graph& _G) : G(_G)
     global_next_level = NULL;
     global_queue = NULL;
     thread_local_next_level = NULL;
+    down_edge_array = NULL;
+    down_edge_set = NULL;
+    if (save_child) {
+        down_edge_set = new std::set<edge_t>();
+    }
 }
 
 virtual ~gm_bfs_template() 
@@ -39,6 +47,8 @@ virtual ~gm_bfs_template()
     delete visited_level;
     delete global_queue;
     delete [] thread_local_next_level;
+    delete down_edge_set;
+    delete down_edge_array;
 }
 
 public:
@@ -265,10 +275,25 @@ inline void iterate_neighbor_small(node_t t)
         {
             if (has_navigator) {if (check_navigator(u)==false)  continue;}
 
+            if (save_child) {
+                save_down_edge_small(nx);
+            }
+
             small_visited[u] = curr_level +1;
             global_next_level[next_count++] = u;
         }
     }
+}
+
+
+// should be used only when save_child is enabled
+inline bool save_down_edge_small(edge_t idx)
+{
+    down_edge_set->insert(idx);
+}
+inline bool save_down_edge_large(edge_t idx)
+{
+    down_edge_array[idx] = 1;
 }
 
 void prepare_que()
@@ -276,16 +301,25 @@ void prepare_que()
     // create bitmap and edges
     visited_bitmap = new unsigned char[(G.num_nodes()+7)/8];
     visited_level  = new level_t[G.num_nodes()];
+    if (save_child) {
+        down_edge_array = new unsigned char[G.num_edges()]; 
+    }
 
     #pragma omp parallel if (use_multithread)
     {
         #pragma omp for nowait
-        for(int i=0;i<(G.num_nodes()+7)/8;i++)
+        for(node_t i=0;i<(G.num_nodes()+7)/8;i++)
             visited_bitmap[i] = 0;
 
         #pragma omp for nowait
-        for(int i=0;i<G.num_nodes();i++)
+        for(node_t i=0;i<G.num_nodes();i++)
             visited_level[i] = __INVALID_LEVEL; 
+
+        if (save_child) {
+            #pragma omp for nowait
+            for(edge_t i=0;i<G.num_edges();i++)
+                down_edge_array[i] = 0;
+        }
     }
 
     typename std::map<node_t,level_t>::iterator II;
@@ -295,6 +329,14 @@ void prepare_que()
         level_t lev = II->second;
         _gm_set_bit(visited_bitmap, u);
         visited_level[u] = lev;
+    }
+
+    if (save_child) {
+        typename std::set<edge_t>::iterator J;
+        for (J=down_edge_set->begin(); J!= down_edge_set->end(); J++)
+        {
+            down_edge_array[*J] = 1;
+        }
     }
 }
 
@@ -314,6 +356,7 @@ inline void iterate_neighbor_que(node_t t, int tid)
         {
             if (has_navigator) {if (check_navigator(u)==false)  continue;}
 
+
             bool re_check_result;
             if (use_multithread) {
                 re_check_result = _gm_set_bit_atomic(visited_bitmap, u);
@@ -322,7 +365,10 @@ inline void iterate_neighbor_que(node_t t, int tid)
                 _gm_set_bit(visited_bitmap, u);
             }
 
-                
+            if (save_child) {
+                save_down_edge_large(nx);
+            }
+
             if (re_check_result) {
                 // add to local q
                 thread_local_next_level[tid].push_back(u);
@@ -376,6 +422,10 @@ void iterate_neighbor_rd(node_t t, node_t& local_cnt)
             } else {
                 re_check_result = true;
                 _gm_set_bit(visited_bitmap, u);
+            }
+
+            if (save_child) {
+                save_down_edge_large(nx);
             }
                 
             if (re_check_result) {
@@ -431,6 +481,16 @@ void do_bfs_reverse()
     }
 }
 
+public:
+
+inline bool is_down_edge(edge_t idx)
+{
+    if (state == ST_SMALL)
+        return (down_edge_set->find(idx) != down_edge_set->end());
+    else
+        return down_edge_array[idx];
+}
+
 protected:
 inline
 level_t get_level(node_t t) 
@@ -480,6 +540,8 @@ private:
     node_t next_count;
 
     std::map<node_t,level_t> small_visited; 
+    std::set<edge_t>*        down_edge_set; 
+    unsigned char*           down_edge_array;
 
     node_t* global_next_level;
     node_t* global_curr_level;

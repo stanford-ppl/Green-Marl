@@ -232,6 +232,7 @@ static const char* CPPBE_INFO_COLLECTION_LIST      = "CPPBE_INFO_COLLECTION_LIST
 static const char* CPPBE_INFO_COLLECTION_ITERATOR  = "CPPBE_INFO_COLLECTION_ITERATOR";
 static const char* CPPBE_INFO_NEIGHBOR_ITERATOR    = "CPPBE_INFO_NEIGHBOR_ITERATOR";
 static const char* CPPBE_INFO_USE_REVERSE_EDGE     = "CPPBE_INFO_USE_REVERSE_EDGE";
+static const char* CPPBE_INFO_USE_DOWN_NBR = "CPPBE_INFO_USE_DOWN_NBR";
 
 //----------------------------------------
 // For runtime

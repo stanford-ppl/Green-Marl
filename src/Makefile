@@ -67,6 +67,7 @@ SRCS2 =\
        gm_cpp_opt_defer.cc \
        gm_cpp_opt_reduce_scalar.cc \
        gm_cpp_opt_check_feasible.cc \
+	   gm_cpp_opt_save_bfs.cc\
 	   gm_cpp_gen.cc \
        gm_cpp_gen_bfs.cc \
        gm_cpp_gen_foreach.cc\

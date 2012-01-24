@@ -111,15 +111,30 @@ void gm_cpplib::generate_down_initializer(ast_foreach* f, gm_code_writer& Body)
         // [XXX] should be changed if G is transposed!
         array_name = gm_is_iteration_use_reverse(iter_type) ? R_NODE_IDX : NODE_IDX; 
 
-        sprintf(str_buf, "%s %s = %s.%s [%s];", 
-                type_name, var_name, graph_name, array_name, alias_name);
-        Body.pushln(str_buf);
 
-        if (gm_is_iteration_on_updown_levels(iter_type))
+        if (gm_is_iteration_on_down_neighbors(iter_type))
         {
+            sprintf(str_buf, "if (!is_down_edge(%s)) continue;",alias_name);
+            Body.pushln(str_buf);
+
+            sprintf(str_buf, "%s %s = %s.%s [%s];", 
+                type_name, var_name, graph_name, array_name, alias_name);
+            Body.pushln(str_buf);
+        }
+        else if (gm_is_iteration_on_updown_levels(iter_type))
+        {
+            sprintf(str_buf, "%s %s = %s.%s [%s];", 
+                type_name, var_name, graph_name, array_name, alias_name);
+            Body.pushln(str_buf);
+
             sprintf(str_buf, "if (get_level(%s) != (get_curr_level() %c 1)) continue;",
                     iter->get_genname(),
                     gm_is_iteration_on_up_neighbors(iter_type) ? '-' : '+');
+            Body.pushln(str_buf);
+        }
+        else {
+            sprintf(str_buf, "%s %s = %s.%s [%s];", 
+                type_name, var_name, graph_name, array_name, alias_name);
             Body.pushln(str_buf);
         }
     }
