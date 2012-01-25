@@ -266,7 +266,7 @@ void gm_gps_gen::do_generate_master_states()
     Body.pushln("if (_master_should_start_workers) { ");
     Body.pushln(" // start workers with state _master_state");
     Body.pushln("}");
-    Body.pushln("super.compute(superStepNo);");
+    //    Body.pushln("super.compute(superStepNo);");
     Body.pushln("}");
     Body.NL();
 

@@ -29,7 +29,7 @@ void gm_gpslib::generate_headers(gm_code_writer& Body)
 // master --> vertex
 void gm_gpslib::generate_broadcast_prepare(gm_code_writer& Body)
 {
-    Body.pushln("getGlobalObjectsMap().clear();");
+    Body.pushln("getGlobalObjectsMap().clearNonDefaultObjects();");
 }
 
 void gm_gpslib::generate_broadcast_state_master(
@@ -78,7 +78,7 @@ void gm_gpslib::generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Bo
     Body.push("((");
     generate_broadcast_variable_type(id->getTypeSummary(), Body);
     Body.push(")");
-    Body.push("getGlobalObjectmap().getGlobalObject(");
+    Body.push("getGlobalObjectsMap().getGlobalObject(");
     Body.push(create_key_string(id));
     Body.push(")).getValue().getValue()");
 }
@@ -308,6 +308,25 @@ void gm_gpslib::generate_vertex_prop_class_details(
     Body.pushln(" // do nothing");
     Body.pushln("}");
 
+
+    Body.pushln("@Override");
+    Body.pushln("public String toString() {");
+    Body.push("return \"\"");
+    bool firstProperty = true;
+    for(I=prop.begin(); I!=prop.end(); I++)
+    {
+        gm_symtab_entry * sym = *I;
+	Body.push(" + \"");
+	if (firstProperty) {
+	  firstProperty = false;
+	} else {
+	  Body.push("\\t");
+	}
+	sprintf(temp, "%s: \" + %s", sym->getId()->get_genname(), sym->getId()->get_genname());
+	Body.push(temp);
+    }
+    Body.pushln(";");
+    Body.pushln("}");
 }
 
 #define STATE_SHORT_CUT "_this"
@@ -504,7 +523,7 @@ static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm
 {
     Body.pushln("@Override");
     Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
-    Body.pushln("byte m_type = _BA[_idx];");
+    Body.pushln("byte m_type = IOB.get();");
     char str_buf[1024];
     MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
         int offset = 1;
@@ -567,7 +586,8 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   Body.NL();
   Body.pushln("// Sending messages");
   Body.push("MessageData _msg = new MessageData(");
-  sprintf(str_buf,"%d",SINFO.id);
+  // todo: should this always be a byte?
+  sprintf(str_buf,"(byte) %d",SINFO.id);
   Body.push(str_buf);
   Body.pushln(");");
 
@@ -592,7 +612,7 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     Body.pushln(";");
   }
 
-  Body.pushln("SendAllNeighbors(_msg);");
+  Body.pushln("sendMessages(getNeighborIds(), _msg);");
   Body.NL();
 }
 
@@ -644,11 +664,11 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
     switch(def->get_method_id())
     {
     case GM_BLTIN_TOP_DRAND:         // rand function
-        Body.push("getRandom().nextDouble()");
+        Body.push("(new java.util.Random()).nextDouble()");
         break;
 
     case GM_BLTIN_TOP_IRAND:         // rand function
-        Body.push("getRandom().nextInt(");
+        Body.push("(new java.util.Random()).nextInt(");
         get_main()->generate_expr(ARGS.front());
         Body.push(")");
         break;
