@@ -68,7 +68,7 @@ void gm_gps_gen::do_generate_master_class()
     Body.pushln(temp);
 
     Body.pushln("// parse command-line arguments (if any)");
-    Body.pushln("java.util.HashMap<String,String> arg_map = new java.util.HashMap<String,String>()"); 
+    Body.pushln("java.util.HashMap<String,String> arg_map = new java.util.HashMap<String,String>();"); 
     Body.pushln("gps.node.Utils.parseOtherOptions(line, arg_map);");
     Body.NL();
 
@@ -294,6 +294,8 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     Body.flush();
     b->reproduce_sents();
     Body.pushln("-----*/");
+    sprintf(temp, "System.out.println(\"Running _master_state %d\");", id);
+    Body.pushln(temp);
     if (type == GM_GPS_BBTYPE_BEGIN_VERTEX) {
 
         // generate Broadcast

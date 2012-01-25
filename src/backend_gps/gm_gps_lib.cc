@@ -17,8 +17,8 @@ void gm_gpslib::generate_headers(gm_code_writer& Body)
     Body.pushln("import gps.node.*;");
     Body.pushln("import gps.writable.*;");
     Body.pushln("import gps.globalobjects.*;");
-    Body.pushln("import gps.apache.common.cli.CommandLine;");
-    Body.pushln("import gps.apache.mina.core.buffer.IoBuffer;");
+    Body.pushln("import org.apache.commons.cli.CommandLine;");
+    Body.pushln("import org.apache.mina.core.buffer.IoBuffer;");
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.io.BufferedWriter;");
     Body.pushln("import java.util.Random;");
@@ -29,13 +29,13 @@ void gm_gpslib::generate_headers(gm_code_writer& Body)
 // master --> vertex
 void gm_gpslib::generate_broadcast_prepare(gm_code_writer& Body)
 {
-    Body.pushln("getGlobalObjectMap().clear();");
+    Body.pushln("getGlobalObjectsMap().clear();");
 }
 
 void gm_gpslib::generate_broadcast_state_master(
     const char* state_var, gm_code_writer& Body)
 {
-    Body.push("getGlobalObjectMap().putGlobalObject(");
+    Body.push("getGlobalObjectsMap().putOrUpdateGlobalObject(");
     Body.push(GPS_KEY_FOR_STATE);
     Body.push(",");
     Body.push("new IntOverwriteGlobalObject(");
@@ -58,7 +58,7 @@ void gm_gpslib::generate_broadcast_send_master(ast_id* id, gm_code_writer& Body)
     //---------------------------------------------------
     // create new BV
     //---------------------------------------------------
-    Body.push("getGlobalObjectMap().putGlobalObject(");
+    Body.push("getGlobalObjectsMap().putOrUpdateGlobalObject(");
     Body.push(create_key_string(id));
     Body.push(",");
     Body.push("new ");
@@ -138,7 +138,7 @@ void gm_gpslib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Bo
     Body.push("((");
     generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
     Body.push(") ");
-    Body.push("getGlobalObjectMap().getGlobalObject(");
+    Body.push("getGlobalObjectsMap().getGlobalObject(");
     Body.push(create_key_string(id));
     Body.push("))");
     Body.pushln(".getValue().getValue();");
@@ -150,7 +150,7 @@ void gm_gpslib::generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& Bod
     assert(a->is_target_scalar());
     ast_id* id = a->get_lhs_scala();
 
-    Body.push("getGlobalObjectsMap().putGlobalObject(");
+    Body.push("getGlobalObjectsMap().putOrUpdateGlobalObject(");
     Body.push(create_key_string(id));
     Body.push(",");
     Body.push("new ");
@@ -523,7 +523,7 @@ static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm
 static void generate_message_class_combine(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
     Body.pushln("@Override");
-    Body.pushln("public void combine(byts[] _MQ, byte [] _tA) {");
+    Body.pushln("public void combine(byte[] _MQ, byte [] _tA) {");
     Body.pushln("//do nothing");
 
     Body.pushln("}");

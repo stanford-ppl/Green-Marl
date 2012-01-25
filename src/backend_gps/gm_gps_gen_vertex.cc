@@ -74,6 +74,8 @@ void gm_gps_gen::do_generate_message_class()
     Body.pushln("public MessageData(byte type) {m_type = type;}");
     Body.NL();
 
+    do_generate_message_class_default_constructor();
+
     gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
     get_lib()->generate_message_class_details(info, Body);
@@ -81,6 +83,15 @@ void gm_gps_gen::do_generate_message_class()
 
     Body.pushln("} // end of message-data");
     Body.NL();
+}
+
+void gm_gps_gen::do_generate_message_class_default_constructor()
+{
+    Body.NL();
+    Body.pushln("public MessageData() {");
+    Body.pushln("// default constructor that is required for constructing a "
+		"representative instance for IncomingMessageStore.");
+    Body.pushln("}");
 }
 
 void gm_gps_gen::do_generate_vertex_class()
@@ -102,6 +113,8 @@ void gm_gps_gen::do_generate_vertex_class()
     Body.pushln(temp);
     Body.pop_indent();
 
+    do_generate_vertex_constructor();
+    do_generate_vertex_get_initial_state_method();
     do_generate_vertex_states();
 
     Body.pushln("} // end of Vertex");
@@ -122,7 +135,7 @@ void gm_gps_gen::do_generate_vertex_class()
     Body.pop_indent();
     Body.pushln("@Override");
     sprintf(temp,
-            "public Vertex< %s.VertexData, %s.MessageData > newInstance(CommandLine line ){",
+            "public Vertex< %s.VertexData, %s.MessageData > newInstance(CommandLine line) {",
             proc_name,
             proc_name
             );
@@ -134,6 +147,26 @@ void gm_gps_gen::do_generate_vertex_class()
     Body.pushln("} // end of VertexFactory");
     Body.NL();
 
+}
+
+void gm_gps_gen::do_generate_vertex_constructor()
+{
+    char temp[1024];
+    const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
+    Body.NL();
+    sprintf(temp,"public %sVertex(CommandLine line) {",proc_name);
+    Body.pushln(temp);
+    Body.pushln("// todo: how to tell if we should parse the command lines or not");
+    Body.pushln("}");
+}
+
+void gm_gps_gen::do_generate_vertex_get_initial_state_method()
+{
+    Body.NL();
+    Body.pushln("@Override");
+    Body.pushln("public VertexData getInitialValue(int id) {");
+    Body.pushln("return new VertexData();");
+    Body.pushln("}");
 }
 
 void gm_gps_gen::do_generate_vertex_states()
