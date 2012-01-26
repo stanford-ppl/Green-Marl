@@ -5,117 +5,114 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <sys/time.h>
 
 #include "gm_graph.h"
 
-gm_graph* create_uniform_random_graph(index_t N, index_t M, index_t seed, bool need_back)
+gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed)
 {
-    printf("need_back = %d\n", need_back?1:0);;;;
-	// any random seed
-	srand(seed);
+    srand(seed);
 
    	gm_graph* g = new gm_graph();
-   	g->prepare_external_creation(N, M, need_back);
+   	g->prepare_external_creation(N, M);
 
-	index_t* src = new index_t[M];
-	index_t* dest = new index_t[M];
-	index_t* degree = new index_t[N];
-    index_t* in_degree = NULL;
+	node_t* src = new node_t[M];
+	node_t* dest = new node_t[M];
+	edge_t* degree = new edge_t[N];
 	memset(degree, 0, sizeof(index_t)*N);
-    if (need_back) {
-	    in_degree = new index_t[N];
-	    memset(in_degree, 0, sizeof(index_t)*N);
-    }
 
 	for(index_t i =0; i < M; i++) {
 		src[i] = rand() % N;
 		dest[i] = rand() % N;
-        if (src[i] == dest[i]) {i=i-1; continue;} // avoid self edge
+
 		degree[src[i]]++;
-        if (need_back)
-		    in_degree[dest[i]]++;
 	}
 
 	g->begin[0] = 0;
-    if (need_back) g->r_begin[0] = 0;
-	for(index_t i=1; i <=N; i++) {
+	for(node_t i=1; i <=N; i++) {
 		g->begin[i] = g->begin[i-1] + degree[i-1];
-        if (need_back) {
-		    g->r_begin[i] = g->r_begin[i-1] + in_degree[i-1];
-        }
     }
 
-    for(int i=0; i < N; i++) {
-        assert((g->begin[i+1] - g->begin[i]) == degree[i]);
-        assert((g->r_begin[i+1] - g->r_begin[i]) == in_degree[i]);
-    }
+	for(edge_t i=0; i <M; i++) {
+		node_t u = src[i];
+		node_t v = dest[i];
 
-	for(index_t i=0; i <M; i++) {
-		index_t u = src[i];
-		index_t v = dest[i];
-
-		index_t pos = degree[u]--;
+		edge_t pos = degree[u]--;
         assert(pos > 0);
 		g->node_idx[ g->begin[u] + pos -1] = v;  // set end node of this edge
-
-        if (need_back) {
-		    pos = in_degree[v]--;
-		    g->r_node_idx[ g->r_begin[v] + pos -1] = u;
-            assert(pos > 0);
-        }
 	}
 
 
 	delete [] src;
 	delete [] dest;
 	delete [] degree;
-	delete [] in_degree;
 
 	return g;
 }
 
+//-----------------------------------------------------------------------------
+// Note: this method is 20x slower than the above method
+//-----------------------------------------------------------------------------
+gm_graph* create_uniform_random_graph2(node_t N, edge_t M, long seed)
+{
+    srand(seed);
+
+    gm_graph *G = new gm_graph();
+    for (node_t i=0;i<N;i++)
+    {
+        G->add_node();
+    }
+    for (edge_t i=0;i<M;i++)
+    {
+        node_t from = rand() % N;
+        node_t to = rand() % N;
+        G->add_edge(from, to);
+    }
+
+    struct timeval T1,T2;
+    gettimeofday(&T1, NULL);
+    G->freeze();
+    gettimeofday(&T2, NULL);
+    printf("time for freeze (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 - (T2.tv_usec - T1.tv_usec)*0.001);
+
+    return G;
+}
 
 
 /** 
  Create RMAT graph
 	a, b, c : params
  */
-gm_graph* create_RMAT_graph(index_t N, index_t M, 
-        index_t rseed, bool need_back,
+gm_graph* create_RMAT_graph(node_t N, edge_t M, long rseed, 
         double a, double b, double c, bool permute)
 {
 	double d;
 	assert( a+ b + c < 1);
 	d = 1 - (a + b + c);
 
+	// my favorite random seed
+	srand48(rseed);
+
    	gm_graph* g = new gm_graph();
-   	g->prepare_external_creation(N, M, need_back);
+   	g->prepare_external_creation(N, M);
 
 	//----------------------------------------------
    	// generate edges
 	//----------------------------------------------
 	// 0. init
-	index_t* src = new index_t[M];
-	index_t* dest = new index_t[M];
-	index_t* degree = new index_t[N];
+	node_t* src = new node_t[M];
+	node_t* dest = new node_t[M];
+	edge_t* degree = new edge_t[N];
 	memset(degree, 0, sizeof(index_t)*N);
-    index_t* in_degree = NULL;
-    if (need_back) {
-	    in_degree = new index_t[N];
-	    memset(in_degree, 0, sizeof(index_t)*N);
-    }
 
 	index_t SCALE = (index_t) log2((double)N);
-	
-	// my favorite random seed
-	srand48(rseed);
 
 	// 1. edge-gen 
-	for(index_t i = 0; i < M; i++)
+	for(edge_t i = 0; i < M; i++)
 	{
-		index_t u = 1;
-		index_t v = 1;
-		index_t step = N/2;
+		node_t u = 1;
+		node_t v = 1;
+		node_t step = N/2;
 		double av = a;
 		double bv = b;
 		double cv = c;
@@ -131,7 +128,7 @@ gm_graph* create_RMAT_graph(index_t N, index_t M,
 			v += step;
 			u += step;
 		}
-		for(index_t j=1; j < SCALE; j++) {
+		for(node_t j=1; j < SCALE; j++) {
 			step = step /2;
 			double var = 0.1;
 			av *= 0.95 + var * drand48();		// vary abcd by 10%
@@ -190,8 +187,6 @@ gm_graph* create_RMAT_graph(index_t N, index_t M,
 	// 3. count degree 
 	for( index_t i = 0; i < M ; i++) {
 		degree[src[i]]++;
-        if (need_back)
-            in_degree[dest[i]]++;
     }
 
 	// (It is possible this routine creates multi-edges between a node-pair)
@@ -200,12 +195,8 @@ gm_graph* create_RMAT_graph(index_t N, index_t M,
 
 	// 4. Now setup G's data structures
 	g->begin[0] = 0;
-    if (need_back) g->r_begin[0] = 0;
 	for(index_t i=1; i <=N; i++) {
 		g->begin[i] = g->begin[i-1] + degree[i-1];
-        if (need_back) {
-		    g->r_begin[i] = g->r_begin[i-1] + in_degree[i-1];
-        }
     }
 
 	for(index_t i=0; i <M; i++) {
@@ -214,19 +205,12 @@ gm_graph* create_RMAT_graph(index_t N, index_t M,
 		index_t pos = degree[u]--;
 
 		g->node_idx[ g->begin[u] + pos -1] = v;  // set end node of this edge
-
-        if (need_back) {
-		    pos = in_degree[v]--;
-		    g->r_node_idx[ g->r_begin[v] + pos -1] = u;
-        }
 	}
 
 
 	delete [] src;
 	delete [] dest ;
 	delete [] degree;
-
-    delete [] in_degree;
 
 	return g;
 }

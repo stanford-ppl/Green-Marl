@@ -3,9 +3,15 @@
 #include <stdlib.h>
 #include <map>
 #include <assert.h>
+#include <sys/time.h>
 
-gm_graph* create_uniform_random_graph(index_t N, index_t M, int seed=1993,bool need_backedge=true);
+gm_graph* create_uniform_random_graph(index_t N, index_t M, long seed);
+gm_graph* create_uniform_random_graph2(index_t N, index_t M, long seed);
+
+/*
 gm_graph* create_RMAT_graph(index_t N, index_t M, int rseed=2387, bool need_gackedge = true, double a=0.45, double b=0.25, double c=0.15, bool permute=true);
+*/
+
 bool test_backedge(gm_graph* g)
 {
     int repeat = g->num_nodes()*0.001;
@@ -48,24 +54,36 @@ int main(int argc, char** argv)
 
 	int N = atoi (argv[1]);
 	int M = atoi (argv[2]);
-    bool need_back_edge = true;
     int gtype = atoi(argv[4]);
 
 	gm_graph* g;
     int random_seed = 1997;
+
+    struct timeval T1,T2;
+    gettimeofday(&T1, NULL);
+
     switch(gtype) 
     {
         case 0:
-		    g = create_uniform_random_graph(N, M, random_seed, need_back_edge);
+		    g = create_uniform_random_graph(N, M, random_seed);
             break;
         case 1:
+		    g = create_uniform_random_graph2(N, M, random_seed);
+            break;
+            /*
+        case 2:
 		    g = create_RMAT_graph(N, M, random_seed, need_back_edge);
             break;
+            */
     }
+    gettimeofday(&T2, NULL);
+    printf("creation time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 - (T2.tv_usec - T1.tv_usec)*0.001);
 
-    test_backedge(g);
     printf("saving to file = %s\n", argv[3]);fflush(stdout);
+    gettimeofday(&T1, NULL);
 	g->store_binary(argv[3]);
+    gettimeofday(&T2, NULL);
+    printf("storing time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 - (T2.tv_usec - T1.tv_usec)*0.001);
 
 	delete g;
 }
