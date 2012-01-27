@@ -4,7 +4,11 @@
 #include <list>
 #include <map>
 
-#define GM_BLTIN_USE_REVERSE    "use_reverse"
+#define AUX_INFO(X,Y)                   TO_STR(X)":"Y
+
+DEF_STRING(GM_BLTIN_INFO_USE_REVERSE);
+DEF_STRING(GM_BLTIN_INFO_CHECK_NBR);
+DEF_STRING(GM_BLTIN_INFO_NEED_FROM);
 
 //-----------------------------------------------------
 // for easy extension of compiler
@@ -19,9 +23,14 @@ struct gm_builtin_desc_t {
 static enum {
     GM_BLTIN_GRAPH_NUM_NODES,   // number of nodes in graph
     GM_BLTIN_GRAPH_NUM_EDGES,   // number of edges in graph
-    GM_BLTIN_NODE_DEGREE,       // (out-)degree of a node
+
+    GM_BLTIN_NODE_DEGREE,       // (out-)degree of a node               
     GM_BLTIN_NODE_IN_DEGREE,    // in-degree of a node
     GM_BLTIN_NODE_TO_EDGE,      // edge to that node-iterator
+    GM_BLTIN_NODE_IS_NBR,       // check if the node should be 
+
+    GM_BLTIN_EDGE_FROM,        // source node of an edge
+    GM_BLTIN_EDGE_TO,          // destination 
 
     GM_BLTIN_TOP_DRAND,         // rand function
     GM_BLTIN_TOP_IRAND,         // rand function
@@ -41,7 +50,11 @@ static enum {
 } gm_method_id_t;
 
 const gm_builtin_desc_t GM_builtins[] = {
+
+    //
     // sourcetype:name:return type:num_arg:arg_types...   
+    //    * at source type means that it is an alias to the previous definition
+    //    ! at source type means that it requires strict type
     // builtin id   
     // additional info
     {"Graph:NumNodes:Int:0", GM_BLTIN_GRAPH_NUM_NODES, ""},
@@ -50,11 +63,17 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"*NumOutNbrs",          GM_BLTIN_NODE_DEGREE,     ""},   // * means synonym to previous
     {"*Degree",              GM_BLTIN_NODE_DEGREE,     ""},  
     {"*OutDegree",           GM_BLTIN_NODE_DEGREE,     ""},
-    {"Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,  GM_BLTIN_USE_REVERSE":true"},
+    {"Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,  AUX_INFO(GM_BLTIN_INFO_USE_REVERSE,"true")},
     {"*InDegree",            GM_BLTIN_NODE_IN_DEGREE,  ""}, 
+    {"Node:IsNbr:Bool:0",    GM_BLTIN_NODE_IN_DEGREE,  AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,"true")},
 
-    {"NI_Out:Edge:Node:0",    GM_BLTIN_NODE_TO_EDGE,     ""},
-    {"NI_Down:Edge:Node:0",   GM_BLTIN_NODE_TO_EDGE,     ""},
+    {"!NI_In:ToEdge:Edge:0",     GM_BLTIN_NODE_TO_EDGE,   ""},
+    {"!NI_Out:ToEdge:Edge:0",    GM_BLTIN_NODE_TO_EDGE,   ""},
+    {"!NI_Down:ToEdge:Edge:0",   GM_BLTIN_NODE_TO_EDGE,   ""},
+    {"!NI_Up:ToEdge:Edge:0",     GM_BLTIN_NODE_TO_EDGE,   ""},
+
+    {"Edge:FromNode:Node:0",        GM_BLTIN_EDGE_FROM ,    AUX_INFO(GM_BLTIN_INFO_NEED_FROM,"true")},
+    {"Edge:ToNode:Node:0",          GM_BLTIN_EDGE_TO ,     ""},
 
     // Set:
     {"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,         ""},
@@ -111,6 +130,7 @@ class gm_builtin_def {
         bool has_info(const char* key);
         bool find_info_bool(const char* key); // return false if key does not exist
         int find_info_int(const char* key); // return false if key does not exist
+        bool need_strict_source_type() {return need_strict;}
 
     private:
         gm_builtin_def() {} // not allow random creation
@@ -120,6 +140,7 @@ class gm_builtin_def {
         int* arg_types;
         const char* orgname;
         int method_id;
+        bool need_strict;
         std::map<std::string , ast_extra_info> extra_info;
 
         bool synonym;
@@ -132,13 +153,15 @@ class gm_builtin_manager {
     gm_builtin_manager(); 
     ~gm_builtin_manager();
 
-    gm_builtin_def* find_builtin_def(int source_type, const char* orgname, bool compare_strict=false);
-    gm_builtin_def* find_builtin_def(int source_type, int method_id, bool compare_strict=false);
+    gm_builtin_def* find_builtin_def(int source_type, const char* orgname);
+    gm_builtin_def* find_builtin_def(int source_type, int method_id);
 
     gm_builtin_def* get_last_def() {return last_def;}
     private:
         std::list<gm_builtin_def*> defs;
         gm_builtin_def* last_def;
 };
+
+#undef AUX_INFO
 
 extern gm_builtin_manager BUILT_IN;

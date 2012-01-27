@@ -447,6 +447,18 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
                     sprintf(temp, "%s.%s();", e->getId()->get_genname(), MAKE_REVERSE);
                     Body.pushln(temp);
                 }
+
+                if (e->find_info_bool(CPPBE_INFO_NEED_SEMI_SORT))
+                {
+                    sprintf(temp, "%s.%s();", e->getId()->get_genname(), SEMI_SORT);
+                    Body.pushln(temp);
+                }
+
+                if (e->find_info_bool(CPPBE_INFO_NEED_FROM_INFO))
+                {
+                    sprintf(temp, "%s.%s();", e->getId()->get_genname(), PREPARE_FROM_INFO);
+                    Body.pushln(temp);
+                }
             }
         }
         Body.NL();

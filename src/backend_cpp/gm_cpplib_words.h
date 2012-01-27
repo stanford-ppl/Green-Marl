@@ -21,6 +21,7 @@
 #define IS_IN        "is_in"
 #define MAX_SET_CNT  "max_size"
 #define GET_LIST     "get_list"
+#define FROM_IDX     "node_idx_src"
 
 
 #endif

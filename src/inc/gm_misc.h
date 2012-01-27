@@ -8,6 +8,10 @@
 #include <ctype.h>
 #include <list>
 #include <set>
+
+#define TO_STR(X)   #X
+#define DEF_STRING(X)  static const char *X = TO_STR(X)
+
 //------------------------------------------------------
 // Misc Utility Routines and Classes
 //------------------------------------------------------

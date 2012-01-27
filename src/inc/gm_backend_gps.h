@@ -87,7 +87,7 @@ class gm_gpslib : public gm_graph_library {
 };
 
 
-#define GPS_TAG_COMM_ID    "GPS_TAG_COMM_ID"
+DEF_STRING(GPS_TAG_COMM_ID);
 
 //-----------------------------------------------------------------
 // interface for graph library Layer

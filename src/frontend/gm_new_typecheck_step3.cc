@@ -231,12 +231,10 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
         if (gm_is_unknown_type(curr_type)) {okay = false; continue;}
         
         // [xxx] to be improved
-        //if (!gm_is_compatible_type_for_assign(def_type, curr_type)) {
         int coerced_type;
         bool warning;
 
-        bool okay = gm_is_compatible_type_for_assign(
-                    def_type, curr_type,coerced_type, warning);
+        bool okay = gm_is_compatible_type_for_assign(def_type, curr_type,coerced_type, warning);
 
         if (!okay) {
             char temp[20]; sprintf(temp, "%d", j+1);

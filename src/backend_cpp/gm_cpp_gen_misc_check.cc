@@ -13,6 +13,8 @@
 //-------------------------------------------------------------
 // Misc checks before code generation
 //   (1) Mark graph symbols if it uses reverse edges
+//   (2) Mark graph symbols if it uses is_neighbor
+//   (3) Mark graph symbols if it uses from/to
 //-------------------------------------------------------------
 class cpp_check_reverse_edge_t : public gm_apply
 {
@@ -27,7 +29,7 @@ public:
             ast_expr_builtin* b = (ast_expr_builtin*) s;
             gm_builtin_def* def = b->get_builtin_def();
 
-            if (def->find_info_bool(GM_BLTIN_USE_REVERSE)){
+            if (def->find_info_bool(GM_BLTIN_INFO_USE_REVERSE)){
                 ast_id* driver = b->get_driver();
                 assert(driver!=NULL);
                 ast_id* G = driver->getTypeInfo()->get_target_graph_id();
@@ -35,9 +37,25 @@ public:
                 gm_symtab_entry* e = G->getSymInfo();
                 e->add_info_bool(CPPBE_INFO_USE_REVERSE_EDGE, true);
             }
+
+            if (def->find_info_bool(GM_BLTIN_INFO_CHECK_NBR)){
+                ast_id* driver = b->get_driver();
+                assert(driver!=NULL);
+                ast_id* G = driver->getTypeInfo()->get_target_graph_id();
+                assert(G!=NULL);
+                gm_symtab_entry* e = G->getSymInfo();
+                e->add_info_bool(CPPBE_INFO_NEED_SEMI_SORT, true);
+            }
+
+            if (def->find_info_bool(GM_BLTIN_INFO_NEED_FROM)){
+                ast_id* driver = b->get_driver();
+                assert(driver!=NULL);
+                ast_id* G = driver->getTypeInfo()->get_target_graph_id();
+                assert(G!=NULL);
+                gm_symtab_entry* e = G->getSymInfo();
+                e->add_info_bool(CPPBE_INFO_NEED_FROM_INFO, true);
+            }
         }
-
-
     }
                          
     bool apply(ast_sent* s)

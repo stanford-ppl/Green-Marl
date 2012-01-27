@@ -168,6 +168,8 @@ void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body)
         //-----------------------------------------------
         const char* a_name = FE.voca_temp_name_and_add(iter->get_orgname(),"_idx");
         fe->add_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR, a_name);
+        ast_id* iterator = fe->get_iterator();
+        iterator->getSymInfo()->add_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR, a_name);
         delete [] a_name;
 
         // [todo] check name-conflict
