@@ -88,6 +88,8 @@ const char* gm_get_iter_type_string(int t)
     case GMTYPE_NODEITER_UP_NBRS:return "UpNbrs";
     case GMTYPE_NODEITER_DOWN_NBRS:return "DownNbrs";
     case GMTYPE_NODEITER_IN_NBRS:return "InNbrs";
+    case GMTYPE_NODEITER_COMMON_NBRS:return "CommonNbrs";
+                                 
 
     case GMTYPE_NODEITER_SET:return "Items";
     case GMTYPE_NODEITER_SEQ:return "Items";

@@ -35,8 +35,16 @@ typedef edge_t edge_id;
 //
 // 3. Usage Model
 //    
-//    (1) Create the graph using add node/edge -> Freeze -> Create Properties -> Do analysis
-//    (2) Create the graph using load binary (the graph will be automatically frozen) -> Create Properties -> Do analysis
+//    (1) Create the graph using add node/edge -> Freeze 
+//     or, Create the graph using load binary (the graph will be automatically frozen) 
+//    (2) Do Preprocessing (if required)
+//        - make reverse edges (if reverse edges are explored)
+//        - semi-sort (if node.isNeighbor(n) is required)
+//        - prepare source information  (if edge.From() is required)
+//
+//    (3) Define Properties
+//
+//    (4) Analysis
 //
 // 4. Removing edges/nodes from graph
 //
@@ -69,6 +77,8 @@ public:
 
     static const node_t NIL_NODE = (node_t) -1;
     static const edge_t NIL_EDGE = (edge_t) -1;
+
+    bool     is_neighbor(node_t src, node_t to); // need semi sorting
 
 public:
     node_t num_nodes()               {return _numNodes;}

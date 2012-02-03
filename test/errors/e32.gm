@@ -1,0 +1,10 @@
+Proc foo(G1,G2:Graph)
+{
+    Node(G1) s;
+    Node(G2) t;
+    Foreach (r: s.CommonNbrs(t))
+    {
+
+    }
+
+} 

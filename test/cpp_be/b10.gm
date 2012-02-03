@@ -1,0 +1,9 @@
+// Test of CommonNbr
+Proc foo(G: Graph, A,B: N_P<Int>(G), s: Node(G))
+{
+    Foreach(t:G.Nodes)(t.A > 0) {
+        Foreach(n: t.CommonNbrs(s)) {
+            n.B += t.A @ t;
+        }
+    }
+}

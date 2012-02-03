@@ -65,7 +65,7 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"*OutDegree",           GM_BLTIN_NODE_DEGREE,     ""},
     {"Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,  AUX_INFO(GM_BLTIN_INFO_USE_REVERSE,"true")},
     {"*InDegree",            GM_BLTIN_NODE_IN_DEGREE,  ""}, 
-    {"Node:IsNbr:Bool:0",    GM_BLTIN_NODE_IN_DEGREE,  AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,"true")},
+    {"Node:IsNbr:Bool:1:Node",    GM_BLTIN_NODE_IS_NBR,  AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,"true")},
 
     {"!NI_In:ToEdge:Edge:0",     GM_BLTIN_NODE_TO_EDGE,   ""},
     {"!NI_Out:ToEdge:Edge:0",    GM_BLTIN_NODE_TO_EDGE,   ""},

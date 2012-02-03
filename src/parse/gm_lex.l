@@ -109,7 +109,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "UpNbrs"     {MarkToken(); return T_UP_NBRS;} 
 "DownNbrs"   {MarkToken(); return T_DOWN_NBRS;}
 "Items"      {MarkToken(); return T_ITEMS;}
-"Nbr_Edges"  {MarkToken(); return T_NBR_EDGES;}
+"CommonNbrs" {MarkToken(); return T_COMMON_NBRS;}
 "Foreach" {MarkToken(); return T_FOREACH;}
 "For"     {MarkToken(); return T_FOR;}
 "And"     {MarkToken(); return T_AND;}

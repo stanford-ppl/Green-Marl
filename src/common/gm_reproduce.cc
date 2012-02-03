@@ -277,7 +277,14 @@ void ast_expr_reduce::reproduce(int ind_level)
     Out.push(gm_get_reduce_expr_string(reduce_type));
 
     Out.push('('); iter->reproduce(0); Out.push(": "); 
-    src->reproduce(0); Out.push("."); Out.push(gm_get_iter_type_string(iter_type)); Out.push(")");
+    src->reproduce(0); Out.push("."); 
+    Out.push(gm_get_iter_type_string(iter_type)); 
+    if (gm_is_common_nbr_iter_type(iter_type)) {
+        Out.push('(');
+        src2->reproduce(0);
+        Out.push(')');
+    }
+    Out.push(")");
     if (filter != NULL) {
         Out.push('('); 
         filter->reproduce(0);
@@ -359,6 +366,11 @@ void ast_foreach::reproduce(int ind_level)
     source->reproduce(0);
     Out.push(".");
     Out.push(gm_get_iter_type_string(iter_type));
+    if (gm_is_common_nbr_iter_type(iter_type)) {
+        Out.push('(');
+        source2->reproduce(0);
+        Out.push(')');
+    }
     Out.pushln(")");
     if (cond!=NULL) {
         Out.push("( ");

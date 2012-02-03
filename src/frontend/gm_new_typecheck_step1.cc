@@ -83,7 +83,7 @@ public:
     bool find_symbol_field(ast_field* f);
     bool find_symbol_id(ast_id* id);
 
-    bool gm_symbol_check_iter_header(ast_id* it, ast_id* src, int iter_type);
+    bool gm_symbol_check_iter_header(ast_id* it, ast_id* src, int iter_type, ast_id* src2=NULL);
     bool gm_symbol_check_bfs_header(ast_id* it, ast_id* src, ast_id* root, int iter_type);
 
 private:
@@ -250,7 +250,7 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
         // copy graph_id 
         type->set_target_graph_id(col->getTypeInfo()->get_target_graph_id()->copy(true));
     }
-    else if (type->is_any_nbr_iterator())
+    else if (type->is_common_nbr_iterator() || type->is_any_nbr_iterator())
     {
         ast_id* node = type->get_target_nbr_id();
         assert(node != NULL);
@@ -305,7 +305,7 @@ bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bool is_r
 }
 
 // symbol checking for foreach and in-place reduction
-bool gm_typechecker_stage_1::gm_symbol_check_iter_header( ast_id* it, ast_id* src, int iter_type)
+bool gm_typechecker_stage_1::gm_symbol_check_iter_header( ast_id* it, ast_id* src, int iter_type, ast_id* src2)
 {
     bool is_okay = true;
     // GRAPH
@@ -339,6 +339,23 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header( ast_id* it, ast_id* sr
                     gm_type_error(GM_ERROR_NEED_BFS_ITERATION, n);
                     is_okay = false;
                 }
+            }
+
+            if (is_okay && gm_is_common_nbr_iter_type(iter_type)) {
+                assert(src2 != NULL);
+                is_okay = gm_find_and_connect_symbol(src2, curr_sym); // source
+
+                if (is_okay) {
+                    // check if two sources have the same graph
+                    gm_symtab_entry* e1 = src->getTypeInfo()->get_target_graph_sym();
+                    gm_symtab_entry* e2 = src2->getTypeInfo()->get_target_graph_sym();
+                    assert(e1!=NULL);
+                    if (e1!=e2) {
+                        gm_type_error(GM_ERROR_TARGET_MISMATCH, src2->get_line(), src2->get_col());
+                        is_okay = false;
+                    }
+                }
+
             }
         }
     }
@@ -538,7 +555,7 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
     {
         ast_foreach* fe = (ast_foreach*) s;
         int iter_type = fe->get_iter_type();
-        is_okay = gm_symbol_check_iter_header(fe->get_iterator(), fe->get_source(), iter_type);
+        is_okay = gm_symbol_check_iter_header(fe->get_iterator(), fe->get_source(), iter_type, fe->get_source2());
         if (gm_is_unknown_collection_iter_type(iter_type)) // resolve unknown iterator
             fe->set_iter_type(fe->get_iterator()->getTypeSummary());
         break;
@@ -628,7 +645,7 @@ bool gm_typechecker_stage_1::apply(ast_expr* p)
     {
         ast_expr_reduce* r = (ast_expr_reduce*) p; 
         int iter_type = r->get_iter_type();
-        is_okay = gm_symbol_check_iter_header(r->get_iterator(), r->get_source(),iter_type);
+        is_okay = gm_symbol_check_iter_header(r->get_iterator(), r->get_source(),iter_type, r->get_source2());
         if (gm_is_unknown_collection_iter_type(iter_type)) // resolve unknown iterator
             r->set_iter_type(r->get_iterator()->getTypeSummary());
         break;

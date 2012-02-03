@@ -95,6 +95,7 @@ public:
         _cands.push_back(a);
         _tops.push_back(current);
         //_filters.push_back(current_filter);
+        _filters.push_back(NULL);
     }
 
     bool post_process() { // return true if something changed

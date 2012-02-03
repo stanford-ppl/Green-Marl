@@ -156,15 +156,24 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     sprintf(str_buf,"(%s.%s[%s+1] - %s.%s[%s])", 
                         i->getTypeInfo()->get_target_graph_id() -> get_genname(), BEGIN, i->get_genname(), 
                         i->getTypeInfo()->get_target_graph_id() -> get_genname(), BEGIN, i->get_genname());
+                    Body.push(str_buf);
                     break;
                 case GM_BLTIN_NODE_IN_DEGREE:
                     sprintf(str_buf,"(%s.%s[%s+1] - %s.%s[%s])", 
                             i->getTypeInfo()->get_target_graph_id() -> get_genname(), R_BEGIN, i->get_genname(), 
                             i->getTypeInfo()->get_target_graph_id() -> get_genname(), R_BEGIN, i->get_genname());
+                    Body.push(str_buf);
+                    break;
+                case GM_BLTIN_NODE_IS_NBR:
+                    sprintf(str_buf,"%s.is_neighbor(%s,",
+                            i->getTypeInfo()->get_target_graph_id() -> get_genname(), 
+                            i->get_genname() );
+                    Body.push(str_buf);
+                    main->generate_expr(e->get_args().front());
+                    Body.push(")");
                     break;
                 default:assert(false); break;
             }        
-            Body.push(str_buf);
             return;
 
         case GMTYPE_NODEITER_NBRS:

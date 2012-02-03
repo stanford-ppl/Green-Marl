@@ -29,7 +29,9 @@ static enum {
     GMTYPE_NODEITER_SEQ,            // sequence
     GMTYPE_NODEITER_ORDER,          // order
 
-    GMTYPE_EDGEITER_ALL,
+    GMTYPE_NODEITER_COMMON_NBRS,    // common neighbors
+
+    GMTYPE_EDGEITER_ALL=200,
     GMTYPE_EDGEITER_NBRS,
     GMTYPE_EDGEITER_IN_NBRS,
     GMTYPE_EDGEITER_BFS,
@@ -83,7 +85,8 @@ inline static bool gm_is_all_graph_iter_type(int i) {
 }
 inline static bool gm_is_any_nbr_node_iter_type(int i) {
     return (i==GMTYPE_NODEITER_NBRS) || (i==GMTYPE_NODEITER_IN_NBRS) || 
-           (i==GMTYPE_NODEITER_UP_NBRS) || (i==GMTYPE_NODEITER_DOWN_NBRS);
+           (i==GMTYPE_NODEITER_UP_NBRS) || (i==GMTYPE_NODEITER_DOWN_NBRS) ||
+           (i==GMTYPE_NODEITER_COMMON_NBRS);
 }
 inline static bool gm_is_any_nbr_edge_iter_type(int i) {
     return (i==GMTYPE_EDGEITER_NBRS) || (i==GMTYPE_EDGEITER_IN_NBRS) || 
@@ -93,6 +96,9 @@ inline static bool gm_is_any_nbr_iter_type(int i) {
     return gm_is_any_nbr_edge_iter_type(i) ||
            gm_is_any_nbr_node_iter_type(i);
 }
+inline static bool gm_is_common_nbr_iter_type(int i) {
+    return (i==GMTYPE_NODEITER_COMMON_NBRS);
+}
 
 inline static bool gm_is_node_iter_type(int i) { 
     return gm_is_all_graph_node_iter_type(i) || gm_is_any_nbr_node_iter_type(i);
@@ -100,15 +106,6 @@ inline static bool gm_is_node_iter_type(int i) {
 inline static bool gm_is_edge_iter_type(int i) { 
     return gm_is_all_graph_edge_iter_type(i) || gm_is_any_nbr_edge_iter_type(i);
 }
-
-//inline static bool gm_is_node_set_iter_type(int i) { 
-//    return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
-//inline static bool gm_is_edge_set_iter_type(int i) { 
-//    return ((i==GMTYPE_EDGEITER_SET) || (i==GMTYPE_EDGEITER_SEQ) || (i==GMTYPE_EDGEITER_ORDER));}
-//inline static bool gm_is_set_iter_type(int i) {
-//    return gm_is_node_set_iter_type(i) || gm_is_edge_set_iter_type(i) || (i == GMTYPE_ITER_ANY); }
-//inline static bool gm_is_unknown_set_iter_type(int i) {
-//    return (i==GMTYPE_ITER_ANY); }
 
 inline static bool gm_is_node_collection_iter_type(int i) { 
     return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
@@ -293,7 +290,7 @@ inline static bool gm_is_iteration_on_set(int itype)   {return (itype == GMTYPE_
 inline static bool gm_is_iteration_on_order(int itype) {return (itype == GMTYPE_NODEITER_ORDER) || (itype == GMTYPE_EDGEITER_ORDER);}
 inline static bool gm_is_iteration_on_sequence(int itype) {return (itype == GMTYPE_NODEITER_SEQ) || (itype == GMTYPE_EDGEITER_SEQ);}
 inline static bool gm_is_iteration_on_all_graph(int itype) {return gm_is_all_graph_iter_type(itype);}
-inline static bool gm_is_iteration_on_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_NBRS)||(itype==GMTYPE_NODEITER_NBRS);}
+inline static bool gm_is_iteration_on_out_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_NBRS)||(itype==GMTYPE_NODEITER_NBRS);}
 inline static bool gm_is_iteration_on_in_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_IN_NBRS)||(itype==GMTYPE_NODEITER_IN_NBRS);}
 inline static bool gm_is_iteration_on_up_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_UP_NBRS)||(itype==GMTYPE_NODEITER_UP_NBRS);}
 inline static bool gm_is_iteration_on_down_neighbors(int itype) {return (itype == GMTYPE_EDGEITER_DOWN_NBRS)||(itype==GMTYPE_NODEITER_DOWN_NBRS);}
@@ -305,12 +302,7 @@ inline static bool gm_is_iteration_on_edges(int itype) {return gm_is_edge_iter_t
 inline static bool gm_is_iteration_on_updown_levels(int itype) {return 
     gm_is_iteration_on_up_neighbors(itype) || gm_is_iteration_on_down_neighbors(itype);}
 inline static bool gm_is_iteration_on_neighbors_compatible(int itype) {
-    return gm_is_iteration_on_neighbors(itype ) || 
-           gm_is_iteration_on_in_neighbors(itype) ||
-           gm_is_iteration_on_up_neighbors(itype) ||
-           gm_is_iteration_on_down_neighbors(itype) ||
-           false
-           ;} 
+    return gm_is_any_nbr_node_iter_type(itype);}
 
 static enum {   // 16 bit bitmap
     GMACCESS_NONE   = 0x0000,

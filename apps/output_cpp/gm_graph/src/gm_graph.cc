@@ -585,3 +585,28 @@ error_return:
     clear_graph();
     return false;
 }
+
+bool gm_graph::is_neighbor(node_t src, node_t to)
+{
+    // Edges are semi-sorted.
+    // Do binary search
+    edge_t begin_edge = begin[src];
+    edge_t end_edge = begin[src+1]-1; // inclusive
+    node_t left_node = node_idx[begin_edge];
+    node_t right_node = node_idx[end_edge];
+    if (to == left_node) return true;
+    if (to == right_node) return true;
+
+    while(begin_edge < end_edge)
+    {
+        if (to < left_node) return false;
+        if (to > right_node) return false;
+
+        edge_t mid_edge = (begin_edge + end_edge)/2;
+        node_t mid_node = node_idx[mid_edge];
+        if (to == mid_node) return true;
+        if (to < mid_node) {begin_edge = mid_edge;}
+        else if (to > mid_node) {end_edge = mid_edge;}
+    }
+    return false;
+}

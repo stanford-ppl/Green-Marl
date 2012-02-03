@@ -27,7 +27,8 @@ bool gm_cpplib::need_up_initializer(ast_foreach* f)
     int iter_type = f->get_iter_type();
     if (gm_is_iteration_on_collection(iter_type)) 
         return true;
-
+    else if (gm_is_common_nbr_iter_type(iter_type))
+        return true;
     return false;
 }
 
@@ -38,6 +39,10 @@ bool gm_cpplib::need_down_initializer(ast_foreach* f)
     if (gm_is_iteration_on_collection(iter_type)) 
     {
         return true;
+    }
+    else if (gm_is_common_nbr_iter_type(iter_type))
+    {
+        return false;
     }
     // in/out/up/down
     else if (gm_is_iteration_on_neighbors_compatible(iter_type)) 
@@ -54,7 +59,7 @@ void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body)
     ast_id* source = f->get_source();
     if (gm_is_iteration_on_collection(iter_type)) 
     {
-        assert(!f->is_parallel());
+        assert(!f->is_parallel()); // for temp
         const char* iter_type_str = f->is_parallel() ? "par_iter" :
                                 f->is_reverse_iteration() ? "rev_iter" :
                                 "seq_iter";
@@ -75,6 +80,20 @@ void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body)
 
         sprintf(str_buf, " = %s.%s();", 
                 source->get_genname(), prep_str);
+        Body.pushln(str_buf);
+    }
+    else if (gm_is_common_nbr_iter_type(iter_type))
+    {
+        ast_id* graph = source->getTypeInfo()->get_target_graph_id();
+        ast_id* source2 = f->get_source2(); assert(source2!=NULL);
+        const char* a_name = FE.voca_temp_name_and_add(f->get_iterator()->get_orgname(),"_I");
+        f->add_info_string(CPPBE_INFO_COMMON_NBR_ITERATOR, a_name);
+        Body.pushln("// Iterate over Common neighbors");
+        sprintf(str_buf, "gm_common_neighbor_iter %s(%s, %s, %s);", 
+                a_name, 
+                graph->get_genname(),
+                source->get_genname(),
+                source2->get_genname());
         Body.pushln(str_buf);
     }
 }
@@ -157,6 +176,18 @@ void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body)
             it_name);
 
         Body.pushln(str_buf);
+    } else if (gm_is_common_nbr_iter_type(type)) {
+
+        const char* iter_name = fe->find_info_string(CPPBE_INFO_COMMON_NBR_ITERATOR);
+        char* graph_name = source->get_genname();
+        char* it_name = iter->get_genname();
+        sprintf(str_buf,"for (%s %s = %s.get_next(); %s != gm_graph::NIL_NODE ; %s = %s.get_next()) ",
+                NODE_T, it_name, iter_name,
+                it_name, 
+                it_name, iter_name);
+
+        Body.pushln(str_buf);
+
 
    // NBRS, UP_NBRS, DOWN_NBRS, ...
     } else if (gm_is_iteration_on_neighbors_compatible(type)) {

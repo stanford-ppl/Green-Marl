@@ -233,10 +233,11 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
         // [xxx] to be improved
         int coerced_type;
         bool warning;
+        bool o;
 
-        bool okay = gm_is_compatible_type_for_assign(def_type, curr_type,coerced_type, warning);
+        o = gm_is_compatible_type_for_assign(def_type, curr_type,coerced_type, warning);
 
-        if (!okay) {
+        if (!o) {
             char temp[20]; sprintf(temp, "%d", j+1);
             gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_TYPE,
                     b->get_line(), b->get_col(),

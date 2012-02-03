@@ -1,5 +1,5 @@
 // Test of Built-in #1
-Proc P (G:Graph, A: N_P<Int>(G))
+Proc P (G:Graph, A: N_P<Int>(G), r:Node(G))
 {
     Node_Set(G) S;
     Node_Seq(G) Q;
@@ -22,5 +22,11 @@ Proc P (G:Graph, A: N_P<Int>(G))
             Node(G) u = e.FromNode();
             Node(G) v = e.ToNode();
         }
+    }
+
+    // Test of IsNbr
+    For(t:G.Nodes)(t.IsNbr(r))
+    {
+        t.A = t.A + 1;
     }
 }

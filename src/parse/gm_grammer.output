@@ -126,11 +126,11 @@ Grammar
    70 iterator1: T_NODES
    71          | T_EDGES
    72          | T_NBRS
-   73          | T_NBR_EDGES
-   74          | T_IN_NBRS
-   75          | T_UP_NBRS
-   76          | T_DOWN_NBRS
-   77          | T_ITEMS
+   73          | T_IN_NBRS
+   74          | T_UP_NBRS
+   75          | T_DOWN_NBRS
+   76          | T_ITEMS
+   77          | T_COMMON_NBRS '(' id ')'
 
    78 sent_dfs: T_DFS bfs_header_format bfs_filters sent_block dfs_post
 
@@ -203,7 +203,7 @@ Grammar
   126     | reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}'
   127     | reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}'
   128     | reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr ')'
-  129     | reduce_op2 '(' id ':' id '.' iterator1 ')' '{' expr '}'
+  129     | reduce_op2 '(' id ':' id '.' iterator1 ')'
   130     | expr '%' expr
   131     | expr '*' expr
   132     | expr '/' expr
@@ -270,10 +270,10 @@ Terminals, with rules where they appear
 $end (0) 0
 '!' (33) 124
 '%' (37) 130
-'(' (40) 4 5 31 32 33 34 35 36 37 61 62 65 66 67 69 86 97 117 118 121
-    125 126 127 128 129 168 169
-')' (41) 4 5 31 32 33 34 35 36 37 61 62 65 66 67 69 86 97 117 118 121
-    125 126 127 128 129 168 169
+'(' (40) 4 5 31 32 33 34 35 36 37 61 62 65 66 67 69 77 86 97 117 118
+    121 125 126 127 128 129 168 169
+')' (41) 4 5 31 32 33 34 35 36 37 61 62 65 66 67 69 77 86 97 117 118
+    121 125 126 127 128 129 168 169
 '*' (42) 131
 '+' (43) 66 133
 ',' (44) 10 12 39 163 171
@@ -290,9 +290,9 @@ $end (0) 0
 '[' (91) 96 120 173
 ']' (93) 96 120 173
 '^' (94) 88
-'{' (123) 42 126 127 129
+'{' (123) 42 126 127
 '|' (124) 122
-'}' (125) 43 126 127 129
+'}' (125) 43 126 127
 error (256)
 T_PROC (258) 6
 T_GRAPH (259) 23
@@ -303,7 +303,7 @@ T_EDGEPROP (263) 37
 T_NSET (264) 33
 T_NORDER (265) 35
 T_NSEQ (266) 34
-T_ITEMS (267) 77
+T_ITEMS (267) 76
 T_DFS (268) 78
 T_POST (269) 81 82
 T_INT (270) 24
@@ -322,10 +322,10 @@ T_FOR (282) 64
 T_NODES (283) 70 86
 T_EDGES (284) 71
 T_NBRS (285) 72
-T_IN_NBRS (286) 74
-T_NBR_EDGES (287) 73
-T_UP_NBRS (288) 75
-T_DOWN_NBRS (289) 76
+T_IN_NBRS (286) 73
+T_UP_NBRS (287) 74
+T_DOWN_NBRS (288) 75
+T_COMMON_NBRS (289) 77
 T_SUM (290) 153
 T_PRODUCT (291) 154
 T_MIN (292) 155
@@ -475,9 +475,8 @@ sent_user (143)
 expr (144)
     on left: 121 122 123 124 125 126 127 128 129 130 131 132 133 134
     135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150
-    151, on right: 96 97 114 115 121 122 123 124 125 126 127 128 129
-    130 131 132 133 134 135 136 137 138 139 140 141 142 143 152 170
-    171
+    151, on right: 96 97 114 115 121 122 123 124 125 126 127 128 130
+    131 132 133 134 135 136 137 138 139 140 141 142 143 152 170 171
 bool_expr (145)
     on left: 152, on right: 61 62 69 117 118
 reduce_op (146)
@@ -505,8 +504,8 @@ expr_user (156)
 $@1 (157)
     on left: 172, on right: 173
 id (158)
-    on left: 174, on right: 6 31 32 33 34 35 36 37 38 39 65 66 67 86
-    99 103 105 107 126 127 128 129 164 165 166 167
+    on left: 174, on right: 6 31 32 33 34 35 36 37 38 39 65 66 67 77
+    86 99 103 105 107 126 127 128 129 164 165 166 167
 
 
 state 0
@@ -1613,7 +1612,7 @@ state 103
 state 104
 
   128 expr: reduce_op2 . '(' id ':' id '.' iterator1 ')' '(' expr ')'
-  129     | reduce_op2 . '(' id ':' id '.' iterator1 ')' '{' expr '}'
+  129     | reduce_op2 . '(' id ':' id '.' iterator1 ')'
 
     '('  shift, and go to state 184
 
@@ -2874,7 +2873,7 @@ state 183
 state 184
 
   128 expr: reduce_op2 '(' . id ':' id '.' iterator1 ')' '(' expr ')'
-  129     | reduce_op2 '(' . id ':' id '.' iterator1 ')' '{' expr '}'
+  129     | reduce_op2 '(' . id ':' id '.' iterator1 ')'
 
     ID  shift, and go to state 7
 
@@ -3928,7 +3927,7 @@ state 239
 state 240
 
   128 expr: reduce_op2 '(' id . ':' id '.' iterator1 ')' '(' expr ')'
-  129     | reduce_op2 '(' id . ':' id '.' iterator1 ')' '{' expr '}'
+  129     | reduce_op2 '(' id . ':' id '.' iterator1 ')'
 
     ':'  shift, and go to state 272
 
@@ -4337,7 +4336,7 @@ state 271
 state 272
 
   128 expr: reduce_op2 '(' id ':' . id '.' iterator1 ')' '(' expr ')'
-  129     | reduce_op2 '(' id ':' . id '.' iterator1 ')' '{' expr '}'
+  129     | reduce_op2 '(' id ':' . id '.' iterator1 ')'
 
     ID  shift, and go to state 7
 
@@ -4548,7 +4547,7 @@ state 293
 state 294
 
   128 expr: reduce_op2 '(' id ':' id . '.' iterator1 ')' '(' expr ')'
-  129     | reduce_op2 '(' id ':' id . '.' iterator1 ')' '{' expr '}'
+  129     | reduce_op2 '(' id ':' id . '.' iterator1 ')'
 
     '.'  shift, and go to state 309
 
@@ -4588,14 +4587,14 @@ state 299
 
    65 foreach_header: '(' id ':' id '.' . iterator1 ')'
 
-    T_ITEMS      shift, and go to state 313
-    T_NODES      shift, and go to state 314
-    T_EDGES      shift, and go to state 315
-    T_NBRS       shift, and go to state 316
-    T_IN_NBRS    shift, and go to state 317
-    T_NBR_EDGES  shift, and go to state 318
-    T_UP_NBRS    shift, and go to state 319
-    T_DOWN_NBRS  shift, and go to state 320
+    T_ITEMS        shift, and go to state 313
+    T_NODES        shift, and go to state 314
+    T_EDGES        shift, and go to state 315
+    T_NBRS         shift, and go to state 316
+    T_IN_NBRS      shift, and go to state 317
+    T_UP_NBRS      shift, and go to state 318
+    T_DOWN_NBRS    shift, and go to state 319
+    T_COMMON_NBRS  shift, and go to state 320
 
     iterator1  go to state 321
 
@@ -4715,14 +4714,14 @@ state 308
   126 expr: reduce_op '(' id ':' id '.' . iterator1 ')' '(' expr ')' '{' expr '}'
   127     | reduce_op '(' id ':' id '.' . iterator1 ')' '{' expr '}'
 
-    T_ITEMS      shift, and go to state 313
-    T_NODES      shift, and go to state 314
-    T_EDGES      shift, and go to state 315
-    T_NBRS       shift, and go to state 316
-    T_IN_NBRS    shift, and go to state 317
-    T_NBR_EDGES  shift, and go to state 318
-    T_UP_NBRS    shift, and go to state 319
-    T_DOWN_NBRS  shift, and go to state 320
+    T_ITEMS        shift, and go to state 313
+    T_NODES        shift, and go to state 314
+    T_EDGES        shift, and go to state 315
+    T_NBRS         shift, and go to state 316
+    T_IN_NBRS      shift, and go to state 317
+    T_UP_NBRS      shift, and go to state 318
+    T_DOWN_NBRS    shift, and go to state 319
+    T_COMMON_NBRS  shift, and go to state 320
 
     iterator1  go to state 324
 
@@ -4730,16 +4729,16 @@ state 308
 state 309
 
   128 expr: reduce_op2 '(' id ':' id '.' . iterator1 ')' '(' expr ')'
-  129     | reduce_op2 '(' id ':' id '.' . iterator1 ')' '{' expr '}'
+  129     | reduce_op2 '(' id ':' id '.' . iterator1 ')'
 
-    T_ITEMS      shift, and go to state 313
-    T_NODES      shift, and go to state 314
-    T_EDGES      shift, and go to state 315
-    T_NBRS       shift, and go to state 316
-    T_IN_NBRS    shift, and go to state 317
-    T_NBR_EDGES  shift, and go to state 318
-    T_UP_NBRS    shift, and go to state 319
-    T_DOWN_NBRS  shift, and go to state 320
+    T_ITEMS        shift, and go to state 313
+    T_NODES        shift, and go to state 314
+    T_EDGES        shift, and go to state 315
+    T_NBRS         shift, and go to state 316
+    T_IN_NBRS      shift, and go to state 317
+    T_UP_NBRS      shift, and go to state 318
+    T_DOWN_NBRS    shift, and go to state 319
+    T_COMMON_NBRS  shift, and go to state 320
 
     iterator1  go to state 325
 
@@ -4755,14 +4754,14 @@ state 311
 
    66 foreach_header: '(' id ':' id '+' '.' . iterator1 ')'
 
-    T_ITEMS      shift, and go to state 313
-    T_NODES      shift, and go to state 314
-    T_EDGES      shift, and go to state 315
-    T_NBRS       shift, and go to state 316
-    T_IN_NBRS    shift, and go to state 317
-    T_NBR_EDGES  shift, and go to state 318
-    T_UP_NBRS    shift, and go to state 319
-    T_DOWN_NBRS  shift, and go to state 320
+    T_ITEMS        shift, and go to state 313
+    T_NODES        shift, and go to state 314
+    T_EDGES        shift, and go to state 315
+    T_NBRS         shift, and go to state 316
+    T_IN_NBRS      shift, and go to state 317
+    T_UP_NBRS      shift, and go to state 318
+    T_DOWN_NBRS    shift, and go to state 319
+    T_COMMON_NBRS  shift, and go to state 320
 
     iterator1  go to state 326
 
@@ -4771,23 +4770,23 @@ state 312
 
    67 foreach_header: '(' id ':' id '-' '.' . iterator1 ')'
 
-    T_ITEMS      shift, and go to state 313
-    T_NODES      shift, and go to state 314
-    T_EDGES      shift, and go to state 315
-    T_NBRS       shift, and go to state 316
-    T_IN_NBRS    shift, and go to state 317
-    T_NBR_EDGES  shift, and go to state 318
-    T_UP_NBRS    shift, and go to state 319
-    T_DOWN_NBRS  shift, and go to state 320
+    T_ITEMS        shift, and go to state 313
+    T_NODES        shift, and go to state 314
+    T_EDGES        shift, and go to state 315
+    T_NBRS         shift, and go to state 316
+    T_IN_NBRS      shift, and go to state 317
+    T_UP_NBRS      shift, and go to state 318
+    T_DOWN_NBRS    shift, and go to state 319
+    T_COMMON_NBRS  shift, and go to state 320
 
     iterator1  go to state 327
 
 
 state 313
 
-   77 iterator1: T_ITEMS .
+   76 iterator1: T_ITEMS .
 
-    $default  reduce using rule 77 (iterator1)
+    $default  reduce using rule 76 (iterator1)
 
 
 state 314
@@ -4813,37 +4812,37 @@ state 316
 
 state 317
 
-   74 iterator1: T_IN_NBRS .
-
-    $default  reduce using rule 74 (iterator1)
-
-
-state 318
-
-   73 iterator1: T_NBR_EDGES .
+   73 iterator1: T_IN_NBRS .
 
     $default  reduce using rule 73 (iterator1)
 
 
+state 318
+
+   74 iterator1: T_UP_NBRS .
+
+    $default  reduce using rule 74 (iterator1)
+
+
 state 319
 
-   75 iterator1: T_UP_NBRS .
+   75 iterator1: T_DOWN_NBRS .
 
     $default  reduce using rule 75 (iterator1)
 
 
 state 320
 
-   76 iterator1: T_DOWN_NBRS .
+   77 iterator1: T_COMMON_NBRS . '(' id ')'
 
-    $default  reduce using rule 76 (iterator1)
+    '('  shift, and go to state 328
 
 
 state 321
 
    65 foreach_header: '(' id ':' id '.' iterator1 . ')'
 
-    ')'  shift, and go to state 328
+    ')'  shift, and go to state 329
 
 
 state 322
@@ -4857,10 +4856,10 @@ state 323
 
    86 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES . from_or_semi id ')'
 
-    T_FROM  shift, and go to state 329
-    ';'     shift, and go to state 330
+    T_FROM  shift, and go to state 330
+    ';'     shift, and go to state 331
 
-    from_or_semi  go to state 331
+    from_or_semi  go to state 332
 
 
 state 324
@@ -4868,74 +4867,74 @@ state 324
   126 expr: reduce_op '(' id ':' id '.' iterator1 . ')' '(' expr ')' '{' expr '}'
   127     | reduce_op '(' id ':' id '.' iterator1 . ')' '{' expr '}'
 
-    ')'  shift, and go to state 332
+    ')'  shift, and go to state 333
 
 
 state 325
 
   128 expr: reduce_op2 '(' id ':' id '.' iterator1 . ')' '(' expr ')'
-  129     | reduce_op2 '(' id ':' id '.' iterator1 . ')' '{' expr '}'
+  129     | reduce_op2 '(' id ':' id '.' iterator1 . ')'
 
-    ')'  shift, and go to state 333
+    ')'  shift, and go to state 334
 
 
 state 326
 
    66 foreach_header: '(' id ':' id '+' '.' iterator1 . ')'
 
-    ')'  shift, and go to state 334
+    ')'  shift, and go to state 335
 
 
 state 327
 
    67 foreach_header: '(' id ':' id '-' '.' iterator1 . ')'
 
-    ')'  shift, and go to state 335
+    ')'  shift, and go to state 336
 
 
 state 328
+
+   77 iterator1: T_COMMON_NBRS '(' . id ')'
+
+    ID  shift, and go to state 7
+
+    id  go to state 337
+
+
+state 329
 
    65 foreach_header: '(' id ':' id '.' iterator1 ')' .
 
     $default  reduce using rule 65 (foreach_header)
 
 
-state 329
+state 330
 
    89 from_or_semi: T_FROM .
 
     $default  reduce using rule 89 (from_or_semi)
 
 
-state 330
+state 331
 
    90 from_or_semi: ';' .
 
     $default  reduce using rule 90 (from_or_semi)
 
 
-state 331
+state 332
 
    86 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES from_or_semi . id ')'
 
     ID  shift, and go to state 7
 
-    id  go to state 336
-
-
-state 332
-
-  126 expr: reduce_op '(' id ':' id '.' iterator1 ')' . '(' expr ')' '{' expr '}'
-  127     | reduce_op '(' id ':' id '.' iterator1 ')' . '{' expr '}'
-
-    '('  shift, and go to state 337
-    '{'  shift, and go to state 338
+    id  go to state 338
 
 
 state 333
 
-  128 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' . '(' expr ')'
-  129     | reduce_op2 '(' id ':' id '.' iterator1 ')' . '{' expr '}'
+  126 expr: reduce_op '(' id ':' id '.' iterator1 ')' . '(' expr ')' '{' expr '}'
+  127     | reduce_op '(' id ':' id '.' iterator1 ')' . '{' expr '}'
 
     '('  shift, and go to state 339
     '{'  shift, and go to state 340
@@ -4943,92 +4942,45 @@ state 333
 
 state 334
 
+  128 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' . '(' expr ')'
+  129     | reduce_op2 '(' id ':' id '.' iterator1 ')' .
+
+    '('  shift, and go to state 341
+
+    $default  reduce using rule 129 (expr)
+
+
+state 335
+
    66 foreach_header: '(' id ':' id '+' '.' iterator1 ')' .
 
     $default  reduce using rule 66 (foreach_header)
 
 
-state 335
+state 336
 
    67 foreach_header: '(' id ':' id '-' '.' iterator1 ')' .
 
     $default  reduce using rule 67 (foreach_header)
 
 
-state 336
-
-   86 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES from_or_semi id . ')'
-
-    ')'  shift, and go to state 341
-
-
 state 337
 
-  126 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' . expr ')' '{' expr '}'
+   77 iterator1: T_COMMON_NBRS '(' id . ')'
 
-    T_SUM      shift, and go to state 88
-    T_PRODUCT  shift, and go to state 89
-    T_MIN      shift, and go to state 90
-    T_MAX      shift, and go to state 91
-    T_COUNT    shift, and go to state 92
-    T_M_INF    shift, and go to state 93
-    T_P_INF    shift, and go to state 94
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 95
-    FLOAT_NUM  shift, and go to state 96
-    BOOL_VAL   shift, and go to state 97
-    '-'        shift, and go to state 98
-    '('        shift, and go to state 99
-    '['        shift, and go to state 43
-    '|'        shift, and go to state 100
-    '!'        shift, and go to state 101
-
-    expr        go to state 342
-    reduce_op   go to state 103
-    reduce_op2  go to state 104
-    inf         go to state 105
-    scala       go to state 106
-    field       go to state 107
-    built_in    go to state 108
-    expr_user   go to state 109
-    id          go to state 73
+    ')'  shift, and go to state 342
 
 
 state 338
 
-  127 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' . expr '}'
+   86 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES from_or_semi id . ')'
 
-    T_SUM      shift, and go to state 88
-    T_PRODUCT  shift, and go to state 89
-    T_MIN      shift, and go to state 90
-    T_MAX      shift, and go to state 91
-    T_COUNT    shift, and go to state 92
-    T_M_INF    shift, and go to state 93
-    T_P_INF    shift, and go to state 94
-    ID         shift, and go to state 7
-    INT_NUM    shift, and go to state 95
-    FLOAT_NUM  shift, and go to state 96
-    BOOL_VAL   shift, and go to state 97
-    '-'        shift, and go to state 98
-    '('        shift, and go to state 99
-    '['        shift, and go to state 43
-    '|'        shift, and go to state 100
-    '!'        shift, and go to state 101
-
-    expr        go to state 343
-    reduce_op   go to state 103
-    reduce_op2  go to state 104
-    inf         go to state 105
-    scala       go to state 106
-    field       go to state 107
-    built_in    go to state 108
-    expr_user   go to state 109
-    id          go to state 73
+    ')'  shift, and go to state 343
 
 
 state 339
 
-  128 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' . expr ')'
+  126 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' . expr ')' '{' expr '}'
 
     T_SUM      shift, and go to state 88
     T_PRODUCT  shift, and go to state 89
@@ -5060,7 +5012,7 @@ state 339
 
 state 340
 
-  129 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '{' . expr '}'
+  127 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' . expr '}'
 
     T_SUM      shift, and go to state 88
     T_PRODUCT  shift, and go to state 89
@@ -5092,12 +5044,51 @@ state 340
 
 state 341
 
+  128 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' . expr ')'
+
+    T_SUM      shift, and go to state 88
+    T_PRODUCT  shift, and go to state 89
+    T_MIN      shift, and go to state 90
+    T_MAX      shift, and go to state 91
+    T_COUNT    shift, and go to state 92
+    T_M_INF    shift, and go to state 93
+    T_P_INF    shift, and go to state 94
+    ID         shift, and go to state 7
+    INT_NUM    shift, and go to state 95
+    FLOAT_NUM  shift, and go to state 96
+    BOOL_VAL   shift, and go to state 97
+    '-'        shift, and go to state 98
+    '('        shift, and go to state 99
+    '['        shift, and go to state 43
+    '|'        shift, and go to state 100
+    '!'        shift, and go to state 101
+
+    expr        go to state 346
+    reduce_op   go to state 103
+    reduce_op2  go to state 104
+    inf         go to state 105
+    scala       go to state 106
+    field       go to state 107
+    built_in    go to state 108
+    expr_user   go to state 109
+    id          go to state 73
+
+
+state 342
+
+   77 iterator1: T_COMMON_NBRS '(' id ')' .
+
+    $default  reduce using rule 77 (iterator1)
+
+
+state 343
+
    86 bfs_header_format: '(' id ':' id opt_tp '.' T_NODES from_or_semi id ')' .
 
     $default  reduce using rule 86 (bfs_header_format)
 
 
-state 342
+state 344
 
   126 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr . ')' '{' expr '}'
   130     | expr . '%' expr
@@ -5129,10 +5120,10 @@ state 342
     '*'    shift, and go to state 180
     '/'    shift, and go to state 181
     '%'    shift, and go to state 182
-    ')'    shift, and go to state 346
+    ')'    shift, and go to state 347
 
 
-state 343
+state 345
 
   127 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' expr . '}'
   130     | expr . '%' expr
@@ -5164,10 +5155,10 @@ state 343
     '*'    shift, and go to state 180
     '/'    shift, and go to state 181
     '%'    shift, and go to state 182
-    '}'    shift, and go to state 347
+    '}'    shift, and go to state 348
 
 
-state 344
+state 346
 
   128 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr . ')'
   130     | expr . '%' expr
@@ -5199,70 +5190,28 @@ state 344
     '*'    shift, and go to state 180
     '/'    shift, and go to state 181
     '%'    shift, and go to state 182
-    ')'    shift, and go to state 348
+    ')'    shift, and go to state 349
 
 
-state 345
-
-  129 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '{' expr . '}'
-  130     | expr . '%' expr
-  131     | expr . '*' expr
-  132     | expr . '/' expr
-  133     | expr . '+' expr
-  134     | expr . '-' expr
-  135     | expr . T_LE expr
-  136     | expr . T_GE expr
-  137     | expr . '<' expr
-  138     | expr . '>' expr
-  139     | expr . T_EQ expr
-  140     | expr . T_NEQ expr
-  141     | expr . T_AND expr
-  142     | expr . T_OR expr
-  143     | expr . '?' expr ':' expr
-
-    T_AND  shift, and go to state 169
-    T_OR   shift, and go to state 170
-    T_EQ   shift, and go to state 171
-    T_NEQ  shift, and go to state 172
-    T_LE   shift, and go to state 173
-    T_GE   shift, and go to state 174
-    '?'    shift, and go to state 175
-    '<'    shift, and go to state 176
-    '>'    shift, and go to state 177
-    '+'    shift, and go to state 178
-    '-'    shift, and go to state 179
-    '*'    shift, and go to state 180
-    '/'    shift, and go to state 181
-    '%'    shift, and go to state 182
-    '}'    shift, and go to state 349
-
-
-state 346
+state 347
 
   126 expr: reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' . '{' expr '}'
 
     '{'  shift, and go to state 350
 
 
-state 347
+state 348
 
   127 expr: reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}' .
 
     $default  reduce using rule 127 (expr)
 
 
-state 348
+state 349
 
   128 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr ')' .
 
     $default  reduce using rule 128 (expr)
-
-
-state 349
-
-  129 expr: reduce_op2 '(' id ':' id '.' iterator1 ')' '{' expr '}' .
-
-    $default  reduce using rule 129 (expr)
 
 
 state 350

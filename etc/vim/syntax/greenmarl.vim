@@ -11,13 +11,14 @@ syn case match
 syn sync minlines=50
 
 " most Scala keywords
-syn keyword GMKeyword Node_Property Edge_Property N_P E_P  Node_Prop Edge_Prop
+syn keyword GMKeyword Node_Property Edge_Property N_P E_P 
 syn keyword GMKeyword For Foreach If Else Proc Procedure Do While Return
-syn keyword GMKeyword InNbrs OutNbrs Nbrs Nodes Edges Nbr_Edges
+syn keyword GMKeyword InNbrs OutNbrs Nbrs Nodes Edges CommonNbrs Nbr_Edges
 syn keyword GMKeyword Items
 syn keyword GMBuiltin NumNbrs NumOutNbrs NumInNbrs NumNodes NumEdges Degree InDegree OutDegree
 syn keyword GMBuiltin Log Rand Pow Exp Uniform
 syn keyword GMBuiltin PushBack PopBack PushFront PopFront Has Add Remove
+syn keyword GMBuiltin FromNode ToNode ToEdge IsNbr 
 syn keyword GMKeyword InBFS UpNbrs DownNbrs From InDFS InReverse InPost
 syn keyword GMKeyword Sum Product Max Min Count
 syn keyword GMType Int Float Double Bool Graph Long Node Edge DGraph UGraph
