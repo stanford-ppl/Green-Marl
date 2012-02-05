@@ -52,7 +52,7 @@ gm_type_rule(int O,int T1, int T2, int R, int C) : opclass(O), type1(T1), type2(
     int coercion_rule;
 };
 
-static std::vector<gm_type_rule> GM_TYPE_RULES;
+std::vector<gm_type_rule> GM_TYPE_RULES;
 #define NEW_RULE(O, T1,T2, TR, C) \
 { gm_type_rule R(O, T1, T2, TR, C); GM_TYPE_RULES.push_back(R); }
 
@@ -71,11 +71,14 @@ static void init_op_rules()
     NEW_RULE(TER_OP,       T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_LEFT,        COERCION_ALL);
 
     NEW_RULE(ASSIGN_OP,    T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_LEFT,        COERCION_RIGHT);
-    NEW_RULE(ASSIGN_OP,    T_COMPATIBLE,     T_COMPATIBLE,        RESULT_LEFT,        COERCION_RIGHT);
+    NEW_RULE(ASSIGN_OP,    T_COMPATIBLE,     T_COMPATIBLE,   RESULT_LEFT,        COERCION_RIGHT);
 };
 void gm_frontend::init_op_type_rules()
 {
     init_op_rules();
+}
+void gm_frontend::init() {
+    init_op_type_rules();
 }
 
 
@@ -106,9 +109,13 @@ static inline bool is_applicable_rule(gm_type_rule& R, int op, int type1, int ty
         if (R.type1 == T_COMPATIBLE) 
             return gm_is_same_type(type1,type2) || 
                    gm_is_same_node_or_edge_compatible_type(type1, type2);
-        else 
-            return in_typeclass(R.type1, type1) && in_typeclass(R.type2, type2);
+        else {
+            bool b =  in_typeclass(R.type1, type1) && in_typeclass(R.type2, type2);
+             
+            return b;
+        }
     }
+    return false;
 }
 
 bool gm_is_t2_equal_or_large_numeric_type(int t1, int t2)
@@ -189,6 +196,7 @@ bool gm_is_compatible_type(int op, int t1, int t2,
     for(int i =  0; i < GM_TYPE_RULES.size(); i++) 
     {
         gm_type_rule& R = GM_TYPE_RULES[i];
+
 
         if (is_applicable_rule(R, op, t1, t2))
         {

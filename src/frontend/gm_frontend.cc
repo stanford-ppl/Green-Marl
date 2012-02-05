@@ -511,7 +511,6 @@ ast_node* GM_foreign_sent_mut(ast_node* foreign, lhs_list* list)
 gm_frontend::gm_frontend() : curr_proc(NULL), curr_idlist(NULL),vardecl_removed(false) 
 {
     init_steps();
-    init_op_type_rules(); 
 }
 
 gm_frontend::~gm_frontend() {
