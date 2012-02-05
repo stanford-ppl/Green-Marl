@@ -258,6 +258,7 @@ DEF_STRING(CPPBE_INFO_NEED_FROM_INFO);
 #define FREEZE          "freeze"
 #define MAKE_REVERSE        "make_reverse_edges"
 #define SEMI_SORT           "do_semi_sort"
+#define IS_SEMI_SORTED      "is_semi_sorted"
 #define PREPARE_FROM_INFO   "prepare_edge_source"
 
 #endif

@@ -3,6 +3,7 @@
 #define GM_GRAPH_H
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <map>
 #include <vector>
 #include "gm_graph_typedef.h"
