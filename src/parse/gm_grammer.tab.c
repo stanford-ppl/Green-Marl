@@ -2723,14 +2723,14 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 323 "parse/gm_grammer.y"
-    {(yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (14)].ival), (yyvsp[(3) - (14)].ptr), (yyvsp[(5) - (14)].ptr), (yyvsp[(7) - (14)].pair).i1, (yyvsp[(13) - (14)].ptr), (yyvsp[(10) - (14)].ptr), (yyvsp[(7) - (14)].pair).p3, (yylsp[(1) - (14)]).first_line, (yylsp[(1) - (14)]).first_column);;}
+    {(yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (14)].ival), (yyvsp[(3) - (14)].ptr), (yyvsp[(5) - (14)].ptr), (yyvsp[(7) - (14)].pair).i1, (yyvsp[(13) - (14)].ptr), (yyvsp[(10) - (14)].ptr), (yyvsp[(7) - (14)].pair).p1, (yylsp[(1) - (14)]).first_line, (yylsp[(1) - (14)]).first_column);;}
     break;
 
   case 128:
 
 /* Line 1455 of yacc.c  */
 #line 324 "parse/gm_grammer.y"
-    {(yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (11)].ival), (yyvsp[(3) - (11)].ptr), (yyvsp[(5) - (11)].ptr), (yyvsp[(7) - (11)].pair).i1, (yyvsp[(10) - (11)].ptr), NULL, (yyvsp[(7) - (11)].pair).p3, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column);;}
+    {(yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (11)].ival), (yyvsp[(3) - (11)].ptr), (yyvsp[(5) - (11)].ptr), (yyvsp[(7) - (11)].pair).i1, (yyvsp[(10) - (11)].ptr), NULL, (yyvsp[(7) - (11)].pair).p1, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column);;}
     break;
 
   case 129:
@@ -2740,7 +2740,7 @@ yyreduce:
     {
                  (yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (11)].ival), (yyvsp[(3) - (11)].ptr), (yyvsp[(5) - (11)].ptr), (yyvsp[(7) - (11)].pair).i1, 
                          GM_expr_ival(1, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column),
-                         (yyvsp[(10) - (11)].ptr), (yyvsp[(7) - (11)].pair).p3, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column);;}
+                         (yyvsp[(10) - (11)].ptr), (yyvsp[(7) - (11)].pair).p1, (yylsp[(1) - (11)]).first_line, (yylsp[(1) - (11)]).first_column);;}
     break;
 
   case 130:
@@ -2750,7 +2750,7 @@ yyreduce:
     {
                  (yyval.ptr) = GM_expr_reduceop((yyvsp[(1) - (8)].ival), (yyvsp[(3) - (8)].ptr), (yyvsp[(5) - (8)].ptr), (yyvsp[(7) - (8)].pair).i1, 
                      GM_expr_ival(1, (yylsp[(1) - (8)]).first_line, (yylsp[(1) - (8)]).first_column),
-                     NULL, (yyvsp[(7) - (8)].pair).p3, (yylsp[(1) - (8)]).first_line, (yylsp[(1) - (8)]).first_column);;}
+                     NULL, (yyvsp[(7) - (8)].pair).p1, (yylsp[(1) - (8)]).first_line, (yylsp[(1) - (8)]).first_column);;}
     break;
 
   case 131:

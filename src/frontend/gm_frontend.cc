@@ -149,8 +149,10 @@ ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, a
     assert( src->get_nodetype() == AST_ID);
     assert( body->is_expr());
 
-    if (filter != NULL)
-        assert( filter->get_nodetype() == AST_EXPR);
+    if (filter != NULL) {
+        assert((filter->get_nodetype() == AST_EXPR) ||
+               (filter->get_nodetype() == AST_EXPR_BUILTIN));
+    }
     if (src2 != NULL)
         assert( src2->get_nodetype() == AST_ID);
     assert( gm_is_iter_type(iter_op));

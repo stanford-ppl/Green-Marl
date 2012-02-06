@@ -320,16 +320,16 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
                                     {$$ = GM_expr_uop($2, GMOP_NEG, @1.first_line, @1.first_column); }
              | '!' expr    %prec NEG    {$$ = GM_expr_luop($2, GMOP_NOT, @1.first_line, @1.first_column); }
              | '(' prim_type ')' expr %prec NEG    {$$ = GM_expr_conversion($4, $2 , @1.first_line, @1.first_column); }
-             | reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}' {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $13, $10, $7.p3, @1.first_line, @1.first_column);}
-             | reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}'              {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $10, NULL, $7.p3, @1.first_line, @1.first_column);}
+             | reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}' {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $13, $10, $7.p1, @1.first_line, @1.first_column);}
+             | reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}'              {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $10, NULL, $7.p1, @1.first_line, @1.first_column);}
              | reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr ')'   {
                  $$ = GM_expr_reduceop($1, $3, $5, $7.i1, 
                          GM_expr_ival(1, @1.first_line, @1.first_column),
-                         $10, $7.p3, @1.first_line, @1.first_column);}
+                         $10, $7.p1, @1.first_line, @1.first_column);}
              | reduce_op2 '(' id ':' id '.' iterator1 ')' {
                  $$ = GM_expr_reduceop($1, $3, $5, $7.i1, 
                      GM_expr_ival(1, @1.first_line, @1.first_column),
-                     NULL, $7.p3, @1.first_line, @1.first_column);}
+                     NULL, $7.p1, @1.first_line, @1.first_column);}
 
              | expr '%' expr    {$$ = GM_expr_biop($1, $3, GMOP_MOD, @2.first_line, @2.first_column);}
              | expr '*' expr    {$$ = GM_expr_biop($1, $3, GMOP_MULT, @2.first_line, @2.first_column);}

@@ -77,13 +77,13 @@ int main(int argc, char** argv)
             */
     }
     gettimeofday(&T2, NULL);
-    printf("creation time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 - (T2.tv_usec - T1.tv_usec)*0.001);
+    printf("creation time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 + (T2.tv_usec - T1.tv_usec)*0.001);
 
     printf("saving to file = %s\n", argv[3]);fflush(stdout);
     gettimeofday(&T1, NULL);
 	g->store_binary(argv[3]);
     gettimeofday(&T2, NULL);
-    printf("storing time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 - (T2.tv_usec - T1.tv_usec)*0.001);
+    printf("storing time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 + (T2.tv_usec - T1.tv_usec)*0.001);
 
 	delete g;
 }

@@ -326,10 +326,15 @@ void ss2_reduce_op::post_process_body(
     // 3.1 create foreach
     ast_id* foreach_it = old_iter->copy();
     ast_id* foreach_src = target->get_source()->copy(true); // copy SymInfo as well
+    ast_id* foreach_src2 = target->get_source2();
+    if (foreach_src2 !=NULL)
+        foreach_src2 = foreach_src2->copy(true);
+
     int iter_type = target->get_iter_type();
 
     // see common/new_sent_after_tc.cc
     ast_foreach* fe_new = gm_new_foreach_after_tc(foreach_it, foreach_src, foreach_body, iter_type);
+    fe_new->set_source2(foreach_src2);
 
 
     // 3.2 add foreach 

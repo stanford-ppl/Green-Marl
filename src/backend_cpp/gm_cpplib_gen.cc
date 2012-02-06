@@ -165,12 +165,12 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     Body.push(str_buf);
                     break;
                 case GM_BLTIN_NODE_IS_NBR:
-                    sprintf(str_buf,"%s.is_neighbor(%s,",
-                            i->getTypeInfo()->get_target_graph_id() -> get_genname(), 
-                            i->get_genname() );
+                    sprintf(str_buf,"%s.is_neighbor(",
+                            i->getTypeInfo()->get_target_graph_id() -> get_genname());
                     Body.push(str_buf);
                     main->generate_expr(e->get_args().front());
-                    Body.push(")");
+                    sprintf(str_buf,",%s)", i->get_genname() );
+                    Body.push(str_buf);
                     break;
                 default:assert(false); break;
             }        
