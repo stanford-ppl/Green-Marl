@@ -616,7 +616,14 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   Body.NL();
 }
 
-void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body)
+static bool is_symbol_defined_in_bb(gm_gps_basic_block* b, gm_symtab_entry *e)
+{
+    std::map<gm_symtab_entry*, gps_syminfo*>& SYMS = b->get_symbols();
+    if (SYMS.find(e) == SYMS.end()) return false;
+    else return true;
+}
+
+void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block *b)
 {
   gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
@@ -631,10 +638,13 @@ void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& 
   for(I=LIST.begin(); I!=LIST.end(); I++)
   {
     gm_gps_communication_symbol_info& SYM = *I;
-    const char* str = main->get_type_string(SYM.gm_type);
-    Body.push(str);
-    Body.SPC();
     gm_symtab_entry * e = SYM.symbol;
+    if (e->getType()->is_property() || !is_symbol_defined_in_bb(b, e))
+    {
+        const char* str = main->get_type_string(SYM.gm_type);
+        Body.push(str);
+        Body.SPC();
+    }
     if (e->getType()->is_property())
     {
         generate_vertex_prop_access_remote_lhs(e->getId(), Body);

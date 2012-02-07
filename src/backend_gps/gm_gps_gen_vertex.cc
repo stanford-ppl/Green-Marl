@@ -275,7 +275,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
             gm_flush_reproduce(); 
             Body.pushln("-----*/");
             get_lib()->generate_message_receive_begin(
-                    fe, Body);
+                    fe, Body, b);
 
             generate_sent(fe->get_body());
 
