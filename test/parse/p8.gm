@@ -5,6 +5,7 @@ Proc P8(G:Graph)
     Node_Property<Int>(G) A;
     Int X = 0;
 
+    // Test of reverse order iteration
     For(s: N-.Items) {
         X = X + s.A;
     }

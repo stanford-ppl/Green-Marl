@@ -8,6 +8,7 @@
 #include "gm_frontend_api.h"
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
+#include <map>
 
 //----------------------------------------------------------------
 // Type-check Step 3: 
@@ -116,6 +117,10 @@ private:
     bool check_binary(ast_expr* e);
     bool check_ter(ast_expr* e);
     bool check_builtin(ast_expr_builtin* e);
+
+public:
+    // expression, dest-type
+    std::map<ast_expr*, int > coercion_targets;
 };
 
 
@@ -201,14 +206,19 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e)
 
     // [XXX]
     if (w1_warn) {
-        printf("warning: type convresion %s->%s\n", gm_get_type_string(l_type), 
-                                                    gm_get_type_string(l_new) );
+        // adding explicit coercions
+        if (!e->get_left_op()->is_literal()) {
+            printf("warning: adding type convresion %s->%s\n", gm_get_type_string(l_type), gm_get_type_string(l_new) );
+            coercion_targets[e->get_left_op()] = l_new;
+        }
     }
     if (w2_warn) {
-        printf("warning: type convresion %s->%s\n", gm_get_type_string(r_type), 
-                                                    gm_get_type_string(r_new) );
+        // adding explicit coercions
+        if (!e->get_right_op()->is_literal()) {
+            printf("warning: adding type convresion %s->%s\n", gm_get_type_string(r_type), gm_get_type_string(r_new) );
+            coercion_targets[e->get_right_op()] = r_new;
+        }
     }
-
 
     return true;
 }
@@ -230,11 +240,9 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
         int def_type = def->get_arg_type(j);
         if (gm_is_unknown_type(curr_type)) {okay = false; continue;}
         
-        // [xxx] to be improved
-        int coerced_type;
-        bool warning;
         bool o;
-
+        bool warning;
+        int coerced_type;
         o = gm_is_compatible_type_for_assign(def_type, curr_type,coerced_type, warning);
 
         if (!o) {
@@ -243,6 +251,12 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
                     b->get_line(), b->get_col(),
                     b->get_callname(), temp);
             okay = false;
+        }
+
+        if (warning) 
+        {
+            // [XXX] to be coerced
+
         }
     }
 
@@ -322,9 +336,16 @@ bool gm_typechecker_stage_3::check_uop(ast_expr* e)
     return false;
 };
 
+// defined in gm_coercion.cc
+extern void gm_insert_explicit_type_conversion_for_op(std::map<ast_expr*, int>& targets);
+
 void gm_fe_typecheck_step3::process(ast_procdef* p)
 {
     gm_typechecker_stage_3 T;
     p->traverse_post(&T);  // post-apply
     set_okay(T.is_okay());
+
+    if (T.is_okay()) {
+        gm_insert_explicit_type_conversion_for_op(T.coercion_targets);
+    }
 }

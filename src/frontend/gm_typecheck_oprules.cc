@@ -118,21 +118,14 @@ static inline bool is_applicable_rule(gm_type_rule& R, int op, int type1, int ty
     return false;
 }
 
-bool gm_is_t2_equal_or_large_numeric_type(int t1, int t2)
+
+bool gm_is_t2_larger_than_t1(int t1, int t2)
 {
-    if (t1 == t2) return true;
-    if ((t1 == GMTYPE_INT) && (t2 == GMTYPE_LONG)) return true;
-    if ((t1 == GMTYPE_DOUBLE) && (t2 == GMTYPE_FLOAT)) return true;
+    if ((t1 == GMTYPE_INT)   && (t2 == GMTYPE_LONG)) return true;
+    if ((t1 == GMTYPE_FLOAT) && (t2 == GMTYPE_DOUBLE)) return true;
     return false;
 }
 
-bool gm_is_losing_precision(int from, int to) 
-{
-    if (from == GMTYPE_FOREIGN_EXPR) return false;
-    if (gm_is_t2_equal_or_large_numeric_type(from, to)) return false;
-    if ((from == GMTYPE_INT) && (to == GMTYPE_DOUBLE)) return false;
-    return true;
-}
 
 // return false if coercion cannot be done.
 // (lose of precision should be checked separately)
@@ -152,14 +145,19 @@ static inline void apply_coercion(int c_type, int t1, int t2, int& t1_new, int& 
         if (gm_is_inf_type(t2)) {t2_new = t1; return;}
 
         // type-up. (i.e. INT -> LONG)
-        if (gm_is_t2_equal_or_large_numeric_type(t1,t2)) { t1_new = t2; return ; }
-        if (gm_is_t2_equal_or_large_numeric_type(t2,t1)) { t2_new = t1; return ; }
+        if (gm_is_t2_larger_than_t1(t1,t2)) { t1_new = t2; return ; }
+        if (gm_is_t2_larger_than_t1(t2,t1)) { t2_new = t1; return ; }
 
-        // floating <-> int
-        // type-up to double.
-        t1_new = t2_new = GMTYPE_DOUBLE; 
-        t1_warn = gm_is_losing_precision(t1, t1_new);
-        t2_warn = gm_is_losing_precision(t2, t2_new);
+        // crossing boundary (i.e. <int/long> <-> <float/double>))))
+        if (gm_is_float_type(t1)) {
+            t2_new = t1;
+            t2_warn = true;
+
+        } else {
+            assert(gm_is_float_type(t2));
+            t1_new = t2;
+            t1_warn = true;
+        }
 
         return;
     }
@@ -169,7 +167,10 @@ static inline void apply_coercion(int c_type, int t1, int t2, int& t1_new, int& 
         if (gm_is_inf_type(t2)) {t2_new = t1; return;}
 
         t2_new = t1;
-        t2_warn = gm_is_losing_precision(t2, t2_new);
+
+        if ((t1!= t2) && (!gm_is_t2_larger_than_t1(t2, t1))) {
+            t2_warn = true;
+        }
         return;
     }
 

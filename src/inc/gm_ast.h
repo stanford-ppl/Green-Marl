@@ -948,7 +948,7 @@ class ast_expr : public ast_node
         ast_expr* get_up_op() {return up;} // same to parent. but expr
         ast_expr* get_cond_op() {return cond;}
         void set_left_op(ast_expr* l) { left = l; }
-        void set_right_op(ast_expr* r) { right = r;}
+        void set_right_op(ast_expr* r) { right = r; }
         void set_up_op(ast_expr* e) {up = e;}
         void set_cond_op(ast_expr* e) {cond = e;}
 

@@ -53,6 +53,7 @@ SRCS2 =\
        gm_syntax_sugar.cc  \
        gm_fe_check_syntax.cc \
        gm_typecheck.cc \
+	   gm_coercion.cc \
        gm_typecheck_oprules.cc \
        gm_new_typecheck_step1.cc \
        gm_new_typecheck_step2.cc \
