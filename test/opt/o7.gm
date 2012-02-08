@@ -1,8 +1,22 @@
 // Test of flip edges
-Proc P(G:Graph, A:N_P<Int>(G), r:Node(G))
+Proc P(G:Graph, A,B,C:N_P<Int>(G), r:Node(G))
 {
+    /*
     Int X = 0;
     InBFS(n: G.Nodes ; r) {
         n.A = Sum (s: n.UpNbrs) {s.A};
+    }
+    */
+
+    Foreach(n:G.Nodes)(n.B > 0)
+    {
+        Foreach(s:n.InNbrs)
+            n.A += s.C @ n;
+    }
+
+    Foreach(n:G.Nodes)
+    {
+        Foreach(s:n.InNbrs) (s.C > 0)
+            n.A += s.C @ n;
     }
 }

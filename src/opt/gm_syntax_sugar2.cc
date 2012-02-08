@@ -10,7 +10,7 @@
 // syntax sugar elimination (after type resolution)
 //  1. Group assignment  --> foreach
 //  2. Reduce op(i.e Sum) --> foreach + reduce assign
-//  3. 'G' symbol in BFS node-condition --> iter2
+//  3. 'G' symbol in BFS node-condition --> iter2 (XXX what?)
 //----------------------------------------------------
 
 
