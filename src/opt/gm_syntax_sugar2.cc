@@ -273,6 +273,8 @@ void ss2_reduce_op::post_process_body(
         case GMREDUCE_MULT: t_name_base= "_P"; break; // Product
         case GMREDUCE_MIN:  t_name_base= "_Mn"; break; // Min
         case GMREDUCE_MAX:  t_name_base= "_Mx"; break; // Max
+        case GMREDUCE_AND:  t_name_base= "_A"; break;
+        case GMREDUCE_OR:   t_name_base= "_E"; break;
         default: assert(false);
     }
 

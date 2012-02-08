@@ -217,6 +217,9 @@ static void do_flip_edges(std::list<ast_foreach*>& target)
             assert(false);
         }
 
+        iter_in->getType()->set_typeid(out->get_iter_type());
+        iter_out->getType()->set_typeid(in->get_iter_type());
+
         // 3) exchange if conditions
         if ((if1 == NULL) && (if2 == NULL)) {
             // done

@@ -608,12 +608,16 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
             else generate_rhs_field(a->get_lhs_field()); 
 
             Body.pushln(";");
-            if (r_type = GMREDUCE_PLUS) {
+            if (r_type == GMREDUCE_PLUS) {
                 sprintf(temp, "%s = %s + (", temp_var_new, temp_var_old); Body.push(temp); 
             } else if (r_type == GMREDUCE_MULT) {
                 sprintf(temp, "%s = %s * (", temp_var_new, temp_var_old); Body.push(temp); 
             } else if (r_type == GMREDUCE_MAX) {
                 sprintf(temp, "%s = std::max (%s, ", temp_var_new, temp_var_old); Body.push(temp); 
+            } else if (r_type == GMREDUCE_OR) {
+                sprintf(temp, "%s = %s || (", temp_var_new, temp_var_old); Body.push(temp); 
+            } else if (r_type == GMREDUCE_AND) {
+                sprintf(temp, "%s = %s && (", temp_var_new, temp_var_old); Body.push(temp); 
             } else if (r_type == GMREDUCE_MIN) {
                 sprintf(temp, "%s = std::min (%s, ", temp_var_new, temp_var_old); Body.push(temp); 
             } else {assert(false);}

@@ -143,6 +143,9 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "INF"     {MarkToken(); return T_P_INF;}
 "-INF"    {MarkToken(); return T_M_INF;}
 "::"      {MarkToken(); return T_DOUBLE_COLON;}
+"All"     {MarkToken(); return T_ALL;}
+"Exist"   {MarkToken(); return T_EXIST;}
+
 
     /* Numbers and Identifies */
 {ALPHANUM}          {MarkToken(); yylval.text = yytext; return ID;}

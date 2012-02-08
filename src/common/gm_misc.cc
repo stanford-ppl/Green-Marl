@@ -140,6 +140,8 @@ const char* gm_get_reduce_expr_string(int rop_type) {
                         (rop_type == GMREDUCE_MULT)? "Product" : 
                         (rop_type == GMREDUCE_MIN)? "Min" : 
                         (rop_type == GMREDUCE_MAX)? "Max" : 
+                        (rop_type == GMREDUCE_AND)? "All" : 
+                        (rop_type == GMREDUCE_OR)?  "Exist" : 
                         "??";
     return opstr;
 }
