@@ -14,7 +14,7 @@ syn sync minlines=50
 syn keyword GMKeyword Node_Property Edge_Property N_P E_P 
 syn keyword GMKeyword For Foreach If Else Proc Procedure Do While Return
 syn keyword GMKeyword InNbrs OutNbrs Nbrs Nodes Edges CommonNbrs Nbr_Edges
-syn keyword GMKeyword Items
+syn keyword GMKeyword Items INF +INF -INF
 syn keyword GMBuiltin NumNbrs NumOutNbrs NumInNbrs NumNodes NumEdges Degree InDegree OutDegree
 syn keyword GMBuiltin Log Rand Pow Exp Uniform
 syn keyword GMBuiltin PushBack PopBack PushFront PopFront Has Add Remove
