@@ -53,6 +53,7 @@ SRCS2 =\
        gm_syntax_sugar.cc  \
        gm_fe_check_syntax.cc \
        gm_typecheck.cc \
+	   gm_coercion.cc \
        gm_typecheck_oprules.cc \
        gm_new_typecheck_step1.cc \
        gm_new_typecheck_step2.cc \
@@ -62,6 +63,7 @@ SRCS2 =\
        gm_syntax_sugar2.cc gm_flip_be.cc\
        gm_ind_opt.cc gm_hoist_assign.cc gm_hoist_foreach.cc\
        gm_merge_loops.cc gm_moveup_propdecl.cc\
+	   gm_flip_edges.cc\
        gm_cpp_opt.cc\
        gm_cpp_opt_select_par.cc\
        gm_cpp_opt_defer.cc \

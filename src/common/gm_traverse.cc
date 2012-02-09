@@ -185,9 +185,11 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     if (is_pre) {
         if (for_id) {
             ast_id* src = get_source();
+            ast_id* src2 = get_source2();
             ast_id* it = get_iterator();
             a->apply(src);
             a->apply(it);
+            if (src2!=NULL) a->apply(src2);
         }
     }
 
@@ -203,13 +205,16 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     if (is_post) {
         if (for_id) {
             ast_id* src = get_source();
+            ast_id* src2 = get_source2();
             ast_id* id = get_iterator();
             if (a->has_separate_post_apply()) {
                 a->apply2(src);
                 a->apply2(id);
+                if (src2!=NULL) a->apply2(src2);
             } else {
                 a->apply(src);
                 a->apply(id);
+                if (src2!=NULL) a->apply(src2);
             }
         }
     }
@@ -416,8 +421,10 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre)
         if (for_id) {
             ast_id* src = get_source();
             ast_id* it = get_iterator();
+            ast_id* src2 = get_source2();
             a->apply(src);
             a->apply(it);
+            if (src2!=NULL) a->apply(src2);
         }
         if (for_expr)
             a->apply(this);
@@ -436,12 +443,15 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre)
         if (for_id) {
             ast_id* src = get_source();
             ast_id* it = get_iterator();
+            ast_id* src2 = get_source2();
             if (b) {
                 a->apply2(src);
                 a->apply2(it);
+                if (src2!=NULL) a->apply2(src2);
             } else  {
                 a->apply(src);
                 a->apply(it);
+                if (src2!=NULL) a->apply(src2);
             }
         }
         if (for_expr) {

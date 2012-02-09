@@ -1,0 +1,13 @@
+// Test of coercion
+Proc P()
+{
+    Int i = 0;
+    Float f = 0;
+    Double d = 0;
+    Long l = 0;
+
+
+    Long l2 = l + i + f;
+    Double d2 = d + i + l;
+
+}

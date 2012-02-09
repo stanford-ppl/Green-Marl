@@ -1,14 +1,32 @@
-// Test of Built-in Generation
-Proc P (G:Graph, A: N_P<Int>(G))
+// Test of Built-in #1
+Proc P (G:Graph, A: N_P<Int>(G), r:Node(G))
 {
     Node_Set(G) S;
     Node_Seq(G) Q;
     Node_Order(G) O;
 
+    // Test for Collections
     For(t:G.Nodes)(t.A > 0)
     {
         S.Add(t);
         Q.PushFront(t);
         O.PushBack(t);
+    }
+
+    // Test for ToEdge, FromNode,ToNode
+    For(t:G.Nodes)(t.A > 1)
+    {
+        Foreach(s: t.Nbrs) 
+        {
+            Edge(G) e = s.ToEdge();
+            Node(G) u = e.FromNode();
+            Node(G) v = e.ToNode();
+        }
+    }
+
+    // Test of IsNbr
+    For(t:G.Nodes)(t.IsNbr(r))
+    {
+        t.A = t.A + 1;
     }
 }

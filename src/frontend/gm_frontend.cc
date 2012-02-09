@@ -143,20 +143,26 @@ ast_node* GM_expr_conversion(ast_node* left, ast_node* type, int l, int c)
     n->set_col(c);
     return n;
 }
-ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, ast_node* body, ast_node* filter, int l, int c)
+ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, ast_node* body, ast_node* filter, ast_node* src2, int l, int c)
 {
     assert( iter->get_nodetype() == AST_ID);
     assert( src->get_nodetype() == AST_ID);
     assert( body->is_expr());
-    if (filter != NULL)
-        assert( filter->get_nodetype() == AST_EXPR);
+
+    if (filter != NULL) {
+        assert((filter->get_nodetype() == AST_EXPR) ||
+               (filter->get_nodetype() == AST_EXPR_BUILTIN));
+    }
+    if (src2 != NULL)
+        assert( src2->get_nodetype() == AST_ID);
     assert( gm_is_iter_type(iter_op));
-    assert( (op == GMREDUCE_MAX) || (op == GMREDUCE_MIN) || (op == GMREDUCE_PLUS) || (op == GMREDUCE_MULT) );
+    assert( (op == GMREDUCE_MAX) || (op == GMREDUCE_MIN) || (op == GMREDUCE_PLUS) || (op == GMREDUCE_MULT) || (op == GMREDUCE_AND) || (op == GMREDUCE_OR) );
 
     ast_expr_reduce* n = ast_expr_reduce::new_reduce_expr(
             op, (ast_id*) iter, (ast_id*) src, 
             iter_op, (ast_expr*)body, (ast_expr*) filter);
 
+    n->set_source2((ast_id*)src2);
     n->set_line(l);
     n->set_col(c);
     return n;
@@ -361,13 +367,18 @@ ast_node* GM_defer_assign(ast_node* lhs, ast_node* rhs, ast_node* id)
     }
 }
 
-ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sent, ast_node* filter, bool is_seq, bool is_backward)
+ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sent, ast_node* filter, bool is_seq, bool is_backward, ast_node* source2)
 {
     assert(id->get_nodetype() == AST_ID);
     assert(source->get_nodetype() == AST_ID);
     assert(sent->is_sentence());
     if (filter!= NULL)
-        assert(filter->get_nodetype() == AST_EXPR);
+        assert((filter->get_nodetype() == AST_EXPR)
+               ||(filter->get_nodetype() == AST_EXPR_BUILTIN)
+              );
+    if (source2 != NULL) {
+        assert(source2->get_nodetype() == AST_ID);
+    }
 
     assert(gm_is_iter_type(iter_typ));
     ast_id* i = (ast_id*) id;
@@ -378,6 +389,7 @@ ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sen
     ast_foreach* fe =  ast_foreach::new_foreach(i, s, b, iter_typ, e);
     fe->set_sequential(is_seq);
     fe->set_reverse_iteration(is_backward);
+    fe->set_source2((ast_id*)source2);
     return fe;
 }
 
@@ -501,7 +513,6 @@ ast_node* GM_foreign_sent_mut(ast_node* foreign, lhs_list* list)
 gm_frontend::gm_frontend() : curr_proc(NULL), curr_idlist(NULL),vardecl_removed(false) 
 {
     init_steps();
-    init_op_type_rules(); 
 }
 
 gm_frontend::~gm_frontend() {

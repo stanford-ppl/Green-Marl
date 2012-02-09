@@ -293,6 +293,12 @@ void gm_make_normal_assign(ast_assign* a)
         case GMREDUCE_MULT:
             new_rhs = ast_expr::new_biop_expr(GMOP_MULT, base, org_rhs);
             break;
+        case GMREDUCE_AND:
+            new_rhs = ast_expr::new_biop_expr(GMOP_AND, base, org_rhs);
+            break;
+        case GMREDUCE_OR:
+            new_rhs = ast_expr::new_biop_expr(GMOP_OR, base, org_rhs);
+            break;
         case GMREDUCE_MIN:
             new_rhs = ast_expr::new_biop_expr(GMOP_MIN, base, org_rhs);
             break;

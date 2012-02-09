@@ -30,7 +30,7 @@ public:
     void set_return_type(ast_typedecl* t) {ret = t;}
 
     // post apply
-    bool apply(ast_sent* s) 
+    virtual bool apply(ast_sent* s) 
     {
         bool okay = true;
         switch(s->get_nodetype()) {
@@ -97,6 +97,11 @@ public:
                         gm_get_type_string(summary_rhs));
 
                     okay = false;
+                }
+
+                if (warn) {
+                    printf("warning: adding type convresion %s->%s\n", gm_get_type_string(summary_rhs), gm_get_type_string(summary_lhs) );
+                    coercion_targets[r->get_expr()] = summary_lhs;
                 }
                 break;
             }
@@ -200,6 +205,11 @@ public:
             }
         }
 
+        if (warn) {
+            printf("warning: adding type convresion %s->%s\n", gm_get_type_string(summary_rhs), gm_get_type_string(summary_lhs) );
+            coercion_targets[a->get_rhs()] = summary_lhs;
+        }
+
         return true;
     }
 
@@ -218,9 +228,13 @@ public:
 private:
     bool _is_okay;
     ast_typedecl* ret;
+
+public:
+    std::map<ast_expr*, int > coercion_targets;
 };
 
 
+extern void gm_insert_explicit_type_conversion_for_assign_or_return(std::map<ast_expr*, int >& targets);
 //bool gm_frontend::do_typecheck_step5_check_assign(ast_procdef* p)
 void gm_fe_typecheck_step5::process(ast_procdef* p)
 {
@@ -228,4 +242,8 @@ void gm_fe_typecheck_step5::process(ast_procdef* p)
     T.set_return_type(p->get_return_type());
     p->traverse_post(&T);
     set_okay(T.is_okay());
+    if (T.is_okay()) {
+        gm_insert_explicit_type_conversion_for_assign_or_return(T.coercion_targets);
+
+    }
 }

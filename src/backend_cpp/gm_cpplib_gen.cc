@@ -156,14 +156,64 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     sprintf(str_buf,"(%s.%s[%s+1] - %s.%s[%s])", 
                         i->getTypeInfo()->get_target_graph_id() -> get_genname(), BEGIN, i->get_genname(), 
                         i->getTypeInfo()->get_target_graph_id() -> get_genname(), BEGIN, i->get_genname());
+                    Body.push(str_buf);
                     break;
                 case GM_BLTIN_NODE_IN_DEGREE:
                     sprintf(str_buf,"(%s.%s[%s+1] - %s.%s[%s])", 
                             i->getTypeInfo()->get_target_graph_id() -> get_genname(), R_BEGIN, i->get_genname(), 
                             i->getTypeInfo()->get_target_graph_id() -> get_genname(), R_BEGIN, i->get_genname());
+                    Body.push(str_buf);
+                    break;
+                case GM_BLTIN_NODE_IS_NBR:
+                    sprintf(str_buf,"%s.is_neighbor(",
+                            i->getTypeInfo()->get_target_graph_id() -> get_genname());
+                    Body.push(str_buf);
+                    main->generate_expr(e->get_args().front());
+                    sprintf(str_buf,",%s)", i->get_genname() );
+                    Body.push(str_buf);
                     break;
                 default:assert(false); break;
             }        
+            return;
+
+        case GMTYPE_NODEITER_NBRS:
+        case GMTYPE_NODEITER_IN_NBRS:
+        case GMTYPE_NODEITER_UP_NBRS:
+        case GMTYPE_NODEITER_DOWN_NBRS:
+            switch(method_id) {
+                case GM_BLTIN_NODE_TO_EDGE:
+                {
+                    const char* alias_name = i->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
+                    assert(alias_name != NULL);
+                    assert(strlen(alias_name) > 0);
+                    sprintf(str_buf,"%s", alias_name);
+                }
+                break;
+                default:assert(false);
+            }
+            Body.push(str_buf);
+            return;
+
+        case GMTYPE_EDGE:
+            switch(method_id) {
+                case GM_BLTIN_EDGE_FROM:
+                {
+                    sprintf(str_buf,"%s.%s[%s]", 
+                        i->getTypeInfo()->get_target_graph_id() -> get_genname(), 
+                        FROM_IDX,
+                        i->get_genname());
+                }
+                break;
+                case GM_BLTIN_EDGE_TO:
+                {
+                    sprintf(str_buf,"%s.%s[%s]", 
+                        i->getTypeInfo()->get_target_graph_id() -> get_genname(), 
+                        NODE_IDX,
+                        i->get_genname());
+                }
+                break;
+                default:assert(false);
+            }
             Body.push(str_buf);
             return;
 

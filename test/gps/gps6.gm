@@ -1,0 +1,29 @@
+
+// Test of non-canonical form
+//   * There can be many inner foreach statesments
+//     (As long as they are 'pusing' loops)
+//   * Those inner loops can be also be inside If or While statements
+Proc gps6(G: Graph, A,B,C: N_P<Float>(G))
+{
+    Foreach(n: G.Nodes)
+    {
+        If (n.A > 0) {
+            Foreach(t: n.Nbrs) {
+                t.B += n.A;
+            }
+        }
+        Else {
+            Foreach(t: n.Nbrs) {
+                t.B += n.C;
+            }
+        }
+
+        Float cnt = n.A;
+        While (cnt>0) {
+            cnt  = cnt -1;
+            Foreach(t:n.Nbrs) {
+                t.B += t.C;
+            }
+        }
+    }
+}

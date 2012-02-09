@@ -10,8 +10,10 @@
 #include "gm_lock.h"
 #include "gm_bitmap.h"
 #include "gm_mem_helper.h"
+
 #include "gm_bfs_template.h"
 #include "gm_dfs_template.h"
+#include "gm_common_neighbor_iter.h"
 
 #include "gm_set.h"
 #include "gm_seq.h"

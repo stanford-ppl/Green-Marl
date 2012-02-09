@@ -264,8 +264,15 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     if (b->has_receiver_loops())
     {
         set_receiver_generate(true);
+        Body.NL();
+        Body.pushln("// Begin msg receive");
+        Body.pushln("for(MessageData _msg : _msgs) {");
+
         std::list<ast_foreach*>& R = b->get_receiver_loops();
         std::list<ast_foreach*>::iterator I;
+        if (R.size() != 1) {
+            gm_baseindent_reproduce(4);
+        }
         for(I=R.begin(); I!=R.end(); I++)
         {
             ast_foreach* fe = *I;
@@ -274,15 +281,20 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
             fe->reproduce(0);
             gm_flush_reproduce(); 
             Body.pushln("-----*/");
-            get_lib()->generate_message_receive_begin(
-                    fe, Body);
+            get_lib()->generate_message_receive_begin( fe, Body, b, R.size()==1);
 
-            generate_sent(fe->get_body());
+            if (fe->get_body()->get_nodetype() == AST_SENTBLOCK) {
+                generate_sent_block((ast_sentblock*)fe->get_body(), false);
+            } else {
+                generate_sent(fe->get_body());
+            }
 
-            get_lib()->generate_message_receive_end(
-                    fe, Body);
+            get_lib()->generate_message_receive_end( fe, Body, R.size()==1);
         }
         set_receiver_generate(false);
+        Body.pushln("}");
+        Body.NL();
+        gm_baseindent_reproduce(3);
     }
 
     //---------------------------------------------------------

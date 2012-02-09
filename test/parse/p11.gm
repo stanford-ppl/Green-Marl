@@ -1,0 +1,12 @@
+
+// test of p11
+// test of common nbr
+Procedure P(G:Graph, A,B: N_P<Int>(G), n:Node(G))
+{
+    Foreach(t: G.Nodes) {
+        Foreach(s: t.CommonNbrs(n))
+        {
+            t.A += s.B;
+        }
+    }
+}

@@ -38,19 +38,44 @@ class main_t
             exit(EXIT_FAILURE);
         }
 
-        //---------------------------------
-        // Load graph
-        //---------------------------------
+
+        int num = atoi(argv[2]);
+        printf("running with %d threads\n", num);
+        gm_rt_set_num_threads(num); // gm_runtime.h
+
+        //--------------------------------------------
+        // Load graph anc creating reverse edges
+        //--------------------------------------------
+        struct timeval T1, T2;
         char *fname = argv[1];
+        gettimeofday(&T1, NULL); 
         b = G.load_binary(fname);
         if (!b) {
             printf("error reading graph\n");
             exit(EXIT_FAILURE);
         }
+        gettimeofday(&T2, NULL); 
+        printf("graph loading time=%lf\n", 
+            (T2.tv_sec - T1.tv_sec)*1000 + 
+            (T2.tv_usec - T1.tv_usec)*0.001 
+        );
 
-        int num = atoi(argv[2]);
-        printf("running with threads = %d\n", num);
-        gm_rt_set_num_threads(num); // gm_runtime.h
+        gettimeofday(&T1, NULL); 
+        G.make_reverse_edges();
+        gettimeofday(&T2, NULL); 
+        printf("reverse edge creation time=%lf\n", 
+            (T2.tv_sec - T1.tv_sec)*1000 + 
+            (T2.tv_usec - T1.tv_usec)*0.001 
+        );
+
+        gettimeofday(&T1, NULL); 
+        G.do_semi_sort();
+        gettimeofday(&T2, NULL); 
+        printf("semi sorting time=%lf\n", 
+            (T2.tv_sec - T1.tv_sec)*1000 + 
+            (T2.tv_usec - T1.tv_usec)*0.001 
+        );
+
 
         //------------------------------------------------
         // Any extra preperation Step (provided by the user)
@@ -61,11 +86,10 @@ class main_t
             exit(EXIT_FAILURE);
         }
 
-        struct timeval T1, T2;
         gettimeofday(&T1, NULL); 
         b = run();
         gettimeofday(&T2, NULL); 
-        printf("time=%lf\n", 
+        printf("running time=%lf\n", 
             (T2.tv_sec - T1.tv_sec)*1000 + 
             (T2.tv_usec - T1.tv_usec)*0.001 
             - time_to_exclude

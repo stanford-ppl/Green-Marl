@@ -194,7 +194,7 @@ public:
     virtual void generate_sent_assign(ast_assign *a);
     virtual void generate_sent_if(ast_if *a);
     virtual void generate_sent_while(ast_while *w);
-    virtual void generate_sent_block(ast_sentblock *b);
+    virtual void generate_sent_block(ast_sentblock *b, bool need_brace = true);
     virtual void generate_sent_return(ast_return *b);
     virtual void generate_sent_call(ast_call *c) {assert(false);}
     virtual void generate_sent_foreign(ast_foreign *f) ;

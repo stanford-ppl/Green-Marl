@@ -434,6 +434,7 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
         //----------------------------------------------------
         ast_procdef* proc = FE.get_current_proc();
         gm_symtab* vars = proc->get_symtab_var();
+        gm_symtab* fields = proc->get_symtab_field();
         std::vector<gm_symtab_entry*>& E = vars-> get_entries();
         for(int i=0;i<E.size();i++) {
             gm_symtab_entry* e = E[i];
@@ -445,6 +446,33 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
                 if (e->find_info_bool(CPPBE_INFO_USE_REVERSE_EDGE))
                 {
                     sprintf(temp, "%s.%s();", e->getId()->get_genname(), MAKE_REVERSE);
+                    Body.pushln(temp);
+                }
+                if (e->find_info_bool(CPPBE_INFO_NEED_SEMI_SORT))
+                {
+                    bool has_edge_prop = false;
+                    // Semi-sorting must be done before edge-property creation
+                    std::vector<gm_symtab_entry*>& F = fields-> get_entries();
+                    for(int j=0;j<F.size();j++) {
+                        gm_symtab_entry* f = F[j];
+                        if ((f->getType()->get_target_graph_sym() == e) &&
+                            (f->getType()->is_edge_property()))
+                            has_edge_prop = true;
+                    }
+                    if (has_edge_prop) {
+                        Body.pushln("//[xxx] edge property must be created before semi-sorting");
+                        sprintf(temp, "assert(%s.%s());", e->getId()->get_genname(), IS_SEMI_SORTED);
+                        Body.pushln(temp);
+                    }
+                    else {
+                        sprintf(temp, "%s.%s();", e->getId()->get_genname(), SEMI_SORT);
+                        Body.pushln(temp);
+                    }
+                }
+
+                if (e->find_info_bool(CPPBE_INFO_NEED_FROM_INFO))
+                {
+                    sprintf(temp, "%s.%s();", e->getId()->get_genname(), PREPARE_FROM_INFO);
                     Body.pushln(temp);
                 }
             }
@@ -580,12 +608,16 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
             else generate_rhs_field(a->get_lhs_field()); 
 
             Body.pushln(";");
-            if (r_type = GMREDUCE_PLUS) {
+            if (r_type == GMREDUCE_PLUS) {
                 sprintf(temp, "%s = %s + (", temp_var_new, temp_var_old); Body.push(temp); 
             } else if (r_type == GMREDUCE_MULT) {
                 sprintf(temp, "%s = %s * (", temp_var_new, temp_var_old); Body.push(temp); 
             } else if (r_type == GMREDUCE_MAX) {
                 sprintf(temp, "%s = std::max (%s, ", temp_var_new, temp_var_old); Body.push(temp); 
+            } else if (r_type == GMREDUCE_OR) {
+                sprintf(temp, "%s = %s || (", temp_var_new, temp_var_old); Body.push(temp); 
+            } else if (r_type == GMREDUCE_AND) {
+                sprintf(temp, "%s = %s && (", temp_var_new, temp_var_old); Body.push(temp); 
             } else if (r_type == GMREDUCE_MIN) {
                 sprintf(temp, "%s = std::min (%s, ", temp_var_new, temp_var_old); Body.push(temp); 
             } else {assert(false);}

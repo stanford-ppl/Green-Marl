@@ -82,6 +82,7 @@ public:
                     _error = true;
                 }
 
+#if 0
                 if (found_inner) {
                     gm_backend_error(GM_ERROR_GPS_MULTIPLE_INNER_LOOP,
                              s->get_line(), s->get_col(), "");
@@ -93,6 +94,7 @@ public:
                              s->get_line(), s->get_col(), "");
                     _error = true;
                 }
+#endif
 
                 found_inner = true;
             }

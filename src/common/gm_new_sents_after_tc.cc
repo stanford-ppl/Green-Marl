@@ -117,6 +117,12 @@ ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type)
             init_val = ast_expr::new_inf_expr(false);
             init_val->set_type_summary(gm_get_sized_inf_type(lhs_type));
             break;
+        case GMREDUCE_AND:  
+            init_val = ast_expr::new_bval_expr(true);
+            break;
+        case GMREDUCE_OR:  
+            init_val = ast_expr::new_bval_expr(false);
+            break;
         default: 
             printf("%d %s \n", reduce_type, gm_get_reduce_string(reduce_type) );
             assert(false);

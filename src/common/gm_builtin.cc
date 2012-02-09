@@ -1,7 +1,7 @@
 #include "gm_frontend.h"
 #include "gm_misc.h"
 #include "gm_builtin.h"
-
+ 
 
 static int gm_get_type_from_string(const char* s) {
     assert(s!=NULL);
@@ -34,6 +34,7 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
 
     // parse string
     char* temp = gm_strdup(def->def_string);
+    char* temp_org = temp;
 
     if (temp[0] == '*') { // synonym
 
@@ -49,6 +50,11 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
         //this->res_type = org_def->res_type;
 
     } else {
+        if (temp[0] == '!') {
+            this->need_strict = true;
+            temp = temp+1;
+        }
+
         // parse and fill
         char *p;
         p= strtok(temp, ":");
@@ -96,7 +102,7 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
         }
     }
 
-    delete [] temp;
+    delete [] temp_org;
 }
 
 void gm_builtin_def::add_info_int(const char* key, int v)
@@ -160,7 +166,7 @@ gm_builtin_manager::~gm_builtin_manager() {
 }
 
 
-gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char* orgname, bool is_strict)
+gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char* orgname)
 {
     std::list<gm_builtin_def*>::iterator i;
     for(i=defs.begin(); i!=defs.end(); i++)
@@ -173,6 +179,7 @@ gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char
                 if (d->is_synonym_def()) return d->get_org_def();
                 else return d;
             }
+            bool is_strict = d->need_strict_source_type();
             if (is_strict) continue;
             if (def_src == GMTYPE_VOID) continue;
             assert(!gm_is_prim_type(def_src));
@@ -187,8 +194,10 @@ gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char
     return NULL;
 }
 
-gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, int id, bool is_strict)
+gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, int id)
 {
+    bool is_strict;
+
     std::list<gm_builtin_def*>::iterator i;
     for(i=defs.begin(); i!=defs.end(); i++)
     {
@@ -197,6 +206,8 @@ gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, int id, bo
 
         int def_src = d->get_source_type_summary();
         if (def_src == source_type) goto found;
+
+        is_strict = d->need_strict_source_type();
 
         if (is_strict) continue;
         if (source_type == GMTYPE_VOID) continue;

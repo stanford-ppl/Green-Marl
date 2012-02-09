@@ -118,6 +118,8 @@ class gm_frontend
             return c;
         }
 
+        void init();
+
 
     private:
         void set_current_proc(ast_procdef *p) {_curr_proc = p;}

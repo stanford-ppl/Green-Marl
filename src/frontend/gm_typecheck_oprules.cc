@@ -52,7 +52,7 @@ gm_type_rule(int O,int T1, int T2, int R, int C) : opclass(O), type1(T1), type2(
     int coercion_rule;
 };
 
-static std::vector<gm_type_rule> GM_TYPE_RULES;
+std::vector<gm_type_rule> GM_TYPE_RULES;
 #define NEW_RULE(O, T1,T2, TR, C) \
 { gm_type_rule R(O, T1, T2, TR, C); GM_TYPE_RULES.push_back(R); }
 
@@ -71,11 +71,14 @@ static void init_op_rules()
     NEW_RULE(TER_OP,       T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_LEFT,        COERCION_ALL);
 
     NEW_RULE(ASSIGN_OP,    T_NUMERIC_INF,    T_NUMERIC_INF,  RESULT_LEFT,        COERCION_RIGHT);
-    NEW_RULE(ASSIGN_OP,    T_COMPATIBLE,     T_COMPATIBLE,        RESULT_LEFT,        COERCION_RIGHT);
+    NEW_RULE(ASSIGN_OP,    T_COMPATIBLE,     T_COMPATIBLE,   RESULT_LEFT,        COERCION_RIGHT);
 };
 void gm_frontend::init_op_type_rules()
 {
     init_op_rules();
+}
+void gm_frontend::init() {
+    init_op_type_rules();
 }
 
 
@@ -106,26 +109,23 @@ static inline bool is_applicable_rule(gm_type_rule& R, int op, int type1, int ty
         if (R.type1 == T_COMPATIBLE) 
             return gm_is_same_type(type1,type2) || 
                    gm_is_same_node_or_edge_compatible_type(type1, type2);
-        else 
-            return in_typeclass(R.type1, type1) && in_typeclass(R.type2, type2);
+        else {
+            bool b =  in_typeclass(R.type1, type1) && in_typeclass(R.type2, type2);
+             
+            return b;
+        }
     }
-}
-
-bool gm_is_t2_equal_or_large_numeric_type(int t1, int t2)
-{
-    if (t1 == t2) return true;
-    if ((t1 == GMTYPE_INT) && (t2 == GMTYPE_LONG)) return true;
-    if ((t1 == GMTYPE_DOUBLE) && (t2 == GMTYPE_FLOAT)) return true;
     return false;
 }
 
-bool gm_is_losing_precision(int from, int to) 
+
+bool gm_is_t2_larger_than_t1(int t1, int t2)
 {
-    if (from == GMTYPE_FOREIGN_EXPR) return false;
-    if (gm_is_t2_equal_or_large_numeric_type(from, to)) return false;
-    if ((from == GMTYPE_INT) && (to == GMTYPE_DOUBLE)) return false;
-    return true;
+    if ((t1 == GMTYPE_INT)   && (t2 == GMTYPE_LONG)) return true;
+    if ((t1 == GMTYPE_FLOAT) && (t2 == GMTYPE_DOUBLE)) return true;
+    return false;
 }
+
 
 // return false if coercion cannot be done.
 // (lose of precision should be checked separately)
@@ -145,14 +145,19 @@ static inline void apply_coercion(int c_type, int t1, int t2, int& t1_new, int& 
         if (gm_is_inf_type(t2)) {t2_new = t1; return;}
 
         // type-up. (i.e. INT -> LONG)
-        if (gm_is_t2_equal_or_large_numeric_type(t1,t2)) { t1_new = t2; return ; }
-        if (gm_is_t2_equal_or_large_numeric_type(t2,t1)) { t2_new = t1; return ; }
+        if (gm_is_t2_larger_than_t1(t1,t2)) { t1_new = t2; return ; }
+        if (gm_is_t2_larger_than_t1(t2,t1)) { t2_new = t1; return ; }
 
-        // floating <-> int
-        // type-up to double.
-        t1_new = t2_new = GMTYPE_DOUBLE; 
-        t1_warn = gm_is_losing_precision(t1, t1_new);
-        t2_warn = gm_is_losing_precision(t2, t2_new);
+        // crossing boundary (i.e. <int/long> <-> <float/double>))))
+        if (gm_is_float_type(t1)) {
+            t2_new = t1;
+            t2_warn = true;
+
+        } else {
+            assert(gm_is_float_type(t2));
+            t1_new = t2;
+            t1_warn = true;
+        }
 
         return;
     }
@@ -162,7 +167,10 @@ static inline void apply_coercion(int c_type, int t1, int t2, int& t1_new, int& 
         if (gm_is_inf_type(t2)) {t2_new = t1; return;}
 
         t2_new = t1;
-        t2_warn = gm_is_losing_precision(t2, t2_new);
+
+        if ((t1!= t2) && (!gm_is_t2_larger_than_t1(t2, t1))) {
+            t2_warn = true;
+        }
         return;
     }
 
@@ -189,6 +197,7 @@ bool gm_is_compatible_type(int op, int t1, int t2,
     for(int i =  0; i < GM_TYPE_RULES.size(); i++) 
     {
         gm_type_rule& R = GM_TYPE_RULES[i];
+
 
         if (is_applicable_rule(R, op, t1, t2))
         {

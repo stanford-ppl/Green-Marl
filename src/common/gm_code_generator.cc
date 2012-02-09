@@ -56,12 +56,16 @@ void gm_code_generator::generate_expr(ast_expr*e)
 #define RP ")"
 void gm_code_generator::generate_expr_type_conversion(ast_expr * e)
 {
-    _Body.push(LP);
+    bool no_lp1 = (e->get_up_op() == NULL);
+    bool need_lp2 = e->get_left_op()->is_builtin();
+    if (!no_lp1)_Body.push(LP);
     _Body.push(LP);
     _Body.push(get_type_string(e->get_type_summary()));
     _Body.push(RP);
+    if (need_lp2) _Body.push(LP);
     generate_expr(e->get_left_op());
-    _Body.push(RP);
+    if (need_lp2) _Body.push(RP);
+    if (!no_lp1)_Body.push(RP);
 }
 
 void gm_code_generator::generate_expr_foreign(ast_expr* e)
@@ -288,18 +292,18 @@ void gm_code_generator::generate_sent_foreign(ast_foreign* f)
     _Body.pushln(";");
 }
 
-void gm_code_generator::generate_sent_block(ast_sentblock* sb)
+void gm_code_generator::generate_sent_block(ast_sentblock* sb, bool need_brace)
 {
     std::list<ast_sent*> &sents = sb->get_sents();
     
     std::list<ast_sent*>::iterator i;
-    _Body.pushln("{") ;
+    if (need_brace) _Body.pushln("{") ;
     for(i=sents.begin(); i!=sents.end(); i++)
     {
         ast_sent* s = *i;
         generate_sent(s);
     }
-    _Body.pushln("}") ;
+    if (need_brace) _Body.pushln("}") ;
 }
 
 void gm_code_generator::generate_sent_assign(ast_assign* a)

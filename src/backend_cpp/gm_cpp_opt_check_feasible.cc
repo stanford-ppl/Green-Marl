@@ -38,6 +38,7 @@ public:
   }
   bool apply(gm_symtab_entry* e, int gm_symtab_type)
   {
+      /*
       if (e->getType()->is_edge_iterator())
       {
           gm_backend_error(GM_ERROR_CPP_UNSUPPORTED_SYNTAX,
@@ -45,8 +46,8 @@ public:
                   e->getId()->get_col(),
                   "Edge iteration.");
           set_okay(false);
-
       }
+      */
       return true;
   }
 

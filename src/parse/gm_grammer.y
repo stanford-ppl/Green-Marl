@@ -42,8 +42,9 @@
 %token T_RETURN
 %token T_BFS  T_RBFS T_FROM T_TO T_BACK
 %token T_FOREACH T_FOR 
-%token T_NODES T_EDGES T_NBRS T_IN_NBRS T_NBR_EDGES T_UP_NBRS T_DOWN_NBRS
-%token T_SUM T_PRODUCT T_MIN T_MAX T_COUNT
+%token T_NODES T_EDGES T_NBRS T_IN_NBRS T_UP_NBRS T_DOWN_NBRS
+%token T_COMMON_NBRS;
+%token T_SUM T_PRODUCT T_MIN T_MAX T_COUNT T_ALL T_EXIST
 %token T_EMPTYLINE
 %token T_AND T_OR T_EQ T_NEQ T_LE T_GE
 %token T_IF  T_ELSE T_DO T_WHILE
@@ -70,7 +71,7 @@
 %type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
 %type <ptr> edge_type node_type nodeedge_type set_type
 %type <ptr> scala field
-%type <ival>  iterator1
+%type <pair>  iterator1
 %type <ival> reduce_eq
 %type <ival> reduce_op reduce_op2
 %type <bval> inf
@@ -204,24 +205,24 @@
   sent_do_while : T_DO sent_block T_WHILE '(' bool_expr ')' { $$ = GM_dowhile($5, $2); }
 
                 
-  sent_foreach :  T_FOREACH foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, false, $2.b1); GM_set_lineinfo($$, @1.first_line, @1.first_column);}
-               |  T_FOR     foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, true, $2.b1); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+  sent_foreach :  T_FOREACH foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, false, $2.b1, $2.p3); GM_set_lineinfo($$, @1.first_line, @1.first_column);}
+               |  T_FOR     foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, true, $2.b1, $2.p3); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
-  foreach_header : '(' id ':' id     '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $6;}
-                 | '(' id ':' id '+' '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $7;}
-                 | '(' id ':' id '-' '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = true;  $$.i1 = $7;}
+  foreach_header : '(' id ':' id     '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $6.i1; $$.p3 = $6.p1;}
+                 | '(' id ':' id '+' '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $7.i1; $$.p3 = $7.p1;}
+                 | '(' id ':' id '-' '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = true;  $$.i1 = $7.i1; $$.p3 = $7.p1;}
 
   foreach_filter :                          { $$ = NULL;}
                  | '(' bool_expr ')'        { $$ = $2; }
 
-  iterator1 : T_NODES                       { $$ = GMTYPE_NODEITER_ALL;}
-            | T_EDGES                       { $$ = GMTYPE_EDGEITER_ALL;}
-            | T_NBRS                        { $$ = GMTYPE_NODEITER_NBRS;}
-            | T_NBR_EDGES                   { $$ = GMTYPE_EDGEITER_NBRS;}
-            | T_IN_NBRS                     { $$ = GMTYPE_NODEITER_IN_NBRS;}
-            | T_UP_NBRS                     { $$ = GMTYPE_NODEITER_UP_NBRS;}
-            | T_DOWN_NBRS                   { $$ = GMTYPE_NODEITER_DOWN_NBRS;}
-            | T_ITEMS                       { $$ = GMTYPE_ITER_ANY; /* should be resolved after typechecking */}
+  iterator1 : T_NODES                       { $$.i1 = GMTYPE_NODEITER_ALL; $$.p1=NULL;}
+            | T_EDGES                       { $$.i1 = GMTYPE_EDGEITER_ALL; $$.p1=NULL;}
+            | T_NBRS                        { $$.i1 = GMTYPE_NODEITER_NBRS; $$.p1=NULL;}
+            | T_IN_NBRS                     { $$.i1 = GMTYPE_NODEITER_IN_NBRS; $$.p1=NULL;}
+            | T_UP_NBRS                     { $$.i1 = GMTYPE_NODEITER_UP_NBRS; $$.p1=NULL;}
+            | T_DOWN_NBRS                   { $$.i1 = GMTYPE_NODEITER_DOWN_NBRS;$$.p1=NULL;}
+            | T_ITEMS                       { $$.i1 = GMTYPE_ITER_ANY;$$.p1=NULL; /* should be resolved after typechecking */}
+            | T_COMMON_NBRS '(' id ')'      { $$.i1 = GMTYPE_NODEITER_COMMON_NBRS;$$.p1 = $3; }
 
   sent_dfs    : T_DFS bfs_header_format bfs_filters sent_block dfs_post
                 { $$ = GM_bfs( $2.p1,$2.p2,$2.p3,  $3.p1,$3.p2, $5.p2,   $4,$5.p1,   $2.b1, false); 
@@ -319,16 +320,16 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
                                     {$$ = GM_expr_uop($2, GMOP_NEG, @1.first_line, @1.first_column); }
              | '!' expr    %prec NEG    {$$ = GM_expr_luop($2, GMOP_NOT, @1.first_line, @1.first_column); }
              | '(' prim_type ')' expr %prec NEG    {$$ = GM_expr_conversion($4, $2 , @1.first_line, @1.first_column); }
-             | reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}' {$$ = GM_expr_reduceop($1, $3, $5, $7, $13, $10, @1.first_line, @1.first_column);}
-             | reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}'              {$$ = GM_expr_reduceop($1, $3, $5, $7, $10, NULL, @1.first_line, @1.first_column);}
+             | reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}' {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $13, $10, $7.p1, @1.first_line, @1.first_column);}
+             | reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}'              {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $10, NULL, $7.p1, @1.first_line, @1.first_column);}
              | reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr ')'   {
-                 $$ = GM_expr_reduceop($1, $3, $5, $7, 
+                 $$ = GM_expr_reduceop($1, $3, $5, $7.i1, 
                          GM_expr_ival(1, @1.first_line, @1.first_column),
-                         $10, @1.first_line, @1.first_column);}
-             | reduce_op2 '(' id ':' id '.' iterator1 ')' '{' expr '}'   {
-                 $$ = GM_expr_reduceop($1, $3, $5, $7, 
+                         $10, $7.p1, @1.first_line, @1.first_column);}
+             | reduce_op2 '(' id ':' id '.' iterator1 ')' {
+                 $$ = GM_expr_reduceop($1, $3, $5, $7.i1, 
                      GM_expr_ival(1, @1.first_line, @1.first_column),
-                     NULL, @1.first_line, @1.first_column);}
+                     NULL, $7.p1, @1.first_line, @1.first_column);}
 
              | expr '%' expr    {$$ = GM_expr_biop($1, $3, GMOP_MOD, @2.first_line, @2.first_column);}
              | expr '*' expr    {$$ = GM_expr_biop($1, $3, GMOP_MULT, @2.first_line, @2.first_column);}
@@ -363,6 +364,8 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
              | T_PRODUCT               {$$ = GMREDUCE_MULT; }
              | T_MIN                   {$$ = GMREDUCE_MIN;  }
              | T_MAX                   {$$ = GMREDUCE_MAX;  }
+             | T_EXIST                 {$$ = GMREDUCE_OR;  }
+             | T_ALL                   {$$ = GMREDUCE_AND;  }
 
   reduce_op2 : T_COUNT                {$$ = GMREDUCE_PLUS; } 
 

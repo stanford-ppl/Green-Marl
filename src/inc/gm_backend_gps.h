@@ -75,8 +75,8 @@ class gm_gpslib : public gm_graph_library {
     // caller should delete var_name later
     const char* get_message_field_var_name(int gm_type, int idx);
     virtual void generate_message_send(ast_foreach* fe, gm_code_writer& Body);
-    virtual void generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body);
-    virtual void generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body);
+    virtual void generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm);
+    virtual void generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body, bool is_only_comm);
 
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master); 
     protected:
@@ -87,7 +87,7 @@ class gm_gpslib : public gm_graph_library {
 };
 
 
-#define GPS_TAG_COMM_ID    "GPS_TAG_COMM_ID"
+DEF_STRING(GPS_TAG_COMM_ID);
 
 //-----------------------------------------------------------------
 // interface for graph library Layer
@@ -181,12 +181,12 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_rhs_field(ast_field* i) ;
         virtual void generate_expr_builtin(ast_expr* e); 
         virtual void generate_expr_minmax(ast_expr* e);
-        virtual void generate_expr_type_conversion(ast_expr *e) {assert(false);}
+        //virtual void generate_expr_type_conversion(ast_expr *e) {assert(false);}
         virtual void generate_expr_abs(ast_expr*e) {assert(false);}
         virtual void generate_lhs_id(ast_id* i); 
 
         virtual void generate_lhs_field(ast_field* i);
-        virtual void generate_sent_nop(ast_nop* n) {}
+        virtual void generate_sent_nop(ast_nop* n) {assert(false);}
         virtual void generate_sent_reduce_assign(ast_assign *a); 
         virtual void generate_sent_defer_assign(ast_assign *a) {assert(false);}
         virtual void generate_sent_vardecl(ast_vardecl *a) {assert(false);}

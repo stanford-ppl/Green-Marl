@@ -201,7 +201,7 @@ void gm_gps_gen::generate_sent_return(ast_return *r)
 void gm_gps_gen::generate_sent_foreach(ast_foreach* fe)
 {
     // must be a sending foreach
-    assert(gm_is_iteration_on_neighbors(fe->get_iter_type()) ||
+    assert(gm_is_iteration_on_out_neighbors(fe->get_iter_type()) ||
            gm_is_iteration_on_down_neighbors(fe->get_iter_type()));
 
     get_lib()->generate_message_send(fe, Body);

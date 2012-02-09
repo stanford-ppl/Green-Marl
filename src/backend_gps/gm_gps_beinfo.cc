@@ -21,14 +21,14 @@ void gm_gps_beinfo::add_communication_loop(ast_foreach* fe)
     comm_size_info[fe] = S;  // create zero communication 
 
     //  a new ID.
-    //assert(fe->find_info(GPS_TAG_COMM_ID) == NULL);
-    //fe->add_info(GPS_TAG_COMM_ID, new ast_extra_info(issue_comm_id()));
+    //printf("adding communication loop for %s\n", fe->get_iterator()->get_genname());
 }
 
 
 // Add a symbol to a communication loop
 void gm_gps_beinfo::add_communication_symbol(ast_foreach* fe, gm_symtab_entry* sym)
 {
+    //printf("adding communication symbol %s for %s\n", sym->getId()->get_genname(), fe->get_iterator()->get_genname());
     assert(comm_symbol_info.find(fe) != comm_symbol_info.end());
 
     std::list<gm_gps_communication_symbol_info>& sym_info = comm_symbol_info[fe];

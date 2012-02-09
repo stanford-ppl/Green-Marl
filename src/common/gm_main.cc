@@ -176,6 +176,7 @@ int main (int argc, char** argv)
     else if (gm_is_same_string(name, "gps"))
     {
         BACK_END = & GPS_BE;
+        OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
     }
     else {
         printf("Unsupported target = %s\n", name);
@@ -186,6 +187,11 @@ int main (int argc, char** argv)
     // parse compiler stop string
     //---------------------------------------
     parse_stop_string();
+
+    //--------------------------------------
+    // Do additional initalization
+    //--------------------------------------
+    FE.init();
 
 
     //-------------------------------------

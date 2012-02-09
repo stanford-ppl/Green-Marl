@@ -28,12 +28,15 @@ struct GM_comp_args  {
 #define GMARGFLAG_OUTDIR            "o"
 #define GMARGFLAG_OPT_LEV           "O"
 #define GMARGFLAG_VERB_LEV          "V"
+#define GMARGFLAG_OPT_
 //#define GMARGFLAG_STOP_MAJOR        "DS"
 //#define GMARGFLAG_STOP_MINOR        "Ds"
 #define GMARGFLAG_STOP_STRING       "DS"
 #define GMARGFLAG_REPRODUCE         "Dr"
 #define GMARGFLAG_PRINTRW           "Dw"
 #define GMARGFLAG_PRINTBB           "Db" 
+#define GMARGFLAG_FLIP_REVERSE      "FlipRev"
+#define GMARGFLAG_FLIP_PULL         "FlipPull"
 //#define GMARGFLAG_DUMPIR            "Dd"
 //#define GMARGFLAG_NOMERGE           "NoMerge"
 //#define GMARGFLAG_NOSCREDUCE        "NoScalarReduce"
@@ -47,13 +50,16 @@ static struct GM_comp_args GM_compiler_options[] =
     {GMARGFLAG_OUTDIR, GMARG_STRING, "Output directory.", "."},
     {GMARGFLAG_OPT_LEV, GMARG_INT,   "Optimization Level (tobe implemented)", "1"},
     {GMARGFLAG_VERB_LEV, GMARG_INT,   "Verbosity Level 0:silent, 1:show compile stage", "0"},
+
+    {GMARGFLAG_FLIP_REVERSE, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of reverse edges", "0"},
+    {GMARGFLAG_FLIP_PULL,    GMARG_BOOL, "Enable 'flipping edges' to avoid the use of pull-based computation", "0"},
+
     {GMARGFLAG_STOP_STRING, GMARG_STRING, "(For debug) Stop the compiler after certain stage. <string>=(step)[.(step)]", "0"},
-    //{GMARGFLAG_STOP_MAJOR, GMARG_INT, "(For internal debug) Stop after given compiler stage (major #).\n"
-                                      //"\t\t\t1: parsing, 2:front-end, 3:common-opt, 4:back-end-opt, 0: do-not-stop", "0"},
-    //{GMARGFLAG_STOP_MINOR, GMARG_INT, "(For internal debug) Stop after given compiler stage (minor #). 0:after the final minor stage of major stage, 1~n:after specific minor stage", "0"},
-    {GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For debug) When stopped, reproduce green marl program", "1"},
+
+    {GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For debug) When stopped, reproduce green-marl program", "1"},
     {GMARGFLAG_PRINTRW, GMARG_BOOL,  "(For  debug) When stopped, print rw analysis information", "0"},
     {GMARGFLAG_PRINTBB, GMARG_BOOL,  "(For  gps-debug) When stopped, print basicblock information", "0"},
+
     //{GMARGFLAG_DUMPIR, GMARG_BOOL, "(For internal debug) When stopped, dump IR tree", "0"},
     //{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},
     //{GMARGFLAG_NOSCREDUCE, GMARG_BOOL, "(For Paper writing) Disable Optimizing Scalar Reduction", "0"},

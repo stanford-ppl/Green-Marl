@@ -394,7 +394,8 @@ class ast_typedecl : public ast_node {  // property or type
         ast_typedecl(): 
             ast_node(AST_TYPEDECL),target_type(NULL),
             target_graph(NULL), target_collection(NULL),
-            target_nbr(NULL),_well_defined(false) {} 
+            target_nbr(NULL), target_nbr2(NULL),
+            _well_defined(false) {} 
 
     public:
         // give a deep copy
@@ -405,6 +406,7 @@ class ast_typedecl : public ast_node {  // property or type
             p->target_graph = (this->target_graph == NULL) ? NULL : this->target_graph->copy(true);
             p->target_collection = (this->target_collection == NULL) ? NULL : this->target_collection->copy(true);
             p->target_nbr = (this->target_nbr == NULL) ? NULL : this->target_nbr->copy(true);
+            p->target_nbr2 = (this->target_nbr2 == NULL) ? NULL : this->target_nbr2->copy(true);
             p->line = this->line;
             p->col = this->col;
             p->_well_defined = this->_well_defined;
@@ -459,6 +461,17 @@ class ast_typedecl : public ast_node {  // property or type
             t->type_id = iter_type;
             t->target_nbr = tg; 
             tg->set_parent(t);
+            return t;
+        }
+        static ast_typedecl* new_common_nbr_iterator( ast_id* tg, ast_id* tg2, int iter_type)
+        {
+            assert(gm_is_any_nbr_iter_type(iter_type));
+            ast_typedecl* t = new ast_typedecl();
+            t->type_id = iter_type;
+            t->target_nbr = tg; 
+            t->target_nbr2 = tg2; 
+            tg->set_parent(t);
+            tg2->set_parent(t);
             return t;
         }
         static ast_typedecl* new_set(ast_id* tg, int set_type)
@@ -536,6 +549,7 @@ class ast_typedecl : public ast_node {  // property or type
         bool is_void()          {return gm_is_void_type(type_id);}
         bool is_all_graph_iterator() {return gm_is_all_graph_iter_type(type_id);}
         bool is_any_nbr_iterator()   {return gm_is_any_nbr_iter_type(type_id);}
+        bool is_common_nbr_iterator() {return gm_is_common_nbr_iter_type(type_id);}
         bool is_sequence_collection()   {return gm_is_sequence_collection_type(type_id);}
         bool is_order_collection()      {return gm_is_order_collection_type(type_id);}
         bool is_set_collection()        {return gm_is_set_collection_type(type_id);}
@@ -564,6 +578,7 @@ class ast_typedecl : public ast_node {  // property or type
         ast_id* get_target_graph_id() {return target_graph;}
         ast_id* get_target_collection_id()  {return target_collection;}
         ast_id* get_target_nbr_id()         {return target_nbr;}
+        ast_id* get_target_nbr2_id()        {return target_nbr2;}
         ast_typedecl* get_target_type() { return target_type;}
         int getTypeSummary() {  // same as get type id
             return type_id;
@@ -600,6 +615,7 @@ class ast_typedecl : public ast_node {  // property or type
         ast_id* target_graph;       // for property, node, edge, set
         ast_id* target_collection;  // for set-iterator set
         ast_id* target_nbr;         // for nbr-iterator
+        ast_id* target_nbr2;        // for common neighbor iterator
         bool _well_defined;
 };
 
@@ -932,7 +948,7 @@ class ast_expr : public ast_node
         ast_expr* get_up_op() {return up;} // same to parent. but expr
         ast_expr* get_cond_op() {return cond;}
         void set_left_op(ast_expr* l) { left = l; }
-        void set_right_op(ast_expr* r) { right = r;}
+        void set_right_op(ast_expr* r) { right = r; }
         void set_up_op(ast_expr* e) {up = e;}
         void set_cond_op(ast_expr* e) {cond = e;}
 
@@ -1039,6 +1055,7 @@ class ast_expr_reduce : public ast_expr
         delete body;
         delete filter;
         delete src;
+        delete src2;
         delete_symtabs();
     }
     static ast_expr_reduce* 
@@ -1078,15 +1095,18 @@ class ast_expr_reduce : public ast_expr
     ast_id* get_iterator() {return iter;}
     ast_expr* get_filter() {return filter;}
     ast_expr* get_body() {return body;}
+    ast_id* get_source2()  {return src2;}
 
+    void set_source2(ast_id* i) {src2 = i; if (i!=NULL) i->set_parent(this);}
     void set_filter(ast_expr* e) {filter = e;}
     void set_body(ast_expr* e) {body = e;}
     virtual ast_expr* copy(bool cp_syminfo = false);
 
     private:
-    ast_expr_reduce() : ast_expr(), iter(NULL), src(NULL),body(NULL),filter(NULL) {  set_nodetype(AST_EXPR_RDC); create_symtabs();}
+    ast_expr_reduce() : ast_expr(), iter(NULL), src(NULL),body(NULL),filter(NULL),src2(NULL) {  set_nodetype(AST_EXPR_RDC); create_symtabs();}
     ast_id* iter;
     ast_id* src;
+    ast_id* src2;
     ast_expr* body;
     ast_expr* filter;
     int reduce_type;
@@ -1267,12 +1287,13 @@ class ast_foreach : public ast_sent
             delete body;
             delete iterator;
             delete source;
+            delete source2;
             delete cond;
             //delete symbol info
             delete_symtabs();
         }
     private: 
-        ast_foreach() : ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), cond(NULL) , seq_exe(false), use_reverse(false)
+        ast_foreach() : ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), cond(NULL) , seq_exe(false), use_reverse(false),source2(NULL)
     {create_symtabs();}
 
     public:
@@ -1305,7 +1326,8 @@ class ast_foreach : public ast_sent
         int get_iter_type() {return iter_type;} // GM_ITERATORS
         void set_iter_type(int i) {iter_type = i;} // GM_ITERATORS
                                                 // should be same to get_iterator()->get_type_summary()
-
+        ast_id* get_source2()       {return source2;} 
+        void set_source2(ast_id* i) {source2 = i; if (i!=NULL) i->set_parent(this);}
         void set_filter(ast_expr* expr=NULL) {cond = expr; if (cond!=NULL) cond->set_parent(this);}
         void set_body(ast_sent* s) {body = s; assert(body!=NULL); body->set_parent(this);}
         virtual bool has_scope() {return true;}
@@ -1325,6 +1347,7 @@ class ast_foreach : public ast_sent
         ast_sent* body;
         ast_id* iterator;
         ast_id* source; // graph 
+        ast_id* source2; // common nbr
         int iter_type; // GM_ITERATORS
         ast_expr* cond;
         bool seq_exe;

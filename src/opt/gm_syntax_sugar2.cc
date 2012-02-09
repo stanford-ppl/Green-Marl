@@ -10,7 +10,7 @@
 // syntax sugar elimination (after type resolution)
 //  1. Group assignment  --> foreach
 //  2. Reduce op(i.e Sum) --> foreach + reduce assign
-//  3. 'G' symbol in BFS node-condition --> iter2
+//  3. 'G' symbol in BFS node-condition --> iter2 (XXX what?)
 //----------------------------------------------------
 
 
@@ -273,6 +273,8 @@ void ss2_reduce_op::post_process_body(
         case GMREDUCE_MULT: t_name_base= "_P"; break; // Product
         case GMREDUCE_MIN:  t_name_base= "_Mn"; break; // Min
         case GMREDUCE_MAX:  t_name_base= "_Mx"; break; // Max
+        case GMREDUCE_AND:  t_name_base= "_A"; break;
+        case GMREDUCE_OR:   t_name_base= "_E"; break;
         default: assert(false);
     }
 
@@ -326,10 +328,15 @@ void ss2_reduce_op::post_process_body(
     // 3.1 create foreach
     ast_id* foreach_it = old_iter->copy();
     ast_id* foreach_src = target->get_source()->copy(true); // copy SymInfo as well
+    ast_id* foreach_src2 = target->get_source2();
+    if (foreach_src2 !=NULL)
+        foreach_src2 = foreach_src2->copy(true);
+
     int iter_type = target->get_iter_type();
 
     // see common/new_sent_after_tc.cc
     ast_foreach* fe_new = gm_new_foreach_after_tc(foreach_it, foreach_src, foreach_body, iter_type);
+    fe_new->set_source2(foreach_src2);
 
 
     // 3.2 add foreach 

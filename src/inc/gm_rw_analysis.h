@@ -70,6 +70,7 @@ static int gm_get_range_from_itertype(int itype) {
         case GMTYPE_NODEITER_NBRS:
         case GMTYPE_NODEITER_IN_NBRS:
         case GMTYPE_EDGEITER_NBRS:
+        case GMTYPE_NODEITER_COMMON_NBRS: 
         case GMTYPE_EDGEITER_IN_NBRS: return GM_RANGE_RANDOM;
         case GMTYPE_NODEITER_BFS:
         case GMTYPE_EDGEITER_BFS: return GM_RANGE_LEVEL;

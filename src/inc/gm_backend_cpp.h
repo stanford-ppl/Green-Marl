@@ -215,24 +215,25 @@ public:
     std::list<int> reduce_op;
 };
 
+//-----------------------------------
+// define labels, which is nothing but a string 
+//-----------------------------------
+DEF_STRING(LABEL_PAR_SCOPE);
+DEF_STRING(CPPBE_INFO_HAS_BFS);
+DEF_STRING(CPPBE_INFO_IS_PROC_ENTRY);
+DEF_STRING(CPPBE_INFO_HAS_PROPDECL);
+DEF_STRING(CPPBE_INFO_BFS_SYMBOLS);
+DEF_STRING(CPPBE_INFO_BFS_NAME);
+DEF_STRING(CPPBE_INFO_BFS_LIST);
+DEF_STRING(CPPBE_INFO_COLLECTION_LIST);
+DEF_STRING(CPPBE_INFO_COLLECTION_ITERATOR);
+DEF_STRING(CPPBE_INFO_COMMON_NBR_ITERATOR);
+DEF_STRING(CPPBE_INFO_NEIGHBOR_ITERATOR);
+DEF_STRING(CPPBE_INFO_USE_REVERSE_EDGE);
+DEF_STRING(CPPBE_INFO_USE_DOWN_NBR);
+DEF_STRING(CPPBE_INFO_NEED_SEMI_SORT);
+DEF_STRING(CPPBE_INFO_NEED_FROM_INFO);
 
-// LABELS for extra info
-//static const char* LABEL_ITER_ALIAS = "LABEL_ITER_ALIAS";
-//static const char* LABEL_LIST_OF_SET = "LABEL_LIST_OF_SET";
-//static const char* LABEL_NEED_MEM   = "LABEL_NEED_MEM";
-static const char* LABEL_PAR_SCOPE  = "LABEL_PAR_SCOPE";
-
-static const char* CPPBE_INFO_HAS_BFS       = "CPPBE_INFO_HAS_BFS";
-static const char* CPPBE_INFO_HAS_PROPDECL  = "CPPBE_INFO_HAS_PROPDECL";
-static const char* CPPBE_INFO_IS_PROC_ENTRY = "CPPBE_INFO_IS_PROC_ENTRY";
-static const char* CPPBE_INFO_BFS_SYMBOLS   = "CPPBE_INFO_BFS_SYMBOLS";
-static const char* CPPBE_INFO_BFS_NAME      = "CPPBE_INFO_BFS_NAME";
-static const char* CPPBE_INFO_BFS_LIST      = "CPPBE_INFO_BFS_LIST";
-static const char* CPPBE_INFO_COLLECTION_LIST      = "CPPBE_INFO_COLLECTION_LIST";
-static const char* CPPBE_INFO_COLLECTION_ITERATOR  = "CPPBE_INFO_COLLECTION_ITERATOR";
-static const char* CPPBE_INFO_NEIGHBOR_ITERATOR    = "CPPBE_INFO_NEIGHBOR_ITERATOR";
-static const char* CPPBE_INFO_USE_REVERSE_EDGE     = "CPPBE_INFO_USE_REVERSE_EDGE";
-static const char* CPPBE_INFO_USE_DOWN_NBR = "CPPBE_INFO_USE_DOWN_NBR";
 
 //----------------------------------------
 // For runtime
@@ -255,6 +256,9 @@ static const char* CPPBE_INFO_USE_DOWN_NBR = "CPPBE_INFO_USE_DOWN_NBR";
 #define RT_INCLUDE      "gm.h"
 #define PREPARE         "prepare"
 #define FREEZE          "freeze"
-#define MAKE_REVERSE    "make_reverse_edges"
+#define MAKE_REVERSE        "make_reverse_edges"
+#define SEMI_SORT           "do_semi_sort"
+#define IS_SEMI_SORTED      "is_semi_sorted"
+#define PREPARE_FROM_INFO   "prepare_edge_source"
 
 #endif
