@@ -400,7 +400,7 @@ static int get_total_size(gm_gps_communication_size_info& I)
         gm_gps_communication_size_info& SYMS = \
           info->find_communication_size_info(*I); \
         int sz = get_total_size(SYMS); \
-        if (sz == 0) continue;\
+        if (sz == 0) {continue;}\
         if (is_first) {             \
             is_first = false;       \
             sprintf(str_buf,"if (m_type == %d) ", SYMS.id);\
@@ -413,7 +413,7 @@ static int get_total_size(gm_gps_communication_size_info& I)
 
 #define MESSAGE_PER_TYPE_LOOP_END() \
     }\
-    Body.pushln("//code never reach here");\
+    Body.pushln("//for empty messages (signaling only)");\
 
 static void generate_message_write_each(gm_gpslib* lib, int cnt, int gm_type, gm_code_writer& Body)
 { 
@@ -456,7 +456,7 @@ static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer&
         sprintf(str_buf, "return (1+%d); // type + data", get_total_size(SYMS));
         Body.pushln(str_buf);
     MESSAGE_PER_TYPE_LOOP_END() 
-    Body.pushln("return 0; ");
+    Body.pushln("return 1; ");
     Body.pushln("}");
 }
 
@@ -623,17 +623,20 @@ static bool is_symbol_defined_in_bb(gm_gps_basic_block* b, gm_symtab_entry *e)
     else return true;
 }
 
-void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block *b)
+void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block *b, bool is_only_comm)
 {
   gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
 
-  std::list<gm_gps_communication_symbol_info>& LIST
-      = info->get_all_communication_symbols(fe);
+  std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(fe);
+  int comm_id = info->find_communication_size_info(fe).id;
 
-  Body.NL();
-  Body.pushln("// Begin msg receive");
-  Body.pushln("for(MessageData _msg : _msgs) {");
+  char temp[1024];
+  if (!is_only_comm) {
+      sprintf(temp, "if (_msg.m_type == %d) {", comm_id);
+      Body.pushln(temp);
+  }
+
   std::list<gm_gps_communication_symbol_info>::iterator I;
   for(I=LIST.begin(); I!=LIST.end(); I++)
   {
@@ -661,9 +664,12 @@ void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& 
     Body.pushln(";");
   }
 }
-void gm_gpslib::generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body)
+
+void gm_gpslib::generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body, bool is_only_comm)
 {
-  Body.pushln("} // end of msg receive");
+  if (!is_only_comm) {
+      Body.pushln("}");
+  }
 }
 
 void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body, bool is_master)

@@ -292,18 +292,18 @@ void gm_code_generator::generate_sent_foreign(ast_foreign* f)
     _Body.pushln(";");
 }
 
-void gm_code_generator::generate_sent_block(ast_sentblock* sb)
+void gm_code_generator::generate_sent_block(ast_sentblock* sb, bool need_brace)
 {
     std::list<ast_sent*> &sents = sb->get_sents();
     
     std::list<ast_sent*>::iterator i;
-    _Body.pushln("{") ;
+    if (need_brace) _Body.pushln("{") ;
     for(i=sents.begin(); i!=sents.end(); i++)
     {
         ast_sent* s = *i;
         generate_sent(s);
     }
-    _Body.pushln("}") ;
+    if (need_brace) _Body.pushln("}") ;
 }
 
 void gm_code_generator::generate_sent_assign(ast_assign* a)

@@ -67,7 +67,9 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         {
             ast_foreach* fe = (ast_foreach*) s;
             foreach_depth++;
-            if (foreach_depth == 2) in_loop = fe;
+            if (foreach_depth == 2) {
+                in_loop = fe;
+            }
             else if (foreach_depth == 1) {
                 out_iterator = fe->get_iterator()->getSymInfo();
             }

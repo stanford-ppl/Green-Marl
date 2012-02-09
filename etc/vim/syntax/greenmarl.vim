@@ -20,7 +20,7 @@ syn keyword GMBuiltin Log Rand Pow Exp Uniform
 syn keyword GMBuiltin PushBack PopBack PushFront PopFront Has Add Remove
 syn keyword GMBuiltin FromNode ToNode ToEdge IsNbrFrom
 syn keyword GMKeyword InBFS UpNbrs DownNbrs From InDFS InReverse InPost
-syn keyword GMKeyword Sum Product Max Min Count
+syn keyword GMKeyword Sum Product Max Min Count All Exist
 syn keyword GMType Int Float Double Bool Graph Long Node Edge DGraph UGraph
 syn keyword GMType Node_Set N_S Node_Order N_O Node_Sequence Node_Seq N_Q
 syn keyword GMOP And
