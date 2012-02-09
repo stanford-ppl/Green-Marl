@@ -100,12 +100,28 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         // RHS
         if (e->is_id()) {
             ast_id* i = e->get_id();
-            update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS);  
+            
+            if (!i->getSymInfo()->getType()->is_node_iterator())
+            {
+                update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS);  
 
-            // check if this symbol should be sent over network
-            if (foreach_depth == 2) {
-                if (gps_get_global_syminfo(i)->is_scoped_outer()) {
-                    beinfo->add_communication_symbol(in_loop, i->getSymInfo());
+                // check if this symbol should be sent over network
+                if (foreach_depth == 2) {
+                    if (gps_get_global_syminfo(i)->is_scoped_outer()) {
+                        beinfo->add_communication_symbol(in_loop, i->getSymInfo());
+                    }
+                }
+            }
+            else { // node iterator
+                if (foreach_depth == 2) {
+                    if (i->getSymInfo() == out_iterator)
+                    {
+                        update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS);  
+
+                        if (gps_get_global_syminfo(i)->is_scoped_outer()) {
+                            beinfo->add_communication_symbol(in_loop, i->getSymInfo());
+                        }
+                    }
                 }
             }
         } 

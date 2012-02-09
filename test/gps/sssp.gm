@@ -1,0 +1,38 @@
+
+// This routine is, in fact, BFS 
+Procedure sssp(G:Graph, dist:N_P<Int>(G), root: Node(G))
+{
+    N_P<Bool>(G) updated;
+    N_P<Bool>(G) updated_nxt;
+    N_P<Int> (G) dist_nxt;
+    Bool fin = False;
+
+    Foreach(n:G.Nodes) {
+        n.dist = (n==root) ? 0 : +INF;
+        n.updated = (n == root) ? True: False;
+        n.updated_nxt = False;
+    }
+
+    While(!fin) {
+        fin = True;
+
+        Foreach(n: G.Nodes) {
+            Foreach(s: n.InNbrs)(s.updated) {
+                //----------------------------------------------
+                // Need to implement arg-min assignment
+                //
+                // Semantic: n.updated_nxt is written only when 
+                //           minimum dist_next is selected
+                //----------------------------------------------
+                //<n.dist_next, n.updated_nxt> min= <s.dist +1, True>; 
+
+                n.dist_nxt min= s.dist +1;
+            }
+        }
+
+        G.dist = G.dist_nxt;
+        G.updated = G.updated_nxt;
+        G.updated_nxt = False;
+        fin = ! Exist(n: G.Nodes){n.updated};
+    }
+}

@@ -81,7 +81,7 @@ void gm_gps_gen::do_generate_master_class()
         gm_symtab_entry* s = *I;
 
         // input argument
-        if (!s->getType()->is_primitive()) continue;
+        if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;
         if (s->isReadable()) {
             sprintf(temp, "if (arg_map.containsKey(\"%s\")) {", s->getId()->get_genname());
             Body.pushln(temp);
@@ -96,6 +96,9 @@ void gm_gps_gen::do_generate_master_class()
                 case GMTYPE_LONG:  Body.pushln("Long.parseLong(s);"); break;
                 case GMTYPE_FLOAT: Body.pushln("Float.parseFloat(s);"); break;
                 case GMTYPE_DOUBLE: Body.pushln("Double.parseDouble(s);"); break;
+                case GMTYPE_NODE: get_lib()->is_node_type_int() ? Body.pushln("Integer.parseInt(s);") : 
+                                  Body.pushln("Long.parseLong(s);");
+                                  break;
                 default: assert(false);
             }
             Body.pushln("}");
@@ -149,7 +152,8 @@ void gm_gps_gen::do_generate_master_scalar()
     {
         gm_symtab_entry *e = *I;
         gps_syminfo* syminfo = (gps_syminfo*) e->find_info(TAG_BB_USAGE);
-        if (!syminfo->is_used_in_master()) continue;
+        if (!syminfo->is_used_in_master() &&
+            !syminfo->is_argument()) continue;
 
         sprintf(temp, "private %s %s;", 
                 get_type_string(
@@ -199,7 +203,7 @@ void gm_gps_gen::do_generate_shared_variables_keys()
         if ((syminfo->is_used_in_vertex() ||
              syminfo->is_used_in_sender() ||
              syminfo->is_used_in_receiver()) &&
-            syminfo->is_used_in_master())
+             (syminfo->is_used_in_master() || syminfo->is_argument()))
         {
             Body.push("private static final String ");
             Body.push(get_lib()->create_key_string(
@@ -394,7 +398,7 @@ void gm_gps_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b)
         gps_syminfo* local_info = I->second;
         gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(TAG_BB_USAGE);
         if (!global_info->is_scalar()) continue;
-        if (!global_info->is_used_in_master()) continue;
+        if (!global_info->is_used_in_master() && !global_info->is_argument()) continue;
         if (local_info->is_used_as_rhs()) {
             // create a broad cast variable
             get_lib()->generate_broadcast_send_master(

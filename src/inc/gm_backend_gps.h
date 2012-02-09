@@ -29,13 +29,6 @@ class gm_gpslib : public gm_graph_library {
     gm_gps_gen* get_main() {return main;}
 
     virtual const char* get_header_info() {return "";}
-    /*
-    virtual const char* get_type_string(ast_typedecl* t) {get_type_string(t, true);}
-    virtual const char* get_type_string_primitive(int gm_type); 
-    virtual const char* get_type_string(ast_typedecl* t, bool is_master);
-    */
-    //virtual bool generate_builtin(ast_expr_builtin* e) 
-
 
     virtual bool do_local_optimize(); 
 
@@ -69,6 +62,8 @@ class gm_gpslib : public gm_graph_library {
     virtual void generate_vertex_prop_access_remote_rhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_prepare(gm_code_writer& Body);
 
+
+    virtual void generate_node_iterator_rhs(ast_id* id, gm_code_writer& Body);
     virtual int get_type_size(ast_typedecl* t); 
     virtual int get_type_size(int gm_type); 
 
@@ -79,6 +74,9 @@ class gm_gpslib : public gm_graph_library {
     virtual void generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body, bool is_only_comm);
 
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master); 
+
+    // true if node == int false, if node == long
+    virtual bool is_node_type_int() {return true;}
     protected:
 
     private:
@@ -181,9 +179,9 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_rhs_field(ast_field* i) ;
         virtual void generate_expr_builtin(ast_expr* e); 
         virtual void generate_expr_minmax(ast_expr* e);
-        //virtual void generate_expr_type_conversion(ast_expr *e) {assert(false);}
-        virtual void generate_expr_abs(ast_expr*e) {assert(false);}
+        virtual void generate_expr_abs(ast_expr*e); 
         virtual void generate_lhs_id(ast_id* i); 
+        virtual void generate_expr_inf(ast_expr* e);
 
         virtual void generate_lhs_field(ast_field* i);
         virtual void generate_sent_nop(ast_nop* n) {assert(false);}

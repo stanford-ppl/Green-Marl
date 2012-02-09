@@ -9,18 +9,20 @@
 const char* gm_gps_gen::get_type_string(int gm_type)
 {
     switch(gm_type) {
-            case GMTYPE_INT: return "int";
-            case GMTYPE_LONG: return "long";
-            case GMTYPE_FLOAT: return "float";
-            case GMTYPE_DOUBLE: return "double";
-            case GMTYPE_BOOL: return "boolean";
-            default: assert(false);
+        case GMTYPE_INT: return "int";
+        case GMTYPE_LONG: return "long";
+        case GMTYPE_FLOAT: return "float";
+        case GMTYPE_DOUBLE: return "double";
+        case GMTYPE_BOOL: return "boolean";
+        case GMTYPE_NODE: if (get_lib()->is_node_type_int()) return "int";
+                          else return "long";
+        default: assert(false);
     }
 }
 
 const char* gm_gps_gen::get_type_string(ast_typedecl* T, bool is_master)
 {
-    if (T->is_primitive()) 
+    if (T->is_primitive() || T->is_node()) 
     {
         return (get_type_string(T->get_typeid()));
     }
@@ -73,7 +75,13 @@ void gm_gps_gen::generate_lhs_field(ast_field* f)
 
 void gm_gps_gen::generate_rhs_id(ast_id* i) 
 {
-    generate_lhs_id(i);
+    if (i->getSymInfo()->getType()->is_node_iterator())
+    {
+        get_lib()->generate_node_iterator_rhs(i, Body);
+    }
+    else {
+        generate_lhs_id(i);
+    }
 } 
 
 void gm_gps_gen::generate_rhs_field(ast_field* f)
@@ -245,3 +253,39 @@ void gm_gps_gen::generate_expr_builtin(ast_expr *e)
         assert(false);
     }
 }
+
+void gm_gps_gen::generate_expr_abs(ast_expr * e)
+{
+    Body.push("Math.abs(");
+    generate_expr(e->get_left_op());
+    Body.push(")");
+}
+
+
+void gm_gps_gen::generate_expr_inf(ast_expr *e)
+{
+    char temp[256];
+    assert(e->get_opclass() == GMEXPR_INF);
+    int t = e->get_type_summary();
+    switch(t) {
+       case GMTYPE_INF:
+       case GMTYPE_INF_INT:
+            sprintf(temp,"Integer.%s",e->is_plus_inf()?"MAX_VALUE":"MIN_VALUE"); // temporary
+            break;
+        case GMTYPE_INF_LONG:
+                    sprintf(temp,"Long.%s",e->is_plus_inf()?"MAX_VALUE":"MIN_VALUE"); // temporary
+                    break;
+        case GMTYPE_INF_FLOAT:
+            sprintf(temp,"Float.%s",e->is_plus_inf()?"MAX_VALUE":"MIN_VALUE"); // temporary
+            break;
+        case GMTYPE_INF_DOUBLE:
+            sprintf(temp,"Double.%s",e->is_plus_inf()?"MAX_VALUE":"MIN_VALUE"); // temporary
+            break;
+        default: 
+                    sprintf(temp,"%s",e->is_plus_inf()?"INT_MAX":"INT_MIN"); // temporary
+                    break;
+         }
+    _Body.push(temp);
+    return ;
+}
+

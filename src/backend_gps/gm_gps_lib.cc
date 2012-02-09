@@ -25,6 +25,11 @@ void gm_gpslib::generate_headers(gm_code_writer& Body)
     Body.pushln("import java.lang.Math;");
 }
 
+void gm_gpslib::generate_node_iterator_rhs(ast_id* id, gm_code_writer& Body)
+{
+    Body.push("getId()");
+}
+
 // scalar variable broadcast
 // master --> vertex
 void gm_gpslib::generate_broadcast_prepare(gm_code_writer& Body)
@@ -105,6 +110,10 @@ void gm_gpslib::generate_broadcast_variable_type(
             case GMTYPE_LONG:   Body.push("Long"); break;
             case GMTYPE_FLOAT:  Body.push("Float"); break;
             case GMTYPE_BOOL:  Body.push("Boolean"); break;
+            case GMTYPE_NODE:  
+                 if (is_node_type_int()) Body.push("Int");
+                 else Body.push("Long");
+                 break;
             default:
                assert(false);
                break;
