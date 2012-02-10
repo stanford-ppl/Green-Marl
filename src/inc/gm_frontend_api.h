@@ -21,6 +21,8 @@ extern "C" {
         int i3;
         bool b1;
         bool b2;
+        expr_list* e_list;
+        lhs_list* l_list;
     };
 
     // functions defined in GM_Lex 
@@ -70,6 +72,7 @@ extern "C" {
 
     extern ast_node* GM_normal_assign(ast_node* lhs, ast_node* rhs);
     extern ast_node* GM_reduce_assign(ast_node* lhs, ast_node* rhs, ast_node* itor, int gm_reduce_t);
+    extern ast_node* GM_argminmax_assign(ast_node* lhs, ast_node* rhs, ast_node* itor, int gm_reduce_t, lhs_list* l_list, expr_list* r_list);
     extern ast_node* GM_defer_assign(ast_node* lhs, ast_node* rhs, ast_node* itor);
 
     extern ast_node* GM_if(ast_node* cond, ast_node* then, ast_node* els);

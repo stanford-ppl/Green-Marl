@@ -14,6 +14,7 @@
 // Type-check Step 3: 
 //   (1) Resolve type of each expression
 //   (2) Check function call arguments
+//   (3) Check argminmax assign count
 //----------------------------------------------------------------
 
 // resolve type of every sub-expression
@@ -339,13 +340,50 @@ bool gm_typechecker_stage_3::check_uop(ast_expr* e)
 // defined in gm_coercion.cc
 extern void gm_insert_explicit_type_conversion_for_op(std::map<ast_expr*, int>& targets);
 
+class check_argmax_num_args_t : public gm_apply
+{
+public:
+    check_argmax_num_args_t() {
+        _is_okay = true;
+        set_for_sent(true);
+    }
+    // post apply
+    bool apply(ast_sent* e) 
+    {
+        if (e->get_nodetype() == AST_ASSIGN) {
+            ast_assign* a = (ast_assign*) e;
+            if (a->is_argminmax_assign()) {
+                int l_count = a->get_lhs_list().size();
+                int r_count = a->get_rhs_list().size();
+                if (l_count != r_count) {
+                    char temp[128];
+                    sprintf(temp, "lhs_count:%d, rhs_count:%d", l_count, r_count);
+                    gm_type_error(GM_ERROR_INVALID_ARGMAX_COUNT, a->get_line(), a->get_col(),temp);
+                    _is_okay = false;
+                }
+            }
+        }
+
+        return true;
+    }
+    bool is_okay() {return _is_okay;}
+private:
+    bool _is_okay;
+};
+
 void gm_fe_typecheck_step3::process(ast_procdef* p)
 {
     gm_typechecker_stage_3 T;
     p->traverse_post(&T);  // post-apply
-    set_okay(T.is_okay());
 
     if (T.is_okay()) {
         gm_insert_explicit_type_conversion_for_op(T.coercion_targets);
     }
+
+    check_argmax_num_args_t T2;
+    p->traverse_pre(&T2);
+
+    set_okay(T.is_okay() && T2.is_okay());
+
+
 }

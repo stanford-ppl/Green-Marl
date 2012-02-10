@@ -282,10 +282,35 @@ void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
             }
             if (get_bound() != NULL)  // REDUCE or DEFER
                 a->apply(get_bound());
+
+            if (is_argminmax_assign()) {
+                std::list<ast_node*>::iterator I;
+                for(I=l_list.begin(); I!= l_list.end(); I++)
+                {
+                    ast_node* n = *I;
+                    if (n->get_nodetype() == AST_ID) {
+                        ast_id* i = (ast_id*) n;
+                        a->apply(i);
+                    } else {
+                        ast_field* f = (ast_field*) n;
+                        a->apply(f->get_first());
+                        a->apply(f->get_second());
+                    }
+                }
+            } 
+
         }
     }
 
     get_rhs()->traverse(a, is_post, is_pre);
+    if (is_argminmax_assign()) {
+        std::list<ast_expr*>::iterator I;
+        for(I=r_list.begin(); I!=r_list.end(); I++)
+        {
+            ast_expr* e = *I;
+            e->traverse(a, is_post, is_pre);
+        }
+    }
 
     if (is_post) {
         bool b = a->has_separate_post_apply();
@@ -307,6 +332,28 @@ void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
                 if (b) a->apply2(get_bound());
                 else a->apply(get_bound());
             }
+            if (is_argminmax_assign()) {
+                std::list<ast_node*>::iterator I;
+                for(I=l_list.begin(); I!= l_list.end(); I++)
+                {
+                    ast_node* n = *I;
+                    if (n->get_nodetype() == AST_ID) {
+                        ast_id* i = (ast_id*) n;
+                        if (b) a->apply2(i);
+                        else a->apply(i);
+                    } else {
+                        ast_field* f = (ast_field*) n;
+                        if (b) {
+                            a->apply2(f->get_first());
+                            a->apply2(f->get_second());
+                        }
+                        else{
+                            a->apply(f->get_first());
+                            a->apply(f->get_second());
+                        }
+                    }
+                }
+            } 
         }
     }
 }

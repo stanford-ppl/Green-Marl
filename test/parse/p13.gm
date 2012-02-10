@@ -1,0 +1,10 @@
+// Test of argmax assignment
+Proc P(G: Graph, A:N_P<Int>(G))
+{
+    Int x = 0;
+    Node(G) y;
+    Bool is_positive;
+    Foreach(n:G.Nodes)
+        <x; y, is_positive> min= <n.A ; n, n.A > 1>;
+
+}

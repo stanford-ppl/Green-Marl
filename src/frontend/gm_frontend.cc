@@ -347,6 +347,44 @@ ast_node* GM_reduce_assign(ast_node* lhs, ast_node* rhs, ast_node* id, int reduc
         assert(false);
     }
 }
+ast_node* GM_argminmax_assign(ast_node* lhs, ast_node* rhs, ast_node* id, int reduce_type, lhs_list* l_list, expr_list* r_list)
+{
+    assert(rhs->is_expr());
+    if (id!=NULL)
+        assert(id->get_nodetype() == AST_ID);
+    ast_assign *a;
+
+    if (lhs->get_nodetype() == AST_ID)
+    {
+        a = ast_assign::new_assign_scala(
+                (ast_id*)lhs, (ast_expr*)rhs, GMASSIGN_REDUCE, (ast_id*)id, reduce_type);
+
+    }
+    else if (lhs->get_nodetype() == AST_FIELD)
+    {
+        a = ast_assign::new_assign_field(
+                (ast_field*)lhs, (ast_expr*)rhs, GMASSIGN_REDUCE, (ast_id*)id, reduce_type);
+    }
+    else {
+        assert(false);
+    }
+
+    a->set_argminmax_assign(true);
+    a->set_lhs_list(l_list->LIST); // shallow copy
+    a->set_rhs_list(r_list->LIST);
+    std::list<ast_node*>::iterator I;
+    for(I=l_list->LIST.begin(); I!=l_list->LIST.end(); I++) {
+        ast_node* i = *I;
+        i->set_parent(a);
+    }
+    std::list<ast_expr*>::iterator J;
+    for(J=r_list->LIST.begin(); J!=r_list->LIST.end(); J++) {
+        ast_expr* e = *J;
+        e->set_parent(a);
+    }
+
+    return a;
+}
 
 ast_node* GM_defer_assign(ast_node* lhs, ast_node* rhs, ast_node* id)
 {

@@ -1,0 +1,12 @@
+
+// Test of argmin
+Proc P(G: Graph, A,B,C: N_P<Int>(G))
+{
+  Int x, y;
+  Foreach(n:G.Nodes)
+  {
+      // lhs count does not match with rhs count
+      <x ; y> min=  <n.A ; n.B, n.C>;
+  }
+}
+

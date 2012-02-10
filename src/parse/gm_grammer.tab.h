@@ -1,10 +1,9 @@
 
 /* A Bison parser, made by GNU Bison 2.4.1.  */
 
-/* Skeleton interface for Bison's Yacc-like parsers in C
+/* Skeleton interface for Bison GLR parsers in C
    
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+      Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -109,13 +108,12 @@
 #endif
 
 
-
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+#ifndef YYSTYPE
 typedef union YYSTYPE
 {
 
-/* Line 1676 of yacc.c  */
-#line 24 "parse/gm_grammer.y"
+/* Line 2638 of glr.c  */
+#line 25 "parse/gm_grammer.y"
 
     int  info;
     long ival;
@@ -129,28 +127,30 @@ typedef union YYSTYPE
 
 
 
-/* Line 1676 of yacc.c  */
-#line 134 "./parse/gm_grammer.tab.h"
+/* Line 2638 of glr.c  */
+#line 132 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
-# define yystype YYSTYPE /* obsolescent; will be withdrawn */
-# define YYSTYPE_IS_DECLARED 1
 #endif
-
-extern YYSTYPE yylval;
 
 #if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
 typedef struct YYLTYPE
 {
+
   int first_line;
   int first_column;
   int last_line;
   int last_column;
+
 } YYLTYPE;
-# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
 # define YYLTYPE_IS_DECLARED 1
 # define YYLTYPE_IS_TRIVIAL 1
 #endif
 
+
+
+extern YYSTYPE yylval;
+
 extern YYLTYPE yylloc;
+
 

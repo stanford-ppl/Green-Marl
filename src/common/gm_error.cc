@@ -73,9 +73,12 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
         case GM_ERROR_GROUP_REDUCTION:
             printf("Group assignment cannot be a reduction\n");
             break;
+        case GM_ERROR_INVALID_ARGMAX_COUNT:
+            printf("Number of lhs does not match to number of rhs: %s\n", str1);
+            break;
 
         case GM_ERROR_NESTED_BFS:
-            printf("Currently, nested bfs is not supported\n");
+            printf("Currently, nested bfs/dfs is not supported\n");
             break;
         case GM_ERROR_NEED_PRIMITIVE:
             printf("need primitive type.\n");

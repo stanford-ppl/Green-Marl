@@ -1183,8 +1183,16 @@ class ast_assign : public ast_sent {
         bool is_target_scalar() {return get_lhs_type() == GMASSIGN_LHS_SCALA;}
         void set_rhs(ast_expr* r) {rhs= r; rhs->set_parent(this);}
 
+        bool is_argminmax_assign() {return arg_minmax;}
+        void set_argminmax_assign(bool b) {arg_minmax = b;}
+
+        std::list<ast_node*>& get_lhs_list() {return l_list;}
+        std::list<ast_expr*>& get_rhs_list() {return r_list;}
+        void set_lhs_list(std::list<ast_node*>& L) {l_list = L;} 
+        void set_rhs_list(std::list<ast_expr*>& R) {r_list = R;} 
+
     private:
-        ast_assign(): ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL) {}
+        ast_assign(): ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false) {}
 
         int assign_type; // normal, deferred, reduce
         int lhs_type; // scalar, field
@@ -1193,6 +1201,12 @@ class ast_assign : public ast_sent {
         ast_field* lhs_field;
         ast_expr* rhs;
         ast_id* bound;  // bounding iterator  
+
+        bool arg_minmax;
+
+        std::list<ast_node*> l_list;
+        std::list<ast_expr*> r_list;
+
 };
 
 class ast_vardecl : public ast_sent

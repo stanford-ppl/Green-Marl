@@ -316,11 +316,43 @@ void ast_expr_builtin::reproduce(int ind_level)
 
 void ast_assign::reproduce(int ind_level)
 {
+    bool argmin = is_argminmax_assign();
+
+    if (argmin) {
+        Out.push('<');
+    }
     if (lhs_type == GMASSIGN_LHS_SCALA) {
         lhs_scala->reproduce(0);
     } else if (lhs_type == GMASSIGN_LHS_FIELD) {
         lhs_field->reproduce(0);
     }
+
+    if (argmin) {
+        Out.push(" ; ");
+        std::list<ast_node*>& L = get_lhs_list(); 
+        std::list<ast_node*>::iterator I;
+        int cnt = 0;
+        int last = L.size();
+        for(I=L.begin(); I!=L.end(); I++, cnt++) {
+            ast_node* n = *I;
+            if (n->get_nodetype() == AST_FIELD) {
+                ast_field* f = (ast_field*) n;
+                f->reproduce(0);
+            }
+            else {
+                assert(n->get_nodetype() == AST_ID);
+                ast_id* i = (ast_id*) n;
+                i->reproduce(0);
+            }
+            if (cnt != (last-1)) {
+                Out.push(", ");
+            }
+        }
+
+        Out.push('>');
+    }
+
+
 
     if (assign_type == GMASSIGN_NORMAL) {
         Out.push(" = ");
@@ -334,7 +366,25 @@ void ast_assign::reproduce(int ind_level)
         assert(false);
     }
 
+    if (argmin) {
+        Out.push('<');
+    }
     rhs->reproduce(0);
+
+    if (argmin) {
+        Out.push(" ; ");
+        std::list<ast_expr*>& L = get_rhs_list(); 
+        std::list<ast_expr*>::iterator I;
+        int cnt = 0;
+        int last = L.size();
+        for(I=L.begin(); I!=L.end(); I++, cnt++) {
+            ast_expr* n = *I;
+            n->reproduce(0);
+            if (cnt != (last-1)) 
+                Out.push(", ");
+        }
+        Out.push('>');
+    }
 
    if ((assign_type == GMASSIGN_REDUCE) || (assign_type == GMASSIGN_DEFER)) {
        if (bound != NULL) {

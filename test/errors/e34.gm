@@ -1,0 +1,12 @@
+// Test of argmin
+Proc P(G: Graph, A,B,C: N_P<Int>(G))
+{
+  Int x, y;
+  Bool z;
+  Foreach(n:G.Nodes)
+  {
+      // type-mismatch at z and n.C
+      <x ; y, z> min=  <n.A ; n.B, n.C>;
+  }
+}
+

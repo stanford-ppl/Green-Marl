@@ -2,6 +2,7 @@
  * Grammer for Graph Langauge
  */
 
+
 %{
     #include <stdio.h>
     #include <string.h>
@@ -62,6 +63,7 @@
 %type <ptr> id lhs rhs expr bool_expr numeric_expr
 %type <ptr> sent sent_block  sent_assignment sent_variable_decl sent_foreach sent_if 
 %type <pair> foreach_header
+%type <pair> rhs_list2 lhs_list2
 %type <ptr> foreach_filter
 %type <ptr> sent_do_while sent_while sent_return sent_call
 %type <ptr> sent_reduce_assignment  sent_defer_assignment
@@ -69,15 +71,17 @@
 %type <pair> bfs_reverse bfs_filters dfs_post
 %type <ival> from_or_semi
 %type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
-%type <ptr> edge_type node_type nodeedge_type set_type
+%type <ptr> edge_type node_type nodeedge_type set_type optional_bind
 %type <ptr> scala field
+%type <ptr> sent_argminmax_assignment
 %type <pair>  iterator1
 %type <ival> reduce_eq
 %type <ival> reduce_op reduce_op2
+%type <ival> minmax_eq
 %type <bval> inf
 %type <ptr>  built_in
 %type <pair> bfs_header_format
-%type <e_list>  arg_list expr_list
+%type <e_list>  arg_list expr_list 
 %type <l_list>  lhs_list
 %type <ptr>  expr_user sent_user
 
@@ -93,6 +97,8 @@
 %left '+' '-'
 %left '*' '/' '%'
 %right NEG
+
+%glr-parser 
 
 %%
   prog :
@@ -181,7 +187,7 @@
   sb_end: '}'
 
   sent_list :
-            | sent_list  sent         { GM_add_sent($2); }
+            | sent_list  sent         { if ($2!=NULL) GM_add_sent($2); }
 
   sent: sent_assignment  ';'                { $$ = $1;}
       | sent_variable_decl ';'              { $$ = $1;}
@@ -197,6 +203,8 @@
       | sent_dfs                            { $$ = $1;}
       | sent_call ';'                       { $$ = $1;}
       | sent_user ';'                       { $$ = $1;}
+      | sent_argminmax_assignment ';'       { $$ = $1;}
+      | ';'                                 { $$ = NULL;}
 
   sent_call : built_in                      { $$ = GM_new_call_sent($1, true);}
 
@@ -271,24 +279,18 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
   var_target: id_comma_list                   { $$ = GM_finish_id_comma_list();}
 
   sent_assignment : lhs '=' rhs             { $$ = GM_normal_assign($1, $3); GM_set_lineinfo($$, @2.first_line, @2.first_column)}
-  sent_reduce_assignment : lhs reduce_eq rhs   { $$ = GM_reduce_assign($1, $3, NULL, $2); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
-                         | lhs reduce_eq rhs '@' id { $$ = GM_reduce_assign($1, $3, $5, $2); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
+  sent_reduce_assignment : lhs reduce_eq rhs optional_bind  { $$ = GM_reduce_assign($1, $3, $4, $2); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
+                         | lhs T_PLUSPLUS optional_bind{ $$ = GM_reduce_assign($1, GM_expr_ival(1, @2.first_line, @2.first_column), $3, GMREDUCE_PLUS); }
 
-                         | lhs T_PLUSPLUS {
-                             $$ = GM_reduce_assign($1, 
-                                     GM_expr_ival(1, @2.first_line, @2.first_column), 
-                                     NULL, GMREDUCE_PLUS);
-                             GM_set_lineinfo($$, @2.first_line, @2.first_column);}
-                         | lhs T_PLUSPLUS '@' id {
-                             $$ = GM_reduce_assign($1, 
-                                     GM_expr_ival(1, @2.first_line, @2.first_column), 
-                                     $4, GMREDUCE_PLUS);
-                             GM_set_lineinfo($$, @2.first_line, @2.first_column);}
+  sent_defer_assignment : lhs T_LE rhs optional_bind  { $$ = GM_defer_assign($1, $3, $4); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
 
+  sent_argminmax_assignment : lhs_list2 minmax_eq rhs_list2 optional_bind {
+                                  $$ = GM_argminmax_assign($1.p1, $3.p1, $4, $2, $1.l_list, $3.e_list);
+                                  GM_set_lineinfo($$, @2.first_line, @2.first_column);
+                              }
 
-  sent_defer_assignment : lhs T_LE rhs       { $$ = GM_defer_assign($1, $3, NULL); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
-                       | lhs T_LE rhs '@' id { $$ = GM_defer_assign($1, $3, $5); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
-
+  optional_bind :            { $$ = NULL; }
+                |  '@' id    { $$ = $2;   }
 
   reduce_eq : T_PLUSEQ                      {$$ = GMREDUCE_PLUS;}
             | T_MULTEQ                      {$$ = GMREDUCE_MULT;}
@@ -296,6 +298,9 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
             | T_MAXEQ                       {$$ = GMREDUCE_MAX;}
             | T_ANDEQ                       {$$ = GMREDUCE_AND;}
             | T_OREQ                        {$$ = GMREDUCE_OR;}
+
+  minmax_eq : T_MINEQ                       {$$ = GMREDUCE_MIN;}
+            | T_MAXEQ                       {$$ = GMREDUCE_MAX;}
 
   rhs : expr                          { $$ = $1; }
 
@@ -390,6 +395,9 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
 
   expr_list : expr                        { $$ = GM_single_expr_list($1);}
             | expr ',' expr_list          { $$ = GM_add_expr_front($1, $3);}
+
+  lhs_list2:  '<' lhs ';' lhs_list '>'     { $$.p1 = $2; $$.l_list = $4;}
+  rhs_list2 : '<' expr ';' expr_list '>'   { $$.p1 = $2; $$.e_list = $4;}
 
 
   expr_user : '['                         {GM_lex_begin_user_text();} 
