@@ -55,6 +55,7 @@ SRCS2 =\
        gm_typecheck.cc \
 	   gm_coercion.cc \
        gm_typecheck_oprules.cc \
+	   gm_expand_group_assignment.cc\
        gm_new_typecheck_step1.cc \
        gm_new_typecheck_step2.cc \
        gm_new_typecheck_step3.cc \

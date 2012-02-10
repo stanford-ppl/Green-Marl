@@ -573,6 +573,7 @@ void gm_frontend::init_steps()
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step3));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step4));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_typecheck_step5));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_expand_group_assignment));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_fixup_bound_symbol));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_rw_analysis));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_reduce_error_check));
