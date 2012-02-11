@@ -532,6 +532,21 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
             is_okay = find_symbol_field(f);
         }
 
+        if (a->is_argminmax_assign()) {
+            std::list<ast_node*>& L = a->get_lhs_list();
+            std::list<ast_node*>::iterator I;
+            for(I=L.begin(); I!=L.end(); I++) {
+                ast_node* n = *I;
+                if (n->get_nodetype() == AST_ID) {
+                    ast_id* id = (ast_id*) n;
+                    is_okay = find_symbol_id(id) && is_okay;
+                } else {
+                    ast_field* f = (ast_field*) n;
+                    is_okay = find_symbol_field(f) && is_okay;
+                }
+            }
+        }
+
         // bound symbol
         ast_id* bound = a->get_bound();
         if (bound != NULL) {

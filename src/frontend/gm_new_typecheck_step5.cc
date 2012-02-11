@@ -117,45 +117,38 @@ public:
         return okay;
     }
 
-    bool check_assign(ast_assign*a)
+    bool check_assign_lhs_rhs(ast_node* lhs, ast_expr* rhs, int l, int c)
     {
         int summary_lhs;
         int summary_rhs;
         ast_typedecl* lhs_typedecl = NULL;
         gm_symtab_entry* l_sym = NULL;
 
-        if (a->is_target_scalar())
+        if (lhs->get_nodetype() == AST_ID)
         {
-            ast_id* l = a->get_lhs_scala(); 
+            ast_id* l = (ast_id*) lhs;
             summary_lhs = l->getTypeSummary();
-            if (!l->getSymInfo()->isWriteable()) 
-            {
-                gm_type_error(GM_ERROR_READONLY, l);
-                return false;
-            }
 
             if (l->getTypeInfo()->has_target_graph())
             {
                 l_sym = l->getTypeInfo()->get_target_graph_sym();
             }
-        }
-        else {
-            // target type (e.g. N_P<Int> -> Int)
-            ast_field* f = a->get_lhs_field(); 
-            summary_lhs = f->get_second()->getTargetTypeSummary(); 
-        }
 
-        int l = a->get_line();
-        int c = a->get_col();
+            if (!l->getSymInfo()->isWriteable()) 
+            {
+                gm_type_error(GM_ERROR_READONLY, l);
+                return false;
+            }
+        } else {
+            // target type (e.g. N_P<Int> -> Int)
+            ast_field* f = (ast_field*) lhs;
+            summary_lhs = f->get_second()->getTargetTypeSummary(); 
+
+        }
 
         // check assignable
-        summary_rhs = a->get_rhs()->get_type_summary();
-        /*
-        if (gm_is_unknown_type(summary_rhs))
-        {
-            printf("ID =%s\n", a->get_lhs_scala()->get_orgname());
-        }
-        */
+        summary_rhs = rhs->get_type_summary();
+
         bool warn;
         int coed;
         if (!gm_is_compatible_type_for_assign(summary_lhs, summary_rhs, coed, warn)){
@@ -166,10 +159,14 @@ public:
             );
             return false;
         }
+        if (warn) {
+            printf("warning: adding type convresion %s->%s\n", gm_get_type_string(summary_rhs), gm_get_type_string(summary_lhs) );
+            coercion_targets[rhs] = summary_lhs;
+        }
 
         if (gm_has_target_graph_type(summary_lhs))
         {
-            gm_symtab_entry* r_sym = a->get_rhs()->get_bound_graph();
+            gm_symtab_entry* r_sym = rhs->get_bound_graph();
             assert(l_sym != NULL);
             assert(r_sym != NULL);
             if (l_sym != r_sym) {
@@ -180,8 +177,29 @@ public:
             }
         }
 
+        return true;
+    }
+
+    bool check_assign(ast_assign*a)
+    {
+        bool okay;
+        int l = a->get_line();
+        int c = a->get_col();
+        int summary_lhs;
+        if (a->is_target_scalar())
+        {
+            okay = check_assign_lhs_rhs(a->get_lhs_scala(), a->get_rhs(), l, c);
+            summary_lhs = a->get_lhs_scala()->getTypeSummary();
+        }
+        else {
+            okay = check_assign_lhs_rhs(a->get_lhs_field(), a->get_rhs(), l, c);
+            summary_lhs = a->get_lhs_field()->get_second()->getTargetTypeSummary();
+        }
+
         // check body of reduce
         if (a->is_reduce_assign()) {
+
+            int summary_rhs = a->get_rhs()->get_type_summary();
             // SUM/MULT/MAX/MIN ==> numeirc
             // AND/OR ==> boolean
             int reduce_op = a->get_reduce_type();
@@ -189,8 +207,7 @@ public:
             {
                 if (!gm_is_numeric_type(summary_lhs))
                 {
-                    gm_type_error(GM_ERROR_REQUIRE_NUMERIC_REDUCE, 
-                            l, c);
+                    gm_type_error(GM_ERROR_REQUIRE_NUMERIC_REDUCE, l, c);
                     return false;
                 }
             }
@@ -198,16 +215,27 @@ public:
             {
                 if (!gm_is_boolean_type(summary_lhs))
                 {
-                    gm_type_error(GM_ERROR_REQUIRE_BOOLEAN_REDUCE, 
-                            l, c);
+                    gm_type_error(GM_ERROR_REQUIRE_BOOLEAN_REDUCE, l, c);
                     return false;
                 }
             }
         }
 
-        if (warn) {
-            printf("warning: adding type convresion %s->%s\n", gm_get_type_string(summary_rhs), gm_get_type_string(summary_lhs) );
-            coercion_targets[a->get_rhs()] = summary_lhs;
+        if (a->is_argminmax_assign())
+        {
+            bool okay = true;
+            std::list<ast_node*>& L = a->get_lhs_list(); 
+            std::list<ast_expr*>& R = a->get_rhs_list(); 
+
+            std::list<ast_node*>::iterator I;
+            std::list<ast_expr*>::iterator J;
+            for(I=L.begin(), J=R.begin(); I!=L.end(); I++, J++)  {
+                ast_node * n = *I;
+                bool b = check_assign_lhs_rhs(*I, *J, n->get_line(), n->get_col());
+                okay = b && okay;
+            }
+
+            if (!okay) return false;
         }
 
         return true;
