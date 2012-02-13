@@ -107,13 +107,25 @@ public:
         lhs->setSymInfo(new_target);
 
         // change to normal write
-        gm_make_normal_assign(a);
+        to_normals.push_back(a);
 
         return true;
     }
 
+    void post_process() 
+    {
+        std::list<ast_assign*>::iterator I;
+        for(I=to_normals.begin(); I!=to_normals.end(); I++)
+        {
+            ast_assign* a = *I;
+            gm_make_it_belong_to_sentblock(a);
+            gm_make_normal_assign(a);
+        }
+    }
+
 private:
     std::map<gm_symtab_entry* , gm_symtab_entry*>* symbol_map;
+    std::list<ast_assign*> to_normals;
 };
 
 //---------------------------------------------
@@ -171,6 +183,7 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe)
     change_reduction_t T;
     T.set_map(&symbol_map);
     gm_traverse_sents(fe->get_body(), &T);
+    T.post_process();
 
 
     //-------------------------------------------------

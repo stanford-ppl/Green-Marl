@@ -1,0 +1,12 @@
+Proc P(G: Graph, A,B,C,D: N_P<Int>(G))
+{
+  Int x, y,z;
+  // Destination cannot be bound twice
+  Foreach(n:G.Nodes)
+  {
+      Foreach(t:n.Nbrs) {
+        <x; y> min= <t.A; t.B*2>;
+        y += t.D; // error C is already bound
+      }
+  }
+}

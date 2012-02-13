@@ -1,7 +1,7 @@
 
 //----------------------------------------------------------
 // Phase I : Analyze Read, Write, reDuce set
-// In this phase, parallel conflicts are 'not' examined yet. (why?)
+// In this phase, parallel conflicts are 'not' examined yet. 
 // Instead, each sentence's read/write set are examined and 
 // merged in recursive way.
 //
@@ -513,7 +513,9 @@ bool gm_rw_analysis::apply_assign(ast_assign *a)
         target_sym = a->get_lhs_field()->get_second()->getSymInfo();
         gm_symtab_entry* iter_sym = a->get_lhs_field()->get_first()->getSymInfo();
 
-        if (iter_sym->getType()->is_graph()) {
+        if (iter_sym->getType()->is_graph()) { 
+            // [depricated; group assignment is expanded before RW analysis]
+            assert(false); 
             assert(!is_reduce);
             is_group_assign = true;
             graph_sym = a->get_lhs_field()->get_first()->getSymInfo();
@@ -521,7 +523,6 @@ bool gm_rw_analysis::apply_assign(ast_assign *a)
                 GM_RANGE_LINEAR, true,  a->get_lhs_field()->get_first());
         }
         else {
-            // todo: G.X = ...
             new_entry = gm_rwinfo::new_field_inst(
                 iter_sym, a->get_lhs_field()->get_first(),
                 bound_op, bound_sym);
@@ -530,18 +531,41 @@ bool gm_rw_analysis::apply_assign(ast_assign *a)
 
     if (is_reduce) {
         is_okay = is_okay && gm_add_rwinfo_to_set(D, target_sym, new_entry, true);
+
+        if (a->is_argminmax_assign()) {  // lhs list
+            std::list<ast_node*>& L = a->get_lhs_list();
+            std::list<ast_node*>::iterator I;
+            for(I=L.begin(); I!=L.end(); I++) {
+                ast_node* n = *I;
+                if (n->get_nodetype() == AST_ID) {
+                    ast_id* id = (ast_id*) n;
+                    target_sym  = id->getSymInfo();
+                    new_entry = gm_rwinfo::new_scala_inst(id, bound_op, bound_sym);
+                } else {
+                    assert(n->get_nodetype() == AST_FIELD);
+                    ast_field* f = (ast_field*) n;
+                    target_sym = f->get_second()->getSymInfo();
+                    gm_symtab_entry* driver_sym = f->get_first()->getSymInfo();
+                    new_entry = gm_rwinfo::new_field_inst(driver_sym, f->get_first(), bound_op, bound_sym);
+                }
+                is_okay = is_okay && gm_add_rwinfo_to_set(D, target_sym, new_entry, true);
+            }
+        }
+
     } else {
         is_okay = is_okay && gm_add_rwinfo_to_set(W, target_sym, new_entry, false);
     }
 
     // (2) RHS
     ast_expr* rhs = a->get_rhs();
-    if (is_group_assign) {
+    if (is_group_assign) { // [deprecated]
+        assert(false);
         range_cond_t RR(GM_RANGE_LINEAR, true);
         Default_DriverMap[graph_sym] = RR;
     }
     traverse_expr_for_readset_adding(rhs, R);
-    if (is_group_assign) {
+    if (is_group_assign) { // [deprecated]
+        assert(false);
         Default_DriverMap.erase(graph_sym);
     }
 

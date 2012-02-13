@@ -34,7 +34,7 @@ void gm_make_normal_assign(ast_assign* a);
 //  Foreach(s: G.Node)
 //     s.A += ..           -> @ s  // [note: this can be replace with normal read and write!]
 //     Foreach (t: s.Nbrs)
-//         s.A += ..       -> @ s  // [note: however in this case, @t is even meaningful!)
+//         s.A += ..       -> @ s  // [note: @t can be used, if above += is replaced with normal R & W)
 //     ... 
 //
 //  Foreach(x: G.Node)
@@ -230,7 +230,8 @@ public:
 
                 // no such iterator
                 if (new_iter == NULL) {
-                    gm_make_normal_assign(a);
+                    //gm_make_normal_assign(a);
+                    targets.push_back(a);
                 }
                 else {
                     a->set_bound(new_iter->getId()->copy(true));
@@ -243,7 +244,8 @@ public:
                 gm_symtab_entry* new_bound = 
                     find_tighter_bound(old_bound->getSymInfo());
                 if (new_bound == NULL) {
-                    gm_make_normal_assign(a);
+                    //gm_make_normal_assign(a);
+                    targets.push_back(a);
                 }
                 else if (new_bound != old_bound->getSymInfo()) {
                     a->set_bound(new_bound->getId()->copy(true));
@@ -254,6 +256,18 @@ public:
 
         return true;
     }
+
+    void post_process() {
+       std::list<ast_assign*>::iterator I;
+       for(I= targets.begin(); I!= targets.end(); I++) 
+       {
+           ast_assign* a = *I;
+           gm_make_it_belong_to_sentblock(a);
+           gm_make_normal_assign(a);
+       }
+    }
+private:
+    std::list<ast_assign*> targets;
 };
 
 
@@ -263,12 +277,14 @@ void gm_fe_fixup_bound_symbol::process(ast_procdef* p)
     T.set_opt_seq_bound(true);
 
     gm_traverse_sents(p, &T);
+    T.post_process();
 }
 
 
 
 //-----------------------------------
 // make reduction into a normal assignment
+// e.g.
 // LHS += <expr>
 // -->
 // LHS = LHS + <expr>
@@ -277,12 +293,16 @@ void gm_make_normal_assign(ast_assign* a)
 {
     assert(a->is_reduce_assign());
 
+    // assumption: a belongs to a sentence block
+    assert(a->get_parent()->get_nodetype() == AST_SENTBLOCK);
+
     ast_expr *base;
     if (a->is_target_scalar()) {
         base = ast_expr::new_id_expr(a->get_lhs_scala()->copy(true));
     } else {
         base = ast_expr::new_field_expr(a->get_lhs_field()->copy(true));
     }
+
 
     ast_expr* org_rhs = a->get_rhs(); assert(org_rhs != NULL);
     ast_expr* new_rhs=NULL;
@@ -300,20 +320,78 @@ void gm_make_normal_assign(ast_assign* a)
             new_rhs = ast_expr::new_biop_expr(GMOP_OR, base, org_rhs);
             break;
         case GMREDUCE_MIN:
-            new_rhs = ast_expr::new_biop_expr(GMOP_MIN, base, org_rhs);
+            if (a->is_argminmax_assign())
+                new_rhs = org_rhs->copy(true);
+            else
+                new_rhs = ast_expr::new_biop_expr(GMOP_MIN, base, org_rhs);
             break;
         case GMREDUCE_MAX:
-            new_rhs = ast_expr::new_biop_expr(GMOP_MAX, base, org_rhs);
+            if (a->is_argminmax_assign())
+                new_rhs = org_rhs->copy(true);
+            else
+                new_rhs = ast_expr::new_biop_expr(GMOP_MAX, base, org_rhs);
             break;
         default:
             assert(false);
     }
 
-    a->set_rhs(new_rhs);
+
+    if (!a->is_argminmax_assign())
+    {
+        a->set_rhs(new_rhs);
+    }
+    else 
+    {   
+
+        // <l; l1, l2> min= <r; r1, r2>
+        
+        // ==> becomes
+        // if (l_copy > r_copy) {
+        //   l = r;
+        //   l1 = r1;
+        //   l2 = r2;
+        // }
+
+        // (l>r)
+        int comp = (a->get_reduce_type() == GMREDUCE_MIN) ? GMOP_GT : GMOP_LT;
+        ast_expr* cond = ast_expr::new_comp_expr(comp, base, new_rhs);
+
+        // if (l>r) {}
+        ast_sentblock* sb = ast_sentblock::new_sentblock();
+        ast_if* iff = ast_if::new_if(cond, sb, NULL);
+
+        // adding if, in place of original assignment
+        gm_add_sent_after(a, iff);
+        gm_ripoff_sent(a, true);
+
+        // adding a inside sb
+        sb->add_sent(a);
+
+        // adding LHSx = RHSx inside iff
+        std::list<ast_node*>::iterator I;
+        std::list<ast_expr*>::iterator J;
+        std::list<ast_node*>& L = a->get_lhs_list();
+        std::list<ast_expr*>& R = a->get_rhs_list();
+        I = L.begin(); 
+        J = R.begin();
+        for(; I!=L.end(); I++, J++)
+        {
+            ast_node* l = *I;
+            ast_expr* r = *J;
+            ast_assign* aa; 
+            if (l->get_nodetype() == AST_ID)
+                aa = ast_assign::new_assign_scala((ast_id*)l, r);
+            else if (l->get_nodetype() == AST_FIELD)
+                aa = ast_assign::new_assign_field((ast_field*)l, r);
+            else {assert(false);}
+            sb->add_sent(aa);
+        }
+    }
+
     a->set_assign_type(GMASSIGN_NORMAL);
     a->set_reduce_type(GMREDUCE_NULL);
     ast_id* old_iter = a->get_bound(); //assert(old_iter != NULL);
     a->set_bound(NULL);
-    delete old_iter; // can be null but delete is no harmful
-}
+    if (old_iter!=NULL) delete old_iter; 
+}    
 

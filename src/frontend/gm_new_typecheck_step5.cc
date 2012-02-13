@@ -102,7 +102,7 @@ public:
                     okay = false;
                 }
 
-                if (warn) {
+                if (warn && gm_is_prim_type(summary_lhs)) {
                     printf("warning: adding type convresion %s->%s\n", gm_get_type_string(summary_rhs), gm_get_type_string(summary_lhs) );
                     coercion_targets[r->get_expr()] = summary_lhs;
                 }
@@ -162,7 +162,7 @@ public:
             );
             return false;
         }
-        if (warn) {
+        if (warn && gm_is_prim_type(summary_lhs)) {
             printf("warning: adding type convresion %s->%s\n", gm_get_type_string(summary_rhs), gm_get_type_string(summary_lhs) );
             coercion_targets[rhs] = summary_lhs;
         }

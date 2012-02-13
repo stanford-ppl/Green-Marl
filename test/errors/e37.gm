@@ -1,0 +1,13 @@
+
+Proc Q(G: Graph, A,B,C,D: N_P<Int>(G))
+{
+  Int x, y,z;
+  Foreach(n:G.Nodes)
+  {
+      Foreach(t:n.Nbrs) {
+        <n.C; n.D> min= <t.A; t.B*2>;
+        z += t.D; // error C is already bound
+      }
+  }
+}
+

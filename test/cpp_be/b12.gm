@@ -1,0 +1,13 @@
+// Test of argmin=
+Proc foo(G: Graph, A,B: N_P<Int>(G))
+{
+    Foreach(n:G.Nodes)
+    {
+        Int x=0; 
+        Node(G) m;
+        Foreach(t:n.Nbrs)(t.A > 0) 
+        {
+            <x;m> min= <t.A; t>;   // This should be optimized as normal if-check and update
+        }
+    }
+}
