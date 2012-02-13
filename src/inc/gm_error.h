@@ -60,7 +60,8 @@ static enum {
  GM_ERROR_INVALID_BUILTIN_ARG_COUNT, // Invalid builtin
  GM_ERROR_INVALID_BUILTIN_ARG_TYPE,
 
- GM_ERROR_INVALID_ARGMAX_COUNT,  // Invalid argument in <> min= <> syntax
+ GM_ERROR_INVALID_ARGMAX_COUNT,  // Invalid argument in <;..> min= <;..>
+ GM_ERROR_INCONSISTENT_ARGMAX,   // LHS list should have all same driver
 
  GM_ERROR_RETURN_FOR_VOID,
  GM_ERROR_NO_VOID_RETURN,

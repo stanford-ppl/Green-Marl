@@ -13,6 +13,9 @@
 // Type-check Step 5: 
 //   Check type between LHS and RHS
 //   Check filter/cond types
+//   Check argmin/argmax assignment
+//       - LHS should either have same driver (e.g <n.A; n.B> min= <... ; ... > )
+//       - or should be all scalar            (e.g <x; y, z>  max= <... ; ... > )
 //----------------------------------------------------------------
 
 static int gm_determine_result_type_after_numeric_op(int t1, int t2);
@@ -261,6 +264,57 @@ public:
     std::map<ast_expr*, int > coercion_targets;
 };
 
+class gm_fe_check_argmin_lhs_consistency : public gm_apply {
+
+public:
+    gm_fe_check_argmin_lhs_consistency() {
+        set_for_sent(true);
+        _is_okay = true;
+    }
+    bool is_okay() {return _is_okay;}
+    virtual bool apply(ast_sent* s) {
+        if (s->get_nodetype()!=AST_ASSIGN) return false;
+        ast_assign*a = (ast_assign*) s;
+        if (! a->is_argminmax_assign()) return false;
+
+        std::list<ast_node*>& L = a->get_lhs_list();
+        std::list<ast_node*>::iterator I;
+        if (a->is_target_scalar())
+        {
+            for(I=L.begin(); I!=L.end(); I++)
+            {
+                ast_node* n = *I;
+                if (n->get_nodetype() != AST_ID) {
+                    gm_type_error(GM_ERROR_INCONSISTENT_ARGMAX, n->get_line(), n->get_col());
+                    _is_okay = false;
+                }
+            }
+        }
+        else {
+            gm_symtab_entry* sym = a->get_lhs_field()->get_first()->getSymInfo();
+            for(I=L.begin(); I!=L.end(); I++)
+            {
+                ast_node* n = *I;
+                if (n->get_nodetype() != AST_FIELD) {
+                    gm_type_error(GM_ERROR_INCONSISTENT_ARGMAX, n->get_line(), n->get_col());
+                    _is_okay = false;
+                }
+                else {
+                    ast_field* f = (ast_field*) n;
+                    gm_symtab_entry* d =f->get_first()->getSymInfo();
+                    if (d != sym) {
+                        gm_type_error(GM_ERROR_INCONSISTENT_ARGMAX, n->get_line(), n->get_col());
+                        _is_okay = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+private:
+    bool _is_okay;
+};
+
 
 extern void gm_insert_explicit_type_conversion_for_assign_or_return(std::map<ast_expr*, int >& targets);
 //bool gm_frontend::do_typecheck_step5_check_assign(ast_procdef* p)
@@ -269,9 +323,12 @@ void gm_fe_typecheck_step5::process(ast_procdef* p)
     gm_typechecker_stage_5 T;
     T.set_return_type(p->get_return_type());
     p->traverse_post(&T);
-    set_okay(T.is_okay());
-    if (T.is_okay()) {
-        gm_insert_explicit_type_conversion_for_assign_or_return(T.coercion_targets);
 
+    gm_fe_check_argmin_lhs_consistency T2;
+    p->traverse_pre(&T2);
+
+    set_okay(T.is_okay() && T2.is_okay());
+    if (T.is_okay() && T2.is_okay()) {
+        gm_insert_explicit_type_conversion_for_assign_or_return(T.coercion_targets);
     }
 }

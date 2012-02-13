@@ -1,0 +1,21 @@
+// Test of argmin
+Proc P(G: Graph, A,B,C: N_P<Int>(G))
+{
+  Int x, y,z;
+
+  // Destination should be all scalar or all have same driver
+  Foreach(n:G.Nodes)
+  {
+      Foreach(t:n.Nbrs) {
+        <x ;y, n.C> min=  <n.A ; t.B, t.B+1>;
+      }
+  }
+
+  Foreach(n:G.Nodes)
+  {
+      Foreach(t:n.Nbrs) {
+        <t.A ;t.B, n.C> min=  <x; y, z>;
+      }
+  }
+}
+

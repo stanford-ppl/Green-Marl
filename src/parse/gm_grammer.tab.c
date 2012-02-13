@@ -376,8 +376,8 @@ static const unsigned short int yyrline[] =
      344,   345,   346,   347,   348,   349,   350,   351,   353,   355,
      356,   357,   358,   359,   360,   361,   362,   365,   368,   369,
      370,   371,   372,   373,   375,   378,   379,   381,   382,   384,
-     385,   387,   388,   390,   391,   393,   394,   396,   397,   399,
-     400,   403,   403,   409
+     385,   387,   387,   389,   390,   392,   393,   395,   396,   398,
+     399,   402,   402,   408
 };
 #endif
 
@@ -2588,77 +2588,77 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 172:
 
 /* Line 936 of glr.c  */
-#line 388 "parse/gm_grammer.y"
+#line 387 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_field((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 173:
 
 /* Line 936 of glr.c  */
-#line 390 "parse/gm_grammer.y"
+#line 389 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_expr_builtin_expr((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.e_list));;}
     break;
 
   case 174:
 
 /* Line 936 of glr.c  */
-#line 391 "parse/gm_grammer.y"
+#line 390 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_expr_builtin_expr(NULL, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.e_list));;}
     break;
 
   case 175:
 
 /* Line 936 of glr.c  */
-#line 393 "parse/gm_grammer.y"
+#line 392 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.e_list);;}
     break;
 
   case 176:
 
 /* Line 936 of glr.c  */
-#line 394 "parse/gm_grammer.y"
+#line 393 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = GM_empty_expr_list();;}
     break;
 
   case 177:
 
 /* Line 936 of glr.c  */
-#line 396 "parse/gm_grammer.y"
+#line 395 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = GM_single_expr_list((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 178:
 
 /* Line 936 of glr.c  */
-#line 397 "parse/gm_grammer.y"
+#line 396 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = GM_add_expr_front((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.e_list));;}
     break;
 
   case 179:
 
 /* Line 936 of glr.c  */
-#line 399 "parse/gm_grammer.y"
+#line 398 "parse/gm_grammer.y"
     { ((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).l_list = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (5))].yystate.yysemantics.yysval.l_list);;}
     break;
 
   case 180:
 
 /* Line 936 of glr.c  */
-#line 400 "parse/gm_grammer.y"
+#line 399 "parse/gm_grammer.y"
     { ((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).e_list = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (5))].yystate.yysemantics.yysval.e_list);;}
     break;
 
   case 181:
 
 /* Line 936 of glr.c  */
-#line 403 "parse/gm_grammer.y"
+#line 402 "parse/gm_grammer.y"
     {GM_lex_begin_user_text();;}
     break;
 
   case 182:
 
 /* Line 936 of glr.c  */
-#line 404 "parse/gm_grammer.y"
+#line 403 "parse/gm_grammer.y"
     { 
                                             ((*yyvalp).ptr) = GM_expr_foreign((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.text), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yyloc).first_column);
                                           ;}
@@ -2667,7 +2667,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 183:
 
 /* Line 936 of glr.c  */
-#line 409 "parse/gm_grammer.y"
+#line 408 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_id((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.text), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column); ;}
     break;
 
@@ -4383,7 +4383,7 @@ yypdumpstack (yyGLRStack* yystackp)
 
 
 /* Line 2634 of glr.c  */
-#line 411 "parse/gm_grammer.y"
+#line 410 "parse/gm_grammer.y"
 
 
 

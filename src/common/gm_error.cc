@@ -76,6 +76,10 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
         case GM_ERROR_INVALID_ARGMAX_COUNT:
             printf("Number of lhs does not match to number of rhs: %s\n", str1);
             break;
+        case GM_ERROR_INCONSISTENT_ARGMAX:
+            printf("LHS list of argmiax assignment is not consistent; They should be all scalar or have same driver\n");
+            break;
+
 
         case GM_ERROR_NESTED_BFS:
             printf("Currently, nested bfs/dfs is not supported\n");

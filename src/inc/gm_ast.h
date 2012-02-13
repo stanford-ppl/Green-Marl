@@ -343,6 +343,8 @@ class ast_field : public ast_node { // access of node/edge property
                  first= l; second = f; 
                  first->set_parent(this); 
                  second->set_parent(this);
+                 this->line = first->get_line();
+                 this->col = first->get_col();
              }
     public : 
         static ast_field* new_field(ast_id* l, ast_id* f) {
