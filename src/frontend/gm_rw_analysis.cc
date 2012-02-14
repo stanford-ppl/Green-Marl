@@ -124,6 +124,8 @@ static bool is_same_entry(gm_rwinfo* old, gm_rwinfo* neo)
     if (old->always != neo->always) return false;
     if (old->reduce_op != neo->reduce_op) return false;
     if (old->bound_symbol != neo->bound_symbol) return false;
+    if (old->is_supplement != neo->is_supplement) return false;
+    if (old->org_lhs != neo->org_lhs) return false;
     return true;
 }
 // true if neo is wider
@@ -533,6 +535,7 @@ bool gm_rw_analysis::apply_assign(ast_assign *a)
         is_okay = is_okay && gm_add_rwinfo_to_set(D, target_sym, new_entry, true);
 
         if (a->is_argminmax_assign()) {  // lhs list
+            gm_symtab_entry* org_sym  = target_sym;
             std::list<ast_node*>& L = a->get_lhs_list();
             std::list<ast_node*>::iterator I;
             for(I=L.begin(); I!=L.end(); I++) {
@@ -540,13 +543,13 @@ bool gm_rw_analysis::apply_assign(ast_assign *a)
                 if (n->get_nodetype() == AST_ID) {
                     ast_id* id = (ast_id*) n;
                     target_sym  = id->getSymInfo();
-                    new_entry = gm_rwinfo::new_scala_inst(id, bound_op, bound_sym);
+                    new_entry = gm_rwinfo::new_scala_inst(id, bound_op, bound_sym, true, org_sym);
                 } else {
                     assert(n->get_nodetype() == AST_FIELD);
                     ast_field* f = (ast_field*) n;
                     target_sym = f->get_second()->getSymInfo();
                     gm_symtab_entry* driver_sym = f->get_first()->getSymInfo();
-                    new_entry = gm_rwinfo::new_field_inst(driver_sym, f->get_first(), bound_op, bound_sym);
+                    new_entry = gm_rwinfo::new_field_inst(driver_sym, f->get_first(), bound_op, bound_sym, true, org_sym);
                 }
                 is_okay = is_okay && gm_add_rwinfo_to_set(D, target_sym, new_entry, true);
             }

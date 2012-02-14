@@ -107,7 +107,10 @@ public:
     int reduce_op;
     gm_symtab_entry* bound_symbol;
 
-    // any access instance (
+    bool is_supplement;  // is-supplement LHS
+    gm_symtab_entry* org_lhs;
+
+    // one exxample of  access instance 
     // i.e. location in the code (for error message generation)
     ast_id* location; 
 
@@ -122,21 +125,29 @@ public:
     
 
     static gm_rwinfo* new_scala_inst(ast_id* loc, 
-            int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL) {
+            int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL,
+            bool supple = false, gm_symtab_entry* org=NULL
+            ) {
         gm_rwinfo *g = new gm_rwinfo();
         g->location = loc;
         g->reduce_op = reduce_op;
         g->bound_symbol = bound_symbol;
+        g->is_supplement = supple;
+        g->org_lhs = org;
         return g;
     }
     static gm_rwinfo* new_field_inst(
             gm_symtab_entry* driver, ast_id* loc,
-            int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL) {
+            int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL,
+            bool supple = false, gm_symtab_entry* org=NULL
+            ) {
         gm_rwinfo *g = new gm_rwinfo();
         g->location = loc;
         g->driver = driver;
         g->reduce_op = reduce_op;
         g->bound_symbol = bound_symbol;
+        g->is_supplement = supple;
+        g->org_lhs = org;
         return g;
     }
     static gm_rwinfo* new_range_inst(

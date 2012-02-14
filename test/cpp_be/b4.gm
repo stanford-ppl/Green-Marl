@@ -25,7 +25,7 @@ Proc P (G:Graph, A: N_P<Int>(G), r:Node(G))
     }
 
     // Test of IsNbr
-    For(t:G.Nodes)(t.IsNbr(r))
+    For(t:G.Nodes)(t.IsNbrFrom(r))
     {
         t.A = t.A + 1;
     }

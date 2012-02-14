@@ -56,6 +56,42 @@ gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, cha
     return e;
 }
 
+gm_symtab_entry* gm_add_new_symbol_nodeedge_type(ast_sentblock* sb, int nodeedge_type, gm_symtab_entry* graph_sym, char* newname)
+{
+    assert(sb!=NULL);
+
+    gm_symtab* target_syms;
+    target_syms = sb->get_symtab_var(); assert(target_syms!=NULL);
+
+    // create type object and check
+    ast_typedecl* type;
+    if (nodeedge_type == GMTYPE_NODE)
+        type = ast_typedecl::new_nodetype(graph_sym->getId()->copy(true));
+    else if (nodeedge_type == GMTYPE_EDGE)
+        type = ast_typedecl::new_edgetype(graph_sym->getId()->copy(true));
+    else {
+        assert(false);
+    }
+    bool success = gm_check_type_is_well_defined(type, target_syms);
+    assert(success);
+
+    // create id object and declare
+    ast_id* new_id = ast_id::new_id(newname, 0, 0); 
+    success = gm_declare_symbol(target_syms, new_id, type, true, true);
+    assert(success);
+
+    // return symbol
+    gm_symtab_entry *e = NULL;
+    e = new_id->getSymInfo(); 
+    assert(e!=NULL);
+
+    // these are temporary
+    delete type;
+    delete new_id;
+
+    return e;
+}
+
 //-------------------------------------------------------
 // add a new symbol of node(edge) property type into given sentence block
 // assumption: newname does not have any name-conflicts

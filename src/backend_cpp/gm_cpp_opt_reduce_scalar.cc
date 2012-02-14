@@ -78,11 +78,7 @@ private:
     std::list<ast_sent*> _targets;
     void apply_transform(ast_foreach* fe);
 
-    std::map<gm_symtab_entry* , gm_symtab_entry*>  symbol_map;
 
-    std::list<gm_symtab_entry*> old_s;
-    std::list<gm_symtab_entry*> new_s;
-    std::list<int> reduce_op;
 };
 
 class change_reduction_t : public gm_apply {
@@ -133,6 +129,15 @@ private:
 //---------------------------------------------
 void opt_scalar_reduction_t::apply_transform(ast_foreach* fe)
 {
+    std::map<gm_symtab_entry* , gm_symtab_entry*>  symbol_map;
+    std::list<gm_symtab_entry*> old_s;
+    std::list<gm_symtab_entry*> new_s;
+    std::list<int> reduce_op;
+    std::map<gm_symtab_entry*, std::list<gm_symtab_entry* > > old_supple_map;
+    std::map<gm_symtab_entry*, std::list<gm_symtab_entry* > > new_supple_map;
+    std::list< std::list<gm_symtab_entry*> > old_supple;
+    std::list< std::list<gm_symtab_entry*> > new_supple;
+
     // make scope
     gm_make_it_belong_to_sentblock_nested(fe);
     assert(fe->get_parent()->get_nodetype() == AST_SENTBLOCK);
@@ -149,32 +154,83 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe)
         gm_symtab_entry* e = I->first; 
         if (e->getType()->is_property()) continue;
 
-        assert(gm_is_prim_type(e->getType()->getTypeSummary()));
+        int reduce_type = I->second->front()->reduce_op;
+        int e_type = e->getType()->getTypeSummary();
+        bool is_supple = I->second->front()->is_supplement;
+        gm_symtab_entry* org_target = I->second->front()->org_lhs;
+
+        if (!gm_is_prim_type(e_type))
+        {
+            assert(e->getType()->is_node_compatible() || e->getType()->is_edge_compatible());
+            assert((reduce_type == GMREDUCE_MAX) || (reduce_type == GMREDUCE_MIN));
+        }
         const char* new_name = FE.voca_temp_name_and_add(e->getId()->get_genname(), "_prv");
 
         // add local variable at scope
-        gm_symtab_entry* thread_local = gm_add_new_symbol_primtype(se, e->getType()->getTypeSummary(), (char*)new_name);
+        gm_symtab_entry* thread_local;
+        if (gm_is_prim_type(e_type)) {
+            thread_local = gm_add_new_symbol_primtype(se, e_type, (char*)new_name);
+        } else if (gm_is_node_compatible_type(e_type)) {
+            thread_local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_NODE, e->getType()->get_target_graph_sym(), (char*)new_name);
+        } else if (gm_is_edge_compatible_type(e_type)) {
+            thread_local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_EDGE, e->getType()->get_target_graph_sym(), (char*)new_name);
+        } else {
+            assert(false);
+        }
+
         assert(symbol_map.find(e) == symbol_map.end());
 
         // save to symbol_map (for change_reduction_t)
         symbol_map[e] = thread_local;
-
-        // save to lists (for code-generation nop)
-        int reduce_type = I->second->front()->reduce_op;
-        assert(gm_is_strict_reduce_op(reduce_type));
-        old_s.push_back(e);
-        new_s.push_back(thread_local);
-        reduce_op.push_back(reduce_type);
+        if (is_supple) {
+            std::list<gm_symtab_entry*> & L1 = old_supple_map[org_target];
+            std::list<gm_symtab_entry*> & L2 = new_supple_map[org_target];
+            L1.push_back(e);
+            L2.push_back(thread_local);
+            //printf("%s is supplement LHS (%s)\n", e->getId()->get_genname(), org_target->getId()->get_genname());
+        } 
+        else {
+            // save to lists (for code-generation nop)
+            assert(gm_is_strict_reduce_op(reduce_type));
+            old_s.push_back(e);
+            new_s.push_back(thread_local);
+            reduce_op.push_back(reduce_type);
+        }
 
         // add intializer
-        int expr_type = e->getType()->getTypeSummary();
-        ast_expr* init_val = gm_new_bottom_symbol(reduce_type, expr_type);
-        ast_assign* init_a = ast_assign::new_assign_scala(
+        if (!is_supple) {
+            int expr_type = e->getType()->getTypeSummary();
+            ast_expr* init_val;
+            if ((reduce_type == GMREDUCE_MIN) || (reduce_type == GMREDUCE_MAX)) {
+                init_val = ast_expr::new_id_expr(e->getId()->copy(true));
+            } else {
+                init_val = gm_new_bottom_symbol(reduce_type, expr_type);
+            }
+            ast_assign* init_a = ast_assign::new_assign_scala(
                 thread_local->getId()->copy(true), init_val, GMASSIGN_NORMAL);
 
-        gm_add_sent_before(fe, init_a);
+            gm_add_sent_before(fe, init_a);
+        }
+
         delete [] new_name;
     }
+
+    std::list<gm_symtab_entry*>::iterator J;
+    for(J=old_s.begin(); J!= old_s.end(); J++)
+    {
+        gm_symtab_entry* e = *J;
+        if (old_supple_map.find(e) == old_supple_map.end()) {
+            std::list<gm_symtab_entry*> L; // empty list
+            old_supple.push_back(L);
+            new_supple.push_back(L);
+        } else {
+            //printf("num supple for %s : %d\n", e->getId()->get_genname(), (int)old_supple_map[e].size());
+            old_supple.push_back(old_supple_map[e]);
+            new_supple.push_back(new_supple_map[e]);
+        }
+    }
+
+    // create supplement list
 
     //-------------------------------------------------
     // find all reductions in the body. 
@@ -190,19 +246,25 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe)
     // add reduction nop
     //-------------------------------------------------
     nop_reduce_scalar* N = new nop_reduce_scalar();
-    N->set_symbols(old_s, new_s, reduce_op);
+    N->set_symbols(old_s, new_s, reduce_op, old_supple, new_supple);
     gm_insert_sent_end_of_sb(se, N, false);
 
 }
 
 void nop_reduce_scalar::set_symbols( 
-        std::list<gm_symtab_entry*>& O, 
-        std::list<gm_symtab_entry*>& N, std::list<int>& R)
+        std::list<gm_symtab_entry*>& O,  // old symbols
+        std::list<gm_symtab_entry*>& N,  // new symbols
+        std::list<int>& R,
+        std::list< std::list<gm_symtab_entry*> >& O_S, // supplimental lhs for argmin/argmax
+        std::list< std::list<gm_symtab_entry*> >& N_S
+        )
 {
-    // copy 
-    old_s = O; // copy
+    // shallow copy the whole list 
+    old_s = O; 
     new_s = N;
     reduce_op = R;
+    old_supple = O_S;
+    new_supple = N_S;
 }
 
 bool nop_reduce_scalar::do_rw_analysis() {
@@ -226,6 +288,27 @@ bool nop_reduce_scalar::do_rw_analysis() {
         gm_add_rwinfo_to_set(W, *I, w);
     }
 
+    // read all old supple lhs symbols
+    std::list< std::list<gm_symtab_entry*> >::iterator II;
+    for(II=old_supple.begin(); II != old_supple.end(); II++)
+    {
+        std::list<gm_symtab_entry*>& L = *II;
+        for(I=L.begin(); I!=L.end();I++) 
+        {
+            gm_rwinfo* r = gm_rwinfo::new_scala_inst((*I)->getId());
+            gm_add_rwinfo_to_set(R, *I, r);
+        }
+    }
+    for(II=new_supple.begin(); II != new_supple.end(); II++)
+    {
+        std::list<gm_symtab_entry*>& L = *II;
+        for(I=L.begin(); I!=L.end();I++) 
+        {
+            gm_rwinfo* w = gm_rwinfo::new_scala_inst((*I)->getId());
+            gm_add_rwinfo_to_set(W, *I, w);
+        }
+    }
+
     return true;
 }
 
@@ -234,14 +317,20 @@ void nop_reduce_scalar::generate(gm_cpp_gen* gen)
     std::list<gm_symtab_entry*>::iterator I1;
     std::list<gm_symtab_entry*>::iterator I2;
     std::list<int>::iterator I3;
+    std::list< std::list<gm_symtab_entry*> >::iterator I4; // supple old
+    std::list< std::list<gm_symtab_entry*> >::iterator I5; // supple new
     I1 = old_s.begin();
     I2 = new_s.begin();
     I3 = reduce_op.begin();
+    I4 = old_supple.begin();
+    I5 = new_supple.begin();
     for (; I1 != old_s.end(); I1++, I2++, I3++)
     {
         gm_symtab_entry* old_sym = *I1;
         gm_symtab_entry* new_sym = *I2;
         int r_type = *I3;
+        std::list<gm_symtab_entry*>& OLD_LIST = *I4;
+        std::list<gm_symtab_entry*>& NEW_LIST = *I5;
 
         ast_id* lhs = old_sym->getId()->copy(true);
         ast_id* rhs_s = new_sym->getId()->copy(true);
@@ -249,6 +338,22 @@ void nop_reduce_scalar::generate(gm_cpp_gen* gen)
 
         ast_assign* new_assign = ast_assign::new_assign_scala(
                 lhs, rhs, GMASSIGN_REDUCE, NULL, r_type);
+
+        if (OLD_LIST.size() > 0) {
+            assert(OLD_LIST.size() == NEW_LIST.size());
+            new_assign->set_argminmax_assign(true);
+            std::list<gm_symtab_entry*>::iterator J1 = OLD_LIST.begin(); 
+            std::list<gm_symtab_entry*>::iterator J2 = NEW_LIST.begin(); 
+            for(; J1 != OLD_LIST.begin(); J1++, J2++) {
+                gm_symtab_entry* lhs_sym = *J1;
+                gm_symtab_entry* rhs_sym = *J2;
+                ast_id* lhs = lhs_sym->getId()->copy(true);
+                ast_id* rhs_s = rhs_sym->getId()->copy(true);
+                ast_expr* rhs = ast_expr::new_id_expr(rhs_s);
+                new_assign->get_lhs_list().push_back(lhs);
+                new_assign->get_rhs_list().push_back(rhs);
+            }
+        }
 
         gen->generate_sent_reduce_assign(new_assign);
                 

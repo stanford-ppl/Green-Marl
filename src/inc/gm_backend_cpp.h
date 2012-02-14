@@ -205,7 +205,10 @@ public :
     void set_symbols(
         std::list<gm_symtab_entry*>& O,
         std::list<gm_symtab_entry*>& N,
-        std::list<int>& R);
+        std::list<int>& R,
+        std::list< std::list<gm_symtab_entry*> >& O_S,
+        std::list< std::list<gm_symtab_entry*> >& N_S
+        );
 
     virtual bool do_rw_analysis(); 
     void generate(gm_cpp_gen* gen);
@@ -214,6 +217,8 @@ public:
     std::list<gm_symtab_entry*> old_s;
     std::list<gm_symtab_entry*> new_s;
     std::list<int> reduce_op;
+    std::list< std::list<gm_symtab_entry*> > old_supple; // supplimental lhs for argmin/argmax
+    std::list< std::list<gm_symtab_entry*> > new_supple;
 };
 
 //-----------------------------------

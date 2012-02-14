@@ -75,6 +75,7 @@ ast_sentblock*   gm_find_upscope(ast_sent* s);
 // Add symbols into some scope
 gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, char* new_vname); // assumtpion: no name-conflict.
 gm_symtab_entry* gm_add_new_symbol_property(ast_sentblock* sb, int primtype, bool is_nodeprop, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
+gm_symtab_entry* gm_add_new_symbol_nodeedge_type(ast_sentblock* sb, int nodeedge_type, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
 
 //------------------------------------------------------------
 // move a symbol one (or more) scope up, to another sentblock

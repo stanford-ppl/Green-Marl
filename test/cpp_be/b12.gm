@@ -22,3 +22,13 @@ Proc bar(G: Graph, A,B,C: N_P<Int>(G))
         }
     }
 }
+
+Proc bar2(G: Graph, A: N_P<Int>(G))
+{
+    Int x;
+    Node(G) m;
+    Foreach(n:G.Nodes)
+    {
+        <x;m> min= <n.A; n>;    // Should be implemented with privitization
+    }
+}
