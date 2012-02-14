@@ -101,6 +101,18 @@ public:
 
         // change lhs symbol
         lhs->setSymInfo(new_target);
+        if (a->is_argminmax_assign()) {
+            std::list<ast_node*>& L_old = a->get_lhs_list();
+            std::list<ast_node*>::iterator I;
+            for(I=L_old.begin(); I!=L_old.end(); I++) {
+                ast_node* n = *I; assert(n->get_nodetype() == AST_ID);
+                ast_id* id = (ast_id*) n;
+                gm_symtab_entry* old_e = id->getSymInfo();
+                gm_symtab_entry* new_e = (*symbol_map)[old_e]; 
+                assert(new_e!=NULL);
+                id->setSymInfo(new_e);
+            }
+        }
 
         // change to normal write
         to_normals.push_back(a);
@@ -182,6 +194,7 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe)
 
         // save to symbol_map (for change_reduction_t)
         symbol_map[e] = thread_local;
+
         if (is_supple) {
             std::list<gm_symtab_entry*> & L1 = old_supple_map[org_target];
             std::list<gm_symtab_entry*> & L2 = new_supple_map[org_target];
@@ -344,12 +357,15 @@ void nop_reduce_scalar::generate(gm_cpp_gen* gen)
             new_assign->set_argminmax_assign(true);
             std::list<gm_symtab_entry*>::iterator J1 = OLD_LIST.begin(); 
             std::list<gm_symtab_entry*>::iterator J2 = NEW_LIST.begin(); 
-            for(; J1 != OLD_LIST.begin(); J1++, J2++) {
+            for(; J1 != OLD_LIST.end(); J1++, J2++) {
                 gm_symtab_entry* lhs_sym = *J1;
                 gm_symtab_entry* rhs_sym = *J2;
-                ast_id* lhs = lhs_sym->getId()->copy(true);
+                assert(lhs_sym!=NULL);
+                assert(rhs_sym!=NULL);
+                ast_id* lhs = lhs_sym->getId()->copy(true); (assert(lhs!=NULL)); assert(lhs->getSymInfo() != NULL);
                 ast_id* rhs_s = rhs_sym->getId()->copy(true);
                 ast_expr* rhs = ast_expr::new_id_expr(rhs_s);
+                //printf("Hello:%s\n", lhs->get_genname());
                 new_assign->get_lhs_list().push_back(lhs);
                 new_assign->get_rhs_list().push_back(rhs);
             }

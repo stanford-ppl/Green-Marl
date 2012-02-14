@@ -338,6 +338,24 @@ bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2)
         gm_symtab_entry* e = i->first;
         if (S2.find(e) != S2.end())
             return true;
+
+        // access through driver while driver is modified
+        /*
+        if (e->getType()->is_nodeedge()) {
+            gm_rwinfo_map::iterator j;
+            for(j=S2.begin();j!=S2.end();j++) {
+                gm_symtab_entry* e2 = i->first;
+                if (!e2->getType()->is_property()) continue;
+                gm_rwinfo_list* l = i->second;
+                gm_rwinfo_list::iterator J;
+                for(J = l->begin(); J!= l->end(); J++)
+                {
+                    gm_rwinfo* access_info = *J; 
+                    if (access_info->driver == e) return true;
+                }
+            }
+        }
+        */
     }
 
     return false;

@@ -1,0 +1,28 @@
+Proc v_cover(G: Graph, select: E_P<Bool>(G)) : Int
+{
+    N_P<Int>(G) Deg;
+    N_P<Bool>(G) Covered;
+
+    G.Deg = G.Degree() + G.InDegree();
+    G.Covered = False;
+    G.select = False;
+    Int remain = (Int) (G.NumEdges()*2);
+    While(remain > 0) {
+        Int max_val = 0;
+        Node(G) from, to;
+        Edge(G) e;
+        Foreach(s: G.Nodes)(!s.Covered) {
+            Foreach(t: s.Nbrs) {
+                <max_val; from, to, e> max= <s.Deg + t.Deg; s, t, t.ToEdge()>;
+            }
+        }
+        remain = remain - max_val;
+        from.Deg = 0;
+        to.Deg = 0;
+        e.select = True;
+        from.Covered =True;
+        to.Covered = True;
+    }
+    Int c =Count(t:G.Nodes)(t.Covered);
+    Return c;
+}

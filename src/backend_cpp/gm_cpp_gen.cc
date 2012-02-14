@@ -256,9 +256,11 @@ void gm_cpp_gen::generate_rhs_field(ast_field* f)
 }
 
 
-const char* gm_cpp_gen::get_type_string(int prim_type)
+const char* gm_cpp_gen::get_type_string(int type_id)
 {
-    switch(prim_type) {
+
+  if (gm_is_prim_type(type_id)) {
+    switch(type_id) {
         case GMTYPE_BYTE:  return "int8_t"  ;
         case GMTYPE_SHORT: return "int16_t" ;
         case GMTYPE_INT:   return "int32_t" ;
@@ -268,6 +270,9 @@ const char* gm_cpp_gen::get_type_string(int prim_type)
         case GMTYPE_BOOL: return "bool";
         default: assert(false); return "??";
     }
+  } else {
+    return get_lib()->get_type_string(type_id);
+  }
 }
 
 const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
@@ -714,7 +719,7 @@ void gm_cpp_gen::generate_sent_reduce_argmin_assign(ast_assign *a)
             ast_id* id;
             int type;
             if (n->get_nodetype() == AST_ID) {
-                ast_id* id = (ast_id*) n;
+                id = (ast_id*) n;
                 type = id->getTypeSummary();
             } else {
                 assert(n->get_nodetype() == AST_FIELD);

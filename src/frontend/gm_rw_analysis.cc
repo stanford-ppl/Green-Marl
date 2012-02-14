@@ -289,6 +289,11 @@ void traverse_expr_for_readset_adding(
                     iter_sym,  // iterator syminfo
                     e->get_field()->get_first() 
                     );
+
+                gm_symtab_entry* driver_sym = e->get_field()->get_first()->getSymInfo();
+                gm_rwinfo* driver_entry = gm_rwinfo::new_scala_inst(e->get_field()->get_first());
+                gm_add_rwinfo_to_set(rset, driver_sym, driver_entry);
+
             } else {  // temporary driver or vector driver
                 int range_type = i->second.range_type;
                 bool always = i->second.is_always;
@@ -479,7 +484,8 @@ bool gm_rw_analysis::apply_foreign(ast_foreign * f)
 // AST_ASSIGN
 // LHS = RHS
 //   1) RHS (expr) goes to readset
-//   2) LHS (scala/field) goes to writeset or deferset
+//   2) LHS (scala/field) goes to writeset or defer,set
+//       (driver of LHS goes to readset)
 //-----------------------------------------------------------------------------
 bool gm_rw_analysis::apply_assign(ast_assign *a)
 {
@@ -528,6 +534,14 @@ bool gm_rw_analysis::apply_assign(ast_assign *a)
             new_entry = gm_rwinfo::new_field_inst(
                 iter_sym, a->get_lhs_field()->get_first(),
                 bound_op, bound_sym);
+
+            gm_symtab_entry* driver_sym = a->get_lhs_field()->get_first()->getSymInfo();
+            gm_rwinfo* driver_entry = gm_rwinfo::new_scala_inst(a->get_lhs_field()->get_first());
+
+            // add driver to read-set
+            is_okay = is_okay && gm_add_rwinfo_to_set(R, driver_sym, driver_entry, false);
+
+            // no need to add drivers in lhs_list (if any) since all drivers in the lhs are same
         }
     }
 
