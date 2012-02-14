@@ -66,6 +66,9 @@ static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float
   return (c==1);
 }
 
+static inline bool _gm_atomic_compare_and_swap(bool *dest, bool old_val, bool new_val)
+{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+
 #else
 #error "We need x86 (32bit or 64bit environment" 
 #endif
