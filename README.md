@@ -167,7 +167,10 @@ look at each program (*.gm) and see how each algorithm is described intuitively 
  many vertex as possible) through a well-known greedy algorithm. The algorithm is non-deterministic due to lack of 
  tie-breaking rule. 
  
- (f) Adamic-Adar (adamicAdar.gm) : this computes Adamic-Adar value of each edge, which is often used to predict
+ (f) Single-Source Shortest Path (sssp.gm): this file computes shortest distance  
+ to every nodes in the graph from a single node.
+ 
+ (g) Adamic-Adar (adamicAdar.gm) : this computes Adamic-Adar value of each edge, which is often used to predict
  possible future edges in social networks. 
  
 
