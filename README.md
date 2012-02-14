@@ -61,6 +61,9 @@ If you already know how to fetch via git, please go ahead from the above reposit
 
             git pull
 
+  + (Note) Since current Makefile is far from perfect in detecting dependencies, after pulling a new source
+  it is desired to completely re-build the compiler (or gm_graph library) by doing make clean and then doing make.
+  
 2-2 Directories
 -------------------------------------
 
@@ -139,7 +142,7 @@ through the following steps:
 4-1 The Applications
 -------------------------------------
 
-Four Green-Marl sample programs are included in the package. The codes can be found
+A few Green-Marl sample programs are included in the package. The codes can be found
 in the following location:
     $(top)/apps/src/ 
     
@@ -160,6 +163,13 @@ look at each program (*.gm) and see how each algorithm is described intuitively 
   graph, and the other on its transposed graph. However, this version replaces the second DFS with BFS, 
   in order to improve performance.
 
+ (e) Vertex Cover (v_cover.gm) : this finds an approximate of minimum vertex cover (i.e. set of edges that coveres as
+ many vertex as possible) through a well-known greedy algorithm. The algorithm is non-deterministic due to lack of 
+ tie-breaking rule. 
+ 
+ (f) Adamic-Adar (adamicAdar.gm) : this computes Adamic-Adar value of each edge, which is often used to predict
+ possible future edges in social networks. 
+ 
 
 4-2 Compiling Green-Marl Programs with gm_comp
 -------------------------------------
