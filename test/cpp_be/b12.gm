@@ -11,3 +11,14 @@ Proc foo(G: Graph, A,B: N_P<Int>(G))
         }
     }
 }
+
+Proc bar(G: Graph, A,B,C: N_P<Int>(G))
+{
+    Foreach(n:G.Nodes)
+    {
+        Foreach(t:n.Nbrs)
+        {
+            <t.A;t.B> min= <n.C+1; n.C*2>;    // Should be implemented as test and test-set
+        }
+    }
+}

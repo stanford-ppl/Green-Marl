@@ -568,14 +568,19 @@ void gm_cpp_gen::generate_sent_block_exit(ast_sentblock* sb)
 
 void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 {
-  // implement reduction using compare and swap
+    if (a->is_argminmax_assign()) {
+        generate_sent_reduce_argmin_assign(a);
+        return;
+    }
+
+    // implement reduction using compare and swap
       //---------------------------------------
       //  { 
       //    <type> OLD, NEW
       //    do {
       //      OLD = LHS;
       //      NEW = LHS <op> RHS;
-      //      <optional break>
+      //      <optional break> (for min/max)
       //    } while (!__bool_comp_swap(&LHS, OLD, NEW))
       //  }
       //---------------------------------------
@@ -640,6 +645,178 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
       delete [] temp_var_old;
 
     return;
+}
+
+void gm_cpp_gen::generate_sent_reduce_argmin_assign(ast_assign *a)
+{
+    assert (a->is_argminmax_assign());
+
+
+    //-----------------------------------------------
+    // <LHS; L1,...> min= <RHS; R1,...>;
+    //
+    // {
+    //    RHS_temp = RHS;
+    //    if (LHS > RHS_temp) {
+    //        <type> L1_temp = R1;
+    //        ...
+    //        LOCK(LHS) // if LHS is scalar, 
+    //                  // if LHS is field, lock the node 
+    //            if (LHS > RHS_temp) {
+    //               LHS = RHS_temp;
+    //               L1 = L1_temp;  // no need to lock for L1. 
+    //               ...
+    //            }
+    //        UNLOCK(LHS)
+    //    }
+    // }
+    //-----------------------------------------------
+    Body.pushln("{ // argmin(argmax) - test and test-and-set");
+    const char* rhs_temp;
+    int t;
+    if (a->is_target_scalar()) {
+        t = a->get_lhs_scala()->getTypeSummary();
+        rhs_temp  = (const char*) FE.voca_temp_name_and_add(a->get_lhs_scala()->get_genname(), "_new");
+    } else {
+        t = a->get_lhs_field()->get_second()->getTargetTypeSummary();
+        rhs_temp  = (const char*) FE.voca_temp_name_and_add(a->get_lhs_field()->get_second()->get_genname(), "_new");
+    }
+    Body.push(get_type_string(t));
+    Body.SPC();
+    Body.push(rhs_temp);
+    Body.push(" = ");
+    generate_expr(a->get_rhs());
+    Body.pushln(";");
+
+    Body.push("if (");
+    if (a->is_target_scalar()) {
+        generate_rhs_id(a->get_lhs_scala());
+    } else {
+        generate_rhs_field(a->get_lhs_field());
+    }
+    if (a->get_reduce_type() == GMREDUCE_MIN) {
+        Body.push(">");
+    } else {
+        Body.push("<");
+    }
+    Body.push(rhs_temp);
+    Body.pushln(") {");
+
+        std::list<ast_node*> L = a->get_lhs_list();
+        std::list<ast_expr*> R = a->get_rhs_list();
+        std::list<ast_node*>::iterator I;
+        std::list<ast_expr*>::iterator J;
+        char** names = new char*[L.size()];
+        int i = 0;
+        J = R.begin();
+        for(I=L.begin(); I!=L.end(); I++, J++,i++) {
+            ast_node* n = *I;
+            ast_id* id;
+            int type;
+            if (n->get_nodetype() == AST_ID) {
+                ast_id* id = (ast_id*) n;
+                type = id->getTypeSummary();
+            } else {
+                assert(n->get_nodetype() == AST_FIELD);
+                ast_field* f = (ast_field*) n;
+                id = f->get_second();
+                type = id->getTargetTypeSummary();
+            }
+            names[i]  = (char*) FE.voca_temp_name_and_add(id->get_genname(), "_arg");
+            Body.push(get_type_string(type));
+            Body.SPC();
+            Body.push(names[i]);
+            Body.push(" = ");
+            generate_expr(*J);
+            Body.pushln(";");
+        }
+
+        // LOCK, UNLOCK
+        const char* LOCK_FN_NAME;
+        const char* UNLOCK_FN_NAME;
+        if (a->is_target_scalar()) {
+            LOCK_FN_NAME =   "gm_spinlock_acquire_for_ptr";
+            UNLOCK_FN_NAME = "gm_spinlock_release_for_ptr";
+        } else {
+            ast_id* drv = a->get_lhs_field()->get_first();
+            if (drv->getTypeInfo()->is_node_compatible()) {
+                LOCK_FN_NAME =   "gm_spinlock_acquire_for_node";
+                UNLOCK_FN_NAME = "gm_spinlock_release_for_node";
+            } else if (drv->getTypeInfo()->is_edge_compatible()) {
+                LOCK_FN_NAME =   "gm_spinlock_acquire_for_edge";
+                UNLOCK_FN_NAME = "gm_spinlock_release_for_edge";
+            } else {
+                assert(false);
+            }
+        }
+
+        Body.push(LOCK_FN_NAME);
+        Body.push("(");
+        if (a->is_target_scalar()) {
+            Body.push("&");
+            generate_rhs_id(a->get_lhs_scala());
+        } else {
+            generate_rhs_id(a->get_lhs_field()->get_first());
+        }
+        Body.pushln(");");
+
+        Body.push("if (");
+        if (a->is_target_scalar()) {
+            generate_rhs_id(a->get_lhs_scala());
+        } else {
+            generate_rhs_field(a->get_lhs_field());
+        }
+        if (a->get_reduce_type() == GMREDUCE_MIN) {
+            Body.push(">");
+        } else {
+            Body.push("<");
+        }
+        Body.push(rhs_temp);
+        Body.pushln(") {");
+
+            // lhs = rhs_temp
+            if (a->is_target_scalar()) {
+                generate_lhs_id(a->get_lhs_scala());
+            } else {
+                generate_lhs_field(a->get_lhs_field());
+            }
+            Body.push(" = ");
+            Body.push(rhs_temp);
+            Body.pushln(";");
+
+            i = 0;
+            for(I=L.begin(); I!=L.end(); I++, i++) {
+                ast_node* n = *I;
+                if (n->get_nodetype() == AST_ID) {
+                    generate_lhs_id((ast_id*)n);
+                } else {
+                    generate_lhs_field((ast_field*)n);
+                }
+                Body.push(" = ");
+                Body.push(names[i]);
+                Body.pushln(";");
+            }
+
+        Body.pushln("}"); // end of inner if
+
+        Body.push(UNLOCK_FN_NAME);
+        Body.push("(");
+        if (a->is_target_scalar()) {
+            Body.push("&");
+            generate_rhs_id(a->get_lhs_scala());
+        } else {
+            generate_rhs_id(a->get_lhs_field()->get_first());
+        }
+        Body.pushln(");");
+
+    Body.pushln("}"); // end of outer if
+
+    Body.pushln("}"); // end of reduction
+    // clean-up
+    for(i=0;i<L.size(); i++)
+        delete [] names[i];
+    delete [] names;
+    delete [] rhs_temp;
 }
 
 void gm_cpp_gen::generate_sent_return(ast_return *r)

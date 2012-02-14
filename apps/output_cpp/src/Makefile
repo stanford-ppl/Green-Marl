@@ -6,6 +6,8 @@ BINDIR = ../bin
 LIB = gmgraph
 CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp  
 LFLAGS = -L$(LIBDIR) -l$(LIB)
+INCFILES = $(shell ls $(INCDIR))
+H_FILES = $(addprefix $(INCDIR)/, $(INCFILES))
 
 #include program list
 include ../../Programs.mk
@@ -17,7 +19,10 @@ OUT = $(addprefix $(BINDIR)/, $(PROGS))
 
 all: $(OUT)
 
-$(BINDIR)/% : $(GEN_SRC)/%.cc %_main.cc
+echo:
+	echo $(INCFILES)
+
+$(BINDIR)/% : $(GEN_SRC)/%.cc %_main.cc 
 	$(CC) $(CFLAGS) $^ $(LFLAGS) -o $@
 
 clean:
