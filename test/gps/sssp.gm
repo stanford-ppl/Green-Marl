@@ -8,25 +8,19 @@ Procedure sssp(G:Graph, dist:N_P<Int>(G), root: Node(G))
     Bool fin = False;
 
     Foreach(n:G.Nodes) {
-        n.dist = (n==root) ? 0 : +INF;
-        n.updated = (n == root) ? True: False;
+        n.dist     = (n==root) ? 0 : +INF;
+        n.dist_nxt = (n==root) ? 0 : +INF;
+        n.updated  = (n==root) ? True: False;
         n.updated_nxt = False;
     }
 
     While(!fin) {
         fin = True;
 
-        Foreach(n: G.Nodes) {
-            Foreach(s: n.InNbrs)(s.updated) {
-                //----------------------------------------------
-                // Need to implement arg-min assignment
-                //
-                // Semantic: n.updated_nxt is written only when 
-                //           minimum dist_next is selected
-                //----------------------------------------------
-                //<n.dist_next, n.updated_nxt> min= <s.dist +1, True>; 
-
-                n.dist_nxt min= s.dist +1;
+        Foreach(n: G.Nodes)(n.updated) {
+            Foreach(s: n.Nbrs) {
+                // Updated_nxt becomes true only if dist_next is updated
+                <s.dist_nxt; s.updated_nxt> min= <n.dist +1; True>; 
             }
         }
 

@@ -105,54 +105,107 @@ void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a)
         return;
     }
 
-    // use normal read/write
-    if (a->is_target_scalar())
-    {
-        generate_lhs_id(a->get_lhs_scala());
-    }
-    else {
-        generate_lhs_field(a->get_lhs_field());
-    }
+    //--------------------------------------------------
+    // target is vertex-drivven
+    // reduction now became normal read/write
+    //--------------------------------------------------
+    if (a->is_argminmax_assign()) {
+        assert((a->get_reduce_type() == GMREDUCE_MIN) ||
+                (a->get_reduce_type() == GMREDUCE_MAX));
 
-    Body.push(" = ");
-
-    if ((a->get_reduce_type() == GMREDUCE_PLUS) ||
-        (a->get_reduce_type() == GMREDUCE_MULT) ||
-        (a->get_reduce_type() == GMREDUCE_AND) ||
-        (a->get_reduce_type() == GMREDUCE_OR))
-    {
+        Body.push("if (");
         if (a->is_target_scalar())
             generate_rhs_id(a->get_lhs_scala());
         else 
             generate_rhs_field(a->get_lhs_field());
 
-        switch(a->get_reduce_type()) {
-            case GMREDUCE_PLUS: Body.push(" + ("); break;
-            case GMREDUCE_MULT: Body.push(" * ("); break;
-            case GMREDUCE_AND: Body.push(" && ("); break;
-            case GMREDUCE_OR: Body.push(" || ("); break;
-            default: assert(false);
+        if (a->get_reduce_type() == GMREDUCE_MIN)
+            Body.push(" > ");
+        else
+            Body.push(" < ");
+        
+        generate_expr(a->get_rhs());
+        Body.pushln(") {");
+        if (a->is_target_scalar())
+            generate_lhs_id(a->get_lhs_scala());
+        else 
+            generate_lhs_field(a->get_lhs_field());
+        Body.push(" = ");
+        generate_expr(a->get_rhs());
+        Body.pushln(";");
+
+        std::list<ast_node*>& lhs_list = a->get_lhs_list();
+        std::list<ast_expr*>& rhs_list = a->get_rhs_list();
+        std::list<ast_node*>::iterator I;
+        std::list<ast_expr*>::iterator J;
+        J = rhs_list.begin();
+        for(I=lhs_list.begin(); I!=lhs_list.end(); I++, J++)
+        {
+            ast_node* n = *I;
+            if (n->get_nodetype()==AST_ID) {
+                generate_lhs_id((ast_id*)n);
+            }
+            else {
+                generate_lhs_field((ast_field*) n);
+            }
+            Body.push(" = ");
+            generate_expr(*J);
+            Body.pushln(";");
         }
 
-        generate_expr(a->get_rhs());
-
-        Body.pushln(");");
-    }
-    else if ((a->get_reduce_type() == GMREDUCE_MIN) ||
-             (a->get_reduce_type() == GMREDUCE_MAX))
-    {
-        Body.push("java.lang.Max(");
-        if (a->is_target_scalar())
-            generate_rhs_id(a->get_lhs_scala());
-        else 
-            generate_rhs_field(a->get_lhs_field());
-        Body.push(",");
-        generate_expr(a->get_rhs());
-
-        Body.pushln(");");
+        Body.pushln("}");
     }
     else {
-        assert(false);
+        if (a->is_target_scalar())
+        {
+            generate_lhs_id(a->get_lhs_scala());
+        }
+        else {
+            generate_lhs_field(a->get_lhs_field());
+        }
+
+        Body.push(" = ");
+
+        if ((a->get_reduce_type() == GMREDUCE_PLUS) ||
+            (a->get_reduce_type() == GMREDUCE_MULT) ||
+            (a->get_reduce_type() == GMREDUCE_AND) ||
+            (a->get_reduce_type() == GMREDUCE_OR))
+        {
+            if (a->is_target_scalar())
+                generate_rhs_id(a->get_lhs_scala());
+            else 
+                generate_rhs_field(a->get_lhs_field());
+
+            switch(a->get_reduce_type()) {
+                case GMREDUCE_PLUS: Body.push(" + ("); break;
+                case GMREDUCE_MULT: Body.push(" * ("); break;
+                case GMREDUCE_AND: Body.push(" && ("); break;
+                case GMREDUCE_OR: Body.push(" || ("); break;
+                default: assert(false);
+            }
+            generate_expr(a->get_rhs());
+            Body.pushln(");");
+        }
+        else if ((a->get_reduce_type() == GMREDUCE_MIN) ||
+             (a->get_reduce_type() == GMREDUCE_MAX))
+        {
+            if (a->get_reduce_type() == GMREDUCE_MIN) 
+                Body.push("java.lang.Min(");
+            else
+                Body.push("java.lang.Max(");
+
+            if (a->is_target_scalar())
+                generate_rhs_id(a->get_lhs_scala());
+            else 
+                generate_rhs_field(a->get_lhs_field());
+            Body.push(",");
+            generate_expr(a->get_rhs());
+
+            Body.pushln(");");
+        }
+        else {
+            assert(false);
+        }
     }
 }
 
