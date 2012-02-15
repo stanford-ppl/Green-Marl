@@ -11,7 +11,9 @@ class gm_apply {
         gm_apply() : for_id (false), for_symtab(false), 
                      for_sent(false), for_expr(false), 
                      for_proc(false),
-                     separate_post_apply(false) {}
+                     separate_post_apply(false),
+                     traverse_local_expr_only(false)
+    {}
 
     virtual bool apply(gm_symtab* e, int symtab_type){ return true;}      // SYMTAB_ARG, SYMTAB_FIELD, SYMTAB_VAR, SYMTAB_PROC
     virtual bool apply(gm_symtab_entry* e, int symtab_type){ return true;}
@@ -29,6 +31,7 @@ class gm_apply {
     virtual bool apply2(ast_expr* e) {return true;}
     virtual bool apply2(ast_procdef* s) {return true;}
 
+
     protected:
         bool for_id;
         bool for_symtab;
@@ -36,6 +39,7 @@ class gm_apply {
         bool for_expr;
         bool for_proc;
         bool separate_post_apply;
+        bool traverse_local_expr_only;
 
     public:
         bool is_for_id() {return for_id;}
@@ -51,6 +55,8 @@ class gm_apply {
 
         bool has_separate_post_apply() {return separate_post_apply;}
         void set_separate_post_apply(bool b)  {separate_post_apply = b;}
+        bool is_traverse_local_expr_only() {return traverse_local_expr_only;}
+        void set_traverse_local_expr_only(bool b) {traverse_local_expr_only = b;}
 
         /*
         void get_all(bool &b1, bool &b2, bool&b3, bool &b4) { b1 = for_id; b2 = for_symtab; b3 = for_sent; b4 = for_expr}

@@ -212,7 +212,7 @@ static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body)
     Body.push("(");
     if (gm_type == GMTYPE_BOOL) {
         Body.push(name);
-        Body.push("?1:0");
+        Body.push("?(byte)1:(byte)0");
     }
     else {
         Body.push(name);
@@ -229,7 +229,7 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body)
         case GMTYPE_LONG:   Body.push("getLong()"); break;
         case GMTYPE_FLOAT:  Body.push("getFloat()"); break;
         case GMTYPE_DOUBLE: Body.push("getDouble()"); break;
-        case GMTYPE_BOOL:   Body.push("getByte()==0?false:true"); break;
+        case GMTYPE_BOOL:   Body.push("get()==0?false:true"); break;
         default: assert(false);
     }
     Body.pushln(";");
@@ -245,7 +245,7 @@ static void genReadByte(const char* name, int gm_type, int offset, gm_code_write
         case GMTYPE_LONG:   Body.push("byteArrayToLongBigEndian("); break;
         case GMTYPE_FLOAT:  Body.push("byteArrayToFloatBigEndian("); break;
         case GMTYPE_DOUBLE: Body.push("byteArrayToDoubleBigEndian("); break;
-        case GMTYPE_BOOL:   Body.push("byteArrayToBoolBigEndian("); break;
+        case GMTYPE_BOOL:   Body.push("byteArrayToBooleanBigEndian("); break;
         default: assert(false);
     }
     char str_buf[1024];
@@ -256,7 +256,7 @@ static void genReadByte(const char* name, int gm_type, int offset, gm_code_write
 void gm_gpslib::generate_vertex_prop_class_details(
             std::set<gm_symtab_entry* >& prop,
             gm_code_writer& Body)
-{
+
     char temp[1024];
     int total = 
         ((gm_gps_beinfo*)FE.get_current_backend_info())->

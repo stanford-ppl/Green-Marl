@@ -153,6 +153,7 @@ void ast_sent::traverse(gm_apply*a, bool is_post, bool is_pre )
 void ast_sentblock::traverse_sent(gm_apply*a, bool is_post, bool is_pre )
 {
     //a->begin_context(this);
+    if (a->is_traverse_local_expr_only()) return;
 
     std::list<ast_sent*>& sents = get_sents();
     std::list<ast_sent*>::iterator i;
@@ -196,7 +197,8 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 
     // traverse
     ast_sent* ss = get_body();
-    ss->traverse(a, is_post, is_pre);
+    if (!a->is_traverse_local_expr_only()) 
+        ss->traverse(a, is_post, is_pre);
 
     ast_expr* f = get_filter();
     if (f!=NULL)
@@ -244,10 +246,12 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     if (fc!= NULL) fc->traverse(a, is_post, is_pre);
     if (bc!= NULL) bc->traverse(a, is_post, is_pre);
 
-    ast_sentblock* fb = get_fbody();
-    ast_sentblock* bb = get_bbody();
-    if (fb != NULL) fb->traverse(a, is_post, is_pre);
-    if (bb != NULL) bb->traverse(a, is_post, is_pre);
+    if (!a->is_traverse_local_expr_only()) {
+        ast_sentblock* fb = get_fbody();
+        ast_sentblock* bb = get_bbody();
+        if (fb != NULL) fb->traverse(a, is_post, is_pre);
+        if (bb != NULL) bb->traverse(a, is_post, is_pre);
+    }
 
     if (is_post) {
         if (for_id) {
@@ -369,17 +373,21 @@ void ast_if::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     // traverse only
    get_cond()-> traverse( a, is_post, is_pre);
-   get_then()-> traverse( a, is_post, is_pre);
-    if (get_else() != NULL) {
-        get_else()->traverse(a, is_post, is_pre);
-    }
+   if (!a->is_traverse_local_expr_only()) {
+        get_then()-> traverse( a, is_post, is_pre);
+        if (get_else() != NULL) {
+            get_else()->traverse(a, is_post, is_pre);
+        }
+   }
 }
 
 void ast_while::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     // traverse only
    get_cond()-> traverse( a, is_post, is_pre);
-   get_body()-> traverse( a, is_post, is_pre);
+   if (!a->is_traverse_local_expr_only()) {
+       get_body()-> traverse( a, is_post, is_pre);
+   }
 }
 
 void ast_call::traverse_sent(gm_apply*a, bool is_post, bool is_pre)

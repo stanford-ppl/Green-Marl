@@ -110,16 +110,17 @@ class ast_extra_info_list : public ast_extra_info {
 
 
 class ast_node {
+    friend class gm_apply;
     protected:
         ast_node(int nt) : nodetype(nt), parent(NULL) { }
         int nodetype;
-        void set_nodetype(int nt) {nodetype= nt;}
 
     protected:
         ast_node() : nodetype(AST_END), parent(NULL) { }
         ast_node* parent;
 
     public:
+        void set_nodetype(int nt) {nodetype= nt;}
 
         virtual ~ast_node() {
             std::map<std::string, ast_extra_info*>::iterator i; 
@@ -959,6 +960,7 @@ class ast_expr : public ast_node
         void set_alternative_type(int i) {alternative_type_of_expression = i;}
         int get_alternative_type()       {return alternative_type_of_expression;}
 
+        void set_expr_class(int i) {expr_class = i;}
     protected:
         gm_symtab_entry* bound_graph_sym; // used only during typecheck
 };
