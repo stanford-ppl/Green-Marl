@@ -1,6 +1,8 @@
 
 #include <stdio.h>
 #include "gm_backend_gps.h"
+#include "gm_backend_cpp_opt_steps.h"
+#include "gm_ind_opt_steps.h"
 #include "gm_error.h"
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
@@ -9,14 +11,9 @@
 void gm_gps_gen::init_opt_steps()
 {
     std::list<gm_compile_step*>& L = get_opt_steps();
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_defer));                    // deferred assignment --> insert _next
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl));            // from ind-opt
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_synthesizable));      // check if contains DFS, etc
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_scope));     // check where symbols are defined
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_canonical));          // check if canonical form
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));               // create (Extended) basic block
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));           // split communicating every BB into two
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_usage));     // check how symbols are used
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_summary));   // make a summary of symbols per BB
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_reachable));           // make a list of reachable BB
 }
 
 bool gm_gps_gen::do_local_optimize()

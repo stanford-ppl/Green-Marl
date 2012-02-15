@@ -278,6 +278,9 @@ void gm_gps_gen::generate_expr_builtin(ast_expr *e)
     {
     case GM_BLTIN_TOP_DRAND:         // rand function
     case GM_BLTIN_TOP_IRAND:         // rand function
+    case GM_BLTIN_GRAPH_NUM_NODES:
+    case GM_BLTIN_NODE_DEGREE:
+    case GM_BLTIN_NODE_IN_DEGREE:
         get_lib()->generate_expr_builtin(be, Body, is_master_generate());
         break;
 

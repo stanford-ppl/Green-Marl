@@ -9,10 +9,7 @@ Procedure PageRank(G: Graph, e: Double, d: Double, max: Int,
         diff = 0.0;
         Foreach (t: G.Nodes) {
             Double val = (1-d) / N + d* 
-                Sum(w: t.InNbrs)(w.OutDegree()>0)  
-                    {1}
-                    //{w.pg_rank / w.OutDegree()}
-            ;
+                Sum(w: t.InNbrs)(w.OutDegree()>0)  {w.pg_rank / w.OutDegree()} ;
 
             diff += | val - t.pg_rank |;
             t.pg_rank <= val @ t;

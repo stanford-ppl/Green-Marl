@@ -82,12 +82,13 @@ void ast_node::apply_symtabs(gm_apply* a, bool is_post)
 {
     assert(has_scope());
     bool post_apply = is_post && a->has_separate_post_apply();
+    int t = get_nodetype()== AST_PROCDEF ? GM_SYMTAB_ARG : GM_SYMTAB_VAR;
     if (post_apply) {
-        a->apply2(get_symtab_var(), (int)GM_SYMTAB_ARG);
+        a->apply2(get_symtab_var(), t);
     } else {
-        a->apply(get_symtab_var(), (int)GM_SYMTAB_ARG);
+        a->apply(get_symtab_var(), t);
     }
-    apply_symtab_each(a, get_symtab_var(), GM_SYMTAB_ARG, is_post);
+    apply_symtab_each(a, get_symtab_var(), t, is_post);
 
     if (post_apply) {
         a->apply2(get_symtab_field(), (int)GM_SYMTAB_FIELD);

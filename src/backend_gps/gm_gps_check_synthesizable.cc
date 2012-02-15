@@ -143,11 +143,12 @@ public:
                 break;
 
             /*
-            case GM_BLTIN_GRAPH_NUM_NODES:
             case GM_BLTIN_GRAPH_NUM_EDGES:
+            */
+            case GM_BLTIN_GRAPH_NUM_NODES:
             case GM_BLTIN_NODE_DEGREE:
             case GM_BLTIN_NODE_IN_DEGREE:
-            */
+                break;
 
             case GM_BLTIN_TOP_LOG:           // log function
             case GM_BLTIN_TOP_EXP:           // exp function
@@ -155,7 +156,7 @@ public:
                 break;
             default:
                 gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_OP, 
-                    e->get_line(), e->get_col(), "unsupported builtin function");
+                    e->get_line(), e->get_col(), "Builtin (function)");
                 _error = true;
             }
         }

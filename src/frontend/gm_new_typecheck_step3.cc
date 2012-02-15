@@ -305,7 +305,7 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
         if (warning) 
         {
             // [XXX] to be coerced
-            assert(false);
+            //assert(false);
 
         }
     }

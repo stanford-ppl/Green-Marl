@@ -54,7 +54,15 @@ void gm_gps_gen::close_output_files()
 void gm_gps_gen::init_gen_steps()
 {
     std::list<gm_compile_step*>& L = get_gen_steps();
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_gen_class));
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_scope));     // check where symbols are defined
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_canonical));          // check if canonical form
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));               // create (Extended) basic block
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));           // split communicating every BB into two
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_usage));     // check how symbols are used
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_summary));   // make a summary of symbols per BB
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_reachable));           // make a list of reachable BB
+
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_gen_class));                    // finally make classes
 }
 
 //----------------------------------------------------

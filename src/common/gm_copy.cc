@@ -73,7 +73,6 @@ ast_expr* ast_expr_builtin::copy(bool b)
         T->LIST.push_back(e2);
     }
 
-    printf("hello\n");
     ast_expr_builtin* e = ast_expr_builtin::new_builtin_expr(
             driver->copy(b), orgname, T);
 

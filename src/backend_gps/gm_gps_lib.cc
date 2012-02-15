@@ -698,6 +698,19 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
         Body.push(")");
         break;
 
+    case GM_BLTIN_GRAPH_NUM_NODES:
+        Body.push("/*to be fixed*/");
+        Body.push("getNumNodes()");
+        break;
+    case GM_BLTIN_NODE_DEGREE:
+        Body.push("/*to be fixed*/");
+        Body.push("getNumNeighbors()");
+        break;
+    case GM_BLTIN_NODE_IN_DEGREE:
+        Body.push("/*to be fixed*/");
+        Body.push("getNumIncomingNeighbors()");
+        break;
+
     default:
         assert(false);
     }

@@ -158,11 +158,27 @@ static void post_process_deferred_writes(
         replace_deferred_assignment(fe->get_body(), old_dest, new_dest);
 
         //---------------------------------------
-        // add initializer
-        //  [todo] Conditional initializer?
+        // add initializer (if required)
         //---------------------------------------
         ast_id* src = target_graph->getId();
         assert(src->getSymInfo() != NULL);
+
+        bool need_initializer = true;
+        if (gm_is_all_graph_iter_type(fe->get_iter_type())) {
+            gm_rwinfo_sets *sets =  gm_get_rwinfo_sets(fe);
+            gm_rwinfo_map& W = sets->write_set;
+            assert(W.find(old_dest) != W.end());
+            gm_rwinfo_list* L = W[old_dest];
+            std::list<gm_rwinfo*>::iterator I ;
+            for(I=L->begin(); I!=L->end();I++)
+            {
+                gm_rwinfo* info = *I;
+                if ((info->access_range == GM_RANGE_LINEAR) && (info->always)){
+                    need_initializer = false;
+                    break;
+                }
+            }
+        }
 
         ast_foreach* init = create_initializer(src->copy(true), is_nodeprop, old_dest, new_dest);
 
@@ -192,11 +208,13 @@ static void post_process_deferred_writes(
             //      a.X_new = <expr with X>
             //   }
             //   Update X from X_new
+            // }
             //---------------------------------------
-            add_conditional_initialize(seq_loop,fe, init, old_dest, new_dest);
+            if (need_initializer)
+                add_conditional_initialize(seq_loop,fe, init, old_dest, new_dest);
         }
         else {
-             gm_add_sent_before(fe, init);
+            gm_add_sent_before(fe, init);
         }
 
         //---------------------------------------

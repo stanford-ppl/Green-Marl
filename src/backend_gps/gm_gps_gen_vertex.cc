@@ -157,6 +157,7 @@ void gm_gps_gen::do_generate_vertex_constructor()
     sprintf(temp,"public %sVertex(CommandLine line) {",proc_name);
     Body.pushln(temp);
     Body.pushln("// todo: how to tell if we should parse the command lines or not");
+    Body.pushln("// --> no need. master will parse the command line and sent it to the workers");
     Body.pushln("}");
 }
 
