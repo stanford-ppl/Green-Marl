@@ -322,7 +322,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
 void gm_gps_gen::generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent)
 {
     
-    printf("sym type = %s\n", gm_get_type_string(sym->getType()->getTypeSummary()));
+    //printf("sym type = %s\n", gm_get_type_string(sym->getType()->getTypeSummary()));
     assert(sym->getType()->is_primitive() || sym->getType()->is_node());
 
     char temp[1024];

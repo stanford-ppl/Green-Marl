@@ -886,6 +886,7 @@ class ast_expr : public ast_node
             left(NULL), right(NULL), id1(NULL), field(NULL), 
             ival(0), fval(0), bval(false), op_type(GMOP_END), up(NULL), is_right(false),
             type_of_expression(GMTYPE_UNKNOWN), cond(NULL),
+            alternative_type_of_expression(GMTYPE_UNKNOWN),
             bound_graph_sym(NULL)
             {}
 
@@ -906,6 +907,7 @@ class ast_expr : public ast_node
         bool is_cond; // am I a conditional-operand?
 
         int type_of_expression;  // set after local typecheck
+        int alternative_type_of_expression; // used for group-assignment only. (during type checking)
 
     public:
         bool is_biop() {return (expr_class == GMEXPR_BIOP) || (expr_class == GMEXPR_LBIOP);}
@@ -954,9 +956,13 @@ class ast_expr : public ast_node
         void set_up_op(ast_expr* e) {up = e;}
         void set_cond_op(ast_expr* e) {cond = e;}
 
+        void set_alternative_type(int i) {alternative_type_of_expression = i;}
+        int get_alternative_type()       {return alternative_type_of_expression;}
+
     protected:
-        gm_symtab_entry* bound_graph_sym; // set during typecheck
+        gm_symtab_entry* bound_graph_sym; // used only during typecheck
 };
+
 
 
 

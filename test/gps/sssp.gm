@@ -7,19 +7,18 @@ Procedure sssp(G:Graph, dist:N_P<Int>(G), root: Node(G))
     N_P<Int> (G) dist_nxt;
     Bool fin = False;
 
-    Foreach(n:G.Nodes) {
-        n.dist     = (n==root) ? 0 : +INF;
-        n.dist_nxt = (n==root) ? 0 : +INF;
-        n.updated  = (n==root) ? True: False;
-        n.updated_nxt = False;
-    }
+    // Set for every node in the graph
+    G.dist     = (G==root) ? 0 : +INF;
+    G.updated  = (G==root) ? True: False;
+    G.dist_nxt = G.dist;
+    G.updated_nxt = False;
 
     While(!fin) {
         fin = True;
 
         Foreach(n: G.Nodes)(n.updated) {
             Foreach(s: n.Nbrs) {
-                // Updated_nxt becomes true only if dist_next is updated
+                // updated_nxt becomes true only if dist_next is actually updated
                 <s.dist_nxt; s.updated_nxt> min= <n.dist +1; True>; 
             }
         }

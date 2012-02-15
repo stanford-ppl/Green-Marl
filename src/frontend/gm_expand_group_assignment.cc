@@ -125,6 +125,18 @@ class ss2_group_assign : public gm_apply {
     // traverse expr
     public:
     virtual bool apply(ast_expr* e) {
+        if (e->is_id())
+        {
+            ast_id* old = e->get_id();
+            // replace G.A -> iter.A
+            if ((old->getSymInfo() == this->old_driver_sym) &&
+                ((e->get_type_summary() == GMTYPE_NODE) ||
+                 (e->get_type_summary() == GMTYPE_EDGE)))
+            {
+                old->setSymInfo(this->new_driver->getSymInfo());
+                e->set_type_summary(new_driver->getTypeSummary());
+            }
+        }
         if (e->is_field())
         {
             ast_field* f = e->get_field(); 

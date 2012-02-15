@@ -7,12 +7,17 @@ Procedure sssp(G:Graph, dist:N_P<Int>(G), len:E_P<Int>(G), root: Node(G))
     N_P<Int> (G) dist_nxt;
     Bool fin = False;
 
+    /*
     Foreach(n:G.Nodes) {
         n.dist = (n==root) ? 0 : +INF;
-        n.dist_nxt = (n == root) ? 0 : +INF;
         n.updated = (n == root) ? True: False;
         n.updated_nxt = False;
     }
+    */
+    G.dist = (G == root) ? 0 : +INF;
+    G.updated = (G == root) ? True: False;
+    G.dist_nxt = G.dist;
+    G.updated_nxt = G.updated;
 
     While(!fin) {
         fin = True;

@@ -106,6 +106,20 @@ bool gm_typechecker_stage_2::apply(ast_expr* e)
   bool is_okay = true;
   switch(e->get_opclass())
   {
+    case GMEXPR_ID:
+    {
+        if (_is_group_assignment) {
+            ast_id* id = e->get_id();
+            if (id->getSymInfo() == _group_sym) {
+                if (_is_group_assignment_node_prop)  
+                    e->set_alternative_type(GMTYPE_NODE);
+                else
+                    e->set_alternative_type(GMTYPE_EDGE);
+            }
+        }
+        break;
+    }
+
     case GMEXPR_FIELD:
     {
         ast_field* f = e->get_field();

@@ -148,6 +148,32 @@ bool gm_typechecker_stage_3::check_ter(ast_expr *e)
     return check_binary(e);
 }
 
+static bool check_special_case_inside_group_assign(
+        ast_id* l_id, int alt_type_l, ast_expr * r)
+{
+
+    int r_type = r->get_type_summary();
+
+    if (gm_is_node_compatible_type(alt_type_l) && !gm_is_node_compatible_type(r_type)) 
+        return false;
+
+    if (gm_is_edge_compatible_type(alt_type_l) && !gm_is_edge_compatible_type(r_type)) 
+        return false;
+
+    assert(l_id->getTypeInfo()->is_graph() || l_id->getTypeInfo()->is_collection());
+
+    if (l_id->getTypeInfo()->is_graph() && 
+            (l_id->getSymInfo() != r->get_bound_graph())) 
+        return false;
+
+    if (l_id->getTypeInfo()->is_collection() &&
+            (l_id->getTypeInfo()->get_target_graph_sym() != r->get_bound_graph())) 
+        return false;
+
+    return true;
+}
+
+
 // comparison (eq, neq and less)
 bool gm_typechecker_stage_3::check_binary(ast_expr* e)
 {
@@ -163,6 +189,50 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e)
     if (gm_is_unknown_type(l_type) || gm_is_unknown_type(r_type)) {
         return false; // no need to check any further
     }
+
+    // special case inside group assignment 
+    // e.g> G.x = (G == n) ? 1 : 0;
+    if (op_type == GMOP_EQ) {
+        int alt_type_l = e->get_left_op()->get_alternative_type();
+        if (alt_type_l != GMTYPE_UNKNOWN) {
+            assert(e->get_left_op()->is_id());
+            if (check_special_case_inside_group_assign(
+                e->get_left_op()->get_id(), alt_type_l, e->get_right_op())) {
+                e->get_left_op()->set_type_summary(alt_type_l);
+                return true;
+            }
+        }
+        int alt_type_r = e->get_left_op()->get_alternative_type();
+        if (alt_type_r != GMTYPE_UNKNOWN) {
+            assert(e->get_right_op()->is_id());
+            if (check_special_case_inside_group_assign(
+                e->get_right_op()->get_id(), alt_type_r, e->get_left_op())) {
+                e->get_right_op()->set_type_summary(alt_type_l);
+                return true; 
+            }
+        }
+    }
+
+    int result_type; 
+    int l_new;
+    int r_new;
+    bool w1_warn;
+    bool w2_warn;
+
+    bool okay = gm_is_compatible_type(op_type, l_type, r_type,
+                            result_type, l_new, r_new,
+                            w1_warn,w2_warn);
+
+    if (!okay) {
+        gm_type_error(GM_ERROR_OPERATOR_MISMATCH2,
+            l, c,
+            gm_get_op_string(op_type),
+            gm_get_type_string(l_type), 
+            gm_get_type_string(r_type));
+
+        return false;
+    }
+
     // node/edge
     if (gm_has_target_graph_type(l_type))
     {
@@ -182,30 +252,8 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e)
         e->set_bound_graph(l_sym);
     }
 
-    int result_type; 
-    int l_new;
-    int r_new;
-    bool w1_warn;
-    bool w2_warn;
-
-    bool okay = 
-        gm_is_compatible_type(op_type, l_type, r_type,
-                            result_type, l_new, r_new,
-                            w1_warn,w2_warn);
-
-    if (!okay) {
-        gm_type_error(GM_ERROR_OPERATOR_MISMATCH2,
-            l, c,
-            gm_get_op_string(op_type),
-            gm_get_type_string(l_type), 
-            gm_get_type_string(r_type));
-
-        return false;
-    }
-
     e->set_type_summary(result_type);
 
-    // [XXX]
     if (w1_warn && gm_is_prim_type(l_type)) {
         // adding explicit coercions
         if (!e->get_left_op()->is_literal()) {
@@ -257,6 +305,7 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
         if (warning) 
         {
             // [XXX] to be coerced
+            assert(false);
 
         }
     }
