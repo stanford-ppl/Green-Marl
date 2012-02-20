@@ -256,7 +256,7 @@ static void genReadByte(const char* name, int gm_type, int offset, gm_code_write
 void gm_gpslib::generate_vertex_prop_class_details(
             std::set<gm_symtab_entry* >& prop,
             gm_code_writer& Body)
-
+{
     char temp[1024];
     int total = 
         ((gm_gps_beinfo*)FE.get_current_backend_info())->
