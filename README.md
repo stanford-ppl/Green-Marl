@@ -62,7 +62,7 @@ If you already know how to fetch via git, please go ahead from the above reposit
             git pull
 
   + (Note) Since current Makefile is far from perfect in detecting dependencies, after pulling a new source
-  it is desired to completely re-build the compiler (or gm_graph library) by doing make clean and then doing make.
+  it is desired to completely re-build the compiler (or gm_graph library) by doing make clean_all and then doing make.
   
 2-2 Directories
 -------------------------------------
