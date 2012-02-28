@@ -5,97 +5,135 @@
 #include "gm_transform_helper.h"
 #include "gm_rw_analysis.h"
 #include "gm_check_if_constant.h"
+#include "gm_argopts.h"
 
+//-------------------------------------------------------------------
+// Currently, this optimization is too specialized.
+// More generalized solution will be available soon with GPS project
 //--------------------------------------------------------------------
 // flip edges 
-//   InBFS(t: G.Nodes)
-//     t.X = Sum (u: t.UpNbrs) {u.Y}
+//   G.X = 0;
+//   s.X = ...
+//   InBFS(t: G.Nodes; s)
+//     t.X = Sum (u: t.UpNbrs) {...}
 // -->
 //   G.X = 0;
-//   .... 
+//   s.X = ...
 //   InBFS(t: G.Nodes)
 //     Foreach(u: t.DownNbrs) 
-//        u.X += t.Y @ t
-//
-// [TODO] How to do this transfrom, once Sum is changed into Foreach
-// [TODO] Adding Initializer
-// [TODO] Considering BFS filter
+//        u.X += ... @ t
 //--------------------------------------------------------------------
 class gm_flip_backedge_t : public gm_apply
 {
 public:
-    gm_flip_backedge_t() {_in_bfs = false;};
-
-    //-------------------------------------------------
-    // [this is slightly wrong.]
-    // we have to add LHS initializer, after the change!
-    //-------------------------------------------------
-    virtual void begin_context(ast_node* n)
-    {
-        // hack: there is no nested BFS.
-        if (n->get_nodetype() != AST_SENTBLOCK) return;
-        if (n->get_parent() == NULL) return;
-        if (n->get_parent()->get_nodetype() == AST_BFS) 
-        {
-            ast_bfs* bfs = (ast_bfs*) n->get_parent();
-
-            // [TODO] considering filters
-            // [TODO] Note. It turned out that if there are filter, things are not so simple.
-            if (bfs->get_navigator()!=NULL) return;
-            if (bfs->get_f_filter()!=NULL) return;
-            if (bfs->get_b_filter()!=NULL) return ; 
-
-            _in_bfs= true;
-            current  = (ast_sentblock*)n;
-            current_bfs_iter = bfs->get_iterator()->getSymInfo();
-
-            // todo considering forward and backward filter
-            //current_filter = bfs->get_filter(); // can be null
-        }
-    }
-    virtual void end_context(ast_node* n)
-    {
-        if (n->get_nodetype() != AST_SENTBLOCK) return;
-        if (n->get_parent() == NULL) return;
-        if (n->get_parent()->get_nodetype() == AST_BFS) 
-        {
-            ast_bfs* bfs = (ast_bfs*) n->get_parent();
-
-            if (bfs->get_navigator()!=NULL) return;
-            if (bfs->get_f_filter()!=NULL) return;
-            if (bfs->get_b_filter()!=NULL) return;
-            _in_bfs= false; // todo: NESTED BFS
-            current_bfs_iter = NULL;
-        }
-    }
+    gm_flip_backedge_t() {
+        this->set_for_sent(true);
+    };
 
     virtual bool apply(ast_sent* sent) 
     {
-        if (!_in_bfs) return true;
-        if (sent->get_nodetype() != AST_ASSIGN) return true;
-        ast_assign* a = (ast_assign*) sent;
-        if (a->is_defer_assign()) return true;
-        if (a->is_reduce_assign()) return true;
-        if (a->is_target_scalar()) return true;
+        if (sent->get_nodetype() != AST_BFS) return true;
+        ast_bfs* bfs = (ast_bfs*) sent;
 
+        // should be no filter or navigator
+        if (bfs->get_f_filter() != NULL) return true;
+        if (bfs->get_b_filter() != NULL) return true;
+        if (bfs->get_navigator() != NULL) return true;
 
-        ast_field* f = a->get_lhs_field();
-        if (f->get_first()->getSymInfo() != current_bfs_iter) return true;
+        gm_symtab_entry* root = bfs->get_root()->getSymInfo();
+        gm_symtab_entry* current_bfs_iter = bfs->get_iterator()->getSymInfo();
+        ast_sentblock* body = bfs->get_fbody();
+        std::list<ast_sent*> &S = body->get_sents();
 
-        ast_expr* r = a->get_rhs();
-        if (r->get_nodetype() != AST_EXPR_RDC) return true;
-        ast_expr_reduce* D = (ast_expr_reduce*) r;
-        int iter_type = D->get_iter_type();
-        if (iter_type != GMTYPE_NODEITER_UP_NBRS) return true;
-        if (D->get_filter() != NULL) return true; // todo considering filters
-        // todo if D contains any other neted sum.
+        std::list<gm_symtab_entry*> targets;
+        std::map<gm_symtab_entry*, bool> check_init;
 
+        //--------------------------------------
+        // check if bodies are all assignments
+        //--------------------------------------
+        std::list<ast_sent*>::iterator I;
+        for(I=S.begin(); I!=S.end(); I++)
+        {
+            ast_sent* s = *I;
+            if (s->get_nodetype() != AST_ASSIGN) return true;
 
-        // add to target
-        _cands.push_back(a);
-        _tops.push_back(current);
-        //_filters.push_back(current_filter);
-        _filters.push_back(NULL);
+            ast_assign* a = (ast_assign*) (*I);
+
+            if (a->is_defer_assign()) return true;
+            if (a->is_reduce_assign()) return true;
+            if (a->is_target_scalar()) return true;
+
+            ast_field* f = a->get_lhs_field();
+            if (f->get_first()->getSymInfo() != current_bfs_iter) return true;
+
+            ast_expr* r = a->get_rhs();
+            if (r->get_nodetype() != AST_EXPR_RDC) return true;
+            ast_expr_reduce* D = (ast_expr_reduce*) r;
+            int iter_type = D->get_iter_type();
+            if (iter_type != GMTYPE_NODEITER_UP_NBRS) return true;
+            if (D->get_filter() != NULL) return true; // todo considering filters
+
+            targets.push_back(f->get_second()->getSymInfo());
+            // todo check if D contains any other neted sum.
+        }
+
+        //--------------------------------------
+        // check initializations are preceeding BFS
+        //--------------------------------------
+        ast_node* up = bfs->get_parent(); assert(up!=NULL);
+        if (up->get_nodetype() != AST_SENTBLOCK) return true;
+        ast_sentblock* sb = (ast_sentblock*) up;
+
+        for(I= (sb->get_sents()).begin(); I != (sb->get_sents()).end(); I++)
+        {
+            ast_sent* s = *I;
+            gm_rwinfo_sets* RW = gm_get_rwinfo_sets(s);
+            gm_rwinfo_map& W = RW->write_set;
+
+            // check if this sentence initializes any target
+            std::list<gm_symtab_entry*>::iterator T;
+            for(T=targets.begin(); T!=targets.end(); T++) {
+                gm_symtab_entry* t = *T;
+                if (W.find(t) == W.end()) continue;
+                gm_rwinfo_list* lst = W[t];
+                gm_rwinfo_list::iterator J;
+                for(J=lst->begin(); J!=lst->end(); J++) {
+                    gm_rwinfo* info = *J;
+                    if (info->driver != NULL) {
+                        if (info->driver != root) { // other than thru root, init is being broken.
+                            check_init[t] = false;
+                        }
+                    }
+                    else {
+                        if (info->access_range != GM_RANGE_LINEAR) {
+                            check_init[t] = false;
+                        }
+                        else {
+                            check_init[t] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // check if every symbol has been initialized
+        std::list<gm_symtab_entry*>::iterator T;
+        for(T=targets.begin(); T!=targets.end(); T++) {
+            gm_symtab_entry* t = *T;
+            if (check_init.find(t) == check_init.end()) return true;
+            if (check_init[t] == false) return true;
+        }
+
+        // now put every assignment in the candiate statement
+        for(I=S.begin(); I!=S.end(); I++)
+        {
+            ast_assign* a = (ast_assign*) (*I);
+            // add to target
+            _cands.push_back(a);
+            _tops.push_back(body);
+        }
+
+        return true;
     }
 
     bool post_process() { // return true if something changed
@@ -104,119 +142,28 @@ public:
             bool b = false;
             std::list<ast_sentblock*>::iterator P;
             std::list<ast_assign*>::iterator A;
-            std::list<ast_expr*>::iterator F;
             A = _cands.begin();
             P = _tops.begin();
-            F = _filters.begin();
-            for(; A !=_cands.end(); A++, P++, F++) {
-                b = b | post_process_item(*A, *P, *F);
+            for(; A !=_cands.end(); A++, P++) {
+                flip_edges(*A, *P);
             }
             _cands.clear();
             _tops.clear();
-            _filters.clear();
 
-            return b;
+            return true;
         }
+
         return false;
     }
 
-    bool post_process_item(ast_assign* a, ast_sentblock* p, ast_expr* f) {
-        // check R-W set of the assignment does not conflict with other blocks in the sentence
-        std::list<ast_sent*>& sents = p->get_sents();
-        std::list<ast_sent*>::iterator I;
-
-        // write-set is only the rhs.
-        gm_rwinfo_map& W1 = get_rwinfo_sets(a)->write_set;
-        gm_rwinfo_map& R1 = get_rwinfo_sets(a)->read_set;
-
-        // read-set is only the lhs.
-        bool s_is_before_a = true;
-        bool no_dep = true;
-        for(I=sents.begin(); I!= sents.end(); I++) {
-            ast_sent* s = *I;
-            if (s == a) { s_is_before_a = false; continue;}
-            if (s_is_before_a) 
-            {
-                if (gm_has_dependency(a, s)) {no_dep = false; break;}
-            }                
-            else
-            {
-                if (gm_has_dependency(s,a)) {no_dep = false; break;}
-            }
-        }
-
-        if (no_dep) flip_edges(a, p, f);
-        return no_dep;
-    }
-
-    void flip_edges(ast_assign* a, ast_sentblock * p, ast_expr *f);
-    void create_init(ast_assign *a, ast_sentblock * p, ast_expr *f);
+    void flip_edges(ast_assign* a, ast_sentblock * p);
 
 private:
     std::list<ast_sentblock*> _tops;
-    std::list<ast_expr*> _filters;
     std::list<ast_assign*> _cands;
-    ast_sentblock* current;
-    gm_symtab_entry* current_bfs_iter;
-    ast_expr* current_filter;
-    bool _in_bfs;
-
 };
 
-void gm_flip_backedge_t::create_init(ast_assign *a, ast_sentblock * p, ast_expr *f)
-{
-    assert(!a->is_target_scalar());
-    assert(p->get_parent()->get_nodetype() == AST_BFS);
-    ast_bfs *bfs = (ast_bfs*) p->get_parent();
-
-    //------------------------------------
-    // Foreach(i:G.Nodes) {
-    //    if (filter)
-    //       i.LHS = <BOTTOM>
-    // }
-    // BFS { 
-    //   <flipped expr> ...
-    // }
-    //------------------------------------
-    ast_sentblock* sb = ast_sentblock::new_sentblock(); // sentblock for body of foreach
-    ast_id* new_iter = bfs->get_iterator()->copy(); // same name, nullify symtab entry 
-    ast_id* new_source = bfs->get_source()->copy(true); // same symtab
-    int new_iter_type = GMTYPE_NODEITER_ALL;
-    ast_foreach* fe_new = gm_new_foreach_after_tc(new_iter, new_source, sb, new_iter_type);
-    // new_iter now has correct symtab entry.
-
-
-    //------------------------------------
-    // assign statement to bottom
-    //------------------------------------
-    assert(a->get_rhs()->get_nodetype() == AST_EXPR_RDC);
-    ast_expr* bottom_rhs = gm_new_bottom_symbol(
-        ((ast_expr_reduce*)a->get_rhs())->get_reduce_type(), 
-        a->get_lhs_field()->getTargetTypeSummary());
-    ast_field* lhs = ast_field::new_field(new_iter->copy(true), a->get_lhs_field()->get_second()->copy(true));
-    ast_assign* new_as = ast_assign::new_assign_field(lhs, bottom_rhs);
-
-    if (f == NULL) {
-        sb->add_sent(new_as);
-
-    } else {
-        // make an if statment
-
-        // if (filter) <-- copy of old filter. symbols updated
-        ast_expr* copy_filter = f->copy(true);
-        gm_replace_symbol_entry( bfs->get_iterator()->getSymInfo(), new_iter->getSymInfo(), copy_filter);
-        ast_if* new_if = ast_if::new_if(copy_filter, new_as, NULL);
-
-        sb->add_sent(new_if);
-    }
-
-    //----------------------------------
-    // put new foreach in front of BFS
-    //----------------------------------
-    gm_add_sent_before(bfs, fe_new);
-}
-
-void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p, ast_expr *f)
+void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p)
 {
     assert(p->get_parent()->get_nodetype() == AST_BFS);
 
@@ -232,13 +179,6 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p, ast_expr *
 
     // [TODO] considering filters in original RHS.
     assert(old_rhs->get_filter() == NULL);
-
-    //------------------------------------
-    // creating initialization statement
-    //------------------------------------
-    create_init(a,p,f);
-
-
 
     //------------------------------------
     // creating foreach statement
@@ -286,9 +226,14 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p, ast_expr *
 
 void gm_ind_opt_flip_edge_bfs::process(ast_procdef* p)
 {
-    gm_flip_backedge_t T;
-    gm_traverse_sents(p, &T);
-    T.post_process();
+    if (OPTIONS.get_arg_bool(GMARGFLAG_FLIP_BFSUP) == false)
+        return ;
 
-    //return true;
+    gm_flip_backedge_t T;
+    p->traverse_pre(&T);
+    bool changed = T.post_process();
+
+    // re-do rw_analysis
+    if (changed) 
+        gm_redo_rw_analysis(p->get_body()); 
 }

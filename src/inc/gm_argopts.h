@@ -37,6 +37,7 @@ struct GM_comp_args  {
 #define GMARGFLAG_PRINTBB           "Db" 
 #define GMARGFLAG_FLIP_REVERSE      "FlipRev"
 #define GMARGFLAG_FLIP_PULL         "FlipPull"
+#define GMARGFLAG_FLIP_BFSUP        "FlipUp"
 //#define GMARGFLAG_DUMPIR            "Dd"
 //#define GMARGFLAG_NOMERGE           "NoMerge"
 //#define GMARGFLAG_NOSCREDUCE        "NoScalarReduce"
@@ -51,6 +52,7 @@ static struct GM_comp_args GM_compiler_options[] =
     {GMARGFLAG_OPT_LEV, GMARG_INT,   "Optimization Level (tobe implemented)", "1"},
     {GMARGFLAG_VERB_LEV, GMARG_INT,   "Verbosity Level 0:silent, 1:show compile stage", "0"},
 
+    {GMARGFLAG_FLIP_BFSUP,   GMARG_BOOL, "Enable 'flipping edges for BFS Up-nbrs'", "1"},
     {GMARGFLAG_FLIP_REVERSE, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of reverse edges", "0"},
     {GMARGFLAG_FLIP_PULL,    GMARG_BOOL, "Enable 'flipping edges' to avoid the use of pull-based computation", "0"},
 

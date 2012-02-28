@@ -15,7 +15,7 @@ Procedure comp_BC(G: Graph, BC: N_P<Float>(G), Seeds: Node_Sequence(G))
     s.sigma = 1;
 
     // BFS order iteration from s
-    InBFS(v: G.Nodes From s)(v!=s) {
+    InBFS(v: G.Nodes From s) {
        // Summing over BFS parents
        v.sigma = Sum(w:v.UpNbrs) { w.sigma };
     }
