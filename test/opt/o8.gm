@@ -1,0 +1,28 @@
+// Test of non-conflicting reductions
+Proc P(G:Graph, A,B,C:N_P<Int>(G), r:Node(G))
+{
+    Foreach(n:G.Nodes)(n.B > 0)
+        n.A ++;         // optimize-able
+
+    Foreach(n:G.Nodes)
+        Foreach(s:n.InNbrs) (s.C > 0)
+            n.A++;
+
+    Node_Seq(G)   Q;
+    Node_Order(G) O;
+    Foreach(n:Q.Items)
+        n.B++;
+
+    Foreach(n:O.Items)
+        n.B++;      // optimize-able
+
+    InBFS(n:G.Nodes ; r)
+    {
+        Foreach(t:n.UpNbrs) 
+            n.B++;
+    }
+    InReverse
+    {
+        n.B++;    // optimize-able
+    }
+}

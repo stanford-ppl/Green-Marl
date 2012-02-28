@@ -31,6 +31,9 @@ class gm_apply {
     virtual bool apply2(ast_expr* e) {return true;}
     virtual bool apply2(ast_procdef* s) {return true;}
 
+    // (for bfs iteration)
+    virtual bool begin_traverse_reverse(ast_bfs* bfs) {}
+    virtual bool end_traverse_reverse(ast_bfs* bfs) {}
 
     protected:
         bool for_id;

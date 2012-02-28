@@ -1,0 +1,10 @@
+// [Error] Double Reduce 
+Proc Q(G: Graph, A,B,C:N_P<Int>(G))
+{
+    Foreach(t:G.Nodes) {
+        t.A += 3 @ t; // bound to t
+        Foreach(q:t.Nbrs) {
+            q.A += t.B @ q; // bound to q
+        }
+    }
+}

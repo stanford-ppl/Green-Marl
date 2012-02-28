@@ -244,13 +244,19 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     ast_expr *bc = get_b_filter(); 
     if (n!= NULL) n->traverse(a, is_post, is_pre);
     if (fc!= NULL) fc->traverse(a, is_post, is_pre);
-    if (bc!= NULL) bc->traverse(a, is_post, is_pre);
+    if (bc!= NULL) {
+        bc->traverse(a, is_post, is_pre);
+    }
 
     if (!a->is_traverse_local_expr_only()) {
         ast_sentblock* fb = get_fbody();
         ast_sentblock* bb = get_bbody();
         if (fb != NULL) fb->traverse(a, is_post, is_pre);
-        if (bb != NULL) bb->traverse(a, is_post, is_pre);
+        if (bb != NULL) {
+            a->begin_traverse_reverse(this);
+            bb->traverse(a, is_post, is_pre);
+            a->end_traverse_reverse(this);
+        }
     }
 
     if (is_post) {

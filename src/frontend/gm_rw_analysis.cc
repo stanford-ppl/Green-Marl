@@ -212,13 +212,13 @@ bool gm_add_rwinfo_to_set(
 
            // check reduce error
            if (is_reduce_ops) {
-               /*
+               
                is_error = is_reduce_error(e2, new_entry);
                if (is_error) {
                    delete new_entry; // not required
                    return false;
                }
-               */
+               
            }
 
            if (is_same_entry(e2, new_entry)) { 
@@ -889,16 +889,37 @@ bool gm_rw_analysis::apply_while(ast_while* a)
 //  foreach(X)<filter> SB
 //   1) add filter to readset 
 //   2) copy contents of sentence-block (add conditional flag if filter exists)
-//   3) Resolve all the references driven to current iterator
+//   3) Resolve all the references driven via current iterator
+//   3b) Resolve all the references driven via outside iterator --> all become random (if parallel)
 //   4) Create bound-set
 //
-// e.g.) For (X:G.Nodes)
-//        A += X.val @ X;
-//      [A   Reduce at X ---> write to A ]
-//      [val Read by X   ---> linear read]
-// return: is_okay
+// e.g.) Foreach (n:G.Nodes)  <<- at here
+//        A += n.val @ n;
+//      [A   Reduce n    ---> write to A ]
+//      [val Read via n  ---> linear read]
+//
+// e.g.2) Foreach (n:...) {
+//          Foreach (t:G.Nodes/n.Nbrs ) { <<- at here
+//              t.A =            ==>  linear/random write
+//                  = t.A        ==>  linear/random read
+//              n.A =            ==>  random write
+//                  = n.A        ==>  random read
+//              x                ==>  write
+//                  = x          ==>  read
+//        } }
+//
+// e.g.3) Foreach (n:...) {
+//          For   (t:G.Nodes/n.Nbrs ) { <<- at here
+//              t.A =            ==>  linear/random write
+//                  = t.A        ==>  linear/random read
+//              n.A =            ==>  write via n
+//                  = n.A        ==>  read via n
+//              x                ==>  write
+//                  = x          ==>  read
+//        } }
 //-----------------------------------------------------------------------------
-static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwinfo_map& T, int iter_type)
+//
+static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwinfo_map& T, int iter_type, bool is_parallel)
 {
     bool is_okay = true;
     gm_symtab_entry* iter_sym = iter->getSymInfo();
@@ -919,7 +940,20 @@ static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwin
                cp->driver = NULL;
                cp->access_range = range;
             }
-            is_okay = gm_add_rwinfo_to_set(T, sym, cp, false) && is_okay;
+            else if (cp->driver == NULL)  {
+                if (cp->access_range == GM_RANGE_SINGLE) {
+                    // scalar, do nothing
+                }
+                else if (is_parallel) {
+                    cp->access_range = GM_RANGE_RANDOM;
+                    cp->driver = NULL;
+                }
+            }
+            else if (is_parallel) {
+                    cp->access_range = GM_RANGE_RANDOM;
+                    cp->driver = NULL;
+            }
+           is_okay = gm_add_rwinfo_to_set(T, sym, cp, false) && is_okay;
         }
     }    
     return is_okay;
@@ -970,7 +1004,9 @@ static bool cleanup_iterator_access_reduce(
         gm_rwinfo_map& D,       // reduce map of the Foreach-statement
         gm_rwinfo_map& W,       // write 
         gm_rwinfo_map& B,       // bound-set for Foreach
-        int iter_type)          // Nodes or NBRS
+        int iter_type,          // Nodes or NBRS
+        bool is_parallel)
+    
 {
     bool is_okay = true;
     gm_symtab_entry* iter_sym = iter->getSymInfo();
@@ -992,6 +1028,15 @@ static bool cleanup_iterator_access_reduce(
             if (cp->driver == iter_sym) { // replace access from this iterator
                cp->driver = NULL;
                cp->access_range = range;
+            }
+            else if (is_parallel) {
+                if ((cp->driver == NULL) && (cp->access_range == GM_RANGE_SINGLE)) {
+                    // scalar, do nothing
+                }
+                else {
+                    cp->access_range = GM_RANGE_RANDOM;
+                    cp->driver = NULL;
+                }
             }
 
             // X.val <= .... @ X
@@ -1044,9 +1089,9 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a)
     // 3) Eliminate access driven by the current iterator
     // 4) And construct bound set
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;  
-    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type()) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type()) && is_okay;
-    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type(), a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type(), a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type(), a->is_parallel()) && is_okay;
 
     return is_okay;
 }
@@ -1105,10 +1150,10 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a)
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;  
     gm_rwinfo_map& B2 = gm_get_bound_set_info(a)->bound_set_back;  
 
-    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, iter_type) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, iter_type) && is_okay;
-    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp1, D, W, B, iter_type) && is_okay;
-    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp2, D, W, B2, iter_type) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, iter_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, iter_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp1, D, W, B, iter_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp2, D, W, B2, iter_type, a->is_parallel()) && is_okay;
 
     cleanup_iterator_access_bfs(R);
     cleanup_iterator_access_bfs(W);

@@ -1,9 +1,11 @@
+
+// [Warning]
 // Write write conflict
 Proc P(G: Graph, A,B: N_P<Int>(G))
 {
     Foreach(t:G.Nodes) {
         Foreach(u: t.Nbrs) {
-            u.A += 1;  // write A randomly
+            u.A = 1;  // write A randomly
         }
     }
 }

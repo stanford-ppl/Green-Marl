@@ -20,6 +20,7 @@ void gm_independent_optimize::init_steps()
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_hoist_foreach));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_flip_edges));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_loop_merge));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_nonconf_reduce));
 }
 
 bool gm_independent_optimize::do_local_optimize()

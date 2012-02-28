@@ -1,5 +1,5 @@
 
-/// Error Case
+// Warning
 Proc P(G: Graph, A,B,C:N_P<Int>(G))
 {
     Foreach(t: G.Nodes) {

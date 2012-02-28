@@ -1463,7 +1463,7 @@ class ast_bfs: public ast_sent
         ast_id*        iter;
         ast_id*        src;
         ast_id*        root;
-        ast_id*        iter2; // iterator used for frontier expansion
+        ast_id*        iter2; // iterator used for frontier expansion [xxx] what?
         bool           use_transpose;
         bool           _bfs;
 };

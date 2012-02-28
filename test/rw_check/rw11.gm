@@ -1,0 +1,11 @@
+Proc Q(G: Graph, A,B,C,D:N_P<Int>(G))
+{
+    Foreach(t:G.Nodes) {
+        Foreach(q:t.Nbrs) {
+            t.A += t.B;
+        }
+        For(q:t.Nbrs) {
+            t.C += t.D;
+        }
+    }
+}
