@@ -1,1 +1,5 @@
-to be added
+
+Things that are not implemented
+  * Procedure calls inside Green-Marl Procedure. 
+  * Operations on Collections inside parallel loops  (and their conflict checking)
+  * User-Defined Types
