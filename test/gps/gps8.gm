@@ -1,0 +1,33 @@
+
+// Test of message congurence
+Proc gps6(G: Graph, b: Bool)
+{
+    Node_Prop<Int>(G) A,B;
+    Node_Prop<Float>(G) C,D,E;
+    Foreach(n: G.Nodes)
+    {
+        Foreach(t: n.Nbrs) {
+            t.B += n.A;  // Int
+        }
+    }
+
+    Foreach(n: G.Nodes)
+    {
+        Foreach(t: n.Nbrs) {
+            t.A +=  n.B;   // Int
+        }
+    }
+
+    Foreach(n: G.Nodes)
+    {
+        If (b) {
+            Foreach(t: n.Nbrs) {
+                t.C += n.D;         // Float
+            }
+        } Else {
+            Foreach(t: n.Nbrs) {
+                t.C += -1 * n.E;         // Float
+            }
+        }
+    }
+}
