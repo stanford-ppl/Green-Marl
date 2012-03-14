@@ -12,8 +12,11 @@ void gm_gps_gen::init_opt_steps()
 {
     std::list<gm_compile_step*>& L = get_opt_steps();
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_defer));                    // deferred assignment --> insert _next
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl));            // from ind-opt
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl));            // copied from from ind-opt
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_simplify_expr1));           // separate built-in calls through out-loop drivers 
+    //L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_nested_loops_test)); 
+
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_insert_temp_property));      // replace scalar -> temp property
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_synthesizable));      // check if contains DFS, etc
 }
 

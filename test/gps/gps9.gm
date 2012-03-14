@@ -1,0 +1,8 @@
+
+// Test of gps9
+Proc gps9(G: Graph, A,B: N_P<Float>(G), alpha, beta: Float)
+{
+    Foreach(n: G.Nodes) {
+        n.B = Sum(t:n.InNbrs) {t.A} * alpha + beta;
+    }
+}
