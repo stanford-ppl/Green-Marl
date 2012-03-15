@@ -14,23 +14,6 @@
 //   - (RW analysis is re-done here?)
 //---------------------------------------------------------
 /*
-static void resolve_name_conflict(ast_sentblock* P, ast_sentblock* Q)
-{
-    gm_symtab* V = P->get_symtab_var();
-    gm_symtab* F = P->get_symtab_field();
-
-    std::vector<gm_symtab_entry*>& Vs = V->get_entries();
-    std::vector<gm_symtab_entry*>& Fs = F->get_entries();
-    std::vector<gm_symtab_entry*>::iterator i;
-    for(i=Vs.begin(); i!=Vs.end(); i++)
-    {
-        //gm_resolve_name_conflict(Q, *i, true); // for scalar
-    }
-    for(i=Fs.begin(); i!=Fs.end(); i++)
-    {
-        //gm_resolve_name_conflict(Q, *i, false); // for properties
-    }
-}
 */
 
 void gm_merge_sentblock(ast_sentblock* P, ast_sentblock *Q, bool delete_Q_after)

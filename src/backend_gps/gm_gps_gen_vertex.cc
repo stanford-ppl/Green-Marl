@@ -66,23 +66,30 @@ void gm_gps_gen::do_generate_message_class()
 
    char temp[1024];
    ast_procdef* proc = FE.get_current_proc(); assert(proc != NULL);
+   gm_gps_beinfo * info =  
+        (gm_gps_beinfo *) FE.get_current_backend_info();
    sprintf(temp, 
            "public static class MessageData extends MinaWritable {"
            ); 
-    Body.pushln(temp);
-    Body.pushln("byte m_type;");
-    Body.pushln("public MessageData(byte type) {m_type = type;}");
-    Body.NL();
+   Body.pushln(temp);
+    
+   if (info->is_single_message()) {
+        Body.pushln("//single messge type; argument ignored");
+        Body.pushln("public MessageData(byte type) {}");
+   }
+   else {
+        Body.pushln("byte m_type;");
+        Body.pushln("public MessageData(byte type) {m_type = type;}");
+   }
+   Body.NL();
 
-    do_generate_message_class_default_constructor();
+   do_generate_message_class_default_constructor();
 
-    gm_gps_beinfo * info =  
-        (gm_gps_beinfo *) FE.get_current_backend_info();
-    get_lib()->generate_message_class_details(info, Body);
+   get_lib()->generate_message_class_details(info, Body);
 
 
-    Body.pushln("} // end of message-data");
-    Body.NL();
+   Body.pushln("} // end of message-data");
+   Body.NL();
 }
 
 void gm_gps_gen::do_generate_message_class_default_constructor()

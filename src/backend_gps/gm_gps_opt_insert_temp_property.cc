@@ -5,6 +5,7 @@
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
+#include "gm_rw_analysis.h"
 
 // defined in opt_find_nested_foreach_loops.cc
 extern void gm_gps_find_double_nested_loops(ast_node* p, std::map<ast_foreach*, ast_foreach*>& MAP);
@@ -82,6 +83,21 @@ public:
                 {
                     target_syms[target] = outloop; // found target
                 }
+
+                if (a->has_lhs_list()) 
+                {
+                    std::list<ast_node*>& lhs_list = a->get_lhs_list();
+                    std::list<ast_node*>::iterator I;
+                    for(I=lhs_list.begin(); I!=lhs_list.end(); I++) 
+                    {
+                        ast_node* n = *I;
+                        if (n->get_nodetype() != AST_ID) continue;
+                        ast_id* id = (ast_id*) n;
+                        target = id->getSymInfo();
+                        if (potential_target_syms.find(target)!=potential_target_syms.end())
+                            target_syms[target] = outloop; // found target
+                    }
+                }
             }
         }
         return true;
@@ -136,9 +152,6 @@ void gm_gps_opt_insert_temp_property::process(ast_procdef* p)
     std::map<gm_symtab_entry*, ast_foreach*>::iterator I;
     for(I=MAP2.begin(); I!=MAP2.end(); I++)
     {
-        /*
-                */
-
         ast_foreach* out_loop = I->second;
         gm_symtab_entry* sym = I->first; 
 
@@ -146,14 +159,14 @@ void gm_gps_opt_insert_temp_property::process(ast_procdef* p)
         ast_sentblock* sb = gm_find_upscope(out_loop); assert(sb!=NULL);
 
         char buf[128]; 
-        if (sym->getId()->get_orgname()[0] == '_')
-            sprintf(buf, "%s", sym->getId()->get_orgname());
-        else
-            sprintf(buf, "_%s", sym->getId()->get_orgname());
-        char* temp_name = FE.voca_temp_name_and_add(buf, "prop");
+        char* temp_name = FE.voca_temp_name_and_add(sym->getId()->get_orgname(), "prop", NULL, true);
         gm_symtab_entry* temp_prop = 
             gm_add_new_symbol_property(sb, sym->getType()->getTypeSummary(), true, 
                     out_loop->get_iterator()->getTypeInfo()->get_target_graph_sym(), temp_name);
+
+        // replace accesses:
+        //   sym ==> out_iter.temp_prop
+        gm_replace_symbol_access_scalar_field(out_loop, sym, out_loop->get_iterator()->getSymInfo(), temp_prop);
 
         printf("target %s inside loop %s ==> %s (temp_name)\n", 
                 I->first->getId()->get_genname(), 
@@ -163,5 +176,18 @@ void gm_gps_opt_insert_temp_property::process(ast_procdef* p)
         delete [] temp_name;
     }
 
+    // remove old symbols
+    std::set<gm_symtab_entry*> Set; 
+    for(I=MAP2.begin(); I!=MAP2.end(); I++)
+    {
+        gm_symtab_entry* sym = I->first; 
+        Set.insert(sym);
+    }
+
+    gm_remove_symbols(p->get_body(), Set);
+    
+    //-------------------------------------
     // Re-do RW analysis
+    //-------------------------------------
+    gm_redo_rw_analysis(p->get_body());
 }

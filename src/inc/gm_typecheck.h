@@ -83,11 +83,19 @@ class gm_symtab {
         int get_symtab_type() {return symtab_type;}
 
         virtual ~gm_symtab() {
+            /*
             for(int i=0;i<entries.size(); i++) {
                 gm_symtab_entry* e = entries[i];
                 delete e;
             }
+            */
+            std::set<gm_symtab_entry*>::iterator I;
+            for(I=entries.begin(); I!=entries.end(); I++) {
+                gm_symtab_entry* e = *I;
+                delete e;
+            }
         }
+
         void set_parent(gm_symtab* p) {parent = p;}
         gm_symtab* get_parent() {return parent;}
         ast_node* get_ast() {return ast;}
@@ -115,8 +123,11 @@ class gm_symtab {
 
 
         gm_symtab_entry* find_symbol(ast_id* id) {
-            for(int i=0;i<entries.size(); i++) {
-                gm_symtab_entry* e = entries[i];
+            //for(int i=0;i<entries.size(); i++) {
+            std::set<gm_symtab_entry*>::iterator I;
+            for(I=entries.begin(); I!=entries.end(); I++) {
+                gm_symtab_entry* e = *I;
+                //gm_symtab_entry* e = entries[i];
                 const char* c = e->id->get_orgname();
                 const char* c2 = id->get_orgname();
                 if (!strcmp(c,c2)) return e;
@@ -125,29 +136,37 @@ class gm_symtab {
             return parent->find_symbol(id);
         }
 
-        std::vector<gm_symtab_entry*>& get_entries() {return entries;}
+        //std::vector<gm_symtab_entry*>& get_entries() {return entries;}
+        std::set<gm_symtab_entry*>& get_entries() {return entries;}
         // return true if entry is in the table
         bool is_entry_in_the_tab(gm_symtab_entry *e) {
+            /*
             std::vector<gm_symtab_entry*>::iterator i;
             for(i=entries.begin(); i!=entries.end();i++)
                 if (*i == e) return true;
             return false;
+            */
+            return entries.find(e) != entries.end();
         }
         void remove_entry_in_the_tab(gm_symtab_entry *e) {
+            /*
             std::vector<gm_symtab_entry*>::iterator i;
             for(i=entries.begin(); i!=entries.end();i++)
                 if (*i == e) break;
             if (i!=entries.end())
                 entries.erase(i);
+            */
+            entries.erase(e);
         }
 
         // merge table A into this. table A is emptied.
         // (assertion: name conflict has been resolved before calling this function)
         void merge(gm_symtab* A) {
             assert(A!=NULL);
-            std::vector<gm_symtab_entry*>::iterator i;
+            std::set<gm_symtab_entry*>::iterator i;
             for(i=A->entries.begin(); i!= A->entries.end();i++) {
-                entries.push_back(*i);
+                //entries.push_back(*i);
+                entries.insert(*i);
             }
             A->entries.clear();
         }
@@ -155,7 +174,7 @@ class gm_symtab {
         // add symbol entry
         // (assertion: name conflict has been resolved)
         void add_symbol(gm_symtab_entry* e) {
-            entries.push_back(e);
+            entries.insert(e);
         }
 
     private:
@@ -166,12 +185,13 @@ class gm_symtab {
             gm_symtab_entry* e  = new gm_symtab_entry(id_copy, type_copy, isRA, isWA);
 
             id->setSymInfo(e);
-            entries.push_back(e);
+            //entries.push_back(e);
+            entries.insert(e);
         }
 
 
     private:
-        std::vector<gm_symtab_entry*> entries;
+        std::set<gm_symtab_entry*> entries;
         gm_symtab* parent;
         int symtab_type;
         ast_node* ast; // where this belongs to 

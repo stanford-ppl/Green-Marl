@@ -78,6 +78,20 @@ gm_symtab_entry* gm_add_new_symbol_property(ast_sentblock* sb, int primtype, boo
 gm_symtab_entry* gm_add_new_symbol_nodeedge_type(ast_sentblock* sb, int nodeedge_type, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
 
 //------------------------------------------------------------
+// Replace every symbol access
+// e.g> source: x , target: _z
+//      x = y + 1 ;  
+// ==>  _z = y + 1;
+// return true if replaced at least on instance
+// caller have to gaurantee that target symbol does not break scope rule
+//------------------------------------------------------------
+bool gm_replace_symbol_access_scalar_scalar(ast_node* top, gm_symtab_entry* src, gm_symtab_entry* target, bool chage_rhs=true, bool change_lhs=true) ;
+bool gm_replace_symbol_access_scalar_field(ast_node* top, gm_symtab_entry* src, gm_symtab_entry* t_drv, gm_symtab_entry* target, bool chage_rhs=true, bool change_lhs=true); 
+bool gm_replace_symbol_access_field_scalar(ast_node* top, gm_symtab_entry* src_drv, gm_symtab_entry* src, gm_symtab_entry* target, bool chage_rhs=true, bool change_lhs=true) ;
+bool gm_replace_symbol_access_field_field(ast_node* top, gm_symtab_entry* src_drv, gm_symtab_entry* src, gm_symtab_entry* t_drv, gm_symtab_entry* target, bool chage_rhs=true, bool change_lhs=true) ;
+
+
+//------------------------------------------------------------
 // move a symbol one (or more) scope up, to another sentblock
 // returns the sentblock that the symbol belongs newly.
 // returns NULL if symbol already at the top
@@ -88,6 +102,11 @@ ast_sentblock* gm_move_symbol_up(gm_symtab_entry *e, gm_symtab* old_tab, bool is
 // [assumption] new_tab belongs to a sentence block
 // name conflict is resolved inside.
 void gm_move_symbol_into(gm_symtab_entry *e, gm_symtab* old_tab, gm_symtab* new_tab, bool is_scalar);
+
+// remove set of symbols definitions in the given AST
+// caller should make sure that deleted symbols are not used anymore
+void gm_remove_symbols(ast_node* top, std::set<gm_symtab_entry* >& S);
+void gm_remove_symbol(ast_node* top, gm_symtab_entry* sym);
 
 //------------------------------------------------------------
 // Node creation after type-check

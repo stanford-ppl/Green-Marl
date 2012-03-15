@@ -169,4 +169,5 @@ void gm_gps_opt_check_canonical::process(ast_procdef* proc)
     proc->traverse(&T, true, true);
 
     set_okay(!T.is_error());
+    if (T.is_error()) {printf("ERROR\n");}
 }

@@ -66,14 +66,15 @@ void ast_procdef::apply_id(gm_apply* a, bool is_post)
 }
 static void apply_symtab_each(gm_apply* a, gm_symtab* s, int symtab_type, bool is_post)
 {
-    std::vector<gm_symtab_entry*> v = s->get_entries();
-    for(int i=0;i<v.size();i++)
+    std::set<gm_symtab_entry*> v = s->get_entries();
+    std::set<gm_symtab_entry*>::iterator I;
+    for(I=v.begin(); I!=v.end(); I++)
     {
         if (is_post && a->has_separate_post_apply()) {
-            a->apply2(v[i], symtab_type);
+            a->apply2(*I, symtab_type);
         }
         else {
-            a->apply(v[i], symtab_type);
+            a->apply(*I, symtab_type);
         }
     }
 }

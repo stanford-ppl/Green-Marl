@@ -1,6 +1,6 @@
 
 // Test of message congurence
-Proc gps6(G: Graph, b: Bool)
+Proc gps7(G: Graph, b: Bool)
 {
     Node_Prop<Int>(G) A,B;
     Node_Prop<Float>(G) C,D,E;

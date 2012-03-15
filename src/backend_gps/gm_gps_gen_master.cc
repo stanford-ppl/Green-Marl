@@ -74,8 +74,8 @@ void gm_gps_gen::do_generate_master_class()
 
     // Iterate symbol table  and
     gm_symtab* args = proc->get_symtab_var(); assert(args != NULL);
-    std::vector<gm_symtab_entry*>& syms = args->get_entries();
-    std::vector<gm_symtab_entry*>::iterator I;
+    std::set<gm_symtab_entry*>& syms = args->get_entries();
+    std::set<gm_symtab_entry*>::iterator I;
     for (I=syms.begin(); I!=syms.end(); I++)
     {
         gm_symtab_entry* s = *I;

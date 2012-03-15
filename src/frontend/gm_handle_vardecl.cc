@@ -120,8 +120,8 @@ public:
         ast_sentblock* sb = (ast_sentblock*) b;
         gm_symtab* V = sb->get_symtab_var();
         gm_symtab* F = sb->get_symtab_field();
-        std::vector<gm_symtab_entry*> Vs = V->get_entries();
-        std::vector<gm_symtab_entry*> Fs = F->get_entries();
+        std::set<gm_symtab_entry*> Vs = V->get_entries();
+        std::set<gm_symtab_entry*> Fs = F->get_entries();
 
         ast_sent* top = NULL;
         //-------------------------------------
@@ -141,7 +141,7 @@ public:
         // Iterate over symtab. 
         // Add vardecl for each symbol
         //----------------------------------------
-        std::vector<gm_symtab_entry*>::iterator i;  
+        std::set<gm_symtab_entry*>::iterator i;  
         for(i=Vs.begin(); i!=Vs.end();i++) { // scalar
             gm_symtab_entry* e = *i;
             ast_typedecl* type = e->getType()->copy();

@@ -946,7 +946,8 @@ class ast_expr : public ast_node
         int get_optype() {return op_type;}
         bool is_right_op() {return is_right;}
         bool is_cond_op() {return is_cond;}
-        void set_id(ast_id* i) {id1 = i; if (i!=NULL) i->set_parent(this);}
+        void set_id(ast_id* i) {id1 = i; if (i!=NULL) {i->set_parent(this);expr_class=GMEXPR_ID;}}
+        void set_field(ast_field* f) {field = f; if (f!=NULL) {f->set_parent(this);expr_class=GMEXPR_FIELD;}}
 
         ast_expr* get_left_op() {return left;}
         ast_expr* get_right_op() {return right;}
@@ -1196,10 +1197,14 @@ class ast_assign : public ast_sent {
         bool is_argminmax_assign() {return arg_minmax;}
         void set_argminmax_assign(bool b) {arg_minmax = b;}
 
+        bool has_lhs_list() {return l_list.size() > 0;}
         std::list<ast_node*>& get_lhs_list() {return l_list;}
         std::list<ast_expr*>& get_rhs_list() {return r_list;}
         void set_lhs_list(std::list<ast_node*>& L) {l_list = L;} 
         void set_rhs_list(std::list<ast_expr*>& R) {r_list = R;} 
+
+        void set_lhs_scala(ast_id* new_id) { lhs_scala = new_id; if (new_id!=NULL) lhs_type = GMASSIGN_LHS_SCALA;}
+        void set_lhs_field(ast_field* new_id) { lhs_field = new_id; if (new_id!=NULL) lhs_type = GMASSIGN_LHS_FIELD;}
 
     private:
         ast_assign(): ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false) {}

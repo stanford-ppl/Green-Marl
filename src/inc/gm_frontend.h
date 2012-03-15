@@ -103,10 +103,13 @@ class gm_frontend
                 generate_temp_name(base, extra1, try_org_name_first);
         }
 
-        char* voca_temp_name_and_add(const char* base, const char* suffix, gm_vocabulary* extra1 = NULL)
+        char* voca_temp_name_and_add(const char* base, const char* suffix, gm_vocabulary* extra1 = NULL, bool insert_underscore_prefix_if_not_already=false)
         {
             char temp[1024];
-            sprintf(temp,"%s%s", base, suffix);
+            if (insert_underscore_prefix_if_not_already && (base[0] != '_'))
+                sprintf(temp,"_%s%s", base, suffix);
+            else
+                sprintf(temp,"%s%s", base, suffix);
             return  voca_temp_name_and_add(temp, extra1, true);
         }
 

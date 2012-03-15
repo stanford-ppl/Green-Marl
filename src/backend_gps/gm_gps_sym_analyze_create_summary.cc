@@ -49,8 +49,8 @@ public:
             else if (syminfo->is_used_in_multiple_BB()){
                 prop.insert(sym);
             } else {
-                assert(false);
-                // ignore?
+                //assert(false);
+                prop.insert(sym);
             }
         }
 
@@ -68,8 +68,8 @@ void gm_gps_opt_analyze_symbol_summary::process(ast_procdef* p)
     //-----------------------------------------------
     // mark special markers to the property arguments
     //-----------------------------------------------
-    std::vector<gm_symtab_entry* >::iterator J;
-    std::vector<gm_symtab_entry*>& args =
+    std::set<gm_symtab_entry* >::iterator J;
+    std::set<gm_symtab_entry*>& args =
         p->get_symtab_field()->get_entries(); 
     for(J=args.begin(); J!= args.end(); J++)
     {

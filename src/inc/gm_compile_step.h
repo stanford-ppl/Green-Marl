@@ -21,7 +21,7 @@ public:
 
 protected:
         virtual void set_okay(bool b) {_okay = b;}
-        virtual void set_affected(bool b) {_affected = b;}
+        virtual void set_affected(bool b) {_affected = b;}          // [to be used later]
         virtual void set_description(const char* c) {_desc = c;}
 private:
         bool _okay;

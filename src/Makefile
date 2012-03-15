@@ -48,6 +48,7 @@ SRCS2 =\
        gm_new_sents_after_tc.cc gm_merge_sentblock.cc\
        gm_reduce_error_check.cc\
        gm_prepare_genname.cc\
+	   gm_replace_sym_access.cc\
        gm_frontend.cc gm_rw_analysis.cc gm_rw_analysis_check2.cc \
        gm_handle_vardecl.cc  gm_fixup_bound_symbol.cc\
        gm_syntax_sugar.cc  \
@@ -85,6 +86,8 @@ SRCS2 =\
        gm_cpp_gen_regular.cc\
        gm_cpplib_gen.cc \
        gm_cpplib_opt.cc\
+	   gm_gps_opt_find_nested_foreach_loops.cc\
+	   gm_gps_opt_insert_temp_property.cc\
 	   gm_gps_opt_simplify_expr1.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_canonical.cc gm_gps_check_synthesizable.cc\
@@ -95,6 +98,7 @@ SRCS2 =\
        gm_gps_sym_analyze_check_usage.cc\
        gm_gps_sym_analyze_check_scope.cc\
        gm_gps_sym_analyze_create_summary.cc\
+	   gm_gps_find_congruent_message.cc\
        gps_syminfo.cc \
        gm_gps_bb_find_reachable.cc\
        gm_gps_java.cc gm_gps_lib.cc\

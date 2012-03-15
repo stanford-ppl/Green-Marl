@@ -124,4 +124,20 @@ void gm_gps_beinfo::compute_max_communication_size()
     assert(comm_loops.size() <= 255);
 }
 
+gm_gps_congruent_msg_class* 
+    gm_gps_beinfo::add_congruent_message_class(
+        gm_gps_communication_size_info* sz,
+        gm_gps_basic_block* bb)
+{
+    gm_gps_congruent_msg_class *C = 
+        new gm_gps_congruent_msg_class();
+    C->id = congruent_msg.size();
+    C->sz_info = sz;
+    C->add_receiving_basic_block(bb);
+
+    congruent_msg.push_back(C);
+
+    return C;
+}
+
 

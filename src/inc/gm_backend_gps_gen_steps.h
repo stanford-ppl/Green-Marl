@@ -15,6 +15,7 @@ GM_COMPILE_STEP(gm_gps_opt_split_comm_ebb,        "Split communicatining EBBs")
 GM_COMPILE_STEP(gm_gps_opt_analyze_symbol_usage,  "Analyze Symbol Usage Information")
 GM_COMPILE_STEP(gm_gps_opt_analyze_symbol_summary,"Create Symbol Summary")
 GM_COMPILE_STEP(gm_gps_opt_find_reachable,        "Pack reachable BBs into a list")
+GM_COMPILE_STEP(gm_gps_opt_find_congruent_message,"Merge congruent message classes")
 GM_COMPILE_STEP(gm_gps_gen_class,  "Generate Code")
 
 

@@ -188,3 +188,43 @@ ast_sentblock* gm_move_symbol_up(gm_symtab_entry *e, gm_symtab* old_tab, bool is
     return sb;
 }
 
+
+//---------------------------------------------------------------------------
+// remove set of symbols
+//---------------------------------------------------------------------------
+class gm_remove_symbols_t : public gm_apply {
+public:
+    gm_remove_symbols_t(std::set<gm_symtab_entry*>& S) : TARGETS(S) 
+    { set_for_symtab(true); }
+
+    virtual bool apply(gm_symtab* e, int symtab_sype) 
+    {
+        std::set<gm_symtab_entry*>::iterator T;
+        for(T=TARGETS.begin(); T!=TARGETS.end(); T++)
+        {
+            gm_symtab_entry * t = *T;
+            if (e->is_entry_in_the_tab(t)) {
+                e->remove_entry_in_the_tab(t);
+            }
+        }
+
+        return true;
+    }
+
+private:
+    std::set<gm_symtab_entry*> TARGETS;
+};
+
+void gm_remove_symbols(ast_node* top, std::set<gm_symtab_entry*> & S)
+{
+    gm_remove_symbols_t T(S);
+    top->traverse_pre(&T);
+}
+void gm_remove_symbol(ast_node* top, gm_symtab_entry* e)
+{
+    std::set<gm_symtab_entry*> S;
+    S.insert(e);
+
+    gm_remove_symbols_t T(S);
+    top->traverse_pre(&T);
+}

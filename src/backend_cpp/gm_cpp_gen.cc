@@ -440,9 +440,13 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
         ast_procdef* proc = FE.get_current_proc();
         gm_symtab* vars = proc->get_symtab_var();
         gm_symtab* fields = proc->get_symtab_field();
-        std::vector<gm_symtab_entry*>& E = vars-> get_entries();
-        for(int i=0;i<E.size();i++) {
-            gm_symtab_entry* e = E[i];
+        //std::vector<gm_symtab_entry*>& E = vars-> get_entries();
+        //for(int i=0;i<E.size();i++) {
+           // gm_symtab_entry* e = E[i];
+        std::set<gm_symtab_entry*>& E = vars-> get_entries();
+        std::set<gm_symtab_entry*>::iterator I; 
+        for(I=E.begin(); I!=E.end(); I++) {
+            gm_symtab_entry* e = *I;
             if (e->getType()->is_graph()) {
                 sprintf(temp, "%s.%s();", e->getId()->get_genname(), FREEZE);
                 Body.pushln(temp);
@@ -457,9 +461,13 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
                 {
                     bool has_edge_prop = false;
                     // Semi-sorting must be done before edge-property creation
-                    std::vector<gm_symtab_entry*>& F = fields-> get_entries();
-                    for(int j=0;j<F.size();j++) {
-                        gm_symtab_entry* f = F[j];
+                    //std::vector<gm_symtab_entry*>& F = fields-> get_entries();
+                    //for(int j=0;j<F.size();j++) {
+                        // gm_symtab_entry* f = F[j];
+                    std::set<gm_symtab_entry*>& F = fields-> get_entries();
+                    std::set<gm_symtab_entry*>::iterator J; 
+                    for(J=F.begin(); J!=F.end(); J++) {
+                        gm_symtab_entry* f = *J;
                         if ((f->getType()->get_target_graph_sym() == e) &&
                             (f->getType()->is_edge_property()))
                             has_edge_prop = true;
@@ -557,8 +565,10 @@ void gm_cpp_gen::generate_sent_block_exit(ast_sentblock* sb)
         else{
             Body.NL();
             gm_symtab* tab = sb->get_symtab_field();
-            std::vector<gm_symtab_entry*>& entries = tab->get_entries();
-            std::vector<gm_symtab_entry*>::iterator I;
+            //std::vector<gm_symtab_entry*>& entries = tab->get_entries();
+            //std::vector<gm_symtab_entry*>::iterator I;
+            std::set<gm_symtab_entry*>& entries = tab->get_entries();
+            std::set<gm_symtab_entry*>::iterator I;
             for(I=entries.begin(); I!=entries.end(); I++)
             {
                 gm_symtab_entry *e = *I;

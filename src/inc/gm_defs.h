@@ -83,6 +83,9 @@ inline static bool gm_is_all_graph_edge_iter_type(int i) {
 inline static bool gm_is_all_graph_iter_type(int i) {
     return gm_is_all_graph_node_iter_type(i) || gm_is_all_graph_edge_iter_type(i);
 }
+inline static bool gm_is_inout_nbr_node_iter_type(int i) {
+    return (i==GMTYPE_NODEITER_NBRS) || (i==GMTYPE_NODEITER_IN_NBRS);
+} 
 inline static bool gm_is_any_nbr_node_iter_type(int i) {
     return (i==GMTYPE_NODEITER_NBRS) || (i==GMTYPE_NODEITER_IN_NBRS) || 
            (i==GMTYPE_NODEITER_UP_NBRS) || (i==GMTYPE_NODEITER_DOWN_NBRS) ||
