@@ -136,6 +136,8 @@ class gm_symtab {
             return parent->find_symbol(id);
         }
 
+        int get_num_symbols() {return entries.size();}
+
         //std::vector<gm_symtab_entry*>& get_entries() {return entries;}
         std::set<gm_symtab_entry*>& get_entries() {return entries;}
         // return true if entry is in the table

@@ -17,6 +17,8 @@ void gm_gps_gen::init_opt_steps()
     //L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_nested_loops_test)); 
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_insert_temp_property));      // replace scalar -> temp property
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_loops_for_flipping));      // replace scalar -> temp property
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_flip_edges));               // Flip Edges
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_synthesizable));      // check if contains DFS, etc
 }
 

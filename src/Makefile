@@ -89,6 +89,7 @@ SRCS2 =\
 	   gm_gps_opt_find_nested_foreach_loops.cc\
 	   gm_gps_opt_insert_temp_property.cc\
 	   gm_gps_opt_simplify_expr1.cc\
+	   gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_canonical.cc gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc gm_gps_bb_merge.cc\
