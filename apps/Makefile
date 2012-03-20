@@ -1,10 +1,4 @@
 
-#----------------------------------------
-# Load list of Progams to be compiled
-#----------------------------------------
-ifndef PROGS
-include ./Programs.mk
-endif
 
 #----------------------------------------
 # Set target envrionment (cpp or gps)
@@ -25,6 +19,12 @@ else
 endif
 export TARGET
 
+#----------------------------------------
+# Load list of Progams to be compiled
+#----------------------------------------
+ifndef PROGS
+include ./Programs.mk
+endif
 
 tdir = output_$(env)
 

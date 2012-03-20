@@ -1,4 +1,3 @@
-
 Procedure gps3 (G: Graph, x: Int, A:Node_Property<Int>(G) ) : Int
 {
     Int z = 0;

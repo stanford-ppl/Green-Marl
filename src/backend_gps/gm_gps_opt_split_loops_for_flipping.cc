@@ -97,22 +97,15 @@ static void filter_target_loops(
                 // todo: this is a little bit to restrictive.
                 // we can relax this by changing more scalars into node properties.
                 ast_sentblock* sb = (ast_sentblock*) parent;
-                if ((sb->get_symtab_field()->get_num_symbols() > 0) ||
-                    (sb->get_symtab_var()->get_num_symbols() > 0)) {
-                    /*
-                    printf("CCC %d %d\n",
-                sb->get_symtab_field()->get_num_symbols(), 
-                sb->get_symtab_var()->get_num_symbols()) ;
-                    std::set<gm_symtab_entry*>& E = sb->get_symtab_var()->get_entries();
-                    std::set<gm_symtab_entry*>::iterator I;
-                    for(I=E.begin(); I!=E.end(); I++) {
-                        gm_symtab_entry*e = *I;
-                        printf("%s\n", e->getId()->get_genname());
-                    }
-                    */
+                
+                if (sb->get_symtab_field()->get_num_symbols() > 0) {
                     is_target = false;
                     break;
                 }
+                /*
+                if ((sb->get_symtab_field()->get_num_symbols() > 0) ||
+                    (sb->get_symtab_var()->get_num_symbols() > 0)) {
+                    */
             }
             else if (parent->get_nodetype() == AST_FOREACH) {
                 ast_foreach* fe = (ast_foreach*) parent;
@@ -181,6 +174,10 @@ static void filter_target_loops(
 static ast_node* reconstruct_old_new(std::list<ast_node*>& frame, 
         std::map<ast_sentblock*,  std::list<ast_sent*> >& siblings,
         bool is_old);
+static void ensure_no_dependency_via_scala(
+        std::list<ast_node*>& frame, 
+        std::map<ast_sentblock*,  std::list<ast_sent*> >& elder,
+        std::map<ast_sentblock*,  std::list<ast_sent*> >& younger);
 
 static void split_the_loop(ast_foreach* in)
 {
@@ -250,6 +247,11 @@ static void split_the_loop(ast_foreach* in)
     gm_make_it_belong_to_sentblock(out);
     assert(out->get_parent()->get_nodetype() == AST_SENTBLOCK);
 
+    // check dependencies via scalar variable 
+    if (need_old && need_young) {
+        ensure_no_dependency_via_scala(frame, older_siblings, younger_siblings);
+    }
+
     //----------------------------------------------------------------
     // reconstruct program
     //----------------------------------------------------------------
@@ -283,6 +285,77 @@ static void split_the_loop(ast_foreach* in)
 
         // replace iterator id
         gm_replace_symbol_entry(out->get_iterator()->getSymInfo(), new_loop->get_iterator()->getSymInfo(), old);
+    }
+}
+
+static void add_scalar_rw(ast_sent* s, std::set<gm_symtab_entry*>& TARGET) 
+{
+  gm_rwinfo_map& W = gm_get_write_set(s);
+  gm_rwinfo_map& R = gm_get_write_set(s);
+  gm_rwinfo_map::iterator K;
+  for(K=W.begin(); K!=W.end();K++) {
+      gm_symtab_entry* e = K->first;
+      if (!e->getType()->is_property()) {
+          TARGET.insert(e);
+      }
+  }
+  for(K=R.begin(); K!=R.end();K++) {
+      gm_symtab_entry* e = K->first;
+      if (!e->getType()->is_property()) {
+          TARGET.insert(e);
+      }
+  }
+}
+
+static void ensure_no_dependency_via_scala(
+        std::list<ast_node*>& frame, 
+        std::map<ast_sentblock*,  std::list<ast_sent*> >& elder,
+        std::map<ast_sentblock*,  std::list<ast_sent*> >& younger
+        )
+{
+    // create prev/next
+    // create set of scalar
+    std::set<gm_symtab_entry*> PREVS;  // symbols used in prev
+    std::set<gm_symtab_entry*> NEXTS;  // symbols used in next
+    std::set<gm_symtab_entry*> ALL;    // every scalar symbols 
+    std::list<ast_node*>::iterator I;
+    for(I=frame.begin(); I!=frame.end(); I++) {
+        if ((*I)->get_nodetype() == AST_IF) {
+            // continue
+        }
+        else if ((*I)->get_nodetype() == AST_SENTBLOCK) {
+            ast_sentblock* sb = (ast_sentblock*) (*I);
+            std::list<ast_sent*>& OLD = elder[sb];
+            std::list<ast_sent*>& NEW = younger[sb];
+            std::list<ast_sent*>::iterator J;
+            for(J=OLD.begin(); J!=OLD.end(); J++) {
+                add_scalar_rw(*J, PREVS);
+            }
+
+            for(J=NEW.begin(); J!=NEW.end(); J++) {
+                add_scalar_rw(*J, NEXTS);
+            }
+
+            std::set<gm_symtab_entry*>& E = sb->get_symtab_var()->get_entries();
+            std::set<gm_symtab_entry*>::iterator K;
+            for(K=E.begin(); K!=E.end(); K++) {
+               ALL.insert(*K);
+            }
+        }
+        else {assert(false);}
+    }
+
+    // check if any entry is both used PREV and NEXT
+    std::set<gm_symtab_entry*>::iterator K;
+    for(K=ALL.begin(); K!=ALL.end(); K++) {
+        gm_symtab_entry* e = *K;
+        if ((PREVS.find(e) != PREVS.end()) &&
+            (NEXTS.find(e) != NEXTS.end()))
+        {
+            assert(false); 
+            // todo replace this symbol with node_prop
+            // re-do rw-analysis
+        }
     }
 }
 
