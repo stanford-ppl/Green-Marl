@@ -247,10 +247,9 @@ static void split_the_loop(ast_foreach* in)
     gm_make_it_belong_to_sentblock(out);
     assert(out->get_parent()->get_nodetype() == AST_SENTBLOCK);
 
-    // check dependencies via scalar variable 
-    if (need_old && need_young) {
-        ensure_no_dependency_via_scala(frame, older_siblings, younger_siblings);
-    }
+    // check if there are dependencies via scalar variable 
+    // also mark each scalar symbols whether they are used by elder siblings or younger siblings
+    ensure_no_dependency_via_scala(frame, older_siblings, younger_siblings);
 
     //----------------------------------------------------------------
     // reconstruct program
@@ -307,6 +306,10 @@ static void add_scalar_rw(ast_sent* s, std::set<gm_symtab_entry*>& TARGET)
   }
 }
 
+#define USED_BY_WHO         "gm_split_used_by_who"
+#define USED_BY_OLDER       1
+#define USED_BY_YOUNGER     2
+
 static void ensure_no_dependency_via_scala(
         std::list<ast_node*>& frame, 
         std::map<ast_sentblock*,  std::list<ast_sent*> >& elder,
@@ -353,9 +356,13 @@ static void ensure_no_dependency_via_scala(
             (NEXTS.find(e) != NEXTS.end()))
         {
             assert(false); 
-            // todo replace this symbol with node_prop
-            // re-do rw-analysis
+            // [todo] replace these symbols with temporary node_prop
+            // re-do rw-analysis afterward.
         }
+        else if (PREVS.find(e) != PREVS.end()) 
+            e->add_info_int(USED_BY_WHO, USED_BY_OLDER);
+        else if (NEXTS.find(e) != NEXTS.end()) 
+            e->add_info_int(USED_BY_WHO, USED_BY_YOUNGER);
     }
 }
 
@@ -365,6 +372,8 @@ static ast_node* reconstruct_old_new(std::list<ast_node*>& frame,
 {
 
     ast_node* last = NULL;
+
+
     // reconstruct hierarchy
     // inmost --> outmost
     std::list<ast_node*>::iterator I;
@@ -400,6 +409,28 @@ static ast_node* reconstruct_old_new(std::list<ast_node*>& frame,
                 sb->add_sent((ast_sent*)last);
 
             last = sb;
+
+            // move scalar symbols
+            gm_symtab* old_tab = sb_org->get_symtab_var();
+            gm_symtab* new_tab = sb->get_symtab_var();
+            std::set<gm_symtab_entry*>& entries = old_tab->get_entries();
+            std::set<gm_symtab_entry*>::iterator E;
+            std::set<gm_symtab_entry*> T;
+            for(E = entries.begin(); E!= entries.end(); E++) {
+                gm_symtab_entry* e = *E;
+                int used_by = e->find_info_int(USED_BY_WHO); 
+                if ((used_by == USED_BY_OLDER) && (is_old)) {
+                    T.insert(e);
+                }
+                else if ((used_by == USED_BY_YOUNGER) && (!is_old)) {
+                    T.insert(e);
+                }
+            }
+            for(E = T.begin(); E!= T.end(); E++) {
+                gm_symtab_entry* e = *E;
+                old_tab->remove_entry_in_the_tab(e);
+                new_tab->add_symbol(e);
+            }
         }
     }
 
