@@ -609,18 +609,30 @@ void gm_cpp_gen::generate_sent_reduce_assign_boolean(ast_assign *a)
 
         if (a->get_reduce_type() == GMREDUCE_AND) {
             Body.pushln("// and-reduction");
-            sprintf(temp,"if (!%s) ", temp_var_new); Body.push(temp);
+            sprintf(temp,"if ((!%s) ", temp_var_new); Body.push(temp); // new value is false
+            sprintf(temp,"&& ( "); Body.push(temp);                     // old value is true
+            if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
+            else generate_rhs_field(a->get_lhs_field()); 
+            Body.pushln("))");
+            Body.push_indent();
             if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
             else generate_rhs_field(a->get_lhs_field()); 
             Body.pushln(" = false;");
+            Body.pop_indent();
         }
         else if  (a->get_reduce_type() == GMREDUCE_OR)
         {
             Body.pushln("// or-reduction");
-            sprintf(temp,"if (%s) ", temp_var_new); Body.push(temp);
+            sprintf(temp,"if ((%s) ", temp_var_new); Body.push(temp);  // new value is true
+            sprintf(temp,"&& (! "); Body.push(temp);                    // old value is false
+            if (is_scalar) generate_rhs_id(a->get_lhs_scala());     
+            else generate_rhs_field(a->get_lhs_field()); 
+            Body.pushln("))");
+            Body.push_indent();
             if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
             else generate_rhs_field(a->get_lhs_field()); 
             Body.pushln(" = true;");
+            Body.pop_indent();
         }
         else {assert (false);}
     Body.pushln("}");
