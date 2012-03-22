@@ -175,6 +175,7 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
 
         virtual void declare_prop_def(ast_typedecl* t, ast_id* i);
         virtual void generate_sent_reduce_argmin_assign(ast_assign *a) ;
+        virtual void generate_sent_reduce_assign_boolean(ast_assign *a) ;
 
         bool _pblock;
 

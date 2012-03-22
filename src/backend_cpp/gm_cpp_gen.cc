@@ -580,11 +580,63 @@ void gm_cpp_gen::generate_sent_block_exit(ast_sentblock* sb)
 
 }
 
+void gm_cpp_gen::generate_sent_reduce_assign_boolean(ast_assign *a)
+{
+    // implement reduction using compare and swap
+    //---------------------------------------
+    //  bool NEW
+    //  NEW = RHS;
+    //  // for or-reduction
+    //  if (NEW) LHS = TRUE
+    //  // for and-reduciton
+    //  if (!NEW) LHS = FALSE
+    //---------------------------------------
+   const char* temp_var_base = (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? 
+          a->get_lhs_scala() -> get_orgname() :
+          a->get_lhs_field() -> get_second()->get_orgname();
+
+   const char* temp_var_new;
+   temp_var_new = FE.voca_temp_name_and_add(temp_var_base, "_new");
+   bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
+
+   Body.pushln("// boolean reduction (no need CAS)");
+   Body.pushln("{ ");
+
+        sprintf(temp, "bool %s;", temp_var_new); Body.pushln(temp);
+        sprintf(temp, "%s = ", temp_var_new); Body.push(temp); 
+        generate_expr(a->get_rhs());
+        Body.pushln(";");
+
+        if (a->get_reduce_type() == GMREDUCE_AND) {
+            Body.pushln("// and-reduction");
+            sprintf(temp,"if (!%s) ", temp_var_new); Body.push(temp);
+            if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
+            else generate_rhs_field(a->get_lhs_field()); 
+            Body.pushln(" = false;");
+        }
+        else if  (a->get_reduce_type() == GMREDUCE_OR)
+        {
+            Body.pushln("// or-reduction");
+            sprintf(temp,"if (%s) ", temp_var_new); Body.push(temp);
+            if (is_scalar) generate_rhs_id(a->get_lhs_scala()); 
+            else generate_rhs_field(a->get_lhs_field()); 
+            Body.pushln(" = true;");
+        }
+        else {assert (false);}
+    Body.pushln("}");
+    delete [] temp_var_new;
+}
 
 void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 {
     if (a->is_argminmax_assign()) {
         generate_sent_reduce_argmin_assign(a);
+        return;
+    }
+
+    else if ((a->get_reduce_type() == GMREDUCE_AND) || (a->get_reduce_type() == GMREDUCE_OR))
+    {
+        generate_sent_reduce_assign_boolean(a);
         return;
     }
 
@@ -652,9 +704,6 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a)
 
         sprintf(temp, "), %s, %s)==false); ", temp_var_old, temp_var_new); Body.pushln(temp);
         Body.pushln("}");
-
-        //add_local_varname(temp_var_old);
-        //add_local_varname(temp_var_new);
 
       delete [] temp_var_new;
       delete [] temp_var_old;
