@@ -44,7 +44,7 @@ public:
             if (gm_is_all_graph_iter_type(fe->get_iter_type())) return true;
 
             curr->set_has_sender(true);
-
+   
             gen->add_communication_loop(fe);
 
             // add the foreach loop as 'receiver'

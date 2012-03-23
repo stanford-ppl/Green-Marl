@@ -130,7 +130,7 @@ protected:
 class gps_apply_bb_ast : public gm_apply, public gps_apply_bb 
 {
 public:
-    gps_apply_bb_ast() : _under_receiver(false) {}
+    gps_apply_bb_ast() : _under_receiver(false),_is_post(false), _is_pre(true) {}
 
     // defined in gm_gps_misc.cc
     virtual void apply(gm_gps_basic_block* b);
