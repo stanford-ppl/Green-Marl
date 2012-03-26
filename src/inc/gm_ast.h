@@ -180,6 +180,7 @@ class ast_node {
         int get_col() {return col;}
         int set_line(int l) {line = l;}
         int set_col(int c) {col = c;}
+        void copy_line_info(ast_node* n) {this->col = n->col; this->line = n->line;}
 
 
     //--------------------------------------
@@ -924,7 +925,7 @@ class ast_expr : public ast_node
         bool is_reduction() {return expr_class == GMEXPR_REDUCE;}
         bool is_builtin()  {return expr_class == GMEXPR_BUILTIN;}
         bool is_terop()  {return expr_class == GMEXPR_TER;}
-        bool is_foreign() {return expr_class = GMEXPR_FOREIGN;}
+        bool is_foreign() {return expr_class == GMEXPR_FOREIGN;}
 
         //-----------------------------------------------
         // type is set after type-checker execution
@@ -953,10 +954,10 @@ class ast_expr : public ast_node
         ast_expr* get_right_op() {return right;}
         ast_expr* get_up_op() {return up;} // same to parent. but expr
         ast_expr* get_cond_op() {return cond;}
-        void set_left_op(ast_expr* l) { left = l; }
-        void set_right_op(ast_expr* r) { right = r; }
+        void set_left_op(ast_expr* l) { left = l; if (l!=NULL) {l->set_parent(this); l->set_up_op(this);}}
+        void set_right_op(ast_expr* r) { right = r; if (r!=NULL) {r->set_parent(this); r->set_up_op(this);}}
         void set_up_op(ast_expr* e) {up = e;}
-        void set_cond_op(ast_expr* e) {cond = e;}
+        void set_cond_op(ast_expr* e) {cond = e; if (e!=NULL) {e->set_parent(this); e->set_up_op(this);}}
 
         void set_alternative_type(int i) {alternative_type_of_expression = i;}
         int get_alternative_type()       {return alternative_type_of_expression;}
@@ -1109,8 +1110,8 @@ class ast_expr_reduce : public ast_expr
     ast_id* get_source2()  {return src2;}
 
     void set_source2(ast_id* i) {src2 = i; if (i!=NULL) i->set_parent(this);}
-    void set_filter(ast_expr* e) {filter = e;}
-    void set_body(ast_expr* e) {body = e;}
+    void set_filter(ast_expr* e) {filter = e; if (e!=NULL) e->set_parent(this);}
+    void set_body(ast_expr* e) {body = e; if (e!=NULL) e->set_parent(this);}
     virtual ast_expr* copy(bool cp_syminfo = false);
 
     private:
@@ -1498,6 +1499,7 @@ private:
 
 public:
     ast_expr_builtin* get_builtin() {return b_in;}
+    void set_builtin(ast_expr_builtin* b) {b_in = b; assert(b_in!=NULL); b_in->set_parent(this);}
     bool is_builtin_call()  {return is_blt_in;}
 
 private:    
@@ -1536,7 +1538,7 @@ class ast_if : public ast_sent
         ast_expr* get_cond() {return cond;}
         void set_then(ast_sent* s) {then_part = s;}
         void set_else(ast_sent* s) {else_part = s;}
-        void set_cond(ast_expr* c) {cond = c;}
+        void set_cond(ast_expr* c) {cond = c; if (c!=NULL) c->set_parent(this);}
 
     private:    
         ast_sent* then_part;
@@ -1632,7 +1634,7 @@ class ast_while : public ast_sent
         ast_expr* get_cond() {return cond;}
         bool is_do_while() {return do_while;}
         void set_body(ast_sentblock* s) {body = s;}
-        void set_cond(ast_expr* e) {cond = e;}
+        void set_cond(ast_expr* e) {cond = e; if (e!=NULL) {e->set_parent(this);}}
 
     private:
         bool do_while; // if true do_while, else while

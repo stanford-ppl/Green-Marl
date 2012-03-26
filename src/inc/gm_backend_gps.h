@@ -206,6 +206,9 @@ extern gm_gps_gen GPS_BE;
 
 // string used in code generator
 static const char* GPS_RET_VALUE = "_ret_value";
+static const char* GPS_FLAG_USE_REVERSE_EDGE = "gps_flag_use_reverse_edge";
+static const char* GPS_FLAG_USE_IN_DEGREE    = "gps_flag_use_in_degree";
+static const char* GPS_NAME_IN_DEGREE_PROP   = "gps_name_in_degree_prop";
 
 
 #endif

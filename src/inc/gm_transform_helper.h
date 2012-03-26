@@ -3,6 +3,7 @@
 
 #include "gm_ast.h"
 #include "gm_typecheck.h"
+#include "gm_traverse.h"
 
 #define GM_FIX_SYMTAB   true
 #define GM_NOFIX_SYMTAB false
@@ -124,10 +125,19 @@ ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type);
 // Ohter helpers
 //------------------------------------------------------------
 // replace expression old_e with new_e.
-// [the routine expects only 1 instance of old_e inside target]
-// note: symtab hierarchy is *not* validated in this routine
+// [the routine expects that there is only 1 instance of old_e inside target top expreesion]
+// note: symtab hierarchy is *not* re-validated by this routine
 // (thus be careful if new_e contains Sum/Product...)
 extern bool gm_replace_subexpr(ast_expr* top, ast_expr* old_e, ast_expr* new_e);
+
+// implement following function 
+class gm_expr_replacement_t {
+public:
+    virtual bool is_target(ast_expr* e) = 0;
+    virtual ast_expr* create_new_expr(ast_expr* target, bool& destory_target_after) =0; 
+};
+
+extern bool gm_replace_expr_genenal(ast_node* top, gm_expr_replacement_t* E);
 
 //-------------------------------------------------------------------------------- 
 //[defined in gm_resolve_nce.cc]

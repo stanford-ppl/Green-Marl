@@ -47,7 +47,7 @@ clean_all:
 	@cd src; make clean
 
 help:
-	@echo "make [-env=<env>] <what>"
+	@echo "make [env=<env>] <what>"
 	@echo "  env: target execution environment; cpp or gps"
 	@echo "  what: what to build"
 	@echo "      lib: build runtime library for the environment (once)"

@@ -52,6 +52,7 @@ struct gm_gps_congruent_msg_class
     }
 };
 
+// backend information per each procedure
 class gm_gps_beinfo : public gm_backend_info 
 {
 public:

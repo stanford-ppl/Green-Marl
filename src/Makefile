@@ -86,6 +86,7 @@ SRCS2 =\
        gm_cpp_gen_regular.cc\
        gm_cpplib_gen.cc \
        gm_cpplib_opt.cc\
+	   gm_gps_opt_check_reverse_edges.cc\
 	   gm_gps_opt_find_nested_foreach_loops.cc\
 	   gm_gps_opt_insert_temp_property.cc\
 	   gm_gps_opt_simplify_expr1.cc\

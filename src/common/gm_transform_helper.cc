@@ -400,6 +400,142 @@ bool gm_replace_subexpr(ast_expr* target, ast_expr* old_e, ast_expr* new_e)
 }
 
 
+class gm_replace_traverse_t : public gm_apply 
+{
+    public:
+        gm_replace_traverse_t(gm_expr_replacement_t* E) : _CHECK(E) {
+            set_for_sent(true);
+            set_for_expr(true);
+            _changed = false;
+        }
+
+        bool is_changed() {return _changed;}
+
+#define CHECK_AND_REPLACE(SRC, NAME) {\
+    ast_expr* f = replace((SRC)->get_##NAME()); \
+    if (f!=NULL) {(SRC)->set_##NAME(f);}\
+}
+
+        bool apply(ast_expr* e) {
+            if (e->is_foreign()) {
+                // [XXX]
+            }
+            else if (e->is_reduction()) {
+                ast_expr_reduce* r = (ast_expr_reduce*) e;
+                CHECK_AND_REPLACE(r, filter);
+                CHECK_AND_REPLACE(r, body);
+            }
+            else if (e->is_builtin()) {
+                ast_expr_builtin* b = (ast_expr_builtin*) e;
+                check_and_replace_list(b->get_args());
+            }
+            else {
+                CHECK_AND_REPLACE(e, left_op);
+                CHECK_AND_REPLACE(e, right_op);
+                CHECK_AND_REPLACE(e, cond_op);
+            }
+            return true;
+        }
+
+        bool apply(ast_sent* s) {
+            return true;
+            switch(s->get_nodetype()) {
+             case AST_IF:
+                 CHECK_AND_REPLACE( (ast_if*) s, cond);
+                 break;
+             case AST_FOREACH:
+                 CHECK_AND_REPLACE( (ast_foreach*) s, filter);
+                 break;
+             case AST_ASSIGN:
+             {
+                 ast_assign* a = (ast_assign*) s;
+                 CHECK_AND_REPLACE(a, rhs);
+                 check_and_replace_list(a->get_rhs_list());
+                 break;
+             }
+             case AST_WHILE:
+                 CHECK_AND_REPLACE( (ast_while*)s, cond);
+                 break;
+             case AST_RETURN:
+                 CHECK_AND_REPLACE( (ast_return*)s, expr);
+                 break;
+
+             case AST_BFS:
+                 CHECK_AND_REPLACE( (ast_bfs*)s, f_filter);
+                 CHECK_AND_REPLACE( (ast_bfs*)s, b_filter);
+                 CHECK_AND_REPLACE( (ast_bfs*)s, navigator);
+                 break;
+             case AST_CALL:
+             {
+                 ast_call* c= (ast_call*) s;
+                 assert(c->is_builtin_call());
+                 ast_expr *f = replace(c->get_builtin());
+                 if (f!=NULL) {
+                     assert(f->is_builtin());
+                     c->set_builtin((ast_expr_builtin*)f);
+                 }
+                 break;
+             }
+             case AST_FOREIGN: break;
+             case AST_NOP: break;
+             case AST_SENTBLOCK: break;
+             default:
+                assert(false);
+            }
+            return true;
+        }
+
+    private:
+        bool _changed;
+        gm_expr_replacement_t* _CHECK;
+        
+        ast_expr* replace(ast_expr* old) { // check-replace-desotry
+            if (old == NULL) return NULL;
+
+            if (_CHECK->is_target(old)) {
+                bool destroy;
+                ast_expr* newone = _CHECK->create_new_expr(old, destroy);
+                _changed = true;
+                if (destroy)  {
+                    delete old;
+                }
+                return newone;
+            }
+            return NULL;
+        }
+
+        void check_and_replace_list(std::list<ast_expr*>& ARGS)
+        {
+            std::list< std::list<ast_expr*>::iterator > OLDS;
+            std::list<ast_expr*>::iterator I;
+            // check and insert
+            for (I=ARGS.begin(); I!=ARGS.end();I++) {
+                ast_expr* f = replace(*I);
+                if ( f!= NULL) {
+                    OLDS.push_back(I);
+                    ARGS.insert(I, f);
+                }
+            }
+
+            // remove positions
+            std::list< std::list<ast_expr*>::iterator >::iterator J;
+            for(J= OLDS.begin(); J!=OLDS.end(); J++)
+            {
+                ARGS.erase(*J);
+            }
+        }
+};
+
+bool gm_replace_expr_genenal(ast_node* top, gm_expr_replacement_t* E)
+{
+    gm_replace_traverse_t T(E);
+    top->traverse_post(&T);
+
+    return T.is_changed();
+}
+
+
+
 //---------------------------------------------------------------
 // Check if this sentence is enclosed within a seq-loop.
 // (without meeting an if-else branch)

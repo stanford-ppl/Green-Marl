@@ -6,7 +6,7 @@
 
 // additional information about procedure
 
-class gm_backend_info {
+class gm_backend_info { 
 };  // empty class
 
 class gm_procinfo {

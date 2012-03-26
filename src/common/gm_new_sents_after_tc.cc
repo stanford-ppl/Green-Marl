@@ -90,8 +90,7 @@ ast_foreach* gm_new_foreach_after_tc(
 }
 
 //--------------------------------------------------------------
-// Create
-// 
+// Create bottom symbol for reduction
 //--------------------------------------------------------------
 ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type)
 {
