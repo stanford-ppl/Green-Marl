@@ -1,0 +1,10 @@
+
+// Test of in-degree.
+Proc gps10(G: Graph, A:N_P<Int>(G))
+{
+    Foreach(n: G.Nodes) {
+        n.A = n.InDegree(); 
+    }
+}
+
+

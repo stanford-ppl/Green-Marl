@@ -438,7 +438,6 @@ class gm_replace_traverse_t : public gm_apply
         }
 
         bool apply(ast_sent* s) {
-            return true;
             switch(s->get_nodetype()) {
              case AST_IF:
                  CHECK_AND_REPLACE( (ast_if*) s, cond);

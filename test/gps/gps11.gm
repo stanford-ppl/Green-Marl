@@ -1,0 +1,13 @@
+
+// Test of reverse edge iteration
+Proc gps11(G: Graph, A,B:N_P<Int>(G))
+{
+    G.A = 0; // initialization;
+
+    Foreach(n: G.Nodes) {
+        Foreach(t: n.InNbrs) 
+            t.A += n.B;
+    }
+}
+
+
