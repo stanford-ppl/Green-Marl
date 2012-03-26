@@ -86,11 +86,11 @@ public:
     gm_gps_communication_symbol_info& 
         find_communication_symbol_info(ast_foreach* fe, gm_symtab_entry* sym);
 
-    gm_gps_communication_size_info& 
+    gm_gps_communication_size_info* 
         find_communication_size_info(ast_foreach* fe);
 
     void compute_max_communication_size();
-    gm_gps_communication_size_info& get_max_communication_size() {return max_comm_size;}
+    gm_gps_communication_size_info* get_max_communication_size() {return &max_comm_size;}
 
 public:
     void set_rand_used(bool b) {rand_used = b;}
@@ -127,8 +127,8 @@ private:
     // map of inner loops (possible communications) and
     // symbols used for the communication in the loop.
     std::map<ast_foreach*, std::list<gm_gps_communication_symbol_info> >  comm_symbol_info;
-    std::map<ast_foreach*, gm_gps_communication_size_info >               comm_size_info;
-    gm_gps_communication_size_info                                        max_comm_size;
+    std::map<ast_foreach*, gm_gps_communication_size_info* >               comm_size_info;
+    gm_gps_communication_size_info                                         max_comm_size;
     std::list<ast_foreach*> comm_loops;
 
     // congruent message class information

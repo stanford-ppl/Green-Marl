@@ -33,27 +33,39 @@ public:
         std::list<ast_foreach*>::iterator I;
         for(I=LOOPS.begin(); I!=LOOPS.end(); I++) 
         { 
-            gm_gps_communication_size_info& INFO = 
-                BEINFO->find_communication_size_info(*I);
+            find_congruent_class_per_loop(*I, b); 
+        }
 
+        // special case for prepare
+        if (b->get_type() == GM_GPS_BBTYPE_PREPARE1) {
+            find_congruent_class_per_loop(NULL, b);
+        }
+        
+    }
+
+    void find_congruent_class_per_loop(ast_foreach* fe, gm_gps_basic_block* b) {
+            gm_gps_communication_size_info* INFO = 
+                BEINFO->find_communication_size_info(fe);
 
             gm_gps_congruent_msg_class* s = find_congurent_class(INFO, b);
             if (s == NULL)
             {
-                s = BEINFO->add_congruent_message_class(&INFO, b);
+                s = BEINFO->add_congruent_message_class(INFO, b);
             }
-            INFO.msg_class = s;
-        }
+            else {
+                s->add_receiving_basic_block(b);
+            }
+            INFO->msg_class = s;
     }
 
     gm_gps_congruent_msg_class* find_congurent_class(
-            gm_gps_communication_size_info& INFO, gm_gps_basic_block* b)
+            gm_gps_communication_size_info* INFO, gm_gps_basic_block* b)
     {
         std::list<gm_gps_congruent_msg_class*>::iterator I;
         for(I=CLIST.begin(); I!=CLIST.end(); I++)
         {
             gm_gps_congruent_msg_class* CLASS = *I;
-            if (!CLASS->sz_info->is_equivalent(INFO)) continue;
+            if (!CLASS->sz_info->is_equivalent(*INFO)) continue;
             if (CLASS->find_basic_block_in_receiving_list(b)) continue;
             return CLASS;
         }

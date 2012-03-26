@@ -38,6 +38,8 @@ class gm_gpslib : public gm_graph_library {
         return str_buf;
     }
 
+    virtual void generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block* b);
+
     virtual void generate_broadcast_prepare(gm_code_writer& Body);
     virtual void generate_broadcast_state_master(const char* state_var, gm_code_writer& Body);
     virtual void generate_broadcast_variable_type(int gm_type_id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
@@ -206,9 +208,13 @@ extern gm_gps_gen GPS_BE;
 
 // string used in code generator
 static const char* GPS_RET_VALUE = "_ret_value";
+static const char* GPS_REV_NODE_ID = "_revNodeId";
+static const char* GPS_DUMMY_ID = "_remoteNodeId";
 static const char* GPS_FLAG_USE_REVERSE_EDGE = "gps_flag_use_reverse_edge";
 static const char* GPS_FLAG_USE_IN_DEGREE    = "gps_flag_use_in_degree";
 static const char* GPS_NAME_IN_DEGREE_PROP   = "gps_name_in_degree_prop";
+static const int   GPS_PREPARE_STEP1         = 100000;
+static const int   GPS_PREPARE_STEP2         = 100001;
 
 
 #endif

@@ -50,6 +50,11 @@ void gm_gps_gen::do_generate_vertex_property_class()
     Body.pushln(temp);
   }
 
+  if (FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE)) {
+    sprintf(temp, "int [] %s; //reverse edges (node IDs) {should this to be marshalled?}", GPS_REV_NODE_ID);
+    Body.pushln(temp);
+  }
+
   Body.NL();
   get_lib()->generate_vertex_prop_class_details(prop, Body);
 
@@ -197,7 +202,7 @@ void gm_gps_gen::do_generate_vertex_states()
     for(I = bb_blocks.begin(); I!= bb_blocks.end(); I++)
     {
         gm_gps_basic_block* b = *I;
-        if (!b->is_vertex()) continue;
+        if ((!b->is_prepare()) && (!b->is_vertex())) continue;
         int id = b->get_id();
         sprintf(temp,"case %d: _vertex_state_%d(_msgs); break;", id, id);
         Body.pushln(temp);
@@ -211,7 +216,7 @@ void gm_gps_gen::do_generate_vertex_states()
     for(I = bb_blocks.begin(); I!= bb_blocks.end(); I++)
     {
         gm_gps_basic_block* b = *I;
-        if (!b->is_vertex()) continue;
+        if ((!b->is_prepare()) && (!b->is_vertex())) continue;
         do_generate_vertex_state_body(b);
     }
     gm_redirect_reproduce(stdout);
@@ -261,11 +266,17 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
             FE.get_current_proc()->get_procname()->get_genname());
     Body.pushln(temp);
 
-    assert (type == GM_GPS_BBTYPE_BEGIN_VERTEX); 
-
     get_lib()->generate_vertex_prop_access_prepare(Body);
     do_generate_vertex_state_receive_global(b);
 
+    if (b->is_prepare()) {
+        get_lib()->generate_prepare_bb(Body, b);
+        Body.pushln("}");
+        return;
+    }
+
+
+    assert (type == GM_GPS_BBTYPE_BEGIN_VERTEX); 
     //---------------------------------------------------------
     // Generate Receiver Routine
     //---------------------------------------------------------

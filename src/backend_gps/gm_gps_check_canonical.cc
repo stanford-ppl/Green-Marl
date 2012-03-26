@@ -70,7 +70,8 @@ public:
 
             else if (foreach_depth == 2) {
                 // check if out-nbr iteration
-                if (fe->get_iter_type() != GMTYPE_NODEITER_NBRS)
+                if ((fe->get_iter_type() != GMTYPE_NODEITER_NBRS) &&
+                    (fe->get_iter_type() != GMTYPE_NODEITER_IN_NBRS))
                 {
                     gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX,
                              s->get_line(), s->get_col(), "");

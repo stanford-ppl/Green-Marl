@@ -16,8 +16,8 @@ void gm_gps_beinfo::add_communication_loop(ast_foreach* fe)
     std::list<gm_gps_communication_symbol_info> new_list;
     comm_symbol_info[fe] = new_list;   // create empty list by copying.
 
-    gm_gps_communication_size_info S;
-    S.id = issue_comm_id();
+    gm_gps_communication_size_info *S = new gm_gps_communication_size_info();
+    S->id = issue_comm_id();
     comm_size_info[fe] = S;  // create zero communication 
 
     //  a new ID.
@@ -33,14 +33,18 @@ void gm_gps_beinfo::add_communication_symbol(ast_foreach* fe, gm_symtab_entry* s
 
     std::list<gm_gps_communication_symbol_info>& sym_info = comm_symbol_info[fe];
     std::list<gm_gps_communication_symbol_info>::iterator I;
-    gm_gps_communication_size_info& size_info = comm_size_info[fe];
+    gm_gps_communication_size_info* size_info = comm_size_info[fe];
 
     int target_type;
     if (sym->getType()->is_property()) {
         target_type = sym->getType()->getTargetTypeSummary();
-
     } else if (sym->getType()->is_primitive()) {
         target_type = sym->getType()->getTypeSummary();
+    } else if (sym->getType()->is_node()) {
+        if (GPS_BE.get_lib()->is_node_type_int())
+            target_type = GMTYPE_INT;
+        else
+            target_type = GMTYPE_LONG;
     } else {
         assert(false);
     }
@@ -63,15 +67,15 @@ void gm_gps_beinfo::add_communication_symbol(ast_foreach* fe, gm_symtab_entry* s
 
     // update size-info
     if (target_type == GMTYPE_INT) 
-        size_info.num_int = (idx+1);
+        size_info->num_int = (idx+1);
     else if (target_type == GMTYPE_BOOL) 
-        size_info.num_bool = (idx+1);
+        size_info->num_bool = (idx+1);
     else if (target_type == GMTYPE_LONG) 
-        size_info.num_long = (idx+1);
+        size_info->num_long = (idx+1);
     else if (target_type == GMTYPE_FLOAT) 
-        size_info.num_float = (idx+1);
+        size_info->num_float = (idx+1);
     else if (target_type == GMTYPE_DOUBLE) 
-        size_info.num_double = (idx+1);
+        size_info->num_double = (idx+1);
     else assert(false);
 
 }
@@ -96,7 +100,7 @@ gm_gps_communication_symbol_info& gm_gps_beinfo::find_communication_symbol_info(
     //return II;
 }
 
-gm_gps_communication_size_info& gm_gps_beinfo::find_communication_size_info(
+gm_gps_communication_size_info* gm_gps_beinfo::find_communication_size_info(
         ast_foreach* fe)
 {
     assert(comm_size_info.find(fe) != comm_size_info.end());
@@ -110,7 +114,7 @@ void gm_gps_beinfo::compute_max_communication_size()
     for(I = this->comm_loops.begin(); I!= this->comm_loops.end(); I++)
     {
         ast_foreach* fe = *I;
-        gm_gps_communication_size_info& size_info = comm_size_info[fe];
+        gm_gps_communication_size_info& size_info = *(comm_size_info[fe]);
 
 #define UPDATE_A_IF_SMALLER(A,B)  if ((A)<(B)) {A = B; }
 
@@ -133,6 +137,7 @@ gm_gps_congruent_msg_class*
         new gm_gps_congruent_msg_class();
     C->id = congruent_msg.size();
     C->sz_info = sz;
+    printf("adding bb %p to class %p\n", bb, C);
     C->add_receiving_basic_block(bb);
 
     congruent_msg.push_back(C);

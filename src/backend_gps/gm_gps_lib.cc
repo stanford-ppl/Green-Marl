@@ -342,8 +342,8 @@ void gm_gpslib::generate_vertex_prop_class_details(
 void gm_gpslib::generate_vertex_prop_access_prepare(gm_code_writer& Body)
 {
     char temp[1024];
-    sprintf(temp,"VertexData %s = getValue();", STATE_SHORT_CUT);
-    Body.pushln(temp);
+    //sprintf(temp,"VertexData %s = getValue();", STATE_SHORT_CUT);
+    //Body.pushln(temp);
 }
 void gm_gpslib::generate_vertex_prop_access_lhs(ast_id* id, gm_code_writer& Body)
 {
@@ -603,7 +603,7 @@ void gm_gpslib::generate_message_class_details(gm_gps_beinfo* info, gm_code_writ
 
     Body.pushln("// union of all message fields  ");
     gm_gps_communication_size_info& size_info =
-        info->get_max_communication_size(); 
+        *(info->get_max_communication_size()); 
 
     generate_message_fields_define(GMTYPE_INT,    size_info.num_int,    Body);
     generate_message_fields_define(GMTYPE_LONG,   size_info.num_long,   Body);
@@ -630,13 +630,12 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
       = info->get_all_communication_symbols(fe);
 
   gm_gps_communication_size_info& SINFO
-      = info->find_communication_size_info(fe);
+      = *(info->find_communication_size_info(fe));
 
   Body.NL();
   Body.pushln("// Sending messages");
   Body.push("MessageData _msg = new MessageData(");
   // todo: should this always be a byte?
-  //sprintf(str_buf,"(byte) %d",SINFO.id);
   sprintf(str_buf,"(byte) %d",SINFO.msg_class->id);
   Body.push(str_buf);
   Body.pushln(");");
@@ -662,7 +661,16 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     Body.pushln(";");
   }
 
-  Body.pushln("sendMessages(getNeighborIds(), _msg);");
+  if ((fe == NULL) || (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)) {
+    Body.pushln("sendMessages(getNeighborIds(), _msg);");
+  }
+  else {
+    char temp[1024];
+    sprintf(temp, "sendMsssage(%s.%s, _msg);",
+            STATE_SHORT_CUT,
+            GPS_REV_NODE_ID);
+    Body.pushln(temp);
+  }
   Body.NL();
 }
 
@@ -680,7 +688,7 @@ void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& 
 
   std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(fe);
   //int comm_id = info->find_communication_size_info(fe).id;
-  int comm_id = (info->find_communication_size_info(fe)).msg_class->id;
+  int comm_id = (info->find_communication_size_info(fe))->msg_class->id;
 
   char temp[1024];
   if (!is_only_comm && !info->is_single_message()) {
@@ -741,16 +749,18 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
         break;
 
     case GM_BLTIN_GRAPH_NUM_NODES:
-        Body.push("/*to be fixed*/");
-        Body.push("getNumNodes()");
+        Body.push("/*please check*/");
+        Body.push("getGraphSize()");
         break;
     case GM_BLTIN_NODE_DEGREE:
-        Body.push("/*to be fixed*/");
-        Body.push("getNumNeighbors()");
+        Body.push("/*please check*/");
+        Body.push("getNeighborsSize()");
         break;
     case GM_BLTIN_NODE_IN_DEGREE:
-        Body.push("/*to be fixed*/");
-        Body.push("getNumIncomingNeighbors()");
+        Body.push(STATE_SHORT_CUT);
+        Body.push(".");
+        Body.push(GPS_REV_NODE_ID);
+        Body.push(".length");
         break;
 
     default:
@@ -758,6 +768,45 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
     }
 }
 
+void gm_gpslib::generate_prepare_bb(
+        gm_code_writer& Body, gm_gps_basic_block* bb)
+{
+    char temp[1024];
+
+    if (bb->get_type() == GM_GPS_BBTYPE_PREPARE1) {
+        Body.pushln("// Preperation: creating reverse edges");
+        sprintf(temp, "%s %s = getId();", 
+                main->get_type_string(GMTYPE_NODE), 
+                GPS_DUMMY_ID);
+        Body.pushln(temp);
+
+        generate_message_send(NULL, Body);
+
+    } else if (bb->get_type() == GM_GPS_BBTYPE_PREPARE2) {
+        Body.pushln("//Preperation creating reverse edges");
+        Body.pushln("int i = 0;");
+        Body.pushln("for(MessageData _msg : _msgs) i++;");
+
+        sprintf(temp,"%s.%s = new %s[i];", 
+                STATE_SHORT_CUT, GPS_REV_NODE_ID, 
+                main->get_type_string(GMTYPE_NODE));
+        Body.pushln(temp);
+        Body.NL();
+
+        Body.pushln("i=0;");
+        Body.pushln("for(MessageData _msg : _msgs) {");
+            generate_message_receive_begin(NULL, Body, bb, true);
+            sprintf(temp,"%s.%s[i] = %s;", STATE_SHORT_CUT, GPS_REV_NODE_ID, GPS_DUMMY_ID);
+            Body.pushln(temp);
+            generate_message_receive_end(NULL, Body, true);
+            Body.pushln("i++;");
+        Body.pushln("}");
+    }
+    else {
+        assert(false);
+    }
+
+}
 
 
 //-----------------------------------------------------------------------------

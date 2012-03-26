@@ -390,7 +390,33 @@ void gm_gps_opt_create_ebb::process(ast_procdef* proc)
     //--------------------------------
     gm_gps_merge_basic_blocks(T2.get_entry());
 
-    // set entry block
-    beinfo->set_entry_basic_block(T2.get_entry());
+
+    //---------------------------
+    // STEP 4:
+    //---------------------------
+    gm_gps_basic_block* top = T2.get_entry(); 
+    if (FE.get_proc_info(proc)->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE)) 
+    {
+        // create prepareation state
+        gm_gps_basic_block* t1 = new gm_gps_basic_block( 
+                GPS_PREPARE_STEP1, GM_GPS_BBTYPE_PREPARE1);
+        gm_gps_basic_block* t2 = new gm_gps_basic_block( 
+                GPS_PREPARE_STEP2, GM_GPS_BBTYPE_PREPARE2);
+        t1->add_exit(t2);
+
+        t2->add_exit(top);
+        top = t1;
+
+        // create dummy communication info
+        ast_id* dummy = ast_id::new_id(GPS_DUMMY_ID, 0, 0);
+        ast_id* dummy2 = ast_id::new_id("dummy_graph", 0, 0);
+        ast_typedecl* t = ast_typedecl::new_nodetype(dummy2);
+        gm_symtab_entry *e =  new gm_symtab_entry(dummy, t);
+
+        beinfo->add_communication_loop(NULL); // use NULL as a special symbol
+        beinfo->add_communication_symbol(NULL, e);
+    }
+    
+    beinfo->set_entry_basic_block(top);
 
 }

@@ -93,6 +93,8 @@ void gm_gps_opt_check_reverse_edges::process(ast_procdef* p)
     p->traverse_pre(&T);
     if (T.use_rev_edge()) {
         FE.get_proc_info(p)->add_info_bool(GPS_FLAG_USE_REVERSE_EDGE, true);
+
+        // a special basic block will be added in create ebb state.
     }
     else if (T.use_in_degree()) {
         FE.get_proc_info(p)->add_info_bool(GPS_FLAG_USE_IN_DEGREE, true);

@@ -358,8 +358,6 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         Body.pushln(temp);
     }
     else if (type == GM_GPS_BBTYPE_WHILE_COND) {
-        
-
         ast_sent* s = b->get_1st_sent();
         assert(s!= NULL);
         assert(s->get_nodetype() == AST_WHILE);
@@ -379,6 +377,19 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
                 b->get_nth_exit(1)->get_id());
         Body.pushln(temp);
 
+    }
+    else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2)) {
+
+        // generate Broadcast
+        do_generate_scalar_broadcast_send(b);
+        get_lib()->generate_broadcast_state_master("_master_state", Body);
+
+        Body.pushln("// Preparation Step;");
+        assert (b->get_num_exits() == 1); 
+        int n = b->get_nth_exit(0)->get_id();
+        sprintf(temp,"_master_state_nxt = %d;", n);
+        Body.pushln(temp);
+        Body.pushln("_master_should_start_workers = true;");
     }
     else {
         assert(false);

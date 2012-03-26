@@ -1,0 +1,16 @@
+// An example for GPS paper
+Procedure agv_nbr_age(
+        G: Graph, 
+        age: N_P<Int>(G),
+        avg_age: N_P<Float>(G),
+        K: Int) : Float
+{
+    Foreach(n: G.Nodes) {
+      Int sum = Sum(t:n.InNbrs) {t.age};
+      n.avg_age = (n.InDegree() == 0) ? 0 : sum / n.InDegree();
+    }
+
+    Float sum = (Float) Sum(n: G.Nodes)(n.InDegree() > K){n.avg_age};
+    Int cnt = Count(n:G.Nodes) (n.InDegree() > K);
+    Return (cnt==0)?0:sum/cnt;
+}

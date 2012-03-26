@@ -50,6 +50,8 @@ void gm_gps_basic_block::reproduce_sents()
             s = get_next();
         }
         gm_flush_reproduce(); 
+   } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2)) {
+       // do nithing;
    } else {
        assert(false);
    }
@@ -215,6 +217,12 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
         ast_expr* c = w->get_cond();
 
         c->traverse(this, is_post(), is_pre());
+    }
+    else if (type == GM_GPS_BBTYPE_PREPARE1) {
+        // nothing
+
+    } else if (type == GM_GPS_BBTYPE_PREPARE2) {
+        // nothing
     }
     else
     {

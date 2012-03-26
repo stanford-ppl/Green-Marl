@@ -11,6 +11,8 @@ enum {
     GM_GPS_BBTYPE_IF_COND,
     GM_GPS_BBTYPE_WHILE_COND,
     GM_GPS_BBTYPE_BEGIN_VERTEX,
+    GM_GPS_BBTYPE_PREPARE1,
+    GM_GPS_BBTYPE_PREPARE2,
 };
 
 class gm_gps_basic_block {
@@ -77,9 +79,12 @@ class gm_gps_basic_block {
     void print();
     void reproduce_sents();
 
+    
     bool is_vertex() {return (get_type() == GM_GPS_BBTYPE_BEGIN_VERTEX);}
     bool has_sender() {return _has_sender;}
     void set_has_sender(bool b) {_has_sender = b;}
+    bool is_prepare() {return (get_type() == GM_GPS_BBTYPE_PREPARE1) ||
+        (get_type() == GM_GPS_BBTYPE_PREPARE2);}
 
     // multiple inner loops?
     void         add_receiver_loop  (ast_foreach* fe)              {receivers.push_back(fe);}
