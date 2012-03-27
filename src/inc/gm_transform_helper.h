@@ -78,6 +78,8 @@ gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, cha
 gm_symtab_entry* gm_add_new_symbol_property(ast_sentblock* sb, int primtype, bool is_nodeprop, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
 gm_symtab_entry* gm_add_new_symbol_nodeedge_type(ast_sentblock* sb, int nodeedge_type, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
 
+
+
 //------------------------------------------------------------
 // Replace every symbol access
 // e.g> source: x , target: _z
@@ -116,6 +118,10 @@ void gm_remove_symbol(ast_node* top, gm_symtab_entry* sym);
 // note:see gm_new_foreach_after_tc.cc for assumptions about the argument and output.
 ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, int iter_type);
 
+ast_expr_reduce* gm_new_expr_reduce_after_tc(
+        ast_id* it, ast_id* src, ast_expr* body, ast_expr* filter, 
+        int iter_type);
+
 // 'bottom' symbol for reduction
 ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type);
 
@@ -137,7 +143,7 @@ public:
     virtual ast_expr* create_new_expr(ast_expr* target, bool& destory_target_after) =0; 
 };
 
-extern bool gm_replace_expr_genenal(ast_node* top, gm_expr_replacement_t* E);
+extern bool gm_replace_expr_general(ast_node* top, gm_expr_replacement_t* E);
 
 //-------------------------------------------------------------------------------- 
 //[defined in gm_resolve_nce.cc]

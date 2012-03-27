@@ -42,6 +42,7 @@ gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, cha
     // create id object and declare
     ast_id* new_id = ast_id::new_id(newname, 0, 0); 
     success = gm_declare_symbol(target_syms, new_id, type, true, true);
+    printf("declearing :%s\n", newname);
     assert(success);
 
     // return symbol

@@ -156,7 +156,9 @@ ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, a
     if (src2 != NULL)
         assert( src2->get_nodetype() == AST_ID);
     assert( gm_is_iter_type(iter_op));
-    assert( (op == GMREDUCE_MAX) || (op == GMREDUCE_MIN) || (op == GMREDUCE_PLUS) || (op == GMREDUCE_MULT) || (op == GMREDUCE_AND) || (op == GMREDUCE_OR) );
+    assert( (op == GMREDUCE_MAX) || (op == GMREDUCE_MIN) || 
+            (op == GMREDUCE_PLUS) || (op == GMREDUCE_MULT) || 
+            (op == GMREDUCE_AND) || (op == GMREDUCE_OR) || (op==GMREDUCE_AVG));
 
     ast_expr_reduce* n = ast_expr_reduce::new_reduce_expr(
             op, (ast_id*) iter, (ast_id*) src, 

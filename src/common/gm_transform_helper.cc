@@ -525,7 +525,7 @@ class gm_replace_traverse_t : public gm_apply
         }
 };
 
-bool gm_replace_expr_genenal(ast_node* top, gm_expr_replacement_t* E)
+bool gm_replace_expr_general(ast_node* top, gm_expr_replacement_t* E)
 {
     gm_replace_traverse_t T(E);
     top->traverse_post(&T);

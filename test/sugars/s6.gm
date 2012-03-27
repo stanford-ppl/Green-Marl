@@ -1,6 +1,6 @@
 Proc A(G: Graph, A,B: N_P<Int>(G))
 {
-    Int x;
+    Int x, y;
 
     x = 2* Sum(t:G.Nodes) {
             t.A + Product(w: t.Nbrs) {w.B + t.B} };

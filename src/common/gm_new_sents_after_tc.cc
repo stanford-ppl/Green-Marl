@@ -15,7 +15,7 @@ extern bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bo
 //    ast_id* source: source of iteration (must have a valid symbol entry)
 //    int     iter_type: iteration type
 //    ast_sent* body: body of sentence  (Must have null enclosing scope)
-//                  : if NULL, new sentence block is created as body.
+//                  : if NULL, a new empty sentence block is created as body.
 // [output]
 //    ast_foreach* : a new foreach node that points all the input nodes.
 //
@@ -59,7 +59,6 @@ ast_foreach* gm_new_foreach_after_tc(
         assert(false);
     }
     type->enforce_well_defined();
-
     
     //----------------------------------------------
     // Add iterator definition to the 'this' scope
@@ -71,13 +70,9 @@ ast_foreach* gm_new_foreach_after_tc(
 
     success = gm_declare_symbol(vars, it, type, true, false);
 
-    //bool success = vars->check_and_add_symbol(it, type, dummy, true, false);
     assert(success);
     assert(it->getSymInfo() != NULL);
     assert(it->getTypeInfo()->get_target_graph_id() != NULL);
-
-    //printf("%s\n", it->get_orgname());
-    //printf("%s\n", src->get_orgname());
 
     //----------------------------------------------
     // set enclosing scope of the body
@@ -88,6 +83,68 @@ ast_foreach* gm_new_foreach_after_tc(
 
     return fe; 
 }
+
+// almost identical to new_foreach_after_tc
+ast_expr_reduce* gm_new_expr_reduce_after_tc(
+        ast_id* it, ast_id* src, ast_expr* body, ast_expr* filter, 
+        int iter_type, int op_type)
+{
+    assert(it->getSymInfo() == NULL);
+    assert(src->getSymInfo() != NULL);
+    assert (gm_is_iteration_on_all_graph(iter_type) 
+            || gm_is_iteration_on_neighbors_compatible(iter_type)); 
+
+    //-----------------------------------------------------
+    // create expression node
+    //-----------------------------------------------------
+    ast_expr_reduce* R = 
+        ast_expr_reduce::new_reduce_expr(
+                op_type, 
+                it, src, iter_type, body, filter);
+    
+    //--------------------------------------------------
+    // create iterator type
+    //--------------------------------------------------
+    ast_typedecl* type;
+    if (gm_is_iteration_on_all_graph(iter_type)) {
+        assert(gm_is_graph_type(src->getTypeSummary()));
+        type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
+    }
+    else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
+        assert(gm_is_node_compatible_type(src->getTypeSummary()));
+        type = ast_typedecl::new_nbr_iterator(src->copy(true), iter_type);
+    }
+    else {
+        assert(false);
+    }
+    type->enforce_well_defined();
+
+    //----------------------------------------------
+    // Add iterator definition to the 'this' scope
+    //----------------------------------------------
+    gm_symtab* vars = R->get_symtab_var();
+    gm_symtab_entry* dummy;
+    bool success;
+    // enforce type well defined ness (upscope of this foreach is not available yet)
+    success = gm_declare_symbol(vars, it, type, true, false);
+
+    assert(success);
+    assert(it->getSymInfo() != NULL);
+    assert(it->getTypeInfo()->get_target_graph_id() != NULL);
+
+    //----------------------------------------------
+    // set enclosing scope of the body
+    //----------------------------------------------
+    gm_scope S;
+    R->get_this_scope(&S);
+
+    gm_put_new_upper_scope_on_null(body, &S);
+    if (filter != NULL) 
+        gm_put_new_upper_scope_on_null(filter, &S);
+
+    return R;
+}
+
 
 //--------------------------------------------------------------
 // Create bottom symbol for reduction

@@ -74,11 +74,18 @@ public:
                 { 
                     ast_expr_reduce*r = (ast_expr_reduce*) e;
                     int b_type = r->get_body()->get_type_summary();
+                    int r_type = r->get_reduce_type();
                     if (gm_is_unknown_type(b_type)) {
                       okay = false;
                     }
                     else {
-                      r->set_type_summary(b_type); 
+                        // body type <-> reduce op type: done at typecheck step 5.
+                        if (r_type == GMREDUCE_AVG) {
+                            if (b_type == GMTYPE_FLOAT) r->set_type_summary(GMTYPE_FLOAT); 
+                            else r->set_type_summary(GMTYPE_DOUBLE);
+                        }
+                        else
+                            r->set_type_summary(b_type); 
                     }
                 }
                 break;

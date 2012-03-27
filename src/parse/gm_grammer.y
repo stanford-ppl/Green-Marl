@@ -45,7 +45,7 @@
 %token T_FOREACH T_FOR 
 %token T_NODES T_EDGES T_NBRS T_IN_NBRS T_UP_NBRS T_DOWN_NBRS
 %token T_COMMON_NBRS;
-%token T_SUM T_PRODUCT T_MIN T_MAX T_COUNT T_ALL T_EXIST
+%token T_SUM T_PRODUCT T_MIN T_MAX T_COUNT T_ALL T_EXIST T_AVG
 %token T_EMPTYLINE
 %token T_AND T_OR T_EQ T_NEQ T_LE T_GE
 %token T_IF  T_ELSE T_DO T_WHILE
@@ -371,6 +371,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
              | T_MAX                   {$$ = GMREDUCE_MAX;  }
              | T_EXIST                 {$$ = GMREDUCE_OR;  }
              | T_ALL                   {$$ = GMREDUCE_AND;  }
+             | T_AVG                   {$$ = GMREDUCE_AVG;  /* syntactic sugar*/}
 
   reduce_op2 : T_COUNT                {$$ = GMREDUCE_PLUS; } 
 

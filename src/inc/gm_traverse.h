@@ -12,7 +12,8 @@ class gm_apply {
                      for_sent(false), for_expr(false), 
                      for_proc(false),
                      separate_post_apply(false),
-                     traverse_local_expr_only(false)
+                     traverse_local_expr_only(false),
+                     curr_sent_being_traversed(NULL)
     {}
 
     virtual bool apply(gm_symtab* e, int symtab_type){ return true;}      // SYMTAB_ARG, SYMTAB_FIELD, SYMTAB_VAR, SYMTAB_PROC
@@ -43,6 +44,7 @@ class gm_apply {
         bool for_proc;
         bool separate_post_apply;
         bool traverse_local_expr_only;
+        ast_sent* curr_sent_being_traversed; //
 
     public:
         bool is_for_id() {return for_id;}
@@ -61,10 +63,9 @@ class gm_apply {
         bool is_traverse_local_expr_only() {return traverse_local_expr_only;}
         void set_traverse_local_expr_only(bool b) {traverse_local_expr_only = b;}
 
-        /*
-        void get_all(bool &b1, bool &b2, bool&b3, bool &b4) { b1 = for_id; b2 = for_symtab; b3 = for_sent; b4 = for_expr}
-        void set_all(bool b1, bool b2, bool b3, bool b4) { for_id = b1; for_symtab = b2;for_sent=b3;for_expr = b4;}
-        */
+        ast_sent* get_current_sent() {return curr_sent_being_traversed;}
+        void set_current_sent(ast_sent* s) {curr_sent_being_traversed = s;}
+
         void set_all(bool b) {for_id = for_sent = for_expr = for_symtab = b;}
 
 };

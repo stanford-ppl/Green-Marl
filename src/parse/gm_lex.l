@@ -135,6 +135,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "min="    {MarkToken(); return T_MINEQ;}
 "max="    {MarkToken(); return T_MAXEQ;}
 "Sum"     {MarkToken(); return T_SUM;}
+"Avg"     {MarkToken(); return T_AVG;}
 "Count"   {MarkToken(); return T_COUNT;}
 "Product" {MarkToken(); return T_PRODUCT;}
 "Max"     {MarkToken(); return T_MAX;}

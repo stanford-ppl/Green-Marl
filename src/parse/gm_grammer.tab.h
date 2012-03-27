@@ -77,33 +77,34 @@
      T_COUNT = 294,
      T_ALL = 295,
      T_EXIST = 296,
-     T_EMPTYLINE = 297,
-     T_AND = 298,
-     T_OR = 299,
-     T_EQ = 300,
-     T_NEQ = 301,
-     T_LE = 302,
-     T_GE = 303,
-     T_IF = 304,
-     T_ELSE = 305,
-     T_DO = 306,
-     T_WHILE = 307,
-     T_PLUSEQ = 308,
-     T_MULTEQ = 309,
-     T_MINEQ = 310,
-     T_MAXEQ = 311,
-     T_PLUSPLUS = 312,
-     T_ANDEQ = 313,
-     T_OREQ = 314,
-     T_M_INF = 315,
-     T_P_INF = 316,
-     T_DOUBLE_COLON = 317,
-     ID = 318,
-     USER_TEXT = 319,
-     INT_NUM = 320,
-     FLOAT_NUM = 321,
-     BOOL_VAL = 322,
-     NEG = 323
+     T_AVG = 297,
+     T_EMPTYLINE = 298,
+     T_AND = 299,
+     T_OR = 300,
+     T_EQ = 301,
+     T_NEQ = 302,
+     T_LE = 303,
+     T_GE = 304,
+     T_IF = 305,
+     T_ELSE = 306,
+     T_DO = 307,
+     T_WHILE = 308,
+     T_PLUSEQ = 309,
+     T_MULTEQ = 310,
+     T_MINEQ = 311,
+     T_MAXEQ = 312,
+     T_PLUSPLUS = 313,
+     T_ANDEQ = 314,
+     T_OREQ = 315,
+     T_M_INF = 316,
+     T_P_INF = 317,
+     T_DOUBLE_COLON = 318,
+     ID = 319,
+     USER_TEXT = 320,
+     INT_NUM = 321,
+     FLOAT_NUM = 322,
+     BOOL_VAL = 323,
+     NEG = 324
    };
 #endif
 
@@ -128,7 +129,7 @@ typedef union YYSTYPE
 
 
 /* Line 2638 of glr.c  */
-#line 132 "./parse/gm_grammer.tab.h"
+#line 133 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 #endif

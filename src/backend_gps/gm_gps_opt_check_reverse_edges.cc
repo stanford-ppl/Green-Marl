@@ -143,7 +143,7 @@ void gm_gps_opt_check_reverse_edges::process(ast_procdef* p)
         // access to the new property
         replace_in_degree_t T;
         T.set_new_prop(new_prop);
-        gm_replace_expr_genenal(p->get_body(), &T);
+        gm_replace_expr_general(p->get_body(), &T);
 
         delete [] tmp_iter;
         delete [] tmp_iter2;

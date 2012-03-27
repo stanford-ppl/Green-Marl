@@ -1,0 +1,11 @@
+Proc Foo(G:Graph, A,B:N_P<Int>(G))
+{
+    // Basic Avg Test
+    Double X = Avg(t:G.Nodes)(t.A>0){t.B};
+
+    // More complex
+    Double Y = Avg(n:G.Nodes) {
+                Avg(t:n.Nbrs)(t.B>0){t.A}
+    };
+
+}

@@ -272,15 +272,16 @@ static enum {
     GMREDUCE_MAX,
     GMREDUCE_AND,     // logical AND
     GMREDUCE_OR,      // logical OR
+    GMREDUCE_AVG,     // average (syntactic sugar)
     GMREDUCE_DEFER,  // deferred assignment is not a reduce op. but shares a lot of properies
     GMREDUCE_NULL, // dummy value to mark end
 } GM_REDUCE_T;
 
 inline static bool gm_is_strict_reduce_op(int t) {
-    return (t==GMREDUCE_PLUS) || (t==GMREDUCE_MULT) || (t==GMREDUCE_MIN) || (t==GMREDUCE_MAX) || (t==GMREDUCE_AND) || (t==GMREDUCE_OR);
+    return (t==GMREDUCE_PLUS) || (t==GMREDUCE_MULT) || (t==GMREDUCE_MIN) || (t==GMREDUCE_MAX) || (t==GMREDUCE_AND) || (t==GMREDUCE_OR) || (t==GMREDUCE_AVG);
 }
 inline static bool gm_is_numeric_reduce_op(int t) {
-    return (t==GMREDUCE_PLUS) || (t==GMREDUCE_MULT) || (t==GMREDUCE_MIN) || (t==GMREDUCE_MAX); 
+    return (t==GMREDUCE_PLUS) || (t==GMREDUCE_MULT) || (t==GMREDUCE_MIN) || (t==GMREDUCE_MAX) || (t==GMREDUCE_AVG); 
 }
 inline static bool gm_is_boolean_reduce_op(int t) {
     return (t==GMREDUCE_AND) || (t==GMREDUCE_OR);
