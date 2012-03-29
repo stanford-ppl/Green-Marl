@@ -42,9 +42,9 @@ void gm_code_generator::generate_expr(ast_expr*e)
     else if (e->is_builtin())
         generate_expr_builtin(e);
     else if (e->is_foreign())
-    {
         generate_expr_foreign(e);
-    }
+    else if (e->is_nil()) 
+        generate_expr_nil(e);
     else {
         e->reproduce(0);
         gm_flush_reproduce();
@@ -114,6 +114,7 @@ void gm_code_generator::generate_expr_val(ast_expr *e)
             return;
     }
 }
+
 
 void gm_code_generator::generate_expr_inf(ast_expr *e)
 {

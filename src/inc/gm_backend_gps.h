@@ -184,6 +184,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_expr_abs(ast_expr*e); 
         virtual void generate_lhs_id(ast_id* i); 
         virtual void generate_expr_inf(ast_expr* e);
+        virtual void generate_expr_nil(ast_expr* e);
 
         virtual void generate_lhs_field(ast_field* i);
         virtual void generate_sent_nop(ast_nop* n) {assert(false);}

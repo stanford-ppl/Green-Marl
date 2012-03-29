@@ -107,6 +107,10 @@ ast_node* GM_expr_inf(bool is_plus, int l, int c){
     ast_node* n = ast_expr::new_inf_expr(is_plus);
     n->set_line(l); n->set_col(c);
     return n;}
+ast_node* GM_expr_nil(int l, int c){
+    ast_node* n = ast_expr::new_nil_expr();
+    n->set_line(l); n->set_col(c);
+    return n;}
 ast_node* GM_expr_biop(ast_node* left, ast_node* right, int op, int l, int c){
    ast_node* n= ast_expr::new_biop_expr(op, (ast_expr*) left, (ast_expr*)right);
    n->set_line(l); n->set_col(c);

@@ -128,6 +128,19 @@ void gm_cpplib::generate_sent_nop(ast_nop *f)
     }
 }
 
+void gm_cpplib::generate_expr_nil(ast_expr* e, gm_code_writer& Body)
+{
+    if (e->get_type_summary() == GMTYPE_NIL_EDGE) {
+        Body.push("gm_graph::NIL_EDGE");
+    }
+    else if (e->get_type_summary() == GMTYPE_NIL_NODE){
+        Body.push("gm_graph::NIL_NODE");
+    }
+    else {
+        assert(false);
+    }
+}
+
 void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
 {
     ast_id* i = e->get_driver(); // driver 

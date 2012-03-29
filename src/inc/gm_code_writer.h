@@ -165,6 +165,7 @@ public:
     virtual void generate_expr_builtin(ast_expr* e) =0; 
     virtual void generate_expr_minmax(ast_expr* e) =0;
     virtual void generate_expr_abs(ast_expr* e) =0;
+    virtual void generate_expr_nil(ast_expr* e) =0;
     virtual void generate_expr_type_conversion(ast_expr *e);
 
     virtual const char* get_type_string(int prim_t)=0; // returned string should be copied before usage.

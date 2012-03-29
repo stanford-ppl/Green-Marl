@@ -147,6 +147,10 @@ public:
             ast_field* f = (ast_field*) lhs;
             summary_lhs = f->get_second()->getTargetTypeSummary(); 
 
+            if (f->getTargetTypeInfo()->has_target_graph()) {
+                l_sym = f->getTargetTypeInfo()->get_target_graph_sym();
+            }
+
         }
 
         // check assignable
@@ -171,12 +175,14 @@ public:
         {
             gm_symtab_entry* r_sym = rhs->get_bound_graph();
             assert(l_sym != NULL);
-            assert(r_sym != NULL);
-            if (l_sym != r_sym) {
-                gm_type_error(
-                    GM_ERROR_TARGET_MISMATCH,
-                    l, c);
-                return false;
+            if (r_sym == NULL) {
+                assert(gm_is_nil_type(summary_rhs));
+            }
+            else {
+                if (l_sym != r_sym) {
+                    gm_type_error( GM_ERROR_TARGET_MISMATCH, l, c); 
+                    return false;
+                }
             }
         }
 
@@ -241,7 +247,7 @@ public:
             if (!okay) return false;
         }
 
-        return true;
+        return okay;
     }
 
     bool should_be_boolean(ast_expr *e) {

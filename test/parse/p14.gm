@@ -1,0 +1,10 @@
+// Test of N_P<Node>
+Proc P(G: Graph, r:Node(G))
+{
+    N_P<Node(G)>(G) A;
+    G.A = NIL;
+
+    Foreach(n: G.Nodes) {
+        n.A = r;
+    }
+}

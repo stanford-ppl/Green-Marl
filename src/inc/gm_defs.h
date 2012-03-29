@@ -55,6 +55,9 @@ static enum {
     GMTYPE_INF_LONG,
     GMTYPE_INF_FLOAT,
     GMTYPE_INF_DOUBLE,
+    GMTYPE_NIL_UNKNOWN,
+    GMTYPE_NIL_NODE,
+    GMTYPE_NIL_EDGE,
     GMTYPE_FOREIGN_EXPR,   // foreign type. Can be matched with any
     GMTYPE_UNKNOWN = 9999,  // expression whose type is not identified yet (variable before typechecking)
     GMTYPE_UNKNOWN_NUMERIC, // expression whose type should be numeric, size not determined yet
@@ -73,6 +76,8 @@ inline static bool gm_is_node_type(int i) {return (i==GMTYPE_NODE);}
 inline static bool gm_is_edge_type(int i) {return (i==GMTYPE_EDGE);}
 inline static bool gm_is_int_type(int i) {return (i==GMTYPE_INT);}
 inline static bool gm_is_long_type(int i) {return (i==GMTYPE_LONG);}
+inline static bool gm_is_nil_type(int i) {return 
+    (i==GMTYPE_NIL_UNKNOWN) || (i==GMTYPE_NIL_NODE) || (i==GMTYPE_NIL_EDGE);}
 
 inline static bool gm_is_all_graph_node_iter_type(int i) {
     return (i==GMTYPE_NODEITER_ALL) || (i==GMTYPE_NODEITER_BFS);
@@ -120,8 +125,8 @@ inline static bool gm_is_collection_iter_type(int i) {
     return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) ||
            gm_is_unknown_collection_iter_type(i);}
 
-inline static bool gm_is_node_compatible_type(int i) {return gm_is_node_type(i) || gm_is_node_iter_type(i) || gm_is_node_collection_iter_type(i);}
-inline static bool gm_is_edge_compatible_type(int i) {return gm_is_edge_type(i) || gm_is_edge_iter_type(i) || gm_is_edge_collection_iter_type(i);}
+inline static bool gm_is_node_compatible_type(int i) {return gm_is_node_type(i) || gm_is_node_iter_type(i) || gm_is_node_collection_iter_type(i) || gm_is_nil_type(i);}
+inline static bool gm_is_edge_compatible_type(int i) {return gm_is_edge_type(i) || gm_is_edge_iter_type(i) || gm_is_edge_collection_iter_type(i) || gm_is_nil_type(i);}
 inline static bool gm_is_node_edge_compatible_type(int i) {return gm_is_node_compatible_type(i) || gm_is_edge_compatible_type(i);}
 inline static bool gm_is_iter_type(int i) { return gm_is_node_iter_type(i) || gm_is_edge_iter_type(i) || gm_is_collection_iter_type(i);}
 inline static bool gm_is_boolean_type(int i) {return (i==GMTYPE_BOOL);}

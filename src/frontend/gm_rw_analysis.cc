@@ -399,6 +399,7 @@ void traverse_expr_for_readset_adding(
         case GMEXPR_FVAL:
         case GMEXPR_BVAL:
         case GMEXPR_INF:
+        case GMEXPR_NIL:
             return;
 
         default:

@@ -58,7 +58,9 @@ public:
                 break;
 
             case GMEXPR_INF:
+            case GMEXPR_NIL:
                 break;  // will be resovled later
+
 
             case GMEXPR_LUOP:
             case GMEXPR_UOP: 

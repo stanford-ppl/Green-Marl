@@ -176,6 +176,9 @@ void ast_expr::reproduce(int ind_level) {
 
     char buf[1024];
     switch(expr_class) {
+        case GMEXPR_NIL:
+            Out.push("NIL");
+            return;
         case GMEXPR_INF:
             Out.push(plus_inf?'+':'-');
             Out.push("INF");

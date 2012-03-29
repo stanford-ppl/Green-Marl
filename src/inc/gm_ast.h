@@ -778,6 +778,7 @@ static enum {
     GMEXPR_FVAL,    // floating literal
     GMEXPR_BVAL,    // boolean literal
     GMEXPR_INF,     // infinite literal
+    GMEXPR_NIL,      // NIL literal
     GMEXPR_ID,      // identifier
     GMEXPR_FIELD,   // field access
     GMEXPR_UOP,     // unary op (neg)
@@ -834,6 +835,10 @@ class ast_expr : public ast_node
             ast_expr* E = new ast_expr(); E->expr_class = GMEXPR_BVAL; 
             E->type_of_expression = GMTYPE_BOOL;
             E->bval = bval; return E;}
+        static ast_expr* new_nil_expr(){
+            ast_expr* E = new ast_expr(); E->expr_class = GMEXPR_NIL; 
+            E->type_of_expression = GMTYPE_NIL_UNKNOWN;
+            return E;}
         static ast_expr* new_inf_expr(bool is_p){
             ast_expr* E = new ast_expr(); E->expr_class = GMEXPR_INF; 
             E->type_of_expression = GMTYPE_INF;
@@ -916,6 +921,7 @@ class ast_expr : public ast_node
         bool is_uop()  {return (expr_class == GMEXPR_UOP) || (expr_class == GMEXPR_LUOP);}
         bool is_comp() {return (expr_class == GMEXPR_COMP);}
         bool is_id()   {return expr_class == GMEXPR_ID;}
+        bool is_nil()  {return expr_class == GMEXPR_NIL;}
         bool is_field()   {return expr_class == GMEXPR_FIELD;}
         bool is_int_literal() {return expr_class == GMEXPR_IVAL;}
         bool is_float_literal() {return expr_class == GMEXPR_FVAL;}
@@ -949,6 +955,7 @@ class ast_expr : public ast_node
         bool is_cond_op() {return is_cond;}
         void set_id(ast_id* i) {id1 = i; if (i!=NULL) {i->set_parent(this);expr_class=GMEXPR_ID;}}
         void set_field(ast_field* f) {field = f; if (f!=NULL) {f->set_parent(this);expr_class=GMEXPR_FIELD;}}
+        bool is_type_conv() {return op_type == GMOP_TYPEC;}
 
         ast_expr* get_left_op() {return left;}
         ast_expr* get_right_op() {return right;}

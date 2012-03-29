@@ -52,12 +52,14 @@
 %token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS T_ANDEQ T_OREQ
 %token T_M_INF T_P_INF
 %token T_DOUBLE_COLON
+%token T_NIL
 
 %token <text> ID
 %token <text> USER_TEXT
 %token <ival> INT_NUM
 %token <fval> FLOAT_NUM
 %token <bval> BOOL_VAL
+
 
 %type <bval> opt_tp
 %type <ptr> id lhs rhs expr bool_expr numeric_expr
@@ -172,7 +174,13 @@
   property : T_NODEPROP '<' prim_type '>' '(' id ')'  {
                        $$ = GM_nodeprop_ref($3, $6 );
                        GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' nodeedge_type '>' '(' id ')'  {
+                       $$ = GM_nodeprop_ref($3, $6 );
+                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' prim_type '>' '(' id ')'  {
+                       $$ = GM_edgeprop_ref($3, $6);
+                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' nodeedge_type '>' '(' id ')'  {
                        $$ = GM_edgeprop_ref($3, $6);
                        GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
@@ -356,6 +364,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
             | INT_NUM                      {$$ = GM_expr_ival($1, @1.first_line, @1.first_column);}
             | FLOAT_NUM                    {$$ = GM_expr_fval($1, @1.first_line, @1.first_column);}
             | inf                          {$$ = GM_expr_inf($1, @1.first_line, @1.first_column);}
+            | T_NIL                        {$$ = GM_expr_nil(@1.first_line, @1.first_column);}
             | scala                        {$$ = GM_expr_id_access($1);}
             | field                        {$$ = GM_expr_field_access($1);}
             | built_in                     {$$ = $1;}

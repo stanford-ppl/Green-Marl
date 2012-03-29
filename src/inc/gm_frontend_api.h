@@ -49,6 +49,7 @@ extern "C" {
     extern ast_node* GM_expr_fval(double fval, int l, int c);
     extern ast_node* GM_expr_bval(bool b, int l, int c);
     extern ast_node* GM_expr_inf(bool is_plus, int l, int c);
+    extern ast_node* GM_expr_nil(int l, int c);
     extern ast_node* GM_expr_biop(ast_node* left, ast_node* right, int op, int l, int c);
     extern ast_node* GM_expr_uop(ast_node* left, int op, int l, int c);
     extern ast_node* GM_expr_lbiop(ast_node* left, ast_node* right, int op, int l, int c);

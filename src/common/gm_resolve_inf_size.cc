@@ -8,19 +8,21 @@
 #include "gm_builtin.h"
 
 
-//---------------------------------------------
-// determine the size of inf type
-//   Cannot use gm_apply traversal because 
-//     (1) (INF > 3)
-//     (2) (3 <= INF)
-//     (3) call(INF, INF, x)
-//---------------------------------------------
-
 bool gm_resolve_size_of_inf_expr(ast_expr* e,int dest_type)
 {
     if (gm_is_inf_type(e->get_type_summary()))
     {
       e->set_type_summary(gm_get_sized_inf_type(dest_type));
+    }
+    else if (gm_is_nil_type(e->get_type_summary()))
+    {
+        if (gm_is_node_type(dest_type)) {
+            e->set_type_summary(GMTYPE_NIL_NODE);
+        } else if (gm_is_edge_type(dest_type)) {
+            e->set_type_summary(GMTYPE_NIL_EDGE);
+        } else {
+            e->set_type_summary(GMTYPE_NIL_NODE);
+        }
     }
 
     switch(e->get_opclass()) {
@@ -30,6 +32,7 @@ bool gm_resolve_size_of_inf_expr(ast_expr* e,int dest_type)
       case GMEXPR_FVAL:
       case GMEXPR_BVAL:
       case GMEXPR_INF:
+      case GMEXPR_NIL:
           break;
 
       case GMEXPR_UOP:
@@ -121,6 +124,6 @@ bool gm_resolve_size_of_inf_expr(ast_expr* e,int dest_type)
       assert(false);
     }
 
-
     return true;
 }
+

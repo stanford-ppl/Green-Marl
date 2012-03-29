@@ -19,7 +19,9 @@
 //                 * output args should be primitive or node/edge
 //           - declarations: target graph should be well defined.
 //             (property, node, edge, collection)
-//           - property should be primitive
+//
+//           - property should be primitive or node/edge
+//                
 //           - iterators: 
 //                  * target graph(set) should be well defined
 //                  * node iterator should begin from node, edge iterator should begin from edge
@@ -227,10 +229,14 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
         ast_id* graph = type->get_target_graph_id();
         assert(graph != NULL);
         bool is_okay = gm_check_target_is_defined(graph, SYM_V, SHOULD_BE_A_GRAPH);
-        if (!is_okay) return is_okay;
+        if (!is_okay) return false;
 
         ast_typedecl* target_type = type->get_target_type();
-        if (!target_type->is_primitive()) {
+        if (target_type->is_nodeedge()) {
+            is_okay &= gm_check_type_is_well_defined(target_type, SYM_V);
+            if (!is_okay) return false;
+        }
+        else if (!target_type->is_primitive()) {
             gm_type_error(GM_ERROR_NEED_PRIMITIVE, type->get_line(), type->get_col());
             return false;
         }

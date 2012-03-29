@@ -34,6 +34,7 @@ class gm_cpplib : public gm_graph_library {
 
     virtual void generate_sent_nop(ast_nop* n); 
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body);
+    virtual void generate_expr_nil(ast_expr* e, gm_code_writer& Body);
 
     virtual bool add_collection_def(ast_id* set);
 
@@ -145,6 +146,7 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         virtual void generate_expr_minmax(ast_expr* e) ;
         virtual void generate_expr_abs(ast_expr* e);
         virtual void generate_expr_inf(ast_expr* e);
+        virtual void generate_expr_nil(ast_expr* e);
 
         virtual const char* get_type_string(ast_typedecl* t);
         virtual const char* get_type_string(int prim_type); 
@@ -252,6 +254,8 @@ DEF_STRING(CPPBE_INFO_NEED_FROM_INFO);
 #define ALLOCATE_INT    "gm_rt_allocate_int"
 #define ALLOCATE_DOUBLE "gm_rt_allocate_double"
 #define ALLOCATE_FLOAT  "gm_rt_allocate_float"
+#define ALLOCATE_NODE   "gm_rt_allocate_node_t"
+#define ALLOCATE_EDGE   "gm_rt_allocate_edge_t"
 #define DEALLOCATE      "gm_rt_deallocate"
 #define CLEANUP_PTR     "gm_rt_cleanup"
 #define RT_INIT         "gm_rt_initialize"

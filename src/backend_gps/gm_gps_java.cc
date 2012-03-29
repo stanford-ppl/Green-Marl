@@ -32,6 +32,12 @@ const char* gm_gps_gen::get_type_string(ast_typedecl* T, bool is_master)
     return "???";
 }
 
+void gm_gps_gen::generate_expr_nil(ast_expr* e)
+{
+    assert(false);
+
+}
+
 void gm_gps_gen::generate_expr_minmax(ast_expr* e)
 {
     if (e->get_optype() == GMOP_MIN) 

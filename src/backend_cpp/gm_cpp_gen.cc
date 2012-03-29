@@ -299,6 +299,11 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
                 default: assert(false);
             }
         }
+        else if (t2->is_nodeedge()) {
+            char temp[128];
+            sprintf(temp, "%s*", get_lib()->get_type_string(t2));
+            return gm_strdup(temp);
+        }
         else {
            assert(false);
         }
@@ -365,13 +370,14 @@ void gm_cpp_gen::generate_sent_call(ast_call* c)
 }
 
 
+
 // t: type (node_prop)
 // id: field name
 void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
 {
     ast_typedecl* t2  = t->get_target_type();
     assert(t2!=NULL);
-    assert(t2->is_primitive());
+    //assert(t2->is_primitive());
 
     Body.push(" = ");
     switch(t2->getTypeSummary()) {
@@ -380,6 +386,8 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
         case GMTYPE_BOOL:   Body.push(ALLOCATE_BOOL); break;
         case GMTYPE_DOUBLE: Body.push(ALLOCATE_DOUBLE); break;
         case GMTYPE_FLOAT:  Body.push(ALLOCATE_FLOAT); break;
+        case GMTYPE_NODE:   Body.push(ALLOCATE_NODE); break;
+        case GMTYPE_EDGE:   Body.push(ALLOCATE_EDGE); break;
         default: assert(false);
     }
     Body.push('(');
@@ -980,6 +988,11 @@ void gm_cpp_gen::generate_expr_minmax(ast_expr *e)
     Body.push(",");
     generate_expr(e->get_right_op());
     Body.push(") ");
+}
+
+void gm_cpp_gen::generate_expr_nil(ast_expr* ee)
+{
+    get_lib()->generate_expr_nil(ee, Body);
 }
 
 void gm_cpp_gen::generate_expr_builtin(ast_expr* ee)

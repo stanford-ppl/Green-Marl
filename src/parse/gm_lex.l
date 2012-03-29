@@ -146,6 +146,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "::"      {MarkToken(); return T_DOUBLE_COLON;}
 "All"     {MarkToken(); return T_ALL;}
 "Exist"   {MarkToken(); return T_EXIST;}
+"NIL"     {MarkToken(); return T_NIL;}
 
 
     /* Numbers and Identifies */

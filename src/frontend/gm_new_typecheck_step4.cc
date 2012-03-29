@@ -14,6 +14,10 @@
 //    Resolve the size of INF types from LHS
 //    Example)
 //       Int A = +INF; // +INF must be Integer infinity.
+//
+//  Also NIL type is resolved as well.
+//      NIL UNKNOWN => NIL NODE or
+//                     NIL EDGE
 //----------------------------------------------------------------
 
 // defined in common/gm_resolve_inf_size.cc
@@ -41,14 +45,15 @@ public:
           }
           ast_expr* e = a->get_rhs();
 
-          bool b =  gm_resolve_size_of_inf_expr(e, lhs_type);
+          gm_resolve_size_of_inf_expr(e, lhs_type);
+
+
       }
       else if (s->get_nodetype() == AST_RETURN)
       {
           ast_expr* e = ((ast_return *)s)->get_expr();
           if (e!= NULL) {
-                bool b =  gm_resolve_size_of_inf_expr(e, 
-                    ret_type->getTypeSummary());
+              gm_resolve_size_of_inf_expr(e, ret_type->getTypeSummary());
           }
       }
       else if (s->get_nodetype() == AST_CALL)

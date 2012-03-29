@@ -666,6 +666,7 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre)
         case GMEXPR_FVAL:
         case GMEXPR_BVAL:
         case GMEXPR_INF:
+        case GMEXPR_NIL:
             break;
 
         case GMEXPR_BUILTIN:
