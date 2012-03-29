@@ -147,7 +147,7 @@ void ss2_reduce_op::post_process_body(
             lhs_id, body, GMASSIGN_REDUCE,bound_id, rtype);
 
     foreach_body = r_assign;
-    ast_id* bound_id2;
+    ast_id* bound_id2=NULL;
 
     if (need_count) {
         ast_sentblock* sb= ast_sentblock::new_sentblock();
