@@ -46,8 +46,6 @@ public:
           ast_expr* e = a->get_rhs();
 
           gm_resolve_size_of_inf_expr(e, lhs_type);
-
-
       }
       else if (s->get_nodetype() == AST_RETURN)
       {
@@ -64,6 +62,32 @@ public:
                     gm_resolve_size_of_inf_expr(e, 
                     GMTYPE_INT); // does not matter
           }
+      }
+      else if (s->get_nodetype() == AST_IF)
+      {
+          ast_expr* e = ((ast_if*) s)->get_cond();
+          gm_resolve_size_of_inf_expr(e, GMTYPE_BOOL);
+      }
+      else if (s->get_nodetype() == AST_FOREACH)
+      {
+          ast_expr* e = ((ast_foreach*) s)->get_filter();
+          if (e!= NULL)
+            gm_resolve_size_of_inf_expr(e, GMTYPE_BOOL);
+      }
+      else if (s->get_nodetype() == AST_WHILE)
+      {
+          ast_expr* e = ((ast_while*) s)->get_cond();
+          gm_resolve_size_of_inf_expr(e, GMTYPE_BOOL);
+      }
+      else if (s->get_nodetype() == AST_BFS)
+      {
+          ast_expr* e;
+          e = ((ast_bfs*) s)->get_f_filter();
+          if (e!=NULL) gm_resolve_size_of_inf_expr(e, GMTYPE_BOOL);
+          e = ((ast_bfs*) s)->get_b_filter();
+          if (e!=NULL) gm_resolve_size_of_inf_expr(e, GMTYPE_BOOL);
+          e = ((ast_bfs*) s)->get_navigator();
+          if (e!=NULL) gm_resolve_size_of_inf_expr(e, GMTYPE_BOOL);
       }
 
       return true;

@@ -1,0 +1,39 @@
+
+Proc random_bipartite_matching(
+        G: Graph,               // Graph is a bipartite
+        isLeft : N_P<Bool>(G),  // every edge is from left node to right node
+        Match: N_P<Node(G)>(G)     // result: match of the node
+) : Int
+{
+    Int count = 0;
+    Bool finished = False;
+    N_P<Node(G)>(G) Suitor;
+
+    G.Match = NIL;
+    G.Suitor = NIL;
+
+    While (!finished) {
+        finished = True;
+
+        // Left node shoots a proposal to its every unmarried neighbor
+        Foreach(n: G.Nodes)(n.isLeft && n.Match == NIL) {
+            Foreach(t: n.Nbrs)(t.Match == NIL) {
+                t.Suitor = n;   // intended write-write conflict. 
+                                // Only one will be make effect, though.
+                finished &= False;  
+            }
+        }
+
+        // Right node accepts one and replies
+        Foreach(t: G.Nodes)(!t.isLeft && t.Match == NIL) {
+            If (t.Suitor != NIL) {
+                t.Match = t.Suitor;
+                Node(G) n = t.Suitor; // the chosen one
+                n.Match = t;          // compiler suspects read/write, write/write conflict.
+                count ++;
+            }
+        }
+    }
+
+    Return count;
+}

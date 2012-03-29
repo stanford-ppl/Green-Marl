@@ -49,6 +49,16 @@ public:
 
             case GMEXPR_FIELD:
                 e->set_type_summary(e->get_field()->get_second()->getTargetTypeSummary());
+                { 
+                    ast_typedecl* t = e->get_field()->getTargetTypeInfo();
+                    if (t->is_node_edge_compatible() ||
+                        t->is_collection()) {
+                        gm_symtab_entry * g =
+                            t->get_target_graph_sym();
+                        assert(g!=NULL);
+                        e->set_bound_graph(g);
+                    }
+                }
                 break;
 
             case GMEXPR_IVAL:
@@ -250,10 +260,17 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e)
         gm_symtab_entry* r_sym = 
             e->get_right_op()->get_bound_graph();
 
-        assert(l_sym != NULL);
-        assert(r_sym != NULL);
+        if (l_sym == NULL) {
+            //printf("TYPE = %s\n" gm_get_type_string(
+            //(e->get_left_op()->get_type_summary()));
+            assert(gm_is_nil_type(e->get_left_op()->get_type_summary()));
+        }
 
-        if (l_sym != r_sym) {
+        if (r_sym == NULL) {
+            assert(gm_is_nil_type(e->get_right_op()->get_type_summary()));
+        }
+
+        if ((l_sym != NULL) && (r_sym != NULL) && (l_sym != r_sym)) {
             gm_type_error( GM_ERROR_TARGET_MISMATCH, l, c);
             return false;
         }
