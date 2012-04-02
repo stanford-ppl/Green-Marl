@@ -103,6 +103,10 @@ void gm_gpslib::generate_broadcast_variable_type(
     //---------------------------------------------------
     // Type:  Long, Int, Double, Float, Bool
     //---------------------------------------------------
+     printf("type = %s\n", gm_get_type_string(type_id));
+     if (gm_is_node_compatible_type(type_id))
+         type_id = GMTYPE_NODE;
+
      switch(type_id)
      {
             case GMTYPE_INT:    Body.push("Int"); break;
@@ -183,7 +187,9 @@ static int get_java_type_size(int gm_type )
         case GMTYPE_FLOAT:  return 4;
         case GMTYPE_DOUBLE: return 8;
         case GMTYPE_BOOL:   return 1;
-        default: assert(false); return 0;
+        default: 
+            printf("type = %s\n", gm_get_type_string(gm_type));
+            assert(false); return 0;
     }
 }
 
@@ -195,6 +201,15 @@ int gm_gpslib::get_type_size(ast_typedecl* t)
 
 int gm_gpslib::get_type_size(int gm_type )
 {
+    if (gm_type == GMTYPE_NODE) {
+        if (this->is_node_type_int()) return 4;
+        else return 8;
+    }
+    else if (gm_type == GMTYPE_EDGE) {
+        assert(false);
+        return 0;
+    }
+
     return get_java_type_size(gm_type);
 }
 
@@ -219,8 +234,13 @@ static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body)
     }
     Body.pushln(");");
 }
-static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body)
+static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gpslib* lib)
 {
+    if (gm_is_node_compatible_type(gm_type)) {
+        if (lib->is_node_type_int()) gm_type = GMTYPE_INT;
+        else gm_type = GMTYPE_LONG;
+    }
+
     // assumtion: IOB name is IOB
     Body.push(name);
     Body.push("= IOB.");
@@ -235,8 +255,11 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body)
     Body.pushln(";");
 }
 
-static void genReadByte(const char* name, int gm_type, int offset, gm_code_writer& Body)
+static void genReadByte(const char* name, int gm_type, int offset, gm_code_writer& Body, gm_gpslib* lib)
 {
+    if (gm_is_node_compatible_type(gm_type)) {
+        gm_type = (lib->is_node_type_int())?GMTYPE_INT:GMTYPE_LONG;
+    }
     // assumption: "byte[] _BA, int _idx"
     Body.push(name);
     Body.push("= Utils.");
@@ -285,7 +308,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     {
         gm_symtab_entry * sym = *I; 
         genGetIOB(sym->getId()->get_genname(), 
-                sym->getType()->getTargetTypeSummary(), Body);
+                sym->getType()->getTargetTypeSummary(), Body, this);
     }
     Body.pushln("}");
 
@@ -298,7 +321,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
         int base = syminfo->get_start_byte(); // 
         genReadByte(sym->getId()->get_genname(), 
                     sym->getType()->getTargetTypeSummary(),
-                    base, Body);
+                    base, Body, this);
     }
     sprintf(temp, "return %d;", total);
     Body.pushln(temp);
@@ -459,7 +482,7 @@ static void generate_message_read1_each(gm_gpslib* lib, int cnt, int gm_type, gm
     for(int i=0;i<cnt; i++) {
         const char* vname = 
             lib->get_message_field_var_name(gm_type, i);
-        genGetIOB(vname, gm_type, Body);
+        genGetIOB(vname, gm_type, Body, lib);
         delete [] vname;
     }
 }
@@ -468,7 +491,7 @@ static void generate_message_read2_each(gm_gpslib* lib, int cnt, int gm_type, gm
     for(int i=0;i<cnt; i++) {
         const char* vname = 
             lib->get_message_field_var_name(gm_type, i);
-        genReadByte(vname, gm_type, offset, Body);
+        genReadByte(vname, gm_type, offset, Body, lib);
         offset += get_java_type_size(gm_type);
         delete [] vname;
     }
@@ -654,9 +677,8 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     {
         generate_vertex_prop_access_rhs(e->getId(), Body);
     }
-    else 
-    {
-        Body.push(e->getId()->get_genname());
+    else {
+        get_main()->generate_rhs_id(e->getId());
     }
     Body.pushln(";");
   }
@@ -729,6 +751,11 @@ void gm_gpslib::generate_message_receive_end(ast_foreach* fe, gm_code_writer& Bo
   if (!is_only_comm) {
       Body.pushln("}");
   }
+}
+
+void gm_gpslib::generate_expr_nil(ast_expr* e, gm_code_writer& Body)
+{
+    Body.push("(-1)");
 }
 
 void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body, bool is_master)
@@ -809,6 +836,7 @@ void gm_gpslib::generate_prepare_bb(
 }
 
 
+
 //-----------------------------------------------------------------------------
 
 bool gm_gpslib::do_local_optimize()
@@ -834,6 +862,8 @@ bool gm_gpslib::do_local_optimize()
     }
     return is_okay;
 }
+
+
 
 
 

@@ -26,6 +26,9 @@ const char* gm_gps_gen::get_type_string(ast_typedecl* T, bool is_master)
     {
         return (get_type_string(T->get_typeid()));
     }
+    else if (T->is_node_compatible()) {
+        return (get_type_string(GMTYPE_NODE));
+    }
     else {
         assert(false); // to be done
     }
@@ -34,8 +37,7 @@ const char* gm_gps_gen::get_type_string(ast_typedecl* T, bool is_master)
 
 void gm_gps_gen::generate_expr_nil(ast_expr* e)
 {
-    assert(false);
-
+    get_lib()->generate_expr_nil(e, Body);
 }
 
 void gm_gps_gen::generate_expr_minmax(ast_expr* e)
@@ -74,7 +76,7 @@ void gm_gps_gen::generate_lhs_field(ast_field* f)
         }
     }
     else {// vertex generate;
-        assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
+        //assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
         get_lib()->generate_vertex_prop_access_lhs(prop, Body);
     }
 }
@@ -83,7 +85,12 @@ void gm_gps_gen::generate_rhs_id(ast_id* i)
 {
     if (i->getSymInfo()->getType()->is_node_iterator())
     {
-        get_lib()->generate_node_iterator_rhs(i, Body);
+        if (i->getSymInfo()->find_info_bool(GPS_FLAG_SENT_SYMBOL) && !this->is_receiver_generate()) {
+            get_lib()->generate_node_iterator_rhs(i, Body);
+        }
+        else {
+            generate_lhs_id(i);
+        }
     }
     else {
         generate_lhs_id(i);
@@ -249,7 +256,7 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
         ast_field* f = a->get_lhs_field(); 
 
         // temporary
-        assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
+        //assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
 
         this->gm_code_generator::generate_sent_assign(a);
     }

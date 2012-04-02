@@ -40,7 +40,7 @@ void gm_gps_beinfo::add_communication_symbol(ast_foreach* fe, gm_symtab_entry* s
         target_type = sym->getType()->getTargetTypeSummary();
     } else if (sym->getType()->is_primitive()) {
         target_type = sym->getType()->getTypeSummary();
-    } else if (sym->getType()->is_node()) {
+    } else if (sym->getType()->is_node_compatible()) {
         if (GPS_BE.get_lib()->is_node_type_int())
             target_type = GMTYPE_INT;
         else

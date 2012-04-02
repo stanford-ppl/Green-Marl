@@ -24,11 +24,11 @@ Proc random_bipartite_matching(
             }
         }
 
-        // Right node accepts one and replies
+        // Right node accepts only one and replies
         Foreach(t: G.Nodes)(!t.isLeft && t.Match == NIL) {
             If (t.Suitor != NIL) {
                 t.Match = t.Suitor;
-                Node(G) n = t.Suitor; // the chosen one
+                Node(G) n = t.Suitor; // the lucky chosen one
                 n.Match = t;          // compiler suspects read/write, write/write conflict.
                 count ++;
             }

@@ -236,8 +236,13 @@ void gm_gps_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *b)
         if (!local_info->is_scalar()) continue;
 
         gps_syminfo* global_info = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
-        //if (global_info->is_used_in_multiple_BB())
-        if (global_info->is_scoped_global())
+        assert(global_info!=NULL);
+
+        if (sym->getType()->is_node_iterator())
+        {
+            // do nothing
+        }
+        else if (global_info->is_scoped_global())
         {
             if (local_info->is_used_as_rhs()) {
                 // receive it from Broadcast
@@ -289,9 +294,9 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
 
         std::list<ast_foreach*>& R = b->get_receiver_loops();
         std::list<ast_foreach*>::iterator I;
-        if (R.size() != 1) {
+        //if (R.size() != 1) {
             gm_baseindent_reproduce(4);
-        }
+        //}
         for(I=R.begin(); I!=R.end(); I++)
         {
             ast_foreach* fe = *I;
@@ -341,8 +346,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
 void gm_gps_gen::generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent)
 {
     
-    //printf("sym type = %s\n", gm_get_type_string(sym->getType()->getTypeSummary()));
-    assert(sym->getType()->is_primitive() || sym->getType()->is_node());
+    assert(sym->getType()->is_primitive() || sym->getType()->is_node_compatible());
 
     char temp[1024];
     sprintf(temp, "%s %s",

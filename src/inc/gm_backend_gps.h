@@ -77,6 +77,8 @@ class gm_gpslib : public gm_graph_library {
 
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master); 
 
+    virtual void generate_expr_nil(ast_expr* e, gm_code_writer& Body);
+
     // true if node == int false, if node == long
     virtual bool is_node_type_int() {return true;}
     protected:
@@ -216,6 +218,7 @@ static const char* GPS_FLAG_USE_IN_DEGREE    = "gps_flag_use_in_degree";
 static const char* GPS_NAME_IN_DEGREE_PROP   = "gps_name_in_degree_prop";
 static const int   GPS_PREPARE_STEP1         = 100000;
 static const int   GPS_PREPARE_STEP2         = 100001;
+static const char* GPS_FLAG_SENT_SYMBOL      = "gps_flag_sent_symbol";
 
 
 #endif

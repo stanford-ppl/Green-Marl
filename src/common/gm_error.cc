@@ -231,6 +231,9 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
     switch(errno) {
+        case GM_ERROR_GPS_RANDOM_NODE_WRITE:
+            printf("Random node write is not supported\n");
+            break;
         case GM_ERROR_GPS_UNSUPPORTED_OP:
             printf("%s operation is not supported\n", str1);
             break;

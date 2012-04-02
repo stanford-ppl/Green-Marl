@@ -106,20 +106,23 @@ public:
             }
         }
         // check LHS
-        else if ((s->get_nodetype() == AST_ASSIGN) && (foreach_depth > 1))
+        else if (s->get_nodetype() == AST_ASSIGN) 
         {
             ast_assign* a = (ast_assign*) s;
             if (a->is_target_scalar())
             {
-                ast_id* id = a->get_lhs_scala();
+                if (foreach_depth > 1)
+                {
+                    ast_id* id = a->get_lhs_scala();
 
-                // check LHS is defined in global or inner scope
-                gps_syminfo* info = gps_get_global_syminfo(id);
-                assert(info != NULL);
+                    // check LHS is defined in global or inner scope
+                    gps_syminfo* info = gps_get_global_syminfo(id);
+                    assert(info != NULL);
 
-                if (info->get_scope() == GPS_SCOPE_OUTER) {
-                    gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, id->get_line(), id->get_col());
-                    _error = true;
+                    if (info->get_scope() == GPS_SCOPE_OUTER) {
+                        gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, id->get_line(), id->get_col());
+                        _error = true;
+                    }
                 }
             }
             else
@@ -128,9 +131,24 @@ public:
                     
                 // check if LHS is through inner iterator
                 ast_id* iter = field->get_first();
-                if (gm_is_iteration_on_all_graph(iter->getTypeSummary())) {
-                    gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, iter->get_line(), iter->get_col());
-                    _error = true;
+                int iter_type = iter->getTypeSummary();
+                if (foreach_depth > 1) 
+                {
+                    // xxx should check if the driver is the inner symbol
+                    if (!gm_is_iteration_on_out_neighbors(iter_type) &&
+                        !gm_is_iteration_on_in_neighbors(iter_type))
+                    {
+                        gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, iter->get_line(), iter->get_col());
+                        _error = true;
+                    }
+                }
+                
+                if (gm_is_node_type(iter_type)) {
+                    if (foreach_depth != 1)
+                    {
+                        gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE, iter->get_line(), iter->get_col());
+                        _error = true;
+                    }
                 }
             }
         }

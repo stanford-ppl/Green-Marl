@@ -118,9 +118,10 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                     {
                         update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS);  
 
-                        if (gps_get_global_syminfo(i)->is_scoped_outer()) {
+                        //if (gps_get_global_syminfo(i)->is_scoped_outer()) {
                             beinfo->add_communication_symbol(in_loop, i->getSymInfo());
-                        }
+                            i->getSymInfo()->add_info_bool(GPS_FLAG_SENT_SYMBOL, true);
+                        //}
                     }
                 }
             }
