@@ -45,10 +45,10 @@ public:
 
             curr->set_has_sender(true);
    
-            gen->add_communication_loop(fe);
+            gen->add_communication_loop(fe, GPS_COMM_NESTED); // adding inner loop
 
-            // add the foreach loop as 'receiver'
-            // (this list will be migrated after split)
+            // add the foreach loop as 'receiver' of this state, temporariliy.
+            // (Receiver loop will be moved away later)
             curr->add_receiver_loop(fe);
 
             // list of bbs that should be splited
@@ -69,8 +69,6 @@ private:
 
 static gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen);
 
-// [todo]
-// who call this?
 void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
 {
     gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);

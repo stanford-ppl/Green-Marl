@@ -52,6 +52,34 @@ struct gm_gps_congruent_msg_class
     }
 };
 
+enum {
+  GPS_COMM_NESTED,           // communication for nested loop
+  GPS_COMM_RANDOM_WRITE,     // communication due to random write
+  GPS_COMM_INIT,             // reverse edge genertor at zero step
+};
+
+class gm_gps_comm_unit 
+{
+public: 
+    gm_gps_comm_unit() : type_of_comm(GPS_COMM_NESTED), fe(NULL) {}
+    gm_gps_comm_unit(int t, ast_foreach* f) : type_of_comm(t), fe(f) {}
+
+    int type_of_comm;       // INIT, NESTED, RANDOM_WRITE
+    ast_foreach* fe;        // related foreach symbol
+
+
+    // for comparison (less)
+    bool operator() (const gm_gps_comm_unit& lhs, 
+                     const gm_gps_comm_unit& rhs)
+    {
+        if (lhs.type_of_comm != rhs.type_of_comm)
+            return (lhs.type_of_comm < rhs.type_of_comm);
+        else if  (lhs.fe != rhs.fe)
+            return (lhs.fe < rhs.fe);
+        return false;
+    }
+};
+
 // backend information per each procedure
 class gm_gps_beinfo : public gm_backend_info 
 {
@@ -75,19 +103,20 @@ public:
     //-------------------------------------------------------------------
     // inner loops (a.k.a. communication loops) are seperately managed.
     //-------------------------------------------------------------------
-    std::list<ast_foreach*>&  get_communication_loops() {return comm_loops;}
+    std::set<gm_gps_comm_unit, gm_gps_comm_unit>&  get_communication_loops() {return comm_loops;}
 
-    void add_communication_loop(ast_foreach* fe) ;
-    void add_communication_symbol(ast_foreach* fe, gm_symtab_entry* sym);
+    void add_communication_loop(ast_foreach* fe, int comm_type) ;
+    void add_communication_symbol(ast_foreach* fe, int comm_type, gm_symtab_entry* sym);
 
     std::list<gm_gps_communication_symbol_info>& 
-        get_all_communication_symbols(ast_foreach* fe) {return comm_symbol_info[fe];}
+        get_all_communication_symbols(ast_foreach* fe, int comm_type);
+
 
     gm_gps_communication_symbol_info& 
-        find_communication_symbol_info(ast_foreach* fe, gm_symtab_entry* sym);
+        find_communication_symbol_info(ast_foreach* fe, int comm_type, gm_symtab_entry* sym);
 
     gm_gps_communication_size_info* 
-        find_communication_size_info(ast_foreach* fe);
+        find_communication_size_info(ast_foreach* fe, int comm_type);
 
     void compute_max_communication_size();
     gm_gps_communication_size_info* get_max_communication_size() {return &max_comm_size;}
@@ -109,7 +138,8 @@ public:
     std::set<gm_symtab_entry* >& get_scalar_symbols() {return scalar;}
     std::set<gm_symtab_entry* >& get_prop_symbols() {return prop;}
 
-    gm_gps_congruent_msg_class* add_congruent_message_class(gm_gps_communication_size_info* sz, gm_gps_basic_block* bb);
+    gm_gps_congruent_msg_class* add_congruent_message_class(
+            gm_gps_communication_size_info* sz, gm_gps_basic_block* bb);
     std::list<gm_gps_congruent_msg_class*>& get_congruent_message_classes()  {return congruent_msg;}
     bool is_single_message() {return congruent_msg.size() < 2;}
 
@@ -126,10 +156,12 @@ private:
 
     // map of inner loops (possible communications) and
     // symbols used for the communication in the loop.
-    std::map<ast_foreach*, std::list<gm_gps_communication_symbol_info> >  comm_symbol_info;
-    std::map<ast_foreach*, gm_gps_communication_size_info* >               comm_size_info;
+    std::map<gm_gps_comm_unit, std::list<gm_gps_communication_symbol_info>, gm_gps_comm_unit >   comm_symbol_info;
+    std::map<gm_gps_comm_unit, gm_gps_communication_size_info*, gm_gps_comm_unit >               comm_size_info;
     gm_gps_communication_size_info                                         max_comm_size;
-    std::list<ast_foreach*> comm_loops;
+
+    // list of communications
+    std::set<gm_gps_comm_unit, gm_gps_comm_unit> comm_loops;      
 
     // congruent message class information
     std::list<gm_gps_congruent_msg_class*>                                congruent_msg;

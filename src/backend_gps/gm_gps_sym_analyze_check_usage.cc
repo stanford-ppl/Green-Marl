@@ -108,7 +108,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                 // check if this symbol should be sent over network
                 if (foreach_depth == 2) {
                     if (gps_get_global_syminfo(i)->is_scoped_outer()) {
-                        beinfo->add_communication_symbol(in_loop, i->getSymInfo());
+                        beinfo->add_communication_symbol(in_loop, GPS_COMM_NESTED, i->getSymInfo());
                     }
                 }
             }
@@ -119,7 +119,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                         update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS);  
 
                         //if (gps_get_global_syminfo(i)->is_scoped_outer()) {
-                            beinfo->add_communication_symbol(in_loop, i->getSymInfo());
+                            beinfo->add_communication_symbol(in_loop, GPS_COMM_NESTED, i->getSymInfo());
                             i->getSymInfo()->add_info_bool(GPS_FLAG_SENT_SYMBOL, true);
                         //}
                     }
@@ -134,7 +134,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             if (foreach_depth == 2) {
                 gm_symtab_entry* driver_sym = e->get_field()->get_first()->getSymInfo();
                 if (driver_sym == out_iterator) { 
-                    beinfo->add_communication_symbol(in_loop, prop->getSymInfo());
+                    beinfo->add_communication_symbol(in_loop, GPS_COMM_NESTED, prop->getSymInfo());
                 }
             }
         }

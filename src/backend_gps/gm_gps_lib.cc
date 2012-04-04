@@ -423,26 +423,6 @@ static int get_total_size(gm_gps_communication_size_info& I)
 
     return sz;
 }
-/*
-#define MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf) \
-    std::list<ast_foreach*>& LOOPS = info->get_communication_loops(); \
-    std::list<ast_foreach*>::iterator I;\
-    bool is_first = true;\
-    for(I=LOOPS.begin(); I!=LOOPS.end(); I++) {\
-        gm_gps_communication_size_info& SYMS = \
-          info->find_communication_size_info(*I); \
-        int sz = get_total_size(SYMS); \
-        if (sz == 0) {continue;}\
-        if (is_first) {             \
-            is_first = false;       \
-            sprintf(str_buf,"if (m_type == %d) ", SYMS.id);\
-            Body.push(str_buf);\
-        }\
-        else {\
-            sprintf(str_buf,"else if (m_type == %d) ", SYMS.id);\
-            Body.push(str_buf);\
-        }\
-        */
 
 #define MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf) \
     std::list<gm_gps_congruent_msg_class*>& LOOPS = info->get_congruent_message_classes(); \
@@ -649,11 +629,13 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
 
+  int m_type = (fe == NULL) ? GPS_COMM_INIT : GPS_COMM_NESTED;
+
   std::list<gm_gps_communication_symbol_info>& LIST
-      = info->get_all_communication_symbols(fe);
+      = info->get_all_communication_symbols(fe, m_type);
 
   gm_gps_communication_size_info& SINFO
-      = *(info->find_communication_size_info(fe));
+      = *(info->find_communication_size_info(fe, m_type));
 
   Body.NL();
   Body.pushln("// Sending messages");
@@ -708,9 +690,16 @@ void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& 
   gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
 
-  std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(fe);
+  int comm_type;
+  if (fe == NULL) 
+      comm_type = GPS_COMM_INIT;
+  else
+      comm_type = GPS_COMM_NESTED;
+
+
+  std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(fe, comm_type);
   //int comm_id = info->find_communication_size_info(fe).id;
-  int comm_id = (info->find_communication_size_info(fe))->msg_class->id;
+  int comm_id = (info->find_communication_size_info(fe, comm_type))->msg_class->id;
 
   char temp[1024];
   if (!is_only_comm && !info->is_single_message()) {
@@ -811,7 +800,7 @@ void gm_gpslib::generate_prepare_bb(
 
     } else if (bb->get_type() == GM_GPS_BBTYPE_PREPARE2) {
         Body.pushln("//Preperation creating reverse edges");
-        Body.pushln("int i = 0;");
+        Body.pushln("int i = 0; // iterable does not have length(), so we have to count it");
         Body.pushln("for(MessageData _msg : _msgs) i++;");
 
         sprintf(temp,"%s.%s = new %s[i];", 

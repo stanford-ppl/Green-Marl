@@ -6,10 +6,25 @@
 //-------------------------------------------------------------
 
 // prepare to manage a communication loop
-void gm_gps_beinfo::add_communication_loop(ast_foreach* fe)
+void gm_gps_beinfo::add_communication_loop(ast_foreach* fe, int comm_type)
 {
-    assert(comm_symbol_info.find(fe) == comm_symbol_info.end());
+    gm_gps_comm_unit C(comm_type, fe);
 
+    if (comm_loops.find(C) != comm_loops.end()) // already added
+    {
+        printf("%p %d added twice\n", fe, comm_type);
+    }
+    assert (comm_loops.find(C) == comm_loops.end()); // already added
+    comm_loops.insert(C);
+
+    std::list<gm_gps_communication_symbol_info> new_list;
+    comm_symbol_info[C] = new_list;   // create empty list by copying.
+
+    gm_gps_communication_size_info *S = new gm_gps_communication_size_info();
+    S->id = issue_comm_id();
+    comm_size_info[C] = S;  // create zero communication 
+
+    /*
     comm_loops.push_back(fe);
 
     // reserve symbol information for this comm-loop
@@ -19,6 +34,8 @@ void gm_gps_beinfo::add_communication_loop(ast_foreach* fe)
     gm_gps_communication_size_info *S = new gm_gps_communication_size_info();
     S->id = issue_comm_id();
     comm_size_info[fe] = S;  // create zero communication 
+    */
+
 
     //  a new ID.
     //printf("adding communication loop for %s\n", fe->get_iterator()->get_genname());
@@ -26,14 +43,14 @@ void gm_gps_beinfo::add_communication_loop(ast_foreach* fe)
 
 
 // Add a symbol to a communication loop
-void gm_gps_beinfo::add_communication_symbol(ast_foreach* fe, gm_symtab_entry* sym)
+void gm_gps_beinfo::add_communication_symbol(ast_foreach* fe, int comm_type, gm_symtab_entry* sym)
 {
-    //printf("adding communication symbol %s for %s\n", sym->getId()->get_genname(), fe->get_iterator()->get_genname());
-    assert(comm_symbol_info.find(fe) != comm_symbol_info.end());
+    gm_gps_comm_unit C(comm_type, fe);
+    assert(comm_symbol_info.find(C) != comm_symbol_info.end());
 
-    std::list<gm_gps_communication_symbol_info>& sym_info = comm_symbol_info[fe];
+    std::list<gm_gps_communication_symbol_info>& sym_info = comm_symbol_info[C];
     std::list<gm_gps_communication_symbol_info>::iterator I;
-    gm_gps_communication_size_info* size_info = comm_size_info[fe];
+    gm_gps_communication_size_info* size_info = comm_size_info[C];
 
     int target_type;
     if (sym->getType()->is_property()) {
@@ -81,12 +98,25 @@ void gm_gps_beinfo::add_communication_symbol(ast_foreach* fe, gm_symtab_entry* s
 }
 
 // find communication info
-gm_gps_communication_symbol_info& gm_gps_beinfo::find_communication_symbol_info(
-        ast_foreach* fe, gm_symtab_entry* sym)
+std::list<gm_gps_communication_symbol_info>& gm_gps_beinfo::get_all_communication_symbols(
+        ast_foreach* fe, int comm_type)
 {
-    assert(comm_symbol_info.find(fe) != comm_symbol_info.end());
+    gm_gps_comm_unit U(comm_type, fe);
+    if (comm_loops.find(U) == comm_loops.end()) // already added
+    {
+        printf("%p %d not available\n", fe, comm_type);
+    }
+    assert(comm_symbol_info.find(U) != comm_symbol_info.end());
+    return comm_symbol_info[U];
+}
 
-    std::list<gm_gps_communication_symbol_info>& sym_info = comm_symbol_info[fe];
+gm_gps_communication_symbol_info& gm_gps_beinfo::find_communication_symbol_info(
+        ast_foreach* fe, int comm_type, gm_symtab_entry* sym)
+{
+    gm_gps_comm_unit U(comm_type, fe);
+    assert(comm_symbol_info.find(U) != comm_symbol_info.end());
+
+    std::list<gm_gps_communication_symbol_info>& sym_info = comm_symbol_info[U];
     std::list<gm_gps_communication_symbol_info>::iterator I;
     for(I=sym_info.begin(); I!= sym_info.end();I++)
     {
@@ -95,26 +125,24 @@ gm_gps_communication_symbol_info& gm_gps_beinfo::find_communication_symbol_info(
     }
 
     assert(false);
-
-    //gm_gps_communication_symbol_info II;  // should not come here
-    //return II;
 }
 
 gm_gps_communication_size_info* gm_gps_beinfo::find_communication_size_info(
-        ast_foreach* fe)
+        ast_foreach* fe, int comm_type)
 {
-    assert(comm_size_info.find(fe) != comm_size_info.end());
-    return comm_size_info[fe];
+    gm_gps_comm_unit U(comm_type, fe);
+    assert(comm_size_info.find(U) != comm_size_info.end());
+    return comm_size_info[U];
 }
 
 // get maximum communication size over all comm-loops
 void gm_gps_beinfo::compute_max_communication_size()
 {
-    std::list<ast_foreach*>::iterator I;
+    std::set<gm_gps_comm_unit, gm_gps_comm_unit>::iterator I;
     for(I = this->comm_loops.begin(); I!= this->comm_loops.end(); I++)
     {
-        ast_foreach* fe = *I;
-        gm_gps_communication_size_info& size_info = *(comm_size_info[fe]);
+        ast_foreach* fe = I->fe;
+        gm_gps_communication_size_info& size_info = *(comm_size_info[*I]);
 
 #define UPDATE_A_IF_SMALLER(A,B)  if ((A)<(B)) {A = B; }
 
