@@ -54,8 +54,11 @@ void gm_gps_gen::do_generate_master_class()
     sprintf(temp, "public static class %sMaster extends Master {", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("// Control fields");
-    Body.pushln("private int     _master_state                = 0;");
-    Body.pushln("private int     _master_state_nxt            = 0;");
+    bool prep = FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE);
+    sprintf(temp,"private int     _master_state                = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
+    Body.pushln(temp);
+    sprintf(temp,"private int     _master_state_nxt            = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
+    Body.pushln(temp);
     Body.pushln("private boolean _master_should_start_workers = false;");
     Body.pushln("private boolean _master_should_finish        = false;");
     Body.NL();
