@@ -365,8 +365,8 @@ void gm_gpslib::generate_vertex_prop_class_details(
 void gm_gpslib::generate_vertex_prop_access_prepare(gm_code_writer& Body)
 {
     char temp[1024];
-    //sprintf(temp,"VertexData %s = getValue();", STATE_SHORT_CUT);
-    //Body.pushln(temp);
+    sprintf(temp,"VertexData %s = getValue();", STATE_SHORT_CUT);
+    Body.pushln(temp);
 }
 void gm_gpslib::generate_vertex_prop_access_lhs(ast_id* id, gm_code_writer& Body)
 {
@@ -433,7 +433,7 @@ static int get_total_size(gm_gps_communication_size_info& I)
         gm_gps_communication_size_info& SYMS = \
           *((*I)->sz_info);\
         int sz = get_total_size(SYMS); \
-        if (sz == 0) {continue;}\
+        /*if (!is_single && (sz == 0)) {continue;}*/\
         if (!is_single && is_first) {             \
             is_first = false;       \
             sprintf(str_buf,"if (m_type == %d) ", SYMS.id);\
@@ -486,8 +486,12 @@ static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer&
     char str_buf[1024];
 
     MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf);
-        if (info->is_single_message())
-            sprintf(str_buf, "return %d; // data", get_total_size(SYMS));
+        if (info->is_single_message()) {
+            if (get_total_size(SYMS) == 0) 
+                sprintf(str_buf, "return 1; // empty message ");
+            else 
+                sprintf(str_buf, "return %d; // data", get_total_size(SYMS));
+        }
         else
             sprintf(str_buf, "return (1+%d); // type + data", get_total_size(SYMS));
         Body.pushln(str_buf);
@@ -506,6 +510,8 @@ static void generate_message_class_write(gm_gpslib* lib, gm_gps_beinfo* info, gm
     char str_buf[1024];
     MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
         if (!info->is_single_message()) Body.pushln("{");
+        if (info->is_single_message() && get_total_size(SYMS) == 0) 
+            Body.pushln("IOB.put((byte)0); // empty message");
         generate_message_write_each(lib, SYMS.num_int, GMTYPE_INT,Body);
         generate_message_write_each(lib, SYMS.num_long, GMTYPE_LONG,Body);
         generate_message_write_each(lib, SYMS.num_float, GMTYPE_FLOAT,Body);
@@ -525,6 +531,8 @@ static void generate_message_class_read1(gm_gpslib* lib, gm_gps_beinfo* info, gm
     char str_buf[1024];
     MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
         if (!info->is_single_message()) Body.pushln("{");
+        if (info->is_single_message() && get_total_size(SYMS) == 0) 
+            Body.pushln("IOB.get(); // consume empty message byte");
         generate_message_read1_each(lib, SYMS.num_int, GMTYPE_INT,Body);
         generate_message_read1_each(lib, SYMS.num_long, GMTYPE_LONG,Body);
         generate_message_read1_each(lib, SYMS.num_float, GMTYPE_FLOAT,Body);
@@ -547,13 +555,20 @@ static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm
         if (info->is_single_message()) offset = 0;
         else offset = 1;
         if (!info->is_single_message()) Body.pushln("{");
+        if (info->is_single_message() && (get_total_size(SYMS) == 0))
+            Body.pushln("_idx++; // consume empty message byte");
         generate_message_read2_each(lib, SYMS.num_int, GMTYPE_INT,Body, offset);
         generate_message_read2_each(lib, SYMS.num_long, GMTYPE_LONG,Body, offset);
         generate_message_read2_each(lib, SYMS.num_float, GMTYPE_FLOAT,Body, offset);
         generate_message_read2_each(lib, SYMS.num_double, GMTYPE_DOUBLE,Body, offset);
         generate_message_read2_each(lib, SYMS.num_bool, GMTYPE_BOOL,Body, offset);
         if (info->is_single_message())
-            sprintf(str_buf,"return %d;", get_total_size(SYMS));
+        {
+            if (get_total_size(SYMS) == 0)
+                sprintf(str_buf,"return 1;");
+            else
+                sprintf(str_buf,"return %d;", get_total_size(SYMS));
+        }
         else 
             sprintf(str_buf,"return 1 + %d;", get_total_size(SYMS));
         Body.pushln(str_buf);
@@ -577,10 +592,18 @@ static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm
         else offset = 0;
         if (!info->is_single_message()) Body.pushln("{");
         int sz2 = get_total_size(SYMS);
-        sprintf(str_buf,"IOB.get(_BA, _idx+%d, %d);",offset, sz); 
+        if (info->is_single_message() && (get_total_size(SYMS) == 0))
+        {
+            Body.pushln("//empty message(dummy byte)");
+            sz2 = 1;
+        }
+        sprintf(str_buf,"IOB.get(_BA, _idx+%d, %d);",offset, sz2); 
         Body.pushln(str_buf);
         if (info->is_single_message())
-            sprintf(str_buf,"return %d;",sz2);
+            if (get_total_size(SYMS) == 0)
+                sprintf(str_buf,"return 1;");
+            else
+                sprintf(str_buf,"return %d;",sz2);
         else
             sprintf(str_buf,"return 1 + %d;",sz2);
         Body.pushln(str_buf);
@@ -670,7 +693,7 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   }
   else {
     char temp[1024];
-    sprintf(temp, "sendMsssage(%s.%s, _msg);",
+    sprintf(temp, "sendMessages(%s.%s, _msg);",
             STATE_SHORT_CUT,
             GPS_REV_NODE_ID);
     Body.pushln(temp);
