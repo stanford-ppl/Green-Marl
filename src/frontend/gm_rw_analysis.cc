@@ -1084,6 +1084,14 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a)
     if (a->get_filter() != NULL)
         traverse_expr_for_readset_adding(a->get_filter(), R_temp);
 
+    // add source to the readset
+    {
+        ast_id* source = a->get_source();
+        gm_rwinfo*  new_entry = gm_rwinfo::new_scala_inst(source);
+        gm_symtab_entry *sym = source->getSymInfo();
+        gm_add_rwinfo_to_set(R_temp, sym, new_entry, false);
+    }
+
     bool is_conditional = (a->get_filter() != NULL) || (gm_is_collection_iter_type(a->get_iter_type()));
     is_okay = merge_body(R_temp, W_temp, D_temp, a->get_body(), is_conditional);
 
