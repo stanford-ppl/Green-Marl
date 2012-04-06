@@ -4,6 +4,7 @@
 #include "gm_ast.h"
 #include "gm_traverse.h"
 #include "gps_syminfo.h"
+#include "gps_comminfo.h"
 #include <list>
 
 enum {
@@ -86,17 +87,24 @@ class gm_gps_basic_block {
     bool is_prepare() {return (get_type() == GM_GPS_BBTYPE_PREPARE1) ||
         (get_type() == GM_GPS_BBTYPE_PREPARE2);}
 
-    // multiple inner loops?
-    void         add_receiver_loop  (ast_foreach* fe)              {receivers.push_back(fe);}
-    std::list<ast_foreach*>&  get_receiver_loops()                 {return receivers;}
-    bool  has_receiver_loops()     {return (receivers.size() >0);}
-    void  clear_receiver_loops()   {receivers.clear();}
+    void add_nested_receiver(ast_foreach* fe)               {
+        gm_gps_comm_unit U(GPS_COMM_NESTED, fe); add_receiver(U);
+    }
+    void add_random_write_receiver(ast_sentblock* sb, gm_symtab_entry* sym)               {
+        gm_gps_comm_unit U(GPS_COMM_RANDOM_WRITE, sb, sym); add_receiver(U);
+    }
+    void add_receiver(gm_gps_comm_unit& u)                  {receivers.push_back(u);}
+    std::list<gm_gps_comm_unit>&  get_receivers()           {return receivers;}
+    void clear_receivers() {receivers.clear();}
+    bool has_receiver() {return receivers.size() > 0;}
+
 
 private:
     std::list<ast_sent*>::iterator I;
     std::list<ast_sent*> sents;
 
-    std::list<ast_foreach*> receivers;
+    //std::list<ast_foreach*> receivers;
+    std::list<gm_gps_comm_unit> receivers;
 
     std::vector<gm_gps_basic_block*> exits;
     std::vector<gm_gps_basic_block*> entries;
@@ -135,7 +143,7 @@ protected:
 class gps_apply_bb_ast : public gm_apply, public gps_apply_bb 
 {
 public:
-    gps_apply_bb_ast() : _under_receiver(false),_is_post(false), _is_pre(true) {}
+    gps_apply_bb_ast() : _under_receiver(false),_is_post(false), _is_pre(true), _receiver_type(GPS_COMM_NESTED) {}
 
     // defined in gm_gps_misc.cc
     virtual void apply(gm_gps_basic_block* b);
@@ -154,8 +162,11 @@ protected:
 
     bool is_under_receiver_traverse() {return _under_receiver;}
     void  set_under_receiver_traverse(bool b) {_under_receiver = b;}
+    bool get_receiver_type() {return _receiver_type; } 
+    void set_receiver_type(int i) {_receiver_type = i;}
 
     bool _under_receiver;
+    int  _receiver_type;  // GPS_COMM_NESTED, COMM_RAND_WRITE
 };
 
 bool gps_bb_apply_until_no_change(gm_gps_basic_block* entry, gps_apply_bb* apply);

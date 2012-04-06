@@ -45,14 +45,30 @@ public:
 
             curr->set_has_sender(true);
    
-            gen->add_communication_loop(fe, GPS_COMM_NESTED); // adding inner loop
+            gen->add_communication_unit_nested(fe); // adding inner loop
 
             // add the foreach loop as 'receiver' of this state, temporariliy.
             // (Receiver loop will be moved away later)
-            curr->add_receiver_loop(fe);
+            curr->add_nested_receiver(fe);
 
             // list of bbs that should be splited
             target_bb.insert(curr);
+        }
+        else if (s->get_nodetype() == AST_ASSIGN)
+        {
+            if (s->find_info_ptr(GPS_FLAG_SENT_SYMBOL_SB) != NULL)
+            {
+                ast_assign* a = (ast_assign*) s;
+                ast_sentblock* sb = (ast_sentblock*) (s->find_info_ptr(GPS_FLAG_SENT_SYMBOL_SB)); 
+                ast_field* f = a->get_lhs_field();
+                gm_symtab_entry* sym = f->get_first()->getSymInfo();
+                
+                gen->add_communication_unit_random_write(sb, sym);
+                gen->add_random_write_sent(sb, sym, s);
+                curr->add_random_write_receiver(sb, sym);
+
+                target_bb.insert(curr);
+            }
         }
 
         return true;
@@ -75,7 +91,7 @@ void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
     gps_bb* entry = info->get_entry_basic_block();
 
     //-------------------------------------------
-    // find Basic Blocks that contain communication
+    // find Basic Blocks that contain nested communication
     //-------------------------------------------
     gps_find_comm_vertex_bb T(info);
     gps_bb_apply_only_once(entry, &T);
@@ -103,7 +119,7 @@ gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
 
     assert(BB->is_vertex());
     assert(BB->has_sender());
-    assert(BB->has_receiver_loops());
+    assert(BB->has_receiver());
     assert(BB->get_num_entries() == 1);
     assert(BB->get_num_exits() == 1);
 
@@ -122,14 +138,13 @@ gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
     //--------------------------------------
     // migrate receiver list to new_BB
     //--------------------------------------
-    std::list<ast_foreach*>& L = BB->get_receiver_loops(); 
-    std::list<ast_foreach*>::iterator I;
+    std::list<gm_gps_comm_unit>& L = BB->get_receivers(); 
+    std::list<gm_gps_comm_unit>::iterator I;
     for(I=L.begin(); I!= L.end(); I++)
     {
-        ast_foreach* fe = *I;
-        new_BB ->add_receiver_loop(fe);
+        new_BB ->add_receiver(*I);
     }
-    BB->clear_receiver_loops();
+    BB->clear_receivers();
 
     // insert basic blocks
     BB->remove_all_exits();

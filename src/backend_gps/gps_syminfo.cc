@@ -34,7 +34,7 @@ void gps_syminfo::add_usage_in_BB(int bb_no, int usage, int context , int reduce
     switch(context) {
         case GPS_CONTEXT_MASTER: used_in_master = true; break;
         case GPS_CONTEXT_VERTEX: used_in_vertex = true; break;
-        case GPS_CONTEXT_SENDER: used_in_sender = true; break;
+        //case GPS_CONTEXT_SENDER: used_in_sender = true; break;
         case GPS_CONTEXT_RECEIVER: used_in_receiver = true; break;
         default: assert(false);
     }

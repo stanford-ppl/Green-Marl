@@ -6,79 +6,8 @@
 #include <list>
 #include "gm_procinfo.h"
 #include "gm_ast.h"
-#include "gm_backend_gps.h"
+#include "gps_comminfo.h"
 
-struct gm_gps_communication_symbol_info 
-{
-   gm_symtab_entry* symbol;
-   int gm_type;
-   int idx;
-};
-
-struct gm_gps_congruent_msg_class;
-struct gm_gps_communication_size_info 
-{
-   gm_gps_communication_size_info () { num_int = num_bool = num_long = num_float = num_double = 0; msg_class=NULL;}
-   int id;
-   int num_int;
-   int num_bool;
-   int num_long;
-   int num_float;
-   int num_double;
-   gm_gps_congruent_msg_class* msg_class;
-
-   bool is_equivalent(gm_gps_communication_size_info& s) {
-       if (num_int != s.num_int) return false;
-       if (num_bool != s.num_bool) return false;
-       if (num_long != s.num_long) return false;
-       if (num_float != s.num_float) return false;
-       if (num_double != s.num_double) return false;
-       return true;
-   }
-
-};
-
-struct gm_gps_congruent_msg_class
-{
-    int id;
-    gm_gps_communication_size_info* sz_info;
-    std::set<gm_gps_basic_block*> recv_bb;
-
-    void add_receiving_basic_block(gm_gps_basic_block* b) {
-        recv_bb.insert(b);
-    }
-    bool find_basic_block_in_receiving_list(gm_gps_basic_block* b) {
-        return (recv_bb.find(b) != recv_bb.end());
-    }
-};
-
-enum {
-  GPS_COMM_NESTED,           // communication for nested loop
-  GPS_COMM_RANDOM_WRITE,     // communication due to random write
-  GPS_COMM_INIT,             // reverse edge genertor at zero step
-};
-
-class gm_gps_comm_unit 
-{
-public: 
-    gm_gps_comm_unit() : type_of_comm(GPS_COMM_NESTED), fe(NULL) {}
-    gm_gps_comm_unit(int t, ast_foreach* f) : type_of_comm(t), fe(f) {}
-
-    int type_of_comm;       // INIT, NESTED, RANDOM_WRITE
-    ast_foreach* fe;        // related foreach symbol
-
-
-    // for comparison (less)
-    bool operator() (const gm_gps_comm_unit& lhs, 
-                     const gm_gps_comm_unit& rhs)
-    {
-        if (lhs.type_of_comm != rhs.type_of_comm)
-            return (lhs.type_of_comm < rhs.type_of_comm);
-        else if  (lhs.fe != rhs.fe)
-            return (lhs.fe < rhs.fe);
-        return false;
-    }
-};
 
 // backend information per each procedure
 class gm_gps_beinfo : public gm_backend_info 
@@ -105,18 +34,76 @@ public:
     //-------------------------------------------------------------------
     std::set<gm_gps_comm_unit, gm_gps_comm_unit>&  get_communication_loops() {return comm_loops;}
 
-    void add_communication_loop(ast_foreach* fe, int comm_type) ;
-    void add_communication_symbol(ast_foreach* fe, int comm_type, gm_symtab_entry* sym);
+    void add_communication_unit_nested(ast_foreach* fe) {
+        gm_gps_comm_unit U(GPS_COMM_NESTED, fe);
+        add_communication_unit(U);
+    }
+    void add_communication_unit_initializer() {
+        gm_gps_comm_unit U(GPS_COMM_INIT, NULL);
+        add_communication_unit(U);
+    }
+    void add_communication_unit_random_write(ast_sentblock* sb, gm_symtab_entry* drv) {
+        gm_gps_comm_unit U(GPS_COMM_RANDOM_WRITE, sb, drv);
+        add_communication_unit(U);
+    }
+    void add_communication_unit(gm_gps_comm_unit& U); 
+
+    void add_communication_symbol_nested(ast_foreach* fe, gm_symtab_entry* sym) {
+            gm_gps_comm_unit U(GPS_COMM_NESTED, fe);
+            add_communication_symbol(U, sym);
+    }
+    void add_communication_symbol_initializer(gm_symtab_entry* sym) {
+            gm_gps_comm_unit U(GPS_COMM_INIT, NULL);
+            add_communication_symbol(U, sym);
+    }
+    void add_communication_symbol_random_write(ast_sentblock* sb, gm_symtab_entry* drv, gm_symtab_entry* sym) {
+        gm_gps_comm_unit U(GPS_COMM_RANDOM_WRITE, sb, drv);
+        add_communication_symbol(U, sym);
+    }
+    void add_communication_symbol(gm_gps_comm_unit& U, gm_symtab_entry* sym); 
 
     std::list<gm_gps_communication_symbol_info>& 
-        get_all_communication_symbols(ast_foreach* fe, int comm_type);
+        get_all_communication_symbols_nested(ast_foreach* fe, int comm_type)
+    { 
+        gm_gps_comm_unit U(GPS_COMM_NESTED, fe);
+        return get_all_communication_symbols(U);
+    }
+    std::list<gm_gps_communication_symbol_info>& 
+        get_all_communication_symbols(gm_gps_comm_unit& U);
 
+    std::list<ast_sent*>& 
+        get_random_write_sents(gm_gps_comm_unit& U) {
+            return random_write_sents[U];
+        }
 
-    gm_gps_communication_symbol_info& 
-        find_communication_symbol_info(ast_foreach* fe, int comm_type, gm_symtab_entry* sym);
+    std::list<ast_sent*>& 
+        get_random_write_sents(ast_sentblock* sb, gm_symtab_entry *sym)
+    {
+        gm_gps_comm_unit U(GPS_COMM_RANDOM_WRITE, sb, sym);
+        return get_random_write_sents(U);
+    }
+
+    void add_random_write_sent(gm_gps_comm_unit& U, ast_sent* s)
+    {
+        std::list<ast_sent*>& L = random_write_sents[U];
+        L.push_back(s);
+    }
+
+    void add_random_write_sent(ast_sentblock* sb, gm_symtab_entry *sym, ast_sent* s)
+    {
+        gm_gps_comm_unit U(GPS_COMM_RANDOM_WRITE, sb, sym);
+        add_random_write_sent(U, s);
+    }
 
     gm_gps_communication_size_info* 
-        find_communication_size_info(ast_foreach* fe, int comm_type);
+        find_communication_size_info_nested(ast_foreach* fe, int comm_type)
+    {
+        gm_gps_comm_unit U(GPS_COMM_NESTED, fe);
+        return find_communication_size_info(U);
+    }
+    gm_gps_communication_size_info* 
+        find_communication_size_info(gm_gps_comm_unit& U);
+
 
     void compute_max_communication_size();
     gm_gps_communication_size_info* get_max_communication_size() {return &max_comm_size;}
@@ -160,8 +147,10 @@ private:
     std::map<gm_gps_comm_unit, gm_gps_communication_size_info*, gm_gps_comm_unit >               comm_size_info;
     gm_gps_communication_size_info                                         max_comm_size;
 
-    // list of communications
+    // set of communications
     std::set<gm_gps_comm_unit, gm_gps_comm_unit> comm_loops;      
+
+    std::map<gm_gps_comm_unit, std::list<ast_sent*>, gm_gps_comm_unit>    random_write_sents;
 
     // congruent message class information
     std::list<gm_gps_congruent_msg_class*>                                congruent_msg;

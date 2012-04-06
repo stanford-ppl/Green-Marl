@@ -219,6 +219,7 @@ static const char* GPS_NAME_IN_DEGREE_PROP   = "gps_name_in_degree_prop";
 static const int   GPS_PREPARE_STEP1         = 100000;
 static const int   GPS_PREPARE_STEP2         = 100001;
 static const char* GPS_FLAG_SENT_SYMBOL      = "gps_flag_sent_symbol";
+static const char* GPS_FLAG_SENT_SYMBOL_SB   = "gps_flag_sent_symbol_sentblock";
 
 
 #endif

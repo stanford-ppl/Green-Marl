@@ -24,7 +24,6 @@ enum {
 enum {
     GPS_CONTEXT_MASTER,
     GPS_CONTEXT_VERTEX,
-    GPS_CONTEXT_SENDER,
     GPS_CONTEXT_RECEIVER
 };
 
@@ -41,7 +40,7 @@ class gps_syminfo : public ast_extra_info
             used_as_rhs(false), used_as_lhs(false), 
             used_as_reduce(false), 
             used_in_vertex(false), used_in_master(false), 
-            used_in_sender(false), used_in_receiver(false), 
+            used_in_receiver(false), 
             reduce_op_type(GMREDUCE_NULL), start_byte(0),
             scope(GPS_SCOPE_GLOBAL)
             {}
@@ -62,7 +61,7 @@ class gps_syminfo : public ast_extra_info
 
         bool is_used_in_vertex() {return used_in_vertex;}
         bool is_used_in_master() {return used_in_master;}
-        bool is_used_in_sender()   {return used_in_sender;}
+        //bool is_used_in_sender()   {return used_in_sender;}
         bool is_used_in_receiver() {return used_in_receiver;}
 
         int  get_reduce_type() {return reduce_op_type;}
@@ -96,7 +95,7 @@ class gps_syminfo : public ast_extra_info
 
         bool used_in_vertex;
         bool used_in_master;
-        bool used_in_sender;
+        //bool used_in_sender;
         bool used_in_receiver;
 
         int  reduce_op_type;

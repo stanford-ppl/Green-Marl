@@ -1,0 +1,30 @@
+
+// Test of Random Write,
+Proc e11(G:Graph, A,B: N_P<Int>(G), root: Node(G)) : Int
+{
+    Node(G) x = root;
+    x.A = 0;
+
+    // Nesting too deep
+    Foreach (n: G.Nodes) { 
+        Node(G) y = root;
+        y.A = 0;
+
+        {
+            Node(G) z; 
+            z = root;
+            z.B = 0;
+            z = root;
+            z.A = 0;
+        }
+    }
+
+    Foreach (n: G.Nodes) { 
+        Node(G) y = root;
+        If (n.A > 0) {
+            y.A = 0;
+        }
+    }
+
+    Return 0;
+}

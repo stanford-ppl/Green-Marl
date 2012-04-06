@@ -204,7 +204,6 @@ void gm_gps_gen::do_generate_shared_variables_keys()
         // if the symbol is used in vertex and master
         // we need shared variable
         if ((syminfo->is_used_in_vertex() ||
-             syminfo->is_used_in_sender() ||
              syminfo->is_used_in_receiver()) &&
              (syminfo->is_used_in_master() || syminfo->is_argument()))
         {

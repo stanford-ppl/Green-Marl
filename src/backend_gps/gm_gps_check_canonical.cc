@@ -143,13 +143,6 @@ public:
                     }
                 }
                 
-                if (gm_is_node_type(iter_type)) {
-                    if (foreach_depth != 1)
-                    {
-                        gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE, iter->get_line(), iter->get_col());
-                        _error = true;
-                    }
-                }
             }
         }
     }
@@ -180,13 +173,197 @@ private:
 };
 
 
+//-----------------------------------------------------------------
+// Check random write:
+//-----------------------------------------------------------------
+// Rules:
+//   - Node(G) should be defined in a sent-block, out-loop scoped
+//   - Random reading is not supported
+//   - Node variable assignment should not be re-assigned after usage
+//
+// Example>
+//
+// Node(G) root;
+// root.X = 3;      // not okay (for now)
+//
+// Foreach(n: G.Nodes) {
+//   Node(G) y = root;
+//   root.X = n.A;  // not okay
+//   y.X = n.A; okay
+// }
+//
+// Foreach(n:G.Nodes) {
+//   Foreach(t:n.Nbrs) {
+//      Node(G) z = root;
+//      root.X = t.A;      // not okay 
+//      z.X = t.A;         // not okay (for now)
+//   }
+// }
+//
+// Foreach(n: G.Nodes) {
+//   Node(G) y = root;
+//   y.X = t.A;
+//   y = root2;
+//   y.Z = t.B; // not okay
+// }
+//
+// [Multiple definitions?]
+// {
+//   Node(G) y1= root1;
+//   Node(G) y2= root2;
+//   y1.X = 0;
+//   y2.Z = 0;
+// }
+//-----------------------------------------------------------------
+class gps_check_random_write_t2 : public gm_apply 
+{
+public:
+   gps_check_random_write_t2() {
+       set_for_sent(true);
+       set_for_symtab(true);
+       set_separate_post_apply(true); 
+       set_for_expr(true);
+       _error = false;
+       foreach_depth = 0;
+       current_symtab_holder = NULL;
+   }
+
+    bool is_error() {return _error;}
+
+    virtual bool apply(ast_expr *e) 
+    {
+        if (e->is_field()) {
+           // prevent random-read
+           ast_field* f = e->get_field();
+           if (!gm_is_node_iter_type(f->get_first()->getTypeSummary())) {
+                gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_READ,
+                f->get_line(), f->get_col(), "");
+                _error = true;
+           }
+       }
+
+       return true;
+    }
+
+    virtual bool apply(gm_symtab* e, int type)
+    {
+       current_symtab_holder = e->get_ast();
+       return true;
+    }
+
+    virtual bool apply(gm_symtab_entry* e, int type) // called after apply(symtab)
+    {
+        if (type != GM_SYMTAB_VAR) return true;
+
+        if (e->getType()->is_node()) {
+            assert(current_symtab_holder != NULL);
+            assert(current_symtab_holder->get_nodetype() == AST_SENTBLOCK);
+
+            if (foreach_depth == 1) {
+                defined_1st_level[e] = (ast_sentblock*) current_symtab_holder;
+            }
+            
+        }
+
+        return true;
+    }
+
+    virtual bool apply(ast_sent* s) 
+    {
+        if (s->get_nodetype() == AST_FOREACH) {
+            foreach_depth ++;
+        }
+        else if (s->get_nodetype() == AST_ASSIGN) {
+            ast_assign* a = (ast_assign*) s;
+            if (a->is_target_scalar()) 
+            {
+                ast_id* drv = a->get_lhs_scala();
+                int drv_type = drv->getTypeSummary();
+                gm_symtab_entry* e = drv->getSymInfo();
+
+                if (gm_is_node_type(drv_type)) 
+                {
+                    // error if already used
+                    if (used.find(e) != used.end()) 
+                    {
+                        gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE_REDEF, 
+                            drv->get_line(), drv->get_col());
+                        _error = true;
+                    }
+                }
+            }
+            else {
+                ast_field* field = a->get_lhs_field();
+                ast_id* drv = field->get_first();
+                int drv_type = drv->getTypeSummary();
+                gm_symtab_entry* e = drv->getSymInfo();
+
+                if (gm_is_node_type(drv_type)) {
+                    if (foreach_depth != 1)
+                    {
+                        gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE_USE_SCOPE, 
+                            drv->get_line(), drv->get_col());
+                        _error = true;
+                    }
+                    else if (defined_1st_level.find(e) == defined_1st_level.end()) {
+                        gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE_DEF_SCOPE, 
+                            drv->get_line(), drv->get_col());
+                        _error = true;
+                    }
+                    else { 
+
+                        // should not meet with while, if, ..., before the sentblock the symbol is defined
+                        ast_sentblock* sb = defined_1st_level[e]; 
+                        ast_node* parent = s->get_parent();
+                        while (parent != sb) {
+                            if (parent->get_nodetype() != AST_SENTBLOCK) {
+                                gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE_CONDITIONAL, 
+                                    drv->get_line(), drv->get_col());
+                                _error = true;
+                                break;
+                            }
+                            parent = parent->get_parent();
+                            assert(parent != NULL);
+                        }
+
+                        used.insert(e);
+                        s->add_info_ptr(GPS_FLAG_SENT_SYMBOL_SB, sb);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    virtual bool apply2(ast_sent* s) 
+    {
+        if (s->get_nodetype() == AST_FOREACH) {
+            foreach_depth --;
+        }
+        return true;
+    }
+
+private:
+  bool _error;
+  int foreach_depth;
+  std::set<gm_symtab_entry*> used;
+  std::map<gm_symtab_entry*, ast_sentblock*> defined_1st_level;
+  ast_node* current_symtab_holder;
+};
+
 void gm_gps_opt_check_canonical::process(ast_procdef* proc)
 {
     // analyze_symbol_scope should be done before.
-
     gps_check_canonical_t T;
     proc->traverse(&T, true, true);
 
     set_okay(!T.is_error());
-    if (T.is_error()) {printf("ERROR\n");}
+
+    if (!T.is_error()) {
+        gps_check_random_write_t2 T2;
+        proc->traverse_both(&T2);
+
+        set_okay(!T2.is_error());
+    }
+
 }

@@ -231,6 +231,21 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
     switch(errno) {
+        case GM_ERROR_GPS_RANDOM_NODE_WRITE_CONDITIONAL:
+            printf("Random node write cannot happen inside a conditional block\n");
+            break;
+        case GM_ERROR_GPS_RANDOM_NODE_WRITE_USE_SCOPE:
+            printf("Random node write should happen in the outer loop\n");
+            break;
+        case GM_ERROR_GPS_RANDOM_NODE_WRITE_DEF_SCOPE:
+            printf("Random node write should destinated to a node variable, defined in the outer loop\n");
+            break;
+        case GM_ERROR_GPS_RANDOM_NODE_WRITE_REDEF:
+            printf("Random node destination has been re-defined\n");
+            break;
+        case GM_ERROR_GPS_RANDOM_NODE_READ:
+            printf("Random node read is not supported\n");
+            break;
         case GM_ERROR_GPS_RANDOM_NODE_WRITE:
             printf("Random node write is not supported\n");
             break;

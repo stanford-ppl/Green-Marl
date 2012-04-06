@@ -30,15 +30,34 @@ void gm_gps_basic_block::reproduce_sents()
         gm_flush_reproduce(); 
     } else if ( (type == GM_GPS_BBTYPE_BEGIN_VERTEX) || (type == GM_GPS_BBTYPE_SEQ)) {
 
-        if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) && (has_receiver_loops())) {
-            gm_push_reproduce((char*)"//Receive Loops"); 
-            gm_newline_reproduce(); 
-            std::list<ast_foreach*>& L =  get_receiver_loops(); 
-            std::list<ast_foreach*>::iterator I;
+        if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) && (has_receiver())) {
+            gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_current_backend_info();
+            std::list<gm_gps_comm_unit>& L =  get_receivers(); 
+            std::list<gm_gps_comm_unit>::iterator I;
             for(I=L.begin();I!=L.end();I++)
             {
-                ast_foreach* s = *I;
-                s->reproduce(0);
+                gm_gps_comm_unit U = *I;
+                if (U.type_of_comm == GPS_COMM_NESTED) {
+                    gm_push_reproduce((char*)"//Receive Nested Loop"); 
+                    gm_newline_reproduce(); 
+                    ast_foreach* fe = U.fe;
+                    fe->reproduce(0);
+                }
+                else if (U.type_of_comm = GPS_COMM_RANDOM_WRITE) 
+                {
+                    gm_push_reproduce((char*)"//Receive Random Write Sent"); 
+                    gm_newline_reproduce(); 
+                    std::list<ast_sent*>& LL = info->get_random_write_sents(U);
+                    std::list<ast_sent*>::iterator II;
+                    for(II=LL.begin(); II!=LL.end(); II++) 
+                    {
+                        ast_sent* s = *II;
+                        s->reproduce(0);
+                    }
+                }
+                else {
+                    assert(false);
+                }
             }
         }
 
@@ -163,17 +182,32 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
     {
 
         // traverse receiver
-        if (_curr->has_receiver_loops())
+        if (_curr->has_receiver())
         {
-            std::list<ast_foreach*> R = _curr->get_receiver_loops();
-            std::list<ast_foreach*>::iterator I;
+            std::list<gm_gps_comm_unit>& R = _curr->get_receivers();
+            std::list<gm_gps_comm_unit>::iterator I;
             set_under_receiver_traverse(true);
             for(I=R.begin(); I!=R.end(); I++)
             {
-                ast_foreach* fe = *I;
-                //ast_sent* b = fe->get_body();
-                //b->traverse(this, is_post(), is_pre());
-                fe->traverse(this, is_post(), is_pre());
+                gm_gps_comm_unit U = *I;
+                set_receiver_type(U.get_type());
+                if (U.get_type() == GPS_COMM_NESTED) 
+                {
+                    ast_foreach* fe = U.fe;
+                    fe->traverse(this, is_post(), is_pre());
+                } else if (U.get_type() == GPS_COMM_RANDOM_WRITE) {
+                    gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_current_backend_info();
+                    std::list<ast_sent*>& LL = info->get_random_write_sents(U);
+                    std::list<ast_sent*>::iterator II;
+                    for(II=LL.begin(); II!=LL.end(); II++) 
+                    {
+                        ast_sent* s = *II;
+                        s->traverse(this, is_post(), is_pre());
+                    }
+                }
+                else {
+                    assert(false);
+                }
             }
             set_under_receiver_traverse(false);
         }

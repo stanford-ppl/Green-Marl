@@ -413,8 +413,8 @@ void gm_gps_opt_create_ebb::process(ast_procdef* proc)
         ast_typedecl* t = ast_typedecl::new_nodetype(dummy2);
         gm_symtab_entry *e =  new gm_symtab_entry(dummy, t);
 
-        beinfo->add_communication_loop(NULL, GPS_COMM_INIT); // use NULL as a special symbol
-        beinfo->add_communication_symbol(NULL, GPS_COMM_INIT, e);
+        beinfo->add_communication_unit_initializer(); // use NULL as a special symbol
+        beinfo->add_communication_symbol_initializer(e);
     }
     
     beinfo->set_entry_basic_block(top);

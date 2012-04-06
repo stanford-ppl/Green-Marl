@@ -194,7 +194,7 @@ int gm_symtab_entry::find_info_int(const char* id)
 {
     ast_extra_info* info = find_info(id);
     if (info == NULL) 
-        return false; 
+        return 0;
     else 
         return info->ival;
 }
@@ -202,7 +202,7 @@ float gm_symtab_entry::find_info_float(const char* id)
 {
     ast_extra_info* info = find_info(id);
     if (info == NULL) 
-        return false; 
+        return 0;
     else 
         return info->fval;
 }
@@ -210,7 +210,7 @@ void* gm_symtab_entry::find_info_ptr(const char* id)
 {
     ast_extra_info* info = find_info(id);
     if (info == NULL) 
-        return false; 
+        return NULL;
     else 
         return info->ptr1;
 }
@@ -218,7 +218,7 @@ void* gm_symtab_entry::find_info_ptr2(const char* id)
 {
     ast_extra_info* info = find_info(id);
     if (info == NULL) 
-        return false; 
+        return NULL; 
     else 
         return info->ptr2;
 }

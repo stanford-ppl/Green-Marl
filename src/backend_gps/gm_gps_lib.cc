@@ -654,11 +654,13 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
 
   int m_type = (fe == NULL) ? GPS_COMM_INIT : GPS_COMM_NESTED;
 
+  gm_gps_comm_unit U(m_type, fe);
+
   std::list<gm_gps_communication_symbol_info>& LIST
-      = info->get_all_communication_symbols(fe, m_type);
+      = info->get_all_communication_symbols(U);
 
   gm_gps_communication_size_info& SINFO
-      = *(info->find_communication_size_info(fe, m_type));
+      = *(info->find_communication_size_info(U));
 
   Body.NL();
   Body.pushln("// Sending messages");
@@ -719,10 +721,12 @@ void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& 
   else
       comm_type = GPS_COMM_NESTED;
 
+  gm_gps_comm_unit U(comm_type, fe);
 
-  std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(fe, comm_type);
+
+  std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(U);
   //int comm_id = info->find_communication_size_info(fe).id;
-  int comm_id = (info->find_communication_size_info(fe, comm_type))->msg_class->id;
+  int comm_id = (info->find_communication_size_info(U))->msg_class->id;
 
   char temp[1024];
   if (!is_only_comm && !info->is_single_message()) {

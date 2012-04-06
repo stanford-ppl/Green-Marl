@@ -29,23 +29,24 @@ public:
     {
         // iterate over messages and find congruent class
         // add one if not-exist
-        std::list<ast_foreach*>& LOOPS =  b->get_receiver_loops();           
-        std::list<ast_foreach*>::iterator I;
+        std::list<gm_gps_comm_unit>& LOOPS =  b->get_receivers();           
+        std::list<gm_gps_comm_unit>::iterator I;
         for(I=LOOPS.begin(); I!=LOOPS.end(); I++) 
         { 
-            find_congruent_class_per_loop(*I, GPS_COMM_NESTED, b); 
+            find_congruent_class_per_loop(*I, b); 
         }
 
         // special case for prepare
         if (b->get_type() == GM_GPS_BBTYPE_PREPARE1) {
-            find_congruent_class_per_loop(NULL, GPS_COMM_INIT, b);
+            gm_gps_comm_unit U(GPS_COMM_INIT, NULL);
+            find_congruent_class_per_loop(U, b);
         }
         
     }
 
-    void find_congruent_class_per_loop(ast_foreach* fe, int comm_type, gm_gps_basic_block* b) {
+    void find_congruent_class_per_loop(gm_gps_comm_unit& U, gm_gps_basic_block* b) {
             gm_gps_communication_size_info* INFO = 
-                BEINFO->find_communication_size_info(fe, comm_type);
+                BEINFO->find_communication_size_info(U);
 
             gm_gps_congruent_msg_class* s = find_congurent_class(INFO, b);
             if (s == NULL)
