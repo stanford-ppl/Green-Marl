@@ -115,7 +115,12 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         bool ignored_symbol = false;    // is this symbol is local to receiver state only?
         if (is_random_write_target) {
             if (is_id) {
-                if (tg->getSymInfo() != random_write_target)
+                gps_syminfo* syminfo = gps_get_global_syminfo(tg);
+                if ((syminfo!=NULL) && (syminfo->is_scoped_global()))
+                    comm_symbol = false;
+                else if (tg->getSymInfo() == random_write_target)
+                    comm_symbol = false;
+                else
                     comm_symbol = true;
             }
             else {
@@ -127,7 +132,9 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         else if (context == GPS_CONTEXT_VERTEX) {
             if (foreach_depth > 1) {  // Inner loop
                 if (is_id) { 
-                    if (gps_get_global_syminfo(tg)->is_scoped_outer() || tg->getSymInfo() == out_iterator)
+                    assert(tg!=NULL);
+                    gps_syminfo* syminfo = gps_get_global_syminfo(tg);
+                    if (((syminfo!=NULL) && syminfo->is_scoped_outer()) || tg->getSymInfo() == out_iterator)
                         comm_symbol = true;
                     else
                         ignored_symbol = true; // local to the receiver
@@ -151,6 +158,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 
         if (comm_symbol) {
             if (is_random_write_target) {
+                printf("adding r.w comm symbol :%s\n", tg->get_genname());
                 beinfo->add_communication_symbol_random_write(
                         random_write_target_sb, random_write_target, 
                         tg->getSymInfo());
