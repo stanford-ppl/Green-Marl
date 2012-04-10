@@ -18,8 +18,7 @@ enum {
 
 class gm_gps_basic_block {
     public:
-    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type), after_vertex(false),
-    _has_sender(false) {}
+    gm_gps_basic_block(int _id, int _type=GM_GPS_BBTYPE_SEQ): id(_id), type(_type), after_vertex(false) /* ,_has_sender(false)*/ {}
     virtual ~gm_gps_basic_block() {
         std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
         for(I=symbols.begin(); I!=symbols.end();I++)
@@ -82,8 +81,8 @@ class gm_gps_basic_block {
 
     
     bool is_vertex() {return (get_type() == GM_GPS_BBTYPE_BEGIN_VERTEX);}
-    bool has_sender() {return _has_sender;}
-    void set_has_sender(bool b) {_has_sender = b;}
+    //bool has_sender() {return _has_sender;}
+    //void set_has_sender(bool b) {_has_sender = b;}
     bool is_prepare() {return (get_type() == GM_GPS_BBTYPE_PREPARE1) ||
         (get_type() == GM_GPS_BBTYPE_PREPARE2);}
 
@@ -111,7 +110,7 @@ private:
     int id;
     int type;  // GM_GPS_BBTYPE_...
     bool after_vertex;
-    bool _has_sender;
+    //bool _has_sender;
 
     // map of used symbols inside this BB
     std::map<gm_symtab_entry*, gps_syminfo*> symbols;

@@ -4,7 +4,7 @@ ODIR = output
 COMP = ../../bin/gm_comp
 FLAGS = -o=$(ODIR) -t=gps
 
-SRCS = gps1.gm gps2.gm gps3.gm gps4.gm gps5.gm gps6.gm gps7.gm gps8.gm gps9.gm gps10.gm gps11.gm gps12.gm
+SRCS = gps1.gm gps2.gm gps3.gm gps4.gm gps5.gm gps6.gm gps7.gm gps8.gm gps9.gm gps10.gm gps11.gm gps12.gm gps13.gm
 SRCS2 = gps9.gm
 
 OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java)) 

@@ -104,6 +104,7 @@ SRCS2 =\
        gps_syminfo.cc \
        gm_gps_bb_find_reachable.cc\
        gm_gps_java.cc gm_gps_lib.cc\
+	   gm_gps_lib_random_write.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.

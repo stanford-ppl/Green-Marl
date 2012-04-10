@@ -40,7 +40,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             ast_assign * a = (ast_assign*) s;
 
             int context = get_current_context();
-            random_write_target_sb = s->find_info_ptr(GPS_FLAG_SENT_SYMBOL_SB);
+            random_write_target_sb = (ast_sentblock*) s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
 
             // check if random write
             is_random_write_target = (random_write_target_sb != NULL);
@@ -104,17 +104,20 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         int context = get_current_context();
         int used_type = GPS_SYM_USED_AS_RHS;
         bool is_id = e->is_id();
-        int sc_type = is_id: IS_SCALAR : IS_FIELD;
+        int sc_type = is_id? IS_SCALAR : IS_FIELD;
         ast_id* tg = is_id ? e->get_id() : e->get_field()->get_second();
         gm_symtab_entry* drv = is_id ? NULL : e->get_field()->get_first()->getSymInfo();
-        bool ignored_symbol = false;
 
-        // comm_symbol
-        bool comm_symbol = false;
+        //--------------------------------------------------------
+        // 
+        //--------------------------------------------------------
+        bool comm_symbol = false;       // is this symbol used in communication?
+        bool ignored_symbol = false;    // is this symbol is local to receiver state only?
         if (is_random_write_target) {
             if (is_id) {
                 if (tg->getSymInfo() != random_write_target)
                     comm_symbol = true;
+            }
             else {
                 if (drv != random_write_target) {
                     comm_symbol = true;
@@ -122,21 +125,25 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             }
         }
         else if (context == GPS_CONTEXT_VERTEX) {
-            if (foreach_depth > 1) {
+            if (foreach_depth > 1) {  // Inner loop
                 if (is_id) { 
-                    if (gps_get_global_syminfo(tg)->is_scoped_outer() || 
-                        tg->getSymInfo() == outiterator)
+                    if (gps_get_global_syminfo(tg)->is_scoped_outer() || tg->getSymInfo() == out_iterator)
                         comm_symbol = true;
+                    else
+                        ignored_symbol = true; // local to the receiver
                 }
                 else {
-
+                    if (drv == out_iterator)
+                        comm_symbol = true;
+                    else
+                        ignored_symbol = true; // local to the receiver
                 }
             }
         }
-
-
-            }
+        else { // RECEIVER context
+            // do nothing. 
         }
+
 
         if (!ignored_symbol) {
             update_access_information(tg, sc_type, used_type, context);  
@@ -151,50 +158,10 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             else {
                 beinfo->add_communication_symbol_nested(in_loop, tg->getSymInfo());
             }
-            tg->getSymInfo()->add_info_bool(GPS_FLAG_SENT_SYMBOL, true);
-        }
-
-            assert(false);}
-
-        // RHS
-        if (e->is_id()) {
-            i = e->get_id();
-
-            if (i->getSymInfo()->getType()->is_node_iterator())
-            {
-                 // matters only if this is an outer node iterator inside 
-                if ((foreach_depth == 2) && (i->getSymInfo() == out_iterator)) {
-
-                }
-            }
-            else 
-            
-            
-            if (!i->getSymInfo()->getType()->is_node_iterator())
-            {
-                update_access_information(i, IS_SCALAR, GPS_SYM_USED_AS_RHS, context);  
-
-                // check if this symbol should be sent over network
-                if (foreach_depth == 2) {
-                    if (gps_get_global_syminfo(i)->is_scoped_outer()) {
-                        beinfo->add_communication_symbol_nested(in_loop, i->getSymInfo());
-                    }
-                }
-            }
-        } 
-        else if (e->is_field()) {
-            ast_id* prop = e->get_field()->get_second();
-            update_access_information(prop, IS_FIELD, GPS_SYM_USED_AS_RHS, context);
-
-            // check if this symbol should be sent over network
-            if (foreach_depth == 2) {
-                gm_symtab_entry* driver_sym = e->get_field()->get_first()->getSymInfo();
-                if (driver_sym == out_iterator) { 
-                    beinfo->add_communication_symbol_nested(in_loop, prop->getSymInfo());
-                }
-            }
+            tg->getSymInfo()->add_info_bool(GPS_FLAG_COMM_SYMBOL, true);
         }
     }
+
     protected:
 
         int get_current_context() {
@@ -238,9 +205,14 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                     context,
                     r_type);
 
-            printf("Add usage : %s for BB : %d, context: %d\n", 
+            /*
+            printf("Add usage : %s for BB : %d, context: %s\n", 
                     i->get_genname(),
-                    get_curr_BB()->get_id(), context);
+                    get_curr_BB()->get_id(), 
+                    (context == GPS_CONTEXT_MASTER) ? "master" :
+                    (context == GPS_CONTEXT_RECEIVER) ? "receiver" : "vertex"
+                    );
+                    */
         }
 
         gps_syminfo* get_or_create_global_syminfo(ast_id *i, bool is_scalar)

@@ -103,7 +103,6 @@ void gm_gpslib::generate_broadcast_variable_type(
     //---------------------------------------------------
     // Type:  Long, Int, Double, Float, Bool
     //---------------------------------------------------
-     printf("type = %s\n", gm_get_type_string(type_id));
      if (gm_is_node_compatible_type(type_id))
          type_id = GMTYPE_NODE;
 
@@ -710,19 +709,25 @@ static bool is_symbol_defined_in_bb(gm_gps_basic_block* b, gm_symtab_entry *e)
     else return true;
 }
 
-void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block *b, bool is_only_comm)
+void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm)
+{
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
+    int comm_type = (fe == NULL) ? GPS_COMM_INIT : GPS_COMM_NESTED;
+    gm_gps_comm_unit U(comm_type, fe);
+    generate_message_receive_begin(U, Body, b, is_only_comm);
+}
+void gm_gpslib::generate_message_receive_begin(ast_sentblock* sb, gm_symtab_entry* drv, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm)
+{
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
+    int comm_type = GPS_COMM_RANDOM_WRITE;
+    gm_gps_comm_unit U(comm_type, sb, drv);
+    generate_message_receive_begin(U, Body, b, is_only_comm);
+}
+
+void gm_gpslib::generate_message_receive_begin(gm_gps_comm_unit& U, gm_code_writer& Body, gm_gps_basic_block *b, bool is_only_comm)
 {
   gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
-
-  int comm_type;
-  if (fe == NULL) 
-      comm_type = GPS_COMM_INIT;
-  else
-      comm_type = GPS_COMM_NESTED;
-
-  gm_gps_comm_unit U(comm_type, fe);
-
 
   std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(U);
   //int comm_id = info->find_communication_size_info(fe).id;
@@ -762,7 +767,7 @@ void gm_gpslib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& 
   }
 }
 
-void gm_gpslib::generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body, bool is_only_comm)
+void gm_gpslib::generate_message_receive_end(gm_code_writer& Body, bool is_only_comm)
 {
   if (!is_only_comm) {
       Body.pushln("}");
@@ -841,7 +846,7 @@ void gm_gpslib::generate_prepare_bb(
             generate_message_receive_begin(NULL, Body, bb, true);
             sprintf(temp,"%s.%s[i] = %s;", STATE_SHORT_CUT, GPS_REV_NODE_ID, GPS_DUMMY_ID);
             Body.pushln(temp);
-            generate_message_receive_end(NULL, Body, true);
+            generate_message_receive_end(Body, true);
             Body.pushln("i++;");
         Body.pushln("}");
     }

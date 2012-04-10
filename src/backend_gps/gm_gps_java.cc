@@ -35,6 +35,50 @@ const char* gm_gps_gen::get_type_string(ast_typedecl* T, bool is_master)
     return "???";
 }
 
+void gm_gps_gen::generate_sent_block(ast_sentblock* sb, bool need_brace)
+{
+    std::list<ast_sent*> &sents = sb->get_sents();
+    
+    std::list<ast_sent*>::iterator i;
+    if (need_brace) _Body.pushln("{") ;
+    if (sb->has_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB)) 
+    {
+        std::set<void*> S = sb->get_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
+        std::set<void*>::iterator I;
+        for(I=S.begin(); I!=S.end(); I++) 
+        {
+            gm_symtab_entry* sym = (gm_symtab_entry*) *I;
+            get_lib()->generate_message_create_for_random_write(
+                    sb, sym, Body);
+        } 
+        Body.NL();
+    }
+
+    for(i=sents.begin(); i!=sents.end(); i++)
+    {
+        ast_sent* s = *i;
+        generate_sent(s);
+    }
+
+    if (sb->has_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB)) 
+    {
+        Body.NL();
+
+        std::set<void*> S = sb->get_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
+        std::set<void*>::iterator I;
+        for(I=S.begin(); I!=S.end(); I++) 
+        {
+            gm_symtab_entry* sym = (gm_symtab_entry*) *I;
+            get_lib()->generate_message_send_for_random_write(
+                    sb, sym, Body);
+        } 
+    }
+
+    if (need_brace) _Body.pushln("}") ;
+
+
+}
+
 void gm_gps_gen::generate_expr_nil(ast_expr* e)
 {
     get_lib()->generate_expr_nil(e, Body);
@@ -85,7 +129,8 @@ void gm_gps_gen::generate_rhs_id(ast_id* i)
 {
     if (i->getSymInfo()->getType()->is_node_iterator())
     {
-        if (i->getSymInfo()->find_info_bool(GPS_FLAG_SENT_SYMBOL) && !this->is_receiver_generate()) {
+        if (i->getSymInfo()->find_info_bool(GPS_FLAG_COMM_SYMBOL) && 
+            !this->is_receiver_generate()) {
             get_lib()->generate_node_iterator_rhs(i, Body);
         }
         else {
@@ -107,9 +152,21 @@ void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a)
 {
     if (is_master_generate())
     {
+        // [to be done]
         assert(false);
     }
-    else if (a->is_target_scalar()) 
+
+    if (a->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
+    {
+        if (!is_receiver_generate())
+        {
+            // generate random write messaging
+            get_lib()->generate_message_payload_packing_for_random_write(a, Body);
+            return ;
+        }
+    }
+
+    if (a->is_target_scalar()) 
     {
         // check target is global
         {
@@ -228,8 +285,21 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
     // normal assign
     if (is_master_generate()) {
         this->gm_code_generator::generate_sent_assign(a);
+        return;
     }
-    else if (a->is_target_scalar())
+
+    // vertex or receiver generate
+    if (a->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
+    {
+        if (!is_receiver_generate())
+        {
+            // generate random write messaging
+            get_lib()->generate_message_payload_packing_for_random_write(a, Body);
+            return ;
+        }
+    }
+
+    if (a->is_target_scalar())
     {
         ast_id* i = a->get_lhs_scala();
 
@@ -237,7 +307,6 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
             i->getSymInfo()->find_info(TAG_BB_USAGE);
 
         // normal assign
-        //if ((syminfo == NULL) || (!syminfo->is_used_in_multiple_BB()))
         if (!syminfo->is_scoped_global())
         {
             this->gm_code_generator::generate_sent_assign(a);
@@ -246,17 +315,14 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
         else {
             // write to global scalar
 
-            // to be done
-            printf("error: %s\n", i->get_genname());
+            // [TO BE DONE]
+            printf("need to implement: %s\n", i->get_genname());
             assert(false);
         }
     }
     else 
     {
         ast_field* f = a->get_lhs_field(); 
-
-        // temporary
-        //assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
 
         this->gm_code_generator::generate_sent_assign(a);
     }

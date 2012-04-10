@@ -24,6 +24,19 @@ void gm_gps_beinfo::add_communication_unit(gm_gps_comm_unit& C)
 
 }
 
+gm_gps_communication_symbol_info* gm_gps_beinfo::find_communication_symbol_info(gm_gps_comm_unit& C, gm_symtab_entry* sym)
+{
+    assert(comm_symbol_info.find(C) != comm_symbol_info.end());
+    std::list<gm_gps_communication_symbol_info>& sym_info = comm_symbol_info[C];
+    std::list<gm_gps_communication_symbol_info>::iterator I;
+    for(I=sym_info.begin(); I!= sym_info.end();I++)
+    {
+        gm_gps_communication_symbol_info& S = *I;
+        if (S.symbol == sym) return &S; // found
+    }
+
+    return NULL;
+}
 
 // Add a symbol to a communication loop
 void gm_gps_beinfo::add_communication_symbol(gm_gps_comm_unit& C, gm_symtab_entry* sym)
@@ -144,7 +157,6 @@ gm_gps_congruent_msg_class*
         new gm_gps_congruent_msg_class();
     C->id = congruent_msg.size();
     C->sz_info = sz;
-    printf("adding bb %p to class %p\n", bb, C);
     C->add_receiving_basic_block(bb);
 
     congruent_msg.push_back(C);

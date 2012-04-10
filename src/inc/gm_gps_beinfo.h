@@ -46,6 +46,10 @@ public:
         gm_gps_comm_unit U(GPS_COMM_RANDOM_WRITE, sb, drv);
         add_communication_unit(U);
     }
+    
+    gm_gps_communication_symbol_info* find_communication_symbol_info(gm_gps_comm_unit& U, gm_symtab_entry* sym);
+
+
     void add_communication_unit(gm_gps_comm_unit& U); 
 
     void add_communication_symbol_nested(ast_foreach* fe, gm_symtab_entry* sym) {

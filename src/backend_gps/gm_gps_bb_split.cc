@@ -43,7 +43,7 @@ public:
 
             if (gm_is_all_graph_iter_type(fe->get_iter_type())) return true;
 
-            curr->set_has_sender(true);
+            //curr->set_has_sender(true);
    
             gen->add_communication_unit_nested(fe); // adding inner loop
 
@@ -56,10 +56,10 @@ public:
         }
         else if (s->get_nodetype() == AST_ASSIGN)
         {
-            if (s->find_info_ptr(GPS_FLAG_SENT_SYMBOL_SB) != NULL)
+            if (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
             {
                 ast_assign* a = (ast_assign*) s;
-                ast_sentblock* sb = (ast_sentblock*) (s->find_info_ptr(GPS_FLAG_SENT_SYMBOL_SB)); 
+                ast_sentblock* sb = (ast_sentblock*) (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN)); 
                 ast_field* f = a->get_lhs_field();
                 gm_symtab_entry* sym = f->get_first()->getSymInfo();
                 
@@ -118,7 +118,7 @@ gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
     //printf("splitting BB id = %d\n", BB->get_id());
 
     assert(BB->is_vertex());
-    assert(BB->has_sender());
+    //assert(BB->has_sender());
     assert(BB->has_receiver());
     assert(BB->get_num_entries() == 1);
     assert(BB->get_num_exits() == 1);

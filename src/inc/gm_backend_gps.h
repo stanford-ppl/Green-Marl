@@ -72,12 +72,32 @@ class gm_gpslib : public gm_graph_library {
     // caller should delete var_name later
     const char* get_message_field_var_name(int gm_type, int idx);
     virtual void generate_message_send(ast_foreach* fe, gm_code_writer& Body);
+
     virtual void generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm);
-    virtual void generate_message_receive_end(ast_foreach* fe, gm_code_writer& Body, bool is_only_comm);
+    virtual void generate_message_receive_begin(ast_sentblock* sb, gm_symtab_entry* drv, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm);
+    virtual void generate_message_receive_begin(gm_gps_comm_unit& U,gm_code_writer& Body,  gm_gps_basic_block* b, bool is_only_comm);
+
+    virtual void generate_message_receive_end(gm_code_writer& Body, bool is_only_comm);
+
+    // random write
+    virtual void generate_message_create_for_random_write(
+            ast_sentblock* sb, gm_symtab_entry* sym, gm_code_writer& Body);
+    virtual void generate_message_payload_packing_for_random_write(
+            ast_assign* a, gm_code_writer& Body);
+    virtual void generate_message_send_for_random_write(
+        ast_sentblock* sb, gm_symtab_entry* sym, 
+        gm_code_writer& Body) ;
+
+
+
 
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master); 
 
     virtual void generate_expr_nil(ast_expr* e, gm_code_writer& Body);
+    const char* get_random_write_message_name(gm_symtab_entry *sym) {
+        sprintf(str_buf, "_msg_%s", sym->getId()->get_genname());
+        return str_buf;
+    }
 
     // true if node == int false, if node == long
     virtual bool is_node_type_int() {return true;}
@@ -197,6 +217,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual void generate_sent_foreach(ast_foreach *f); 
         virtual void generate_sent_return(ast_return *r);
         virtual void generate_sent_assign(ast_assign *a);
+        virtual void generate_sent_block(ast_sentblock* sb, bool need_brace = true);
 
         void set_master_generate(bool b) {_is_master_gen = b;}
         bool is_master_generate() {return _is_master_gen;} 
@@ -218,8 +239,10 @@ static const char* GPS_FLAG_USE_IN_DEGREE    = "gps_flag_use_in_degree";
 static const char* GPS_NAME_IN_DEGREE_PROP   = "gps_name_in_degree_prop";
 static const int   GPS_PREPARE_STEP1         = 100000;
 static const int   GPS_PREPARE_STEP2         = 100001;
-static const char* GPS_FLAG_SENT_SYMBOL      = "gps_flag_sent_symbol";
-static const char* GPS_FLAG_SENT_SYMBOL_SB   = "gps_flag_sent_symbol_sentblock";
+static const char* GPS_FLAG_COMM_SYMBOL           = "gps_flag_is_comm_symbol";
+static const char* GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN   = "gps_flag_sent_block_for_this_random_write";
+static const char* GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB              = "gps_flag_symbols_for_random_write_in_this_sent_block";
+
 
 
 #endif

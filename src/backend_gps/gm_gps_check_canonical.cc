@@ -327,7 +327,9 @@ public:
                         }
 
                         used.insert(e);
-                        s->add_info_ptr(GPS_FLAG_SENT_SYMBOL_SB, sb);
+                        s->add_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN, sb);
+                        sb->add_info_set_element(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB, e);
+                        
                     }
                 }
             }

@@ -165,6 +165,27 @@ void ast_node::remove_all_info()
     extra.clear();
 }
 
+void ast_node::add_info_set_element(const char* id, void* element)
+{
+    if (find_info(id) == NULL) {
+        ast_extra_info_set* INFO = new ast_extra_info_set();
+        add_info(id, INFO);
+    }
+    std::set<void*> & S = ((ast_extra_info_set*) find_info(id))->get_set();
+    S.insert(element);
+}
+
+bool ast_node::has_info_set(const char* id) {
+    return (find_info(id) != NULL);
+}
+
+std::set<void*>& ast_node::get_info_set(const char* id)
+{
+    ast_extra_info_set* INFO = ((ast_extra_info_set*) find_info(id));
+    assert(INFO != NULL);
+    return INFO->get_set();
+}
+
 //---------------------------------------------------------------------
 // implementing same inferface to ast_symtab_entry
 //---------------------------------------------------------------------

@@ -203,6 +203,10 @@ class ast_node {
         void remove_info(const char* id);
         void remove_all_info();
 
+        void add_info_set_element(const char* id, void* element);
+        bool has_info_set(const char* id);
+        std::set<void*>& get_info_set(const char* id);
+
     protected:
         int line;
         int col;

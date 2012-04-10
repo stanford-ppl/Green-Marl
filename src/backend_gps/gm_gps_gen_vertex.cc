@@ -294,17 +294,17 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
 
         std::list<gm_gps_comm_unit>& R = b->get_receivers();
         std::list<gm_gps_comm_unit>::iterator I;
-        //if (R.size() != 1) {
-            gm_baseindent_reproduce(4);
-        //}
         for(I=R.begin(); I!=R.end(); I++)
         {
             gm_gps_comm_unit U = *I;
             if (U.get_type() == GPS_COMM_NESTED) {
                 ast_foreach* fe = U.fe;
+                assert(fe!=NULL);
 
                 Body.pushln("/*------");
+                Body.pushln("(Nested Loop)");
                 Body.flush();
+                gm_baseindent_reproduce(4);
                 fe->reproduce(0);
                 gm_flush_reproduce(); 
                 Body.pushln("-----*/");
@@ -316,9 +316,36 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
                     generate_sent(fe->get_body());
                 }
 
-                get_lib()->generate_message_receive_end( fe, Body, R.size()==1);
+                get_lib()->generate_message_receive_end(Body, R.size()==1);
             } else {
-                assert(false);
+                ast_sentblock* sb = U.sb;
+                assert(sb!=NULL);
+                Body.pushln("/*------");
+                Body.pushln("(Random Write)");
+                Body.pushln("{");
+                Body.flush();
+                gm_baseindent_reproduce(5);
+                std::list<ast_sent*>& sents = sb->get_sents();
+                std::list<ast_sent*>::iterator I;
+                for(I=sents.begin(); I!=sents.end();I++) {
+                    ast_sent* s = *I;
+                    if (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) == sb)
+                        s->reproduce(0);
+                }
+                gm_flush_reproduce(); 
+                Body.pushln("}");
+                Body.pushln("-----*/");
+                get_lib()->generate_message_receive_begin( sb, U.sym, Body, b, R.size()==1);
+
+                for(I=sents.begin(); I!=sents.end();I++) {
+                    ast_sent* s = *I;
+                    if (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) == sb) {
+                        // implement receiving sentence
+                        generate_sent(s);
+                    }
+                }
+
+                get_lib()->generate_message_receive_end(Body, R.size()==1);
             }
         }
         set_receiver_generate(false);
