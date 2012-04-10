@@ -168,10 +168,12 @@ void gm_gps_opt_insert_temp_property::process(ast_procdef* p)
         //   sym ==> out_iter.temp_prop
         gm_replace_symbol_access_scalar_field(out_loop, sym, out_loop->get_iterator()->getSymInfo(), temp_prop);
 
+       /* 
         printf("target %s inside loop %s ==> %s (temp_name)\n", 
                 I->first->getId()->get_genname(), 
                 I->second->get_iterator()->get_genname(),
                 temp_name);
+                */
 
         delete [] temp_name;
     }

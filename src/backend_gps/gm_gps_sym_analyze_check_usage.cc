@@ -158,7 +158,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 
         if (comm_symbol) {
             if (is_random_write_target) {
-                printf("adding r.w comm symbol :%s\n", tg->get_genname());
+                //printf("adding r.w comm symbol :%s\n", tg->get_genname());
                 beinfo->add_communication_symbol_random_write(
                         random_write_target_sb, random_write_target, 
                         tg->getSymInfo());

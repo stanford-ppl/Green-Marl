@@ -22,7 +22,7 @@ class gm_code_writer
             max_col = MAX_COL;
             file_ptr = 0;
             _buf = new char[MAX_COL*2]; // one line buffer
-            file_buf = new char[8*1024*1024];
+            file_buf = new char[32*1024*1024]; // 32MB. should be enough for a file
         }
         ~gm_code_writer() {delete [] _buf; delete [] file_buf;}
 
@@ -37,7 +37,30 @@ class gm_code_writer
             //fprintf(_out, "%s", _buf);
             //fflush(_out);
 
-            fwrite(file_buf, file_ptr, 1, _out);
+            int i = 0; 
+
+            char _temp_buf[MAX_COL*2];
+            while (i<file_ptr) {
+                int ptr = 0;
+                bool all_white = true;
+                while(true) {
+                    char c = _temp_buf[ptr++] = file_buf[i++]; 
+                    if (!isspace(c)) 
+                    {
+                        all_white = false;
+                    }
+                    if (c == '\n') break;
+                    if (i == file_ptr) break;
+                }
+                if (all_white) {
+                    fprintf(_out, "\n");
+                }
+                else {
+                    fwrite(_temp_buf, ptr,  1, _out);
+                }
+            }
+
+            //fwrite(file_buf, file_ptr, 1, _out);
             col = 0;
             file_ptr = 0;
 

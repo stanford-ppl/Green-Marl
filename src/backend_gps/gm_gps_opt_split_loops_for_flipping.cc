@@ -79,7 +79,7 @@ static void filter_target_loops(
             }
         }
 
-        printf(" loop for %s -> %c \n", in->get_iterator()->get_genname(), is_target?'Y':'N');
+        //printf(" loop for %s -> %c \n", in->get_iterator()->get_genname(), is_target?'Y':'N');
         if (!is_target) continue;
 
         bool meet_if = false;
@@ -119,7 +119,7 @@ static void filter_target_loops(
             current = parent;
         }
         
-        printf(" loop for %s -> %c \n", in->get_iterator()->get_genname(), is_target?'Y':'N');
+        //printf(" loop for %s -> %c \n", in->get_iterator()->get_genname(), is_target?'Y':'N');
         if (!is_target) continue;
         SET.insert(in);
     }
@@ -183,7 +183,7 @@ static void split_the_loop(ast_foreach* in)
 {
     ast_foreach* out = NULL;
 
-    printf("splitting loop for %s\n", in->get_iterator()->get_genname());
+    //printf("splitting loop for %s\n", in->get_iterator()->get_genname());
 
     //----------------------------------------------------------------
     // find the current frame structure

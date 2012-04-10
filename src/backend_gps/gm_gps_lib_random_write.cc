@@ -116,7 +116,7 @@ void gm_gpslib::generate_message_payload_packing_for_random_write(ast_assign *a,
     gm_symtab_entry* sym = a->get_lhs_field()->get_first()->getSymInfo();
 
     // traverse rhs and put values in the message
-    printf("sb:%p, sym:%p\n", sb, sym);
+    //printf("sb:%p, sym:%p\n", sb, sym);
     gps_random_write_rhs_t T (sb, sym, this, Body);
 
     a->get_rhs()->traverse_post(&T);
