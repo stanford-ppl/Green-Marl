@@ -13,9 +13,9 @@ $(BINDIR)/graph_gen: gen.o graph_generate.o  gm_graph.o
 
 $(LIBDIR)/libgmgraph.a: gm_graph.o gm_runtime.o gm_lock.o
 	$(AR) r $@ $^ 
-    
 
-%o:%cc
+
+%.o: %.cc
 	$(CC) $(CFLAGS) -c $<
 
 clean:
