@@ -118,7 +118,7 @@ void gm_gps_gen::do_generate_vertex_class()
     Body.pushln(temp);
     Body.push_indent();
     sprintf(temp,
-            "extends Vertex< %s.VertexData, %s.MessageData > {",
+            "extends NullEdgeVertex< %s.VertexData, %s.MessageData > {",
             proc_name,
             proc_name
             );
