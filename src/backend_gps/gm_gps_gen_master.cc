@@ -17,6 +17,8 @@ void gm_gps_gen::write_headers()
     Body.NL();
 
 }
+
+
 void gm_gps_gen::begin_class()
 {
     ast_procdef* proc = FE.get_current_proc();

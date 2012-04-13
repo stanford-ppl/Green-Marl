@@ -84,6 +84,50 @@ bool gm_gps_gen::do_generate()
     return b;
 }
 
+void gm_gps_gen::do_generate_job_configuration() 
+{
+
+    char temp[1024];
+    ast_procdef* proc = FE.get_current_proc();
+
+    Body.NL();
+    Body.pushln("// job description for the system");
+    Body.pushln("public static class JobConfiguration extends GPSJObConfiguration {");
+    Body.pushln("@Override");
+    Body.pushln("public Class<?> getMasterClass() {");
+    sprintf(temp,"return %sMaster.class;", proc->get_procname()->get_genname());
+    Body.pushln(temp);
+    Body.pushln("}");
+
+    Body.pushln("@Override");
+    Body.pushln("public Class<?> getVertexFactoryClass() {");
+    sprintf(temp,"return %sVertexFactory.class;", proc->get_procname()->get_genname());
+    Body.pushln(temp);
+    Body.pushln("}");
+
+    Body.pushln("@Override");
+    Body.pushln("public Class<?> getVertexValueClass() {");
+    sprintf(temp,"return VertexData.class;");
+    Body.pushln(temp);
+    Body.pushln("}");
+
+    Body.pushln("@Override");
+    Body.pushln("public Class<?> getEdgeValueClass() {");
+    // [XXX]
+    sprintf(temp,"return NullWritable.class;");
+    Body.pushln(temp);
+    Body.pushln("}");
+
+    Body.pushln("@Override");
+    Body.pushln("public Class<?> getMessageValueClass() {");
+    // [XXX]
+    sprintf(temp,"return MessageData.class;");
+    Body.pushln(temp);
+    Body.pushln("}");
+
+    Body.pushln("}");
+
+}
 
 void gm_gps_gen::end_class()
 {
@@ -98,6 +142,9 @@ void gm_gps_gen::generate_proc(ast_procdef* proc)
 
 
     do_generate_vertex();
+
+    do_generate_job_configuration();
+
     end_class();
 }
 
