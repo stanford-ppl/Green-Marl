@@ -139,7 +139,7 @@ void gm_gps_gen::do_generate_vertex_class()
     Body.pushln(temp);
     Body.push_indent();
     sprintf(temp,
-            "extends VertexFactory< %s.VertexData, %s.MessageData > {",
+            "extends NullEdgeVertexFactory< %s.VertexData, %s.MessageData > {",
             proc_name,
             proc_name
             );
@@ -147,7 +147,7 @@ void gm_gps_gen::do_generate_vertex_class()
     Body.pop_indent();
     Body.pushln("@Override");
     sprintf(temp,
-            "public Vertex< %s.VertexData, %s.MessageData > newInstance(CommandLine line) {",
+            "public NullEdgeVertex< %s.VertexData, %s.MessageData > newInstance(CommandLine line) {",
             proc_name,
             proc_name
             );
