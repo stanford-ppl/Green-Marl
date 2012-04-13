@@ -1,0 +1,110 @@
+
+
+--------------------------------------------------------------
+1. Implement new function in the library
+
+First you should implement the new function in the backend libraries.
+In our example in the $(top)/apps/output_cpp/gm_graph/inc/gm_set.h file.
+
+    void complement(gm_sized_set<T>& other)
+    {
+	//do something
+    }
+
+--------------------------------------------------------------
+2. Add function to the Green-Marl language
+
+The next step is to add the function and its signature to the language.
+To do so, open the $(top)/src/inc/gm_builtin.h file and add a new value to the gm_method_id_t enum to represent the new function.
+
+    static enum {
+
+   	...	//some declarations
+	
+	GM_BLTIN_SET_ADD,           
+	GM_BLTIN_SET_REMOVE,
+	GM_BLTIN_SET_HAS,
+	GM_BLTIN_SET_ADD_BACK,           
+	GM_BLTIN_SET_REMOVE_BACK,           
+	GM_BLTIN_SET_PEEK,
+	GM_BLTIN_SET_PEEK_BACK,
+	GM_BLTIN_SET_COMPLEMENT,	//the new declaration for the complement function
+	
+	...	//more declarations
+
+    GM_BLTIN_END
+} gm_method_id_t;
+
+
+Now add the function signature to the existing signatures below and map it to the value you declared above.
+The syntax is sourcetype:name:return type:number of arguments:list of argument types.
+
+    const gm_builtin_desc_t GM_builtins[] = {
+
+	..	// some declarations
+
+    	// Set:
+	{"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,         ""},
+	{"N_S:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,      ""},
+	{"N_S:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,         ""},
+	{"N_S:Complement:Void:1:N_S", GM_BLTIN_SET_COMPLEMENT,""},	// the new signature
+
+	..	// etc
+
+    );
+
+---------------------------------------------------------------
+3. Map function to backend implementation
+
+To map the Green Marl language feature to the implementation of the particular backend.
+For C++ open the $(top)/src/backend_cpp/gm_cpplib_gen.cc file. Within the gm_cpplib::generate_expr_builtin
+function, you have to find where the functions of your source type are handeled and add a line that handles 
+the enum (compare step 2) of your new function. 'func_name' has to be the name of the function you implemented 
+in the library in step 1.
+
+As we implemented a function for Node_Set we have to add the line here:
+
+    void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
+    {
+	...
+
+    	case GMTYPE_NSET:
+   	    switch(method_id) {
+    	    	case GM_BLTIN_SET_HAS:      func_name = "is_in";  break;
+            	case GM_BLTIN_SET_REMOVE:   func_name = "remove"; break;
+            	case GM_BLTIN_SET_ADD:      func_name = "add";    break;
+	    	case GM_BLTIN_SET_COMPLEMENT:	func_name = "complement"; break;
+	    	default: assert(false);
+            }
+        break;
+
+	...
+
+    }
+
+//Todo: Where to change it for GPS?
+
+
+---------------------------------------------------------------
+4. Todo: typechecking and r/w analysis
+
+
+---------------------------------------------------------------
+5. Rebuild the compiler and the libraries
+
+Finally we have to rebuild the compiler and the backend library to make the new language features usable.
+
+    cd $(top)/src
+    make clean
+    make	//build the compiler
+
+    cd $(top)/apps
+    make clean
+    make lib	//build the libraries
+
+
+---------------------------------------------------------------
+6. Add syntax highlighting in Vim (Optional)
+
+To get syntax highlighting in Vim for the new features, add the function name to the list of keywords in the 
+$(top)/etc/vim/syntax/greenmarl.vim file and copy it to your ~/.vim/syntax/ folder.
