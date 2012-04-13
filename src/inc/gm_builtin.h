@@ -45,6 +45,10 @@ static enum {
     GM_BLTIN_SET_REMOVE_BACK,           
     GM_BLTIN_SET_PEEK,
     GM_BLTIN_SET_PEEK_BACK,
+    GM_BLTIN_SET_UNION,
+    GM_BLTIN_SET_INTERSECT,
+    GM_BLTIN_SET_COMPLEMENT,
+    GM_BLTIN_SET_SUBSET,
 
     GM_BLTIN_END
 } gm_method_id_t;
@@ -79,6 +83,10 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,         ""},
     {"N_S:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,      ""},
     {"N_S:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,         ""},
+    {"N_S:Union:Void:1:N_S",	GM_BLTIN_SET_UNION,	  ""},
+    {"N_S:Intersect:Void:1:N_S", GM_BLTIN_SET_INTERSECT,  ""},
+    {"N_S:Complement:Void:1:N_S", GM_BLTIN_SET_COMPLEMENT,""},
+    {"N_S:IsSubsetOf:Bool:1:N_S", GM_BLTIN_SET_SUBSET,	  ""},
 
     // Order:
     {"N_O:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
