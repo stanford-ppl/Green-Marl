@@ -14,6 +14,7 @@
 #include "gm_misc.h"
 #include "gm_error.h"
 #include "gm_frontend.h"
+#include "gm_builtin.h"
 
 static bool merge_for_if_else( gm_rwinfo_map& Target, gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool is_reduce);
 
@@ -415,6 +416,8 @@ bool gm_rw_analysis::apply_nop(ast_nop *n)
     return true;
 }
 
+class gm_builtin_def;
+
 bool gm_rw_analysis::apply_call(ast_call* c)
 {
     assert(c->is_builtin_call());
@@ -427,7 +430,18 @@ bool gm_rw_analysis::apply_call(ast_call* c)
 
     traverse_expr_for_readset_adding(e, R);
 
-    return true;
+    ast_expr_builtin* builtin_expr = (ast_expr_builtin*) e;
+    gm_builtin_def* def = builtin_expr->get_builtin_def();
+   
+ 
+    bool is_okay = true;
+    if(def->find_info_bool("GM_BLTIN_INFO_IS_MUTATING")) {
+	gm_rwinfo* new_entry = gm_rwinfo::new_scala_inst(builtin_expr->get_driver());
+	gm_symtab_entry* sym = builtin_expr->get_driver()->getSymInfo();
+	is_okay = gm_add_rwinfo_to_set(W, sym, new_entry, false);
+    }
+
+    return is_okay;
 }
 //-----------------------------------------------------------------------------
 // AST_ASSIGN
