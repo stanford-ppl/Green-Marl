@@ -234,18 +234,18 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 extern gm_gps_gen GPS_BE;
 
 // string used in code generator
+DEF_STRING(GPS_FLAG_USE_REVERSE_EDGE);
+DEF_STRING(GPS_FLAG_USE_IN_DEGREE); 
+DEF_STRING(GPS_NAME_IN_DEGREE_PROP); 
+static const int   GPS_PREPARE_STEP1         = 100000;
+static const int   GPS_PREPARE_STEP2         = 100001;
+DEF_STRING(GPS_FLAG_COMM_SYMBOL);
+DEF_STRING(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
+DEF_STRING(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
+
 static const char* GPS_RET_VALUE = "_ret_value";
 static const char* GPS_REV_NODE_ID = "_revNodeId";
 static const char* GPS_DUMMY_ID = "_remoteNodeId";
-static const char* GPS_FLAG_USE_REVERSE_EDGE = "gps_flag_use_reverse_edge";
-static const char* GPS_FLAG_USE_IN_DEGREE    = "gps_flag_use_in_degree";
-static const char* GPS_NAME_IN_DEGREE_PROP   = "gps_name_in_degree_prop";
-static const int   GPS_PREPARE_STEP1         = 100000;
-static const int   GPS_PREPARE_STEP2         = 100001;
-static const char* GPS_FLAG_COMM_SYMBOL           = "gps_flag_is_comm_symbol";
-static const char* GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN   = "gps_flag_sent_block_for_this_random_write";
-static const char* GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB              = "gps_flag_symbols_for_random_write_in_this_sent_block";
-
 
 
 #endif
