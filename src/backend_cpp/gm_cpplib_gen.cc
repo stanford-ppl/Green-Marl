@@ -235,6 +235,10 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                 case GM_BLTIN_SET_HAS:      func_name = "is_in";  break;
                 case GM_BLTIN_SET_REMOVE:   func_name = "remove"; break;
                 case GM_BLTIN_SET_ADD:      func_name = "add";    break;
+		case GM_BLTIN_SET_UNION:    func_name = "union_"; break;
+		case GM_BLTIN_SET_COMPLEMENT:	func_name = "complement";	break;
+		case GM_BLTIN_SET_INTERSECT:	func_name = "intersect";	break;
+		case GM_BLTIN_SET_SUBSET:	func_name = "is_subset";	break;
                 default: assert(false);
             }
             break;

@@ -17,7 +17,7 @@ syn keyword GMKeyword InNbrs OutNbrs Nbrs Nodes Edges CommonNbrs Nbr_Edges
 syn keyword GMKeyword Items INF +INF -INF
 syn keyword GMBuiltin NumNbrs NumOutNbrs NumInNbrs NumNodes NumEdges Degree InDegree OutDegree
 syn keyword GMBuiltin Log Rand Pow Exp Uniform
-syn keyword GMBuiltin PushBack PopBack PushFront PopFront Has Add Remove
+syn keyword GMBuiltin PushBack PopBack PushFront PopFront Has Add Remove Union Intersect Complement IsSubsetOf
 syn keyword GMBuiltin FromNode ToNode ToEdge IsNbrFrom
 syn keyword GMKeyword InBFS UpNbrs DownNbrs From InDFS InReverse InPost
 syn keyword GMKeyword Sum Product Max Min Count All Exist Avg
