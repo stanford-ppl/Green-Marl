@@ -249,6 +249,7 @@ bool gm_check_conf_t::apply(ast_sent* s)
         // [TODO] consideration for DFS
 
         ast_bfs* bfs = (ast_bfs*) s;
+        if (bfs->is_sequential()) return true;
 
         //------------------------------------
         // reconstruct read-set filter (WHY?)
