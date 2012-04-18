@@ -4,12 +4,22 @@
 #include <list>
 #include <map>
 
-#define AUX_INFO(X,Y)                   TO_STR(X)":"Y
+#define DEF_INTEGER(X, Y)		static const int X = Y	//TODO Should me defined in gm_misc.h
+#define STR(X) #X
+//#define AUX_INFO(X,Y)                   TO_STR(X)":"Y
+#define AUX_INFO(X,Y)			TO_STR(X)":"STR(Y)
+
+
+
+DEF_INTEGER(GM_BLTIN_MUTATE_GROW, 1);
+DEF_INTEGER(GM_BLTIN_MUTATE_NONE, 0);
+DEF_INTEGER(GM_BLTIN_MUTATE_SHRINK, -1);
 
 DEF_STRING(GM_BLTIN_INFO_USE_REVERSE);
 DEF_STRING(GM_BLTIN_INFO_CHECK_NBR);
 DEF_STRING(GM_BLTIN_INFO_NEED_FROM);
-DEF_STRING(GM_BLTIN_INFO_IS_MUTATING);
+DEF_STRING(GM_BLTIN_INFO_IS_MUTATING);	//TODO deprecated
+DEF_STRING(GM_BLTIN_INFO_MUTATING);
 
 //-----------------------------------------------------
 // for easy extension of compiler
@@ -81,32 +91,32 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"Edge:ToNode:Node:0",          GM_BLTIN_EDGE_TO ,     ""},
 
     // Set:
-    {"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_S:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
+    {"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_S:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
     {"N_S:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,	""},
-    {"N_S:Union:Void:1:N_S",	GM_BLTIN_SET_UNION,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_S:Intersect:Void:1:N_S", GM_BLTIN_SET_INTERSECT,	AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_S:Complement:Void:1:N_S", GM_BLTIN_SET_COMPLEMENT,	AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
+    {"N_S:Union:Void:1:N_S",	GM_BLTIN_SET_UNION,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_S:Intersect:Void:1:N_S", GM_BLTIN_SET_INTERSECT,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_S:Complement:Void:1:N_S", GM_BLTIN_SET_COMPLEMENT,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
     {"N_S:IsSubsetOf:Bool:1:N_S", GM_BLTIN_SET_SUBSET,	""},
 
     // Order:
-    {"N_O:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"*Push",                      GM_BLTIN_SET_ADD_BACK,	AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_O:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_O:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK,	AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_O:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"*Pop",                       GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
+    {"N_O:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"*Push",                      GM_BLTIN_SET_ADD_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_O:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_O:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_O:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"*Pop",                       GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
     {"N_O:Has:Bool:1:Node",      GM_BLTIN_SET_HAS,	""},
     //{"NodeO:Front:Node:0",         GM_BLTIN_SET_PEEK,         ""},
     //{"NodeO:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,    ""},
 
     // Seq:
-    {"N_Q:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"*Push",                      GM_BLTIN_SET_ADD_BACK,	AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_Q:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_Q:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK,	AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"N_Q:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
-    {"*Pop",                       GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_IS_MUTATING, "true")},
+    {"N_Q:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"*Push",                      GM_BLTIN_SET_ADD_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_Q:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_Q:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_Q:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"*Pop",                       GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
     //{"NodeQ:Front:Node:0",         GM_BLTIN_SET_PEEK,        ""},
     //{"NodeQ:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,   ""},
 
