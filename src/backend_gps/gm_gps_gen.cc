@@ -113,8 +113,11 @@ void gm_gps_gen::do_generate_job_configuration()
 
     Body.pushln("@Override");
     Body.pushln("public Class<?> getEdgeValueClass() {");
-    // [XXX]
-    sprintf(temp,"return NullWritable.class;");
+    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        sprintf(temp,"return EdgeData.class;");
+    } else {
+        sprintf(temp,"return NullWritable.class;");
+    }
     Body.pushln(temp);
     Body.pushln("}");
 

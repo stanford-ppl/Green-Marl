@@ -10,6 +10,7 @@
 //-------------------------------------------
 GM_COMPILE_STEP(gm_gps_opt_analyze_symbol_scope,  "Analyze Symbol Scope Information")
 GM_COMPILE_STEP(gm_gps_opt_check_reverse_edges,   "Check use of reverse edges")
+GM_COMPILE_STEP(gm_gps_opt_check_edge_value,      "Check use of edge values")
 GM_COMPILE_STEP(gm_gps_opt_check_canonical,       "Check GPS canonical")
 GM_COMPILE_STEP(gm_gps_opt_create_ebb,            "Create ExtendedBasicBlocks")
 GM_COMPILE_STEP(gm_gps_opt_split_comm_ebb,        "Split communicatining EBBs")

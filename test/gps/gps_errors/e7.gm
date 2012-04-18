@@ -4,7 +4,7 @@ Proc e7(G:Graph, A: N_P<Int>(G)) : Int
     Int z=0;
 
     // Inner loop cannot be repeated
-
+    // --> This is not error anymore
     Foreach (n: G.Nodes) { 
         Int x = 5;
         While (x > 0) {

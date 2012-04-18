@@ -107,6 +107,7 @@ public:
         return true;
     }
 
+    // random edge read is not allowed.
     virtual bool apply(ast_expr* e)
     {
         if (e->is_field()) {
@@ -127,3 +128,13 @@ private:
     int foreach_depth;
     bool _error;
 };
+
+void gm_gps_opt_check_edge_value::process(ast_procdef* proc)
+{
+    gps_check_edge_value_t T;
+
+    proc->traverse_both(&T);
+
+    set_okay (!T.is_error());
+    return;
+}

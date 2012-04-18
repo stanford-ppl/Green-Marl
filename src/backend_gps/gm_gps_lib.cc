@@ -277,12 +277,13 @@ static void genReadByte(const char* name, int gm_type, int offset, gm_code_write
 
 void gm_gpslib::generate_vertex_prop_class_details(
             std::set<gm_symtab_entry* >& prop,
-            gm_code_writer& Body)
+            gm_code_writer& Body, bool is_edge_prop)
 {
     char temp[1024];
     int total = 
-        ((gm_gps_beinfo*)FE.get_current_backend_info())->
-            get_total_property_size();
+        is_edge_prop ? 
+        ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_edge_property_size():
+        ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_node_property_size();
 
     Body.pushln("@Override");
     Body.push("public int numBytes() {return ");
@@ -497,6 +498,8 @@ static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer&
     MESSAGE_PER_TYPE_LOOP_END() 
     if (!info->is_single_message())
         Body.pushln("return 1; ");
+    else if (info->is_empty_message())
+        Body.pushln("return 0; ");
     Body.pushln("}");
 }
 
@@ -575,6 +578,8 @@ static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm
     MESSAGE_PER_TYPE_LOOP_END() 
     if (!info->is_single_message())
         Body.pushln("return 1;");
+    else if (info->is_empty_message())
+        Body.pushln("return 0;");
     Body.pushln("}");
 }
 
@@ -610,6 +615,8 @@ static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm
     MESSAGE_PER_TYPE_LOOP_END() 
     if (!info->is_single_message())
         Body.pushln("return 1;");
+    else if (info->is_empty_message())
+        Body.pushln("return 0;");
     Body.pushln("}");
 }
 

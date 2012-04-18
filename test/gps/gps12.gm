@@ -1,0 +1,12 @@
+
+Proc gps12(G: Graph, A,B:N_P<Int>(G))
+{
+    Int z = 3;
+    Foreach(n: G.Nodes) {
+        Foreach(t: n.Nbrs) {
+            t.A += n.B + z;
+        }
+    }
+}
+
+
