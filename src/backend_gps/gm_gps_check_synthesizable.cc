@@ -152,6 +152,7 @@ public:
             case GM_BLTIN_GRAPH_NUM_NODES:
             case GM_BLTIN_NODE_DEGREE:
             case GM_BLTIN_NODE_IN_DEGREE:
+            case GM_BLTIN_NODE_TO_EDGE:
                 break;
 
             case GM_BLTIN_TOP_LOG:           // log function

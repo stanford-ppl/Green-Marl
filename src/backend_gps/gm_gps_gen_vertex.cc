@@ -400,8 +400,6 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
         assert(s->get_nodetype() == AST_FOREACH);
         ast_foreach * fe = (ast_foreach*) s;
         ast_sent* body = fe->get_body();
-
-        // 2. generate sents
         generate_sent(body);
     }
 
@@ -410,8 +408,11 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
 
 void gm_gps_gen::generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent)
 {
+    if (sym->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
+        return; // skip edge iteration
     
-    assert(sym->getType()->is_primitive() || sym->getType()->is_node_compatible());
+    assert(sym->getType()->is_primitive() 
+           || sym->getType()->is_node_compatible());
 
     char temp[1024];
     sprintf(temp, "%s %s",

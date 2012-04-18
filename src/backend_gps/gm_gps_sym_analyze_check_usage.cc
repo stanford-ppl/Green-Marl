@@ -140,7 +140,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                         ignored_symbol = true; // local to the receiver
                 }
                 else {
-                    if (drv == out_iterator)
+                    if ((drv == out_iterator) || (drv->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)))
                         comm_symbol = true;
                     else
                         ignored_symbol = true; // local to the receiver

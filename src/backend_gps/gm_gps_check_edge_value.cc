@@ -7,7 +7,6 @@
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
 
-DEF_STRING(GM_GPS_EDGE_DEFINED_INNER);
 
 //------------------------------------------------------------------------------------
 // Check things related to the edge property
@@ -39,6 +38,7 @@ public:
         set_for_sent(true);
         set_for_expr(true);
         inner_iter = NULL;
+        inner_loop = NULL;
         _error = false;
 
     }
@@ -51,7 +51,8 @@ public:
         // Mark, if an edge variable && current depth == 2
         if (e->getType()->is_edge() && (foreach_depth == 2))
         {
-            e->add_info_bool(GM_GPS_EDGE_DEFINED_INNER, true);
+            e->add_info_bool(GPS_FLAG_EDGE_DEFINED_INNER, true);
+            inner_loop->add_info_bool(GPS_FLAG_EDGE_DEFINING_INNER, true);
         }
     }
 
@@ -62,6 +63,7 @@ public:
             if (foreach_depth == 2) {
                 ast_foreach* fe = (ast_foreach*)s; 
                 inner_iter = fe->get_iterator()->getSymInfo();
+                inner_loop = fe;
             }
         }
         else if (s->get_nodetype() == AST_ASSIGN) {
@@ -78,7 +80,7 @@ public:
             else { // lhs scala
                 gm_symtab_entry* sym = a->get_lhs_scala()->getSymInfo();
                 if (sym->getType()->is_edge()) {
-                    if (sym->find_info_bool(GM_GPS_EDGE_DEFINED_INNER)) {
+                    if (sym->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) {
                         // check rhs is to - edge
                         bool error = true;
 
@@ -87,17 +89,17 @@ public:
                             ast_expr_builtin* b_rhs = (ast_expr_builtin*) rhs;
                             gm_symtab_entry *drv = b_rhs->get_driver()->getSymInfo();
                             int f_id = b_rhs->get_builtin_def()->get_method_id();
-                            if ((drv == inner_iter) && (f_id == GM_BLTIN_EDGE_TO))
                             {
                                 error = false;
+                                a->add_info_bool(GPS_FLAG_EDGE_DEFINING_WRITE, true);
                             }
                         }
 
                         if (error) {
                             set_error(error);
                             gm_backend_error(GM_ERROR_GPS_EDGE_WRITE, 
-                                a->get_lhs_field()->get_line(),
-                                a->get_lhs_field()->get_col());
+                                a->get_lhs_scala()->get_line(),
+                                a->get_lhs_scala()->get_col());
                         }
                     }
                 }
@@ -112,7 +114,6 @@ public:
     {
         if (e->is_field()) {
             ast_field* f = e->get_field(); 
-            
         }
     }
 
@@ -125,6 +126,7 @@ public:
     }
 private:
     gm_symtab_entry* inner_iter;
+    ast_foreach* inner_loop;
     int foreach_depth;
     bool _error;
 };

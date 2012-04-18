@@ -58,9 +58,12 @@ class gm_gpslib : public gm_graph_library {
     virtual void generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body);
 
     virtual void generate_vertex_prop_access_lhs(ast_id *id, gm_code_writer& Body);
+    virtual void generate_vertex_prop_access_lhs_edge(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_rhs(ast_id *id, gm_code_writer& Body);
+    virtual void generate_vertex_prop_access_rhs_edge(ast_id *id, gm_code_writer& Body);
     
     virtual void generate_vertex_prop_access_remote_lhs(ast_id *id, gm_code_writer& Body);
+    virtual void generate_vertex_prop_access_remote_lhs_edge(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_remote_rhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_prepare(gm_code_writer& Body);
 
@@ -240,6 +243,9 @@ DEF_STRING(GPS_FLAG_COMM_SYMBOL);
 DEF_STRING(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
 DEF_STRING(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
 DEF_STRING(GPS_FLAG_USE_EDGE_PROP);
+DEF_STRING(GPS_FLAG_EDGE_DEFINED_INNER);   // edge which is used inside in a inner llop
+DEF_STRING(GPS_FLAG_EDGE_DEFINING_WRITE);
+DEF_STRING(GPS_FLAG_EDGE_DEFINING_INNER); // inner loops that contains edges
 
 static const int   GPS_PREPARE_STEP1         = 100000;
 static const int   GPS_PREPARE_STEP2         = 100001;
