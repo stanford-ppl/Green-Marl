@@ -92,6 +92,8 @@ bool gm_is_mergeable_loops(ast_foreach* P, ast_foreach* Q)
     gm_rwinfo_map& P_W = P_SET->write_set;
     gm_rwinfo_map& Q_R = Q_SET->read_set;
     gm_rwinfo_map& Q_W = Q_SET->write_set;
+    gm_rwinfo_map& P_M = P_SET->mutate_set;
+    gm_rwinfo_map& Q_M = Q_SET->mutate_set;
 
     gm_rwinfo_sets* P_BODY_SET = get_rwinfo_sets(P->get_body());
     gm_rwinfo_map& P_D = P_BODY_SET->reduce_set;
@@ -113,6 +115,25 @@ bool gm_is_mergeable_loops(ast_foreach* P, ast_foreach* Q)
     // anti dependency check. (P.W -> Q.W)
     //---------------------------------------------------
     b = intersect_check_for_merge(P_W, Q_W, P_D, true);
+    if (b) return false;
+
+    //---------------------------------------------------
+    // mutate dependency checks.
+    //---------------------------------------------------
+    // 1. write mutate check  (P.M -> Q.W) || (P.W -> Q.M)
+    b = intersect_check_for_merge(P_M, Q_W, P_D, false);
+    if (b) return false;
+    b = intersect_check_for_merge(P_W, Q_M, P_D, false);
+    if (b) return false;
+
+    // 2. read mutate check   (P.M -> Q.R) || (P.R -> Q.M)
+    b = intersect_check_for_merge(P_M, Q_R, P_D, false);
+    if (b) return false;
+    b = intersect_check_for_merge(P_R, Q_M, P_D, false);
+    if (b) return false;
+
+    // 3. mutate mutate check (P.M -> Q.M)
+    b = intersect_check_for_merge(P_M, Q_M, P_D, false);
     if (b) return false;
 
     return true;

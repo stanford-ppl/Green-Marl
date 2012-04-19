@@ -1,0 +1,12 @@
+
+Proc foo(G: Graph)
+{
+	Node_Set(G) Set;
+	Foreach(n : G.Nodes) {
+		Set.Add(n);
+	}
+	Int x = 0;
+	Foreach(n : G.Nodes) {
+		If(Set.Has(n)) x += 1;
+	}
+}
