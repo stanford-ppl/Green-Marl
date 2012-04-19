@@ -1,0 +1,14 @@
+
+
+Proc P(G: Graph)
+{
+	Node_Set(G) Set;
+	Foreach(n : G.Nodes) {
+		Set.Add(n);
+		Int size = 0;
+		Foreach(x : Set.Items) {	//warning - set is mutatet and read at the same time
+			size += 1;
+		}
+	}
+}
+

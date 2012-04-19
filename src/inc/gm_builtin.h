@@ -4,21 +4,15 @@
 #include <list>
 #include <map>
 
-#define DEF_INTEGER(X, Y)		static const int X = Y	//TODO Should me defined in gm_misc.h
-#define STR(X) #X
-//#define AUX_INFO(X,Y)                   TO_STR(X)":"Y
+#define STR(X)                          #X
 #define AUX_INFO(X,Y)			TO_STR(X)":"STR(Y)
 
-
-
-DEF_INTEGER(GM_BLTIN_MUTATE_GROW, 1);
-DEF_INTEGER(GM_BLTIN_MUTATE_NONE, 0);
-DEF_INTEGER(GM_BLTIN_MUTATE_SHRINK, -1);
+#define GM_BLTIN_MUTATE_GROW 1
+#define GM_BLTIN_MUTATE_SHRINK 2
 
 DEF_STRING(GM_BLTIN_INFO_USE_REVERSE);
 DEF_STRING(GM_BLTIN_INFO_CHECK_NBR);
 DEF_STRING(GM_BLTIN_INFO_NEED_FROM);
-DEF_STRING(GM_BLTIN_INFO_IS_MUTATING);	//TODO deprecated
 DEF_STRING(GM_BLTIN_INFO_MUTATING);
 
 //-----------------------------------------------------
@@ -182,5 +176,6 @@ class gm_builtin_manager {
 };
 
 #undef AUX_INFO
+#undef STR
 
 extern gm_builtin_manager BUILT_IN;

@@ -28,6 +28,9 @@ enum {
     WW_CONFLICT,   // Write-Write conflict  (warning)
     RD_CONFLICT,   // Read-Reduce 
     WD_CONFLICT,   // Write-Reduce
+    RM_CONFLICT,   // Read-Mutate           (warning)
+    WM_CONFLICT,   // Write-Mutate          
+    MM_CONFLICT,   // Mutate-Mutate         (warning)
 };
 
 //--------------------------------------------
@@ -137,16 +140,18 @@ static bool check_if_conflict(gm_rwinfo_list* l1, gm_rwinfo_list* l2, gm_rwinfo*
             int lev2 = check_leveled_access(e2);
             if ((lev1 >= 0) && (lev2 >= 0) && (lev1 != lev2)) // different level
                 continue;
-
-            if ((conf_type == RW_CONFLICT) || (conf_type == WW_CONFLICT)) {
+	    
+            if ((conf_type == RW_CONFLICT) || (conf_type == WW_CONFLICT) || (conf_type == RM_CONFLICT) || (conf_type == WM_CONFLICT)) {
                 if ((e1->driver != NULL) && (e1->driver == e2->driver)) continue;
             }
             if (conf_type == RD_CONFLICT) {
                 if (e2->reduce_op == GMREDUCE_DEFER) continue;
             }
+	    if (conf_type == MM_CONFLICT) {
+	        if (e1->mutate_direction == e2->mutate_direction) continue;
+	    }
 
             //printf("lev1 = %d, lev2 = %d\n", lev1, lev2);
-
             return true;  // found conflict!
         }
     }
@@ -168,6 +173,9 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
         case WW_CONFLICT: error_code = GM_ERROR_WRITE_WRITE_CONFLICT; is_warning = true; break;
         case RD_CONFLICT: error_code = GM_ERROR_READ_REDUCE_CONFLICT; is_warning = false; break;
         case WD_CONFLICT: error_code = GM_ERROR_WRITE_REDUCE_CONFLICT; is_warning = false; break;
+        case RM_CONFLICT: error_code = GM_ERROR_READ_MUTATE_CONFLICT; is_warning = true; break;
+        case WM_CONFLICT: error_code = GM_ERROR_WRITE_MUTATE_CONFLICT; is_warning = false; break;
+        case MM_CONFLICT: error_code = GM_ERROR_MUTATE_MUTATE_CONFLICT; is_warning = true; break;
         default: assert(false);
     }
 
@@ -176,8 +184,9 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
         gm_symtab_entry* sym1 = i1->first;
         gm_rwinfo_list* list1 = i1->second;
         gm_rwinfo* e1;
-        if (!sym1->getType()->is_property()) continue; // todo 'scalar' check
 
+	//Damn o.O -.-	if (!sym1->getType()->is_property()) continue; // todo 'scalar' check
+	  
         for(i2 = S2.begin(); i2 != S2.end(); i2++) {
             gm_symtab_entry* sym2 = i2->first;
             gm_rwinfo_list* list2 = i2->second;
@@ -238,11 +247,15 @@ bool gm_check_conf_t::apply(ast_sent* s)
         gm_rwinfo_map& R = get_rwinfo_sets(fe)->read_set; // body + filter
         gm_rwinfo_map& W = get_rwinfo_sets(body)->write_set;   // 
         gm_rwinfo_map& D = get_rwinfo_sets(body)->reduce_set;  // 
-
+	gm_rwinfo_map& M = get_rwinfo_sets(body)->mutate_set;
+   
         check_rw_conf_error(R, W, RW_CONFLICT, Report); // R-W (warning)
         check_rw_conf_error(W, W, WW_CONFLICT, Report); // W-W (warning)
+	check_rw_conf_error(R, M, RM_CONFLICT, Report); // R-M (warning)
+	check_rw_conf_error(M, M, MM_CONFLICT, Report); // M-M (warning)
         is_okay = is_okay && check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
         is_okay = is_okay && check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
+	is_okay = is_okay && check_rw_conf_error(W, M, WM_CONFLICT, Report); // W-M
 
     } else if (s->get_nodetype() == AST_BFS) {
 
@@ -286,13 +299,17 @@ bool gm_check_conf_t::apply(ast_sent* s)
             gm_rwinfo_map& R = get_rwinfo_sets(body)->read_set;    // 
             gm_rwinfo_map& W = get_rwinfo_sets(body)->write_set;   // 
             gm_rwinfo_map& D = get_rwinfo_sets(body)->reduce_set;  // 
+	    gm_rwinfo_map& M = get_rwinfo_sets(body)->mutate_set;
 
             check_rw_conf_error(R, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(R_filter, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(W, W, WW_CONFLICT, Report); // W-W (warning)
+	    check_rw_conf_error(R, M, RM_CONFLICT, Report); // R-M (warning)
+	    check_rw_conf_error(M, M, MM_CONFLICT, Report); // M-M (warning)
             is_okay = is_okay && check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
             is_okay = is_okay && check_rw_conf_error(R_filter, D, RD_CONFLICT, Report); // R-D
             is_okay = is_okay && check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
+	    is_okay = is_okay && check_rw_conf_error(W, M, WM_CONFLICT, Report); // W-M
         }
 
         //---------------------------------------------
@@ -305,13 +322,17 @@ bool gm_check_conf_t::apply(ast_sent* s)
             gm_rwinfo_map& R = get_rwinfo_sets(body)->read_set;    // 
             gm_rwinfo_map& W = get_rwinfo_sets(body)->write_set;   // 
             gm_rwinfo_map& D = get_rwinfo_sets(body)->reduce_set;  // 
+	    gm_rwinfo_map& M = get_rwinfo_sets(body)->mutate_set;
 
             check_rw_conf_error(R, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(R_filter, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(W, W, WW_CONFLICT, Report); // W-W (warning)
+	    check_rw_conf_error(R, M, RM_CONFLICT, Report); // R-M (warning)
+	    check_rw_conf_error(M, M, MM_CONFLICT, Report); // M-M (warning)
             is_okay = is_okay && check_rw_conf_error(R, D, RD_CONFLICT, Report); // R-D
             is_okay = is_okay && check_rw_conf_error(R_filter, D, RD_CONFLICT, Report); // R-D
             is_okay = is_okay && check_rw_conf_error(W, D, WD_CONFLICT, Report); // W-D
+	    is_okay = is_okay && check_rw_conf_error(W, M, WM_CONFLICT, Report); // W-M
         }
     }
 
@@ -331,13 +352,20 @@ void gm_fe_rw_analysis_check2::process(ast_procdef* p)
 //==================================================================
 // For depenendcy detection
 //==================================================================
-bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2)
+bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool regard_mutate_direction)
 {
     gm_rwinfo_map::iterator i;
-    for(i=S1.begin();i!=S1.end();i++) {
+    for(i = S1.begin(); i != S1.end(); i++) {
         gm_symtab_entry* e = i->first;
-        if (S2.find(e) != S2.end())
-            return true;
+        if (S2.find(e) != S2.end()) {
+	  if(regard_mutate_direction) {
+	    if(i->first->find_info_int("GM_BLTIN_INFO_MUTATING") != S2.find(e)->first->find_info_int("GM_BLTIN_INFO_MUTATING")) {
+	      return true;
+	    }
+	  } else {
+	    return true;
+	  }
+	}
 
         // access through driver while driver is modified
         /*
@@ -360,6 +388,7 @@ bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2)
 
     return false;
 }
+
 bool gm_has_dependency(ast_sent* P, ast_sent *Q)
 {
     assert(P->get_nodetype()!=AST_VARDECL);  // temporary hack
@@ -373,16 +402,25 @@ bool gm_has_dependency(ast_sent* P, ast_sent *Q)
 
     gm_rwinfo_map& P_R = P_SET->read_set;
     gm_rwinfo_map& P_W = P_SET->write_set;
+    gm_rwinfo_map& P_M = P_SET->mutate_set;
     gm_rwinfo_map& Q_R = Q_SET->read_set;
     gm_rwinfo_map& Q_W = Q_SET->write_set;
-
+    gm_rwinfo_map& Q_M = Q_SET->mutate_set;
 
     // true dependency
-    if (gm_does_intersect(P_W, Q_R)) return true;
+    if (gm_does_intersect(P_W, Q_R, false)) return true;
     // anti dependency
-    if (gm_does_intersect(P_R, Q_W)) return true;
+    if (gm_does_intersect(P_R, Q_W, false)) return true;
     // output dep
-    if (gm_does_intersect(P_W, Q_W)) return true;
+    if (gm_does_intersect(P_W, Q_W, false)) return true;
+    // write & muate => dependency
+    if (gm_does_intersect(P_W, Q_M, false)) return true;
+    if (gm_does_intersect(P_M, Q_W, false)) return true;
+    // read & mutate => dependency
+    if (gm_does_intersect(P_R, Q_M, false)) return true;
+    if (gm_does_intersect(P_M, Q_R, false)) return true;
+    // mutate & mutate => it depends on mutate_direction
+    if (gm_does_intersect(P_M, Q_M, true)) return true;
 
     return false;
 }

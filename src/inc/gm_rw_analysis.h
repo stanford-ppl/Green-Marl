@@ -116,8 +116,7 @@ public:
     // one exxample of  access instance 
     // i.e. location in the code (for error message generation)
     ast_id* location; 
-
-    //TODO 
+ 
     int mutate_direction;
 
     gm_rwinfo() {
@@ -127,8 +126,8 @@ public:
         always = true;
         reduce_op = GMREDUCE_NULL;
         access_range = GM_RANGE_SINGLE; // default is single access           
-    }
-    
+	mutate_direction = -1;
+    }  
 
     static gm_rwinfo* new_scala_inst(ast_id* loc, 
             int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL,

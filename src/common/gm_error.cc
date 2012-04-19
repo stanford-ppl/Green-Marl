@@ -201,6 +201,15 @@ void  gm_conf_error(int errno, gm_symtab_entry* target, ast_id* ev1, ast_id* ev2
             printf("Property %s may have write-reduce conflict: write at line:%d, reduce at line:%d\n", 
                    name,ev1->get_line(), ev2->get_line());
             break;
+        case GM_ERROR_READ_MUTATE_CONFLICT:
+	    printf("Property %s may have read-mutate conflict: read at line:%d, mutate at line:%d\n", name, ev1->get_line(), ev2->get_line());
+            break;
+        case GM_ERROR_WRITE_MUTATE_CONFLICT:
+	    printf("Property %s may have write-mutate conflict: write at line:%d, mutate at line:%d\n", name, ev1->get_line(), ev2->get_line());
+            break;
+        case GM_ERROR_MUTATE_MUTATE_CONFLICT:
+	    printf("Property %s may have mutate-mutate conflict: mutate at line:%d, mutate at line:%d\n", name, ev1->get_line(), ev2->get_line());
+            break;
         case GM_ERROR_UNKNOWN:
         default:
             assert(false);

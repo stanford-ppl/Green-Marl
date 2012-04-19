@@ -127,6 +127,7 @@ static bool is_same_entry(gm_rwinfo* old, gm_rwinfo* neo)
     if (old->bound_symbol != neo->bound_symbol) return false;
     if (old->is_supplement != neo->is_supplement) return false;
     if (old->org_lhs != neo->org_lhs) return false;
+    if (old->mutate_direction != neo->mutate_direction) return false;
     return true;
 }
 // true if neo is wider
@@ -204,7 +205,7 @@ bool gm_add_rwinfo_to_set(
     }
     else 
     {  // check entries already exists
-       gm_rwinfo_list *l = i->second;
+      gm_rwinfo_list *l = i->second;
        gm_rwinfo_list::iterator ii;
        assert(l!=NULL);
        for(ii=l->begin(); ii!=l->end(); ii++) 
@@ -437,10 +438,9 @@ bool gm_rw_analysis::apply_call(ast_call* c)
     bool is_okay = true;
     int mutate_direction = def->find_info_int("GM_BLTIN_INFO_MUTATING");
     if(mutate_direction == GM_BLTIN_MUTATE_GROW || mutate_direction == GM_BLTIN_MUTATE_SHRINK) {
-	printf("Mutating: %d\n", mutate_direction);
-        gm_rwinfo* new_entry = gm_rwinfo::new_scala_inst(builtin_expr->get_driver());
-        gm_symtab_entry* sym = builtin_expr->get_driver()->getSymInfo();
-	is_okay = gm_add_rwinfo_to_set(M, sym, new_entry, false);
+      gm_rwinfo* new_entry = gm_rwinfo::new_builtin_inst(builtin_expr->get_driver(), mutate_direction);
+      gm_symtab_entry* sym = builtin_expr->get_driver()->getSymInfo();
+      is_okay = gm_add_rwinfo_to_set(M, sym, new_entry, false);
     }
     return is_okay;
 }

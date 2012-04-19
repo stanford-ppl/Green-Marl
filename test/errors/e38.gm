@@ -1,0 +1,10 @@
+
+Proc P(G: Graph)
+{
+	Node_Set(G) Set;
+	Foreach(n : G.Nodes) {
+		Set.Add(n);
+		Set.Remove(n);	//warning - set is mutatet in two different directions at the same time
+	}
+}
+
