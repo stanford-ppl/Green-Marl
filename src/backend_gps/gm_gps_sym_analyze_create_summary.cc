@@ -14,8 +14,9 @@ class gps_flat_symbol_t : public gm_apply
 public:
     gps_flat_symbol_t(
         std::set<gm_symtab_entry* >& s,
-        std::set<gm_symtab_entry* >& p)
-        : scalar(s), prop(p)
+        std::set<gm_symtab_entry* >& p,
+        std::set<gm_symtab_entry* >& e)
+        : scalar(s), prop(p), edge_prop(e)
     {
         set_for_symtab(true);
     }
@@ -42,6 +43,17 @@ public:
         }
         else
         {
+            if (sym->getType()->is_node_property()) {
+                prop.insert(sym);
+            }
+            else if (sym->getType()->is_edge_property()) {
+                edge_prop.insert(sym);
+            }
+            else {
+                assert(false);
+            }
+
+            /*
             if (syminfo->is_argument())
             {
                 prop.insert(sym);
@@ -52,6 +64,7 @@ public:
                 //assert(false);
                 prop.insert(sym);
             }
+            */
         }
 
         return true;
@@ -59,8 +72,25 @@ public:
 private:
     std::set<gm_symtab_entry* >& scalar;
     std::set<gm_symtab_entry* >& prop;
+    std::set<gm_symtab_entry* >& edge_prop;
 };
 
+
+static int comp_start_byte(std::set<gm_symtab_entry*>& prop)
+{
+    int byte_begin = 0;
+    std::set<gm_symtab_entry* >::iterator I;
+    for(I=prop.begin(); I!=prop.end(); I++)
+    {
+        gm_symtab_entry * sym = *I; 
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+
+        int size = GPS_BE.get_lib()->get_type_size(sym->getType()->get_target_type());
+        syminfo->set_start_byte(byte_begin);
+        byte_begin += size;
+    }
+    return byte_begin;
+}
 
 void gm_gps_opt_analyze_symbol_summary::process(ast_procdef* p)
 {
@@ -85,26 +115,16 @@ void gm_gps_opt_analyze_symbol_summary::process(ast_procdef* p)
     gm_gps_beinfo * beinfo = 
         (gm_gps_beinfo *) FE.get_backend_info(p);
 
-    std::set<gm_symtab_entry* >& prop =
-            beinfo->get_prop_symbols();
-    gps_flat_symbol_t T( beinfo->get_scalar_symbols(), prop); 
+    std::set<gm_symtab_entry* >& prop = beinfo->get_node_prop_symbols();
+    std::set<gm_symtab_entry* >& e_prop = beinfo->get_edge_prop_symbols();
+    gps_flat_symbol_t T( beinfo->get_scalar_symbols(), prop, e_prop); 
     p->traverse(&T, false, true);
 
     //-----------------------------------------------------------
     // Enlist property symbols (todo: opt ordering for cacheline ?)
     //-----------------------------------------------------------
-    int byte_begin = 0;
-    std::set<gm_symtab_entry* >::iterator I;
-    for(I=prop.begin(); I!=prop.end(); I++)
-    {
-        gm_symtab_entry * sym = *I; 
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
-
-        int size = GPS_BE.get_lib()->get_type_size(sym->getType()->get_target_type());
-        syminfo->set_start_byte(byte_begin);
-        byte_begin += size;
-    }
-    beinfo->set_total_property_size(byte_begin);
+    beinfo->set_total_node_property_size(comp_start_byte(prop));
+    beinfo->set_total_edge_property_size(comp_start_byte(e_prop));
 
     beinfo->compute_max_communication_size();
     

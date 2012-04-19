@@ -14,34 +14,44 @@ void gm_gps_gen::do_generate_vertex()
 {
     set_master_generate(false);
     do_generate_vertex_class();
-    do_generate_vertex_property_class();
+    do_generate_vertex_property_class(false);
+
+    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP))
+        do_generate_vertex_property_class(true);
+
     do_generate_message_class();
 }
 
 
-void gm_gps_gen::do_generate_vertex_property_class()
+void gm_gps_gen::do_generate_vertex_property_class(bool is_edge_prop)
 {
     Body.pushln("//----------------------------------------------");
-    Body.pushln("// Vertex Property Class");
+    if (is_edge_prop)
+        Body.pushln("// Edge Property Class");
+    else
+        Body.pushln("// Vertex Property Class");
     Body.pushln("//----------------------------------------------");
    char temp[1024];
    ast_procdef* proc = FE.get_current_proc(); assert(proc != NULL);
    sprintf(temp, 
-           "public static class VertexData extends MinaWritable {"
-           //,proc->get_procname()->get_genname()
+           "public static class %s extends MinaWritable {",
+           is_edge_prop ? "EdgeData" : "VertexData"
            ); 
   Body.pushln(temp);
 
   // list out property
-  Body.pushln("// node properties");
+  Body.pushln("// properties");
   gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
-  std::set<gm_symtab_entry*>& prop = info->get_prop_symbols();
+  std::set<gm_symtab_entry*>& prop = 
+      is_edge_prop ?
+      info->get_edge_prop_symbols() :
+      info->get_node_prop_symbols();
   std::set<gm_symtab_entry* >::iterator I;
   for(I=prop.begin(); I!=prop.end(); I++)
   {
     gm_symtab_entry* sym = *I;
-    gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+    //gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
     sprintf(temp, "%s %s;",
         get_type_string(sym->getType()->get_target_type(), 
             is_master_generate()),
@@ -56,7 +66,7 @@ void gm_gps_gen::do_generate_vertex_property_class()
   }
 
   Body.NL();
-  get_lib()->generate_vertex_prop_class_details(prop, Body);
+  get_lib()->generate_vertex_prop_class_details(prop, Body, is_edge_prop);
 
   Body.pushln("} // end of vertex-data"); // end of class
   Body.NL();
@@ -109,19 +119,27 @@ void gm_gps_gen::do_generate_message_class_default_constructor()
 void gm_gps_gen::do_generate_vertex_class()
 {
     char temp[1024];
-    const char* proc_name = FE.get_current_proc()
-        ->get_procname()->get_genname();
+    const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
     Body.pushln("//----------------------------------------------");
     Body.pushln("// Main Vertex Class");
     Body.pushln("//----------------------------------------------");
     sprintf(temp,"public static class %sVertex", proc_name);
     Body.pushln(temp);
     Body.push_indent();
-    sprintf(temp,
+    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        sprintf(temp,
+            "extends Vertex< %s.VertexData, %s.EdgeData, %s.MessageData > {",
+            proc_name,
+            proc_name,
+            proc_name);
+    }
+    else {
+        sprintf(temp,
             "extends NullEdgeVertex< %s.VertexData, %s.MessageData > {",
             proc_name,
             proc_name
             );
+    }
     Body.pushln(temp);
     Body.pop_indent();
 
@@ -138,19 +156,27 @@ void gm_gps_gen::do_generate_vertex_class()
     sprintf(temp,"public static class %sVertexFactory", proc_name);
     Body.pushln(temp);
     Body.push_indent();
-    sprintf(temp,
+    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        sprintf(temp,
+            "extends VertexFactory< %s.VertexData, %s.EdgeData, %s.MessageData > {",
+            proc_name, proc_name, proc_name);
+    } else {
+        sprintf(temp,
             "extends NullEdgeVertexFactory< %s.VertexData, %s.MessageData > {",
-            proc_name,
-            proc_name
-            );
+            proc_name, proc_name);
+    }
     Body.pushln(temp);
     Body.pop_indent();
     Body.pushln("@Override");
-    sprintf(temp,
+    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        sprintf(temp,
+            "public Vertex< %s.VertexData, %s.EdgeData, %s.MessageData > newInstance(CommandLine line) {",
+            proc_name, proc_name, proc_name);
+    } else {
+        sprintf(temp,
             "public NullEdgeVertex< %s.VertexData, %s.MessageData > newInstance(CommandLine line) {",
-            proc_name,
-            proc_name
-            );
+            proc_name, proc_name);
+    }
     Body.pushln(temp);
     sprintf(temp,"return new %sVertex(line);", proc_name);
     Body.pushln(temp);
@@ -199,6 +225,7 @@ void gm_gps_gen::do_generate_vertex_states()
         (gm_gps_beinfo *) FE.get_current_backend_info();
     std::list<gm_gps_basic_block*>& bb_blocks = info->get_basic_blocks();
     std::list<gm_gps_basic_block*>::iterator I;
+    int cnt = 0;
     for(I = bb_blocks.begin(); I!= bb_blocks.end(); I++)
     {
         gm_gps_basic_block* b = *I;
@@ -206,8 +233,13 @@ void gm_gps_gen::do_generate_vertex_states()
         int id = b->get_id();
         sprintf(temp,"case %d: _vertex_state_%d(_msgs); break;", id, id);
         Body.pushln(temp);
+        cnt++;
+    }
+    if (cnt == 0) {
+        Body.pushln("default: break;");
     }
     Body.pushln("}");
+
 
     Body.pushln("}");
 
@@ -368,8 +400,6 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
         assert(s->get_nodetype() == AST_FOREACH);
         ast_foreach * fe = (ast_foreach*) s;
         ast_sent* body = fe->get_body();
-
-        // 2. generate sents
         generate_sent(body);
     }
 
@@ -378,8 +408,11 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
 
 void gm_gps_gen::generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent)
 {
+    if (sym->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
+        return; // skip edge iteration
     
-    assert(sym->getType()->is_primitive() || sym->getType()->is_node_compatible());
+    assert(sym->getType()->is_primitive() 
+           || sym->getType()->is_node_compatible());
 
     char temp[1024];
     sprintf(temp, "%s %s",

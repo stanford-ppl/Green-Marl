@@ -114,14 +114,26 @@ void gm_gps_gen::generate_lhs_field(ast_field* f)
         {
             get_lib()->generate_vertex_prop_access_remote_lhs(prop, Body);
         }
+        else if (f->get_first()->getTypeInfo()->is_edge())
+        {
+            get_lib()->generate_vertex_prop_access_remote_lhs_edge(prop, Body);
+        }
         else 
         {
+            assert(f->get_first()->getTypeInfo()->is_node_compatible());
             get_lib()->generate_vertex_prop_access_lhs(prop, Body);
         }
     }
     else {// vertex generate;
         //assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
-        get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+        if (f->get_first()->getTypeInfo()->is_edge())
+        {
+            get_lib()->generate_vertex_prop_access_lhs_edge(prop, Body);
+        }
+        else {
+            assert(f->get_first()->getTypeInfo()->is_node_compatible());
+            get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+        }
     }
 }
 
@@ -288,6 +300,10 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
         return;
     }
 
+    if (a->find_info_bool(GPS_FLAG_EDGE_DEFINING_WRITE)) {
+        return;  // skip edge-defining writes
+    } 
+
     // vertex or receiver generate
     if (a->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
     {
@@ -344,7 +360,6 @@ void gm_gps_gen::generate_sent_foreach(ast_foreach* fe)
     assert(gm_is_iteration_on_out_neighbors(fe->get_iter_type()) ||
            gm_is_iteration_on_in_neighbors(fe->get_iter_type()) ||
            gm_is_iteration_on_down_neighbors(fe->get_iter_type())
-           
            );
 
     get_lib()->generate_message_send(fe, Body);

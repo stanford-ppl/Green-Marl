@@ -56,8 +56,9 @@ void gm_gps_gen::init_gen_steps()
     std::list<gm_compile_step*>& L = get_gen_steps();
     // no more change of AST at this point
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_scope));     // check where symbols are defined
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_canonical));          // check if canonical form
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_reverse_edges));       // check if canonical form
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));       // check if canonical form
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_canonical));          // check if canonical form
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));               // create (Extended) basic block
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));           // split communicating every BB into two
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_usage));     // check how symbols are used
@@ -113,8 +114,11 @@ void gm_gps_gen::do_generate_job_configuration()
 
     Body.pushln("@Override");
     Body.pushln("public Class<?> getEdgeValueClass() {");
-    // [XXX]
-    sprintf(temp,"return NullWritable.class;");
+    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        sprintf(temp,"return EdgeData.class;");
+    } else {
+        sprintf(temp,"return NullWritable.class;");
+    }
     Body.pushln(temp);
     Body.pushln("}");
 

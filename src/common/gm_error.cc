@@ -240,6 +240,15 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
     switch(errno) {
+        case GM_ERROR_GPS_EDGE_WRITE:
+            printf("Write to edge property is not supported (yet). ");
+            break;
+        case GM_ERROR_GPS_EDGE_INIT:
+            printf("Edge variable should be initialize only to out_nbr.ToEdge(). ");
+            break;
+        case GM_ERROR_GPS_EDGE_READ_RANDOM:
+            printf("Random reading of edge values are not supported. ");
+            break;
         case GM_ERROR_GPS_RANDOM_NODE_WRITE_CONDITIONAL:
             printf("Random node write cannot happen inside a conditional block\n");
             break;

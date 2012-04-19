@@ -51,16 +51,19 @@ class gm_gpslib : public gm_graph_library {
     virtual void generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Body);
 
     virtual void generate_vertex_prop_class_details( 
-            std::set<gm_symtab_entry* >& props, gm_code_writer& Body);
+            std::set<gm_symtab_entry* >& props, gm_code_writer& Body, bool is_edge_prop);
     virtual void generate_receive_state_vertex( const char* state_var, gm_code_writer& Body);
 
     virtual void generate_message_fields_define(int gm_type, int count, gm_code_writer& Body);
     virtual void generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body);
 
     virtual void generate_vertex_prop_access_lhs(ast_id *id, gm_code_writer& Body);
+    virtual void generate_vertex_prop_access_lhs_edge(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_rhs(ast_id *id, gm_code_writer& Body);
+    virtual void generate_vertex_prop_access_rhs_edge(ast_id *id, gm_code_writer& Body);
     
     virtual void generate_vertex_prop_access_remote_lhs(ast_id *id, gm_code_writer& Body);
+    virtual void generate_vertex_prop_access_remote_lhs_edge(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_remote_rhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_prepare(gm_code_writer& Body);
 
@@ -171,7 +174,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 
 
         void do_generate_vertex();
-        void do_generate_vertex_property_class();
+        void do_generate_vertex_property_class(bool is_edge_prop);
         void do_generate_vertex_class();
 	void do_generate_vertex_constructor();
 	void do_generate_vertex_get_initial_state_method();
@@ -234,18 +237,22 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 extern gm_gps_gen GPS_BE;
 
 // string used in code generator
+DEF_STRING(GPS_FLAG_USE_REVERSE_EDGE);
+DEF_STRING(GPS_FLAG_USE_IN_DEGREE); 
+DEF_STRING(GPS_FLAG_COMM_SYMBOL);
+DEF_STRING(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
+DEF_STRING(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
+DEF_STRING(GPS_FLAG_USE_EDGE_PROP);
+DEF_STRING(GPS_FLAG_EDGE_DEFINED_INNER);   // edge which is used inside in a inner llop
+DEF_STRING(GPS_FLAG_EDGE_DEFINING_WRITE);
+DEF_STRING(GPS_FLAG_EDGE_DEFINING_INNER); // inner loops that contains edges
+
+static const int   GPS_PREPARE_STEP1         = 100000;
+static const int   GPS_PREPARE_STEP2         = 100001;
 static const char* GPS_RET_VALUE = "_ret_value";
 static const char* GPS_REV_NODE_ID = "_revNodeId";
 static const char* GPS_DUMMY_ID = "_remoteNodeId";
-static const char* GPS_FLAG_USE_REVERSE_EDGE = "gps_flag_use_reverse_edge";
-static const char* GPS_FLAG_USE_IN_DEGREE    = "gps_flag_use_in_degree";
-static const char* GPS_NAME_IN_DEGREE_PROP   = "gps_name_in_degree_prop";
-static const int   GPS_PREPARE_STEP1         = 100000;
-static const int   GPS_PREPARE_STEP2         = 100001;
-static const char* GPS_FLAG_COMM_SYMBOL           = "gps_flag_is_comm_symbol";
-static const char* GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN   = "gps_flag_sent_block_for_this_random_write";
-static const char* GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB              = "gps_flag_symbols_for_random_write_in_this_sent_block";
-
+static const char* GPS_NAME_IN_DEGREE_PROP = "_in_degree";
 
 
 #endif

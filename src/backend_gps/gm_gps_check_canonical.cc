@@ -236,9 +236,12 @@ public:
            // prevent random-read
            ast_field* f = e->get_field();
            if (!gm_is_node_iter_type(f->get_first()->getTypeSummary())) {
-                gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_READ,
-                f->get_line(), f->get_col(), "");
-                _error = true;
+                // edge descriptor
+                if (!f->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) {
+                    gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_READ,
+                    f->get_line(), f->get_col(), "");
+                    _error = true;
+                }
            }
        }
 

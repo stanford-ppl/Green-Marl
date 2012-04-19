@@ -18,7 +18,8 @@ public:
         body = d;
         comm_id = 0;
         basicblock_id = 0;
-        total_prop_size = 0;
+        total_node_prop_size = 0;
+        total_edge_prop_size = 0;
         rand_used = false;
     }
     virtual ~gm_gps_beinfo() {
@@ -118,8 +119,10 @@ public:
 
 
 public:
-    void set_total_property_size(int s) {total_prop_size = s;}
-    int  get_total_property_size() {return total_prop_size;}
+    void set_total_node_property_size(int s) {total_node_prop_size = s;}
+    void set_total_edge_property_size(int s) {total_edge_prop_size = s;}
+    int  get_total_node_property_size() {    return total_node_prop_size;}
+    int  get_total_edge_property_size()      {return total_edge_prop_size;}
 
 
 public:
@@ -127,12 +130,14 @@ public:
     int issue_basicblock_id() {return basicblock_id++;}
 
     std::set<gm_symtab_entry* >& get_scalar_symbols() {return scalar;}
-    std::set<gm_symtab_entry* >& get_prop_symbols() {return prop;}
+    std::set<gm_symtab_entry* >& get_node_prop_symbols() {return node_prop;}
+    std::set<gm_symtab_entry* >& get_edge_prop_symbols() {return edge_prop;}
 
     gm_gps_congruent_msg_class* add_congruent_message_class(
             gm_gps_communication_size_info* sz, gm_gps_basic_block* bb);
     std::list<gm_gps_congruent_msg_class*>& get_congruent_message_classes()  {return congruent_msg;}
     bool is_single_message() {return congruent_msg.size() < 2;}
+    bool is_empty_message() {return congruent_msg.size() == 0;}
 
 private:
     ast_procdef* body;
@@ -142,8 +147,10 @@ private:
                                                 // (created by gm_gps_bb_find_reachable.cc)
 
     std::set<gm_symtab_entry* > scalar;         // list of persistent master symbols
-    std::set<gm_symtab_entry* > prop;           // list of persistent property symbols
-    int total_prop_size;
+    std::set<gm_symtab_entry* > node_prop;      // list of persistent property symbols
+    std::set<gm_symtab_entry* > edge_prop;      // list of persistent property symbols
+    int total_node_prop_size;
+    int total_edge_prop_size;
 
     // map of inner loops (possible communications) and
     // symbols used for the communication in the loop.

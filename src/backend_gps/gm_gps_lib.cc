@@ -277,12 +277,13 @@ static void genReadByte(const char* name, int gm_type, int offset, gm_code_write
 
 void gm_gpslib::generate_vertex_prop_class_details(
             std::set<gm_symtab_entry* >& prop,
-            gm_code_writer& Body)
+            gm_code_writer& Body, bool is_edge_prop)
 {
     char temp[1024];
     int total = 
-        ((gm_gps_beinfo*)FE.get_current_backend_info())->
-            get_total_property_size();
+        is_edge_prop ? 
+        ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_edge_property_size():
+        ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_node_property_size();
 
     Body.pushln("@Override");
     Body.push("public int numBytes() {return ");
@@ -373,7 +374,19 @@ void gm_gpslib::generate_vertex_prop_access_lhs(ast_id* id, gm_code_writer& Body
     sprintf(temp,"%s.%s", STATE_SHORT_CUT, id->get_genname());
     Body.push(temp);
 }
+void gm_gpslib::generate_vertex_prop_access_lhs_edge(ast_id* id, gm_code_writer& Body)
+{
+    char temp[1024];
+    sprintf(temp,"_outEdge.getValue().%s", id->get_genname());
+    Body.push(temp);
+}
 void gm_gpslib::generate_vertex_prop_access_remote_lhs(ast_id* id, gm_code_writer& Body)
+{
+    char temp[1024];
+    sprintf(temp,"_remote_%s", id->get_genname());
+    Body.push(temp);
+}
+void gm_gpslib::generate_vertex_prop_access_remote_lhs_edge(ast_id* id, gm_code_writer& Body)
 {
     char temp[1024];
     sprintf(temp,"_remote_%s", id->get_genname());
@@ -382,6 +395,10 @@ void gm_gpslib::generate_vertex_prop_access_remote_lhs(ast_id* id, gm_code_write
 void gm_gpslib::generate_vertex_prop_access_rhs(ast_id* id, gm_code_writer& Body)
 {
     generate_vertex_prop_access_lhs(id, Body);
+}
+void gm_gpslib::generate_vertex_prop_access_rhs_edge(ast_id* id, gm_code_writer& Body)
+{
+    generate_vertex_prop_access_lhs_edge(id, Body);
 }
 
 void gm_gpslib::generate_vertex_prop_access_remote_rhs(ast_id* id, gm_code_writer& Body)
@@ -497,6 +514,8 @@ static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer&
     MESSAGE_PER_TYPE_LOOP_END() 
     if (!info->is_single_message())
         Body.pushln("return 1; ");
+    else if (info->is_empty_message())
+        Body.pushln("return 0; ");
     Body.pushln("}");
 }
 
@@ -575,6 +594,8 @@ static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm
     MESSAGE_PER_TYPE_LOOP_END() 
     if (!info->is_single_message())
         Body.pushln("return 1;");
+    else if (info->is_empty_message())
+        Body.pushln("return 0;");
     Body.pushln("}");
 }
 
@@ -610,6 +631,8 @@ static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm
     MESSAGE_PER_TYPE_LOOP_END() 
     if (!info->is_single_message())
         Body.pushln("return 1;");
+    else if (info->is_empty_message())
+        Body.pushln("return 0;");
     Body.pushln("}");
 }
 
@@ -661,13 +684,23 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   gm_gps_communication_size_info& SINFO
       = *(info->find_communication_size_info(U));
 
-  Body.NL();
-  Body.pushln("// Sending messages");
-  Body.push("MessageData _msg = new MessageData(");
-  // todo: should this always be a byte?
-  sprintf(str_buf,"(byte) %d",SINFO.msg_class->id);
-  Body.push(str_buf);
-  Body.pushln(");");
+  bool need_separate_message = fe->find_info_bool(GPS_FLAG_EDGE_DEFINING_INNER);
+
+  if (!need_separate_message) {
+    Body.pushln("// Sending messages to all neighbors");
+  }
+  else {
+    assert ((fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)); 
+    Body.pushln("for (Edge<EdgeData> _outEdge : getOutgoingEdges()) {");
+    Body.pushln("// Sending messages to each neighbor");
+  }
+
+    Body.push("MessageData _msg = new MessageData(");
+
+    // todo: should this always be a byte?
+    sprintf(str_buf,"(byte) %d",SINFO.msg_class->id);
+    Body.push(str_buf);
+    Body.pushln(");");
 
   std::list<gm_gps_communication_symbol_info>::iterator I;
   for(I=LIST.begin(); I!=LIST.end(); I++)
@@ -679,9 +712,13 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     Body.push(fname); delete [] fname;
     Body.push(" = ");
     gm_symtab_entry * e = SYM.symbol;
-    if (e->getType()->is_property())
+    if (e->getType()->is_node_property())
     {
         generate_vertex_prop_access_rhs(e->getId(), Body);
+    }
+    else if (e->getType()->is_edge_property())
+    {
+        generate_vertex_prop_access_rhs_edge(e->getId(), Body);
     }
     else {
         get_main()->generate_rhs_id(e->getId());
@@ -689,17 +726,21 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     Body.pushln(";");
   }
 
-  if ((fe == NULL) || (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)) {
-    Body.pushln("sendMessages(getNeighborIds(), _msg);");
-  }
-  else {
-    char temp[1024];
-    sprintf(temp, "sendMessages(%s.%s, _msg);",
+  if (!need_separate_message) {
+    if ((fe == NULL) || (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)) {
+        Body.pushln("sendMessages(getNeighborIds(), _msg);");
+    }
+    else {
+        char temp[1024];
+        sprintf(temp, "sendMessages(%s.%s, _msg);",
             STATE_SHORT_CUT,
             GPS_REV_NODE_ID);
-    Body.pushln(temp);
+        Body.pushln(temp);
+    }
+  } else {
+      Body.pushln("sendMessage(_outEdge.getNeighborId(), _msg);");
+      Body.pushln("}");
   }
-  Body.NL();
 }
 
 static bool is_symbol_defined_in_bb(gm_gps_basic_block* b, gm_symtab_entry *e)

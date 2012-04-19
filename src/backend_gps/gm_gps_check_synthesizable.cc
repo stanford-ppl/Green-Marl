@@ -15,7 +15,6 @@
 //  1. BFS (yet) /DFS is not supported.
 //      
 //  2. Collections are not avaialble (yet). e.g. NodeSet(G) 
-//     Edge-Properties are not avaiable, either. 
 //
 //  3. There should be one and only one Graph (as in argument)
 //
@@ -28,7 +27,7 @@
 class gps_check_synth_t : public gm_apply 
 {
 public:
-    gps_check_synth_t()  {
+    gps_check_synth_t(ast_procdef* p)  {
         _error = false;
         set_for_symtab(true);
         set_for_sent(true);
@@ -36,6 +35,7 @@ public:
 
         foreach_depth = 0;
         _graph_defined = false;
+        proc = p;
     }
     bool is_error() {return _error;}
 
@@ -87,12 +87,15 @@ public:
         }
 
         else if (gm_is_edge_property_type(type_id)) {
+            /*
             gm_backend_error(
                     GM_ERROR_GPS_UNSUPPORTED_COLLECTION,
                     e->getId()->get_line(),
                     e->getId()->get_col(),
                     e->getId()->get_orgname());
             _error = true;
+            */
+            proc->add_info_bool(GPS_FLAG_USE_EDGE_PROP, true);
         }
 
         else if (gm_is_graph_type(type_id))
@@ -117,6 +120,7 @@ private:
     bool _error; 
     bool _graph_defined;
     int foreach_depth;
+    ast_procdef* proc;
 };
 
 class gps_check_synth2_t : public gm_apply 
@@ -148,6 +152,7 @@ public:
             case GM_BLTIN_GRAPH_NUM_NODES:
             case GM_BLTIN_NODE_DEGREE:
             case GM_BLTIN_NODE_IN_DEGREE:
+            case GM_BLTIN_NODE_TO_EDGE:
                 break;
 
             case GM_BLTIN_TOP_LOG:           // log function
@@ -172,7 +177,7 @@ void gm_gps_opt_check_synthesizable::process(ast_procdef* proc)
     //----------------------------------
     // check condition (1) to (4)
     //----------------------------------
-    gps_check_synth_t T;
+    gps_check_synth_t T(proc);
     proc->traverse(&T, true, true); // pre & post visit
     if (T.is_error()) {
         set_okay(false);
