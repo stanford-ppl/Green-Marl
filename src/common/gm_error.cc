@@ -231,14 +231,23 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
     switch(errno) {
-        case GM_ERROR_GPS_EDGE_WRITE:
-            printf("Write to edge property is not supported (yet). ");
+        case GM_ERROR_GPS_EDGE_SEND_VERSIONS:
+            printf("Communicating multiple versions of edge value in one message: %s\n", str1);
+            break;
+        case GM_ERROR_GPS_EDGE_WRITE_RHS:
+            printf("Unacceptible driver for rhs in edge property writing: %s\n", str1);
+            break;
+        case GM_ERROR_GPS_EDGE_WRITE_CONDITIONAL:
+            printf("Write to edge property should not be conditional.\n");
             break;
         case GM_ERROR_GPS_EDGE_INIT:
-            printf("Edge variable should be initialize only to out_nbr.ToEdge(). ");
+            printf("Edge variable should be initialize only to out_nbr.ToEdge().\n");
+            break;
+        case GM_ERROR_GPS_EDGE_WRITE_RANDOM:
+            printf("Random writing of edge values is not supported.\n");
             break;
         case GM_ERROR_GPS_EDGE_READ_RANDOM:
-            printf("Random reading of edge values are not supported. ");
+            printf("Random reading of edge values is not supported.\n");
             break;
         case GM_ERROR_GPS_RANDOM_NODE_WRITE_CONDITIONAL:
             printf("Random node write cannot happen inside a conditional block\n");

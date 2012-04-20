@@ -29,6 +29,7 @@ public:
         if_depth = 0;
         foreach_depth = 0;
         found_inner = false;
+        outer_iter = NULL;
 
         set_separate_post_apply(true); 
         set_for_symtab(true);
@@ -66,6 +67,7 @@ public:
                     _error = true;
                 }
                 found_inner = false;
+                outer_iter = fe->get_iterator()->getSymInfo();
             }
 
             else if (foreach_depth == 2) {
@@ -135,8 +137,9 @@ public:
                 if (foreach_depth > 1) 
                 {
                     // xxx should check if the driver is the inner symbol
-                    if (!gm_is_iteration_on_out_neighbors(iter_type) &&
-                        !gm_is_iteration_on_in_neighbors(iter_type))
+                    //if (!gm_is_iteration_on_out_neighbors(iter_type) &&
+                    //    !gm_is_iteration_on_in_neighbors(iter_type))
+                    if (iter->getSymInfo() == outer_iter)
                     {
                         gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, iter->get_line(), iter->get_col());
                         _error = true;
@@ -170,6 +173,7 @@ private:
     bool _error;
     int foreach_depth;
     bool found_inner;
+    gm_symtab_entry* outer_iter;
 };
 
 

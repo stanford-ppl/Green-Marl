@@ -1,13 +1,15 @@
 
-Proc gps14(G: Graph, A,B: N_P<Int>(G), C:E_P<Int>(G))
+Proc gps14(G: Graph, A,B: N_P<Int>(G), C,D:E_P<Int>(G))
 {
+    //G.C = Rand(100);
+
     // test of Edge Value Access
     Foreach(n: G.Nodes) {
         Foreach(t: n.Nbrs) {
             Edge(G) e = t.ToEdge();
-            t.A += n.B + e.C;
-            // e.B = n.A;  // okay (no communication)
-            // e.B = t.A;  // error 
+            e.C = Rand(100);
+            t.A += n.B + e.C + e.D;
+            e.D = n.B;
         }
     }
 }

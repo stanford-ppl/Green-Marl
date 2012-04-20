@@ -684,7 +684,7 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   gm_gps_communication_size_info& SINFO
       = *(info->find_communication_size_info(U));
 
-  bool need_separate_message = fe->find_info_bool(GPS_FLAG_EDGE_DEFINING_INNER);
+  bool need_separate_message = (fe==NULL) ? false : fe->find_info_bool(GPS_FLAG_EDGE_DEFINING_INNER);
 
   if (!need_separate_message) {
     Body.pushln("// Sending messages to all neighbors");
@@ -694,6 +694,31 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     Body.pushln("for (Edge<EdgeData> _outEdge : getOutgoingEdges()) {");
     Body.pushln("// Sending messages to each neighbor");
   }
+
+    // check if any edge updates that should be done before message sending
+    std::list<ast_sent*> sents_after_message;
+
+    if (fe->has_info_list(GPS_LIST_EDGE_PROP_WRITE))
+    {
+        std::list<void*>& L = fe->get_info_list(GPS_LIST_EDGE_PROP_WRITE);
+
+        std::list<void*>::iterator I;
+        for(I=L.begin(); I!=L.end(); I++) {
+            ast_sent* s = (ast_sent*) *I;
+            assert(s->get_nodetype() == AST_ASSIGN);
+            ast_assign* a = (ast_assign*) s;
+            assert(!a->is_target_scalar());
+            gm_symtab_entry* e = a->get_lhs_field()->get_second()->getSymInfo();
+            int* i = (int*) fe->find_info_map_value(GPS_MAP_EDGE_PROP_ACCESS,e);
+            assert(i!= NULL);
+
+            if (*i == GPS_ENUM_EDGE_VALUE_SENT_WRITE) {
+                sents_after_message.push_back(s);
+            } else {
+                get_main()->generate_sent(s);
+            }
+        }
+    }
 
     Body.push("MessageData _msg = new MessageData(");
 
@@ -739,8 +764,20 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     }
   } else {
       Body.pushln("sendMessage(_outEdge.getNeighborId(), _msg);");
+      if (sents_after_message.size() > 0)
+      {
+        Body.NL();
+        std::list<ast_sent*>::iterator I;
+        for(I=sents_after_message.begin(); I!=sents_after_message.end(); I++) {
+            ast_sent*s = *I;
+            get_main()->generate_sent(s);
+        }
+
+        sents_after_message.clear();
+      }
       Body.pushln("}");
   }
+  assert (sents_after_message.size() == 0);
 }
 
 static bool is_symbol_defined_in_bb(gm_gps_basic_block* b, gm_symtab_entry *e)
@@ -838,11 +875,11 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
         break;
 
     case GM_BLTIN_GRAPH_NUM_NODES:
-        Body.push("/*please check*/");
+        //Body.push("/*please check*/");
         Body.push("getGraphSize()");
         break;
     case GM_BLTIN_NODE_DEGREE:
-        Body.push("/*please check*/");
+        //Body.push("/*please check*/");
         Body.push("getNeighborsSize()");
         break;
     case GM_BLTIN_NODE_IN_DEGREE:

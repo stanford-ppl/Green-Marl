@@ -246,6 +246,8 @@ DEF_STRING(GPS_FLAG_USE_EDGE_PROP);
 DEF_STRING(GPS_FLAG_EDGE_DEFINED_INNER);   // edge which is used inside in a inner llop
 DEF_STRING(GPS_FLAG_EDGE_DEFINING_WRITE);
 DEF_STRING(GPS_FLAG_EDGE_DEFINING_INNER); // inner loops that contains edges
+DEF_STRING(GPS_MAP_EDGE_PROP_ACCESS);
+DEF_STRING(GPS_LIST_EDGE_PROP_WRITE);
 
 static const int   GPS_PREPARE_STEP1         = 100000;
 static const int   GPS_PREPARE_STEP2         = 100001;
@@ -253,6 +255,14 @@ static const char* GPS_RET_VALUE = "_ret_value";
 static const char* GPS_REV_NODE_ID = "_revNodeId";
 static const char* GPS_DUMMY_ID = "_remoteNodeId";
 static const char* GPS_NAME_IN_DEGREE_PROP = "_in_degree";
+
+static enum {
+  GPS_ENUM_EDGE_VALUE_WRITE,
+  GPS_ENUM_EDGE_VALUE_SENT,
+  GPS_ENUM_EDGE_VALUE_SENT_WRITE,
+  GPS_ENUM_EDGE_VALUE_WRITE_SENT,
+  GPS_ENUM_EDGE_VALUE_ERROR
+} gm_edge_access_t;
 
 
 #endif
