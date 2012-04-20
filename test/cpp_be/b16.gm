@@ -7,6 +7,7 @@ Proc foo(G: Graph)
 	}
 	Int x = 0;
 	Foreach(n : G.Nodes) {
-		If(Set.Has(n)) x += 1;
+		Foreach(n2 : Set.Items)
+			If(Set.Has(n)) x += 1;
 	}
 }
