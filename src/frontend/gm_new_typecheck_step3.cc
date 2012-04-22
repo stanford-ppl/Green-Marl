@@ -362,12 +362,15 @@ bool gm_typechecker_stage_3::check_uop(ast_expr* e)
     {
         // should be alredy dest_type;
         int dest_type = e->get_type_summary();
-        if (!gm_is_prim_type(dest_type)) { // destination type
+        if (!gm_is_prim_type(dest_type))  // destination type
+        {
             gm_type_error(GM_ERROR_TYPE_CONVERSION, l,c);
             return false;
         }
 
-        if (!gm_is_prim_type(exp_type)) { // source type
+        if (!gm_is_prim_type(exp_type) &&
+            !gm_is_nodeedge_type(exp_type))
+        { // source type
             gm_type_error(GM_ERROR_TYPE_CONVERSION, l,c);
             return false;
         } 
@@ -375,7 +378,10 @@ bool gm_typechecker_stage_3::check_uop(ast_expr* e)
         //
         bool possible = 
             (gm_is_numeric_type(dest_type) && gm_is_numeric_type(exp_type)) ||
-            (gm_is_boolean_type(dest_type) && gm_is_boolean_type(exp_type)); 
+            (gm_is_boolean_type(dest_type) && gm_is_boolean_type(exp_type) ||
+            (gm_is_numeric_type(dest_type) && gm_is_nodeedge_type(exp_type)) ||
+            false
+             ); 
                       
         if (!possible) {
             gm_type_error(GM_ERROR_TYPE_CONVERSION_BOOL_NUM, l,c,"");
