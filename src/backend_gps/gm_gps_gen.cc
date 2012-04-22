@@ -93,10 +93,16 @@ void gm_gps_gen::do_generate_job_configuration()
 
     Body.NL();
     Body.pushln("// job description for the system");
-    Body.pushln("public static class JobConfiguration extends GPSJObConfiguration {");
+    Body.pushln("public static class JobConfiguration extends GPSJobConfiguration {");
     Body.pushln("@Override");
     Body.pushln("public Class<?> getMasterClass() {");
     sprintf(temp,"return %sMaster.class;", proc->get_procname()->get_genname());
+    Body.pushln(temp);
+    Body.pushln("}");
+
+    Body.pushln("@Override");
+    Body.pushln("public Class<?> getVertexClass() {");
+    sprintf(temp,"return %sVertex.class;", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("}");
 
