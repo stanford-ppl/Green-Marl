@@ -33,7 +33,14 @@ static bool intersect_check_for_merge(
         if (j != S2.end()) {
             // found entry
             if (!e->getType()->is_property()) { // scala
-                return true;
+	      if(e->getType()->is_collection()) {
+		bool isSeq1 = e->getType()->is_sequential_collection();
+		bool isSeq2 = j->first->getType()->is_sequential_collection();
+	      
+		if(!(isSeq1 || isSeq2))
+		  return false;
+		}
+	      return true;
             }
             else {
                 // check S1, S2 is linearly accessed only.

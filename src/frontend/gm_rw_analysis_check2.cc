@@ -185,7 +185,7 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
         gm_rwinfo_list* list1 = i1->second;
         gm_rwinfo* e1;
 
-	//Damn o.O -.-	if (!sym1->getType()->is_property()) continue; // todo 'scalar' check
+	// Damn o.O	if (!sym1->getType()->is_property()) continue; // todo 'scalar' check
 	  
         for(i2 = S2.begin(); i2 != S2.end(); i2++) {
             gm_symtab_entry* sym2 = i2->first;
