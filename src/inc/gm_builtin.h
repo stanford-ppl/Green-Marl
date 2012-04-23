@@ -4,11 +4,16 @@
 #include <list>
 #include <map>
 
-#define AUX_INFO(X,Y)                   TO_STR(X)":"Y
+#define STR(X)                          #X
+#define AUX_INFO(X,Y)			TO_STR(X)":"STR(Y)
+
+#define GM_BLTIN_MUTATE_GROW 1
+#define GM_BLTIN_MUTATE_SHRINK 2
 
 DEF_STRING(GM_BLTIN_INFO_USE_REVERSE);
 DEF_STRING(GM_BLTIN_INFO_CHECK_NBR);
 DEF_STRING(GM_BLTIN_INFO_NEED_FROM);
+DEF_STRING(GM_BLTIN_INFO_MUTATING);
 
 //-----------------------------------------------------
 // for easy extension of compiler
@@ -80,32 +85,32 @@ const gm_builtin_desc_t GM_builtins[] = {
     {"Edge:ToNode:Node:0",          GM_BLTIN_EDGE_TO ,     ""},
 
     // Set:
-    {"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,         ""},
-    {"N_S:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,      ""},
-    {"N_S:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,         ""},
-    {"N_S:Union:Void:1:N_S",	GM_BLTIN_SET_UNION,	  ""},
-    {"N_S:Intersect:Void:1:N_S", GM_BLTIN_SET_INTERSECT,  ""},
-    {"N_S:Complement:Void:1:N_S", GM_BLTIN_SET_COMPLEMENT,""},
-    {"N_S:IsSubsetOf:Bool:1:N_S", GM_BLTIN_SET_SUBSET,	  ""},
+    {"N_S:Add:Void:1:Node",     GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_S:Remove:Void:1:Node",  GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_S:Has:Bool:1:Node",     GM_BLTIN_SET_HAS,	""},
+    {"N_S:Union:Void:1:N_S",	GM_BLTIN_SET_UNION,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_S:Intersect:Void:1:N_S", GM_BLTIN_SET_INTERSECT,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_S:Complement:Void:1:N_S", GM_BLTIN_SET_COMPLEMENT,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_S:IsSubsetOf:Bool:1:N_S", GM_BLTIN_SET_SUBSET,	""},
 
     // Order:
-    {"N_O:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
-    {"*Push",                      GM_BLTIN_SET_ADD_BACK,    ""},
-    {"N_O:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
-    {"N_O:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
-    {"N_O:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
-    {"*Pop",                       GM_BLTIN_SET_REMOVE,      ""},
-    {"N_O:Has:Bool:1:Node",      GM_BLTIN_SET_HAS,         ""},
+    {"N_O:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"*Push",                      GM_BLTIN_SET_ADD_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_O:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_O:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_O:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"*Pop",                       GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_O:Has:Bool:1:Node",      GM_BLTIN_SET_HAS,	""},
     //{"NodeO:Front:Node:0",         GM_BLTIN_SET_PEEK,         ""},
     //{"NodeO:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,    ""},
 
     // Seq:
-    {"N_Q:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,    ""},
-    {"*Push",                      GM_BLTIN_SET_ADD_BACK,    ""},
-    {"N_Q:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,         ""},
-    {"N_Q:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK, ""},
-    {"N_Q:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,      ""},
-    {"*Pop",                       GM_BLTIN_SET_REMOVE,      ""},
+    {"N_Q:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"*Push",                      GM_BLTIN_SET_ADD_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_Q:PushFront:Void:1:Node",GM_BLTIN_SET_ADD,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW)},
+    {"N_Q:PopBack:Node:0",       GM_BLTIN_SET_REMOVE_BACK,	AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"N_Q:PopFront:Node:1:Node", GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
+    {"*Pop",                       GM_BLTIN_SET_REMOVE,		AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK)},
     //{"NodeQ:Front:Node:0",         GM_BLTIN_SET_PEEK,        ""},
     //{"NodeQ:Back:Node:0",          GM_BLTIN_SET_PEEK_BACK,   ""},
 
@@ -171,5 +176,6 @@ class gm_builtin_manager {
 };
 
 #undef AUX_INFO
+#undef STR
 
 extern gm_builtin_manager BUILT_IN;

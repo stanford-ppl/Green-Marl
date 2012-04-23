@@ -1,0 +1,11 @@
+
+Proc P(G: Graph, n : Node(G))
+{
+	Node_Set(G) Set;
+	InBFS(c : G.Nodes From n) {
+		Set.Add(c);
+		Node_Set(G) Set2;
+		Set = Set2;	//error: write to Set while mutating it at the same time
+	}
+}
+

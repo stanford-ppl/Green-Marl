@@ -1,0 +1,11 @@
+
+Proc P(G: Graph)
+{
+	Node_Set(G) Set;
+	Foreach(n : G.Nodes) {
+		Set.Add(n);
+		Node_Set(G) Set2;
+		Set = Set2;	//error - writing and mutating Set at the same time
+	}
+}
+

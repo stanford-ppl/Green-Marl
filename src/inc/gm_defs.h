@@ -82,28 +82,35 @@ inline static bool gm_is_nil_type(int i) {return
 inline static bool gm_is_all_graph_node_iter_type(int i) {
     return (i==GMTYPE_NODEITER_ALL) || (i==GMTYPE_NODEITER_BFS);
 }
+
 inline static bool gm_is_all_graph_edge_iter_type(int i) {
     return (i==GMTYPE_EDGEITER_ALL) || (i==GMTYPE_EDGEITER_BFS);
 }
+
 inline static bool gm_is_all_graph_iter_type(int i) {
     return gm_is_all_graph_node_iter_type(i) || gm_is_all_graph_edge_iter_type(i);
 }
+
 inline static bool gm_is_inout_nbr_node_iter_type(int i) {
     return (i==GMTYPE_NODEITER_NBRS) || (i==GMTYPE_NODEITER_IN_NBRS);
-} 
+}
+ 
 inline static bool gm_is_any_nbr_node_iter_type(int i) {
     return (i==GMTYPE_NODEITER_NBRS) || (i==GMTYPE_NODEITER_IN_NBRS) || 
            (i==GMTYPE_NODEITER_UP_NBRS) || (i==GMTYPE_NODEITER_DOWN_NBRS) ||
            (i==GMTYPE_NODEITER_COMMON_NBRS);
 }
+
 inline static bool gm_is_any_nbr_edge_iter_type(int i) {
     return (i==GMTYPE_EDGEITER_NBRS) || (i==GMTYPE_EDGEITER_IN_NBRS) || 
         (i==GMTYPE_EDGEITER_UP_NBRS) || (i==GMTYPE_EDGEITER_DOWN_NBRS);
 }
+
 inline static bool gm_is_any_nbr_iter_type(int i) {
     return gm_is_any_nbr_edge_iter_type(i) ||
            gm_is_any_nbr_node_iter_type(i);
 }
+
 inline static bool gm_is_common_nbr_iter_type(int i) {
     return (i==GMTYPE_NODEITER_COMMON_NBRS);
 }
@@ -111,19 +118,27 @@ inline static bool gm_is_common_nbr_iter_type(int i) {
 inline static bool gm_is_node_iter_type(int i) { 
     return gm_is_all_graph_node_iter_type(i) || gm_is_any_nbr_node_iter_type(i);
 }
+
 inline static bool gm_is_edge_iter_type(int i) { 
     return gm_is_all_graph_edge_iter_type(i) || gm_is_any_nbr_edge_iter_type(i);
 }
 
 inline static bool gm_is_node_collection_iter_type(int i) { 
-    return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));}
+    return ((i==GMTYPE_NODEITER_SET) || (i==GMTYPE_NODEITER_SEQ) || (i==GMTYPE_NODEITER_ORDER));
+}
+
 inline static bool gm_is_edge_collection_iter_type(int i) { 
-    return ((i==GMTYPE_EDGEITER_SET) || (i==GMTYPE_EDGEITER_SEQ) || (i==GMTYPE_EDGEITER_ORDER));}
+    return ((i==GMTYPE_EDGEITER_SET) || (i==GMTYPE_EDGEITER_SEQ) || (i==GMTYPE_EDGEITER_ORDER));
+}
+
 inline static bool gm_is_unknown_collection_iter_type(int i) {
-    return (i==GMTYPE_ITER_ANY); }
+    return (i==GMTYPE_ITER_ANY); 
+}
+
 inline static bool gm_is_collection_iter_type(int i) {
     return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) ||
-           gm_is_unknown_collection_iter_type(i);}
+           gm_is_unknown_collection_iter_type(i);
+}
 
 inline static bool gm_is_node_compatible_type(int i) {return gm_is_node_type(i) || gm_is_node_iter_type(i) || gm_is_node_collection_iter_type(i) || gm_is_nil_type(i);}
 inline static bool gm_is_edge_compatible_type(int i) {return gm_is_edge_type(i) || gm_is_edge_iter_type(i) || gm_is_edge_collection_iter_type(i) || gm_is_nil_type(i);}
@@ -162,25 +177,34 @@ inline static bool gm_is_node_collection_type(int i) {
            gm_is_node_order_type(i) ||
            gm_is_node_sequence_type(i);
 }
+
 inline static bool gm_is_edge_collection_type(int i) {
     return gm_is_edge_set_type(i) ||
            gm_is_edge_order_type(i) ||
            gm_is_edge_sequence_type(i);
 }
+
 inline static bool gm_is_set_collection_type(int i) {
     return gm_is_node_set_type(i) ||
            gm_is_edge_set_type(i);
 }
+
 inline static bool gm_is_order_collection_type(int i) {
     return gm_is_node_order_type(i) ||
            gm_is_edge_order_type(i);
 }
+
 inline static bool gm_is_sequence_collection_type(int i) {
     return gm_is_node_sequence_type(i) ||
            gm_is_edge_sequence_type(i);
 }
+
 inline static bool gm_is_collection_type(int i) {
     return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i);
+}
+
+inline static bool gm_is_sequential_collection_type(int i) {
+  return gm_is_sequence_collection_type(i) || gm_is_order_collection_type(i);
 }
 
 // node set -> nodeset iter

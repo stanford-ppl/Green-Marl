@@ -579,6 +579,7 @@ class ast_typedecl : public ast_node {  // property or type
         bool is_sequence_collection()   {return gm_is_sequence_collection_type(type_id);}
         bool is_order_collection()      {return gm_is_order_collection_type(type_id);}
         bool is_set_collection()        {return gm_is_set_collection_type(type_id);}
+	bool is_sequential_collection() {return gm_is_sequential_collection_type(type_id);}
 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 
