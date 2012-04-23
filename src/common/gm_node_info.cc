@@ -165,6 +165,9 @@ void ast_node::remove_all_info()
     extra.clear();
 }
 
+bool ast_node::has_info_set(const char* id) {
+    return (find_info(id) != NULL);
+}
 void ast_node::add_info_set_element(const char* id, void* element)
 {
     if (find_info(id) == NULL) {
@@ -174,17 +177,68 @@ void ast_node::add_info_set_element(const char* id, void* element)
     std::set<void*> & S = ((ast_extra_info_set*) find_info(id))->get_set();
     S.insert(element);
 }
-
-bool ast_node::has_info_set(const char* id) {
-    return (find_info(id) != NULL);
-}
-
 std::set<void*>& ast_node::get_info_set(const char* id)
 {
     ast_extra_info_set* INFO = ((ast_extra_info_set*) find_info(id));
     assert(INFO != NULL);
     return INFO->get_set();
 }
+
+bool ast_node::has_info_list(const char* id) {
+    return (find_info(id) != NULL);
+}
+void ast_node::add_info_list_element(const char* id, void* element)
+{
+    if (find_info(id) == NULL) {
+        ast_extra_info_list* INFO = new ast_extra_info_list();
+        add_info(id, INFO);
+    }
+    std::list<void*> & S = ((ast_extra_info_list*) find_info(id))->get_list();
+    S.push_back(element);
+}
+std::list<void*>& ast_node::get_info_list(const char* id)
+{
+    ast_extra_info_list* INFO = ((ast_extra_info_list*) find_info(id));
+    assert(INFO != NULL);
+    return INFO->get_list();
+}
+
+bool ast_node::has_info_map(const char* id) {
+    return (find_info(id) != NULL);
+}
+void ast_node::add_info_map_key_value(const char* id, void* k, void* v)
+{
+    if (find_info(id) == NULL) {
+        ast_extra_info_map* INFO = new ast_extra_info_map();
+        add_info(id, INFO);
+    }
+    std::map<void*,void*> & S = ((ast_extra_info_map*) find_info(id))->get_map();
+    S[k] = v;
+}
+void* ast_node::find_info_map_value(const char* id, void* key)
+{
+    if (find_info(id) == NULL) {
+        ast_extra_info_map* INFO = new ast_extra_info_map();
+        add_info(id, INFO);
+    }
+    std::map<void*,void*> & S = ((ast_extra_info_map*) find_info(id))->get_map();
+
+    // if not in the map? NULL will be retuned. right?
+    if (S.find(key) == S.end()) {
+        S[key] = NULL;
+    }
+    return S[key]; 
+}
+std::map<void*,void*>& ast_node::get_info_map(const char* id)
+{
+    ast_extra_info_map* INFO = ((ast_extra_info_map*) find_info(id));
+    assert(INFO != NULL);
+    return INFO->get_map();
+}
+
+//---------------------------------------------------------------------
+// implementing same inferface to ast_symtab_entry
+//---------------------------------------------------------------------
 
 //---------------------------------------------------------------------
 // implementing same inferface to ast_symtab_entry

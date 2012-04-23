@@ -29,6 +29,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             beinfo = i;
             is_random_write_target = false;
             random_write_target = NULL;
+            target_is_edge = false;
         }
     
     virtual bool apply(ast_sent* s) 
@@ -60,6 +61,10 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             int lhs_reduce = a->is_reduce_assign() ? GPS_SYM_USED_AS_REDUCE : GPS_SYM_USED_AS_LHS;
             int r_type = a->is_reduce_assign() ? a->get_reduce_type() : GMREDUCE_NULL;
             update_access_information(target, is_scalar, lhs_reduce, context, r_type);
+
+            if (!is_scalar && 
+                a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
+                target_is_edge = true;
         }
 
         if (s->get_nodetype() == AST_FOREACH) 
@@ -84,6 +89,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         {
             foreach_depth--;
         }
+        target_is_edge = false;
     }
 
     virtual bool apply(ast_expr* e) 
@@ -130,7 +136,11 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             }
         }
         else if (context == GPS_CONTEXT_VERTEX) {
-            if (foreach_depth > 1) {  // Inner loop
+            if (target_is_edge) { 
+                comm_symbol = false; 
+                ignored_symbol = false; 
+            }
+            else if (foreach_depth > 1) {  // Inner loop
                 if (is_id) { 
                     assert(tg!=NULL);
                     gps_syminfo* syminfo = gps_get_global_syminfo(tg);
@@ -145,6 +155,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                     else
                         ignored_symbol = true; // local to the receiver
                 }
+
             }
         }
         else { // RECEIVER context
@@ -263,6 +274,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         bool is_random_write_target;
         gm_symtab_entry* random_write_target;
         ast_sentblock* random_write_target_sb;
+        bool target_is_edge ;
 };
 
 

@@ -1,0 +1,35 @@
+
+// Test of Edge Write
+Proc e12(G:Graph, A,B: N_P<Int>(G), C,D:E_P<Int>(G))
+{
+    Node(G) x; 
+    Edge(G) e1; 
+
+    Foreach (n: G.Nodes) { 
+        Foreach(t: n.Nbrs) {
+            t.A = e1.C; // error: random edge reading
+            e1.C = n.A; // error: random edge writing
+        }
+    }
+
+    Foreach (n: G.Nodes) { 
+        Foreach(t: n.Nbrs) {
+            Edge(G) e = t.ToEdge();
+            If (t.A > 10) e.C = 0;  // Error: conditional writing
+            e.C = t.B; // Error: t.B cannot be used
+        }
+    }
+
+    Foreach (n: G.Nodes) { 
+        Foreach(t: n.Nbrs) {
+            Edge(G) e = t.ToEdge();
+            e.C = e.C + 1; // okay updating e.C
+            t.A += e.C; // okay. sending e.C
+            e.C =  n.B; // okay. updating e.C
+            t.A += e.C; // error sending two versions of e.C
+        }
+    }
+
+
+    Return; 
+}

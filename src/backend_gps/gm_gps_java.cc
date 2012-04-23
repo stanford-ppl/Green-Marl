@@ -304,6 +304,12 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
         return;  // skip edge-defining writes
     } 
 
+    if (!a->is_target_scalar() && 
+        a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
+    {
+        if (is_receiver_generate()) return;
+    }
+
     // vertex or receiver generate
     if (a->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
     {

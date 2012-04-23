@@ -108,6 +108,15 @@ class ast_extra_info_list : public ast_extra_info {
      std::list<void*>& get_list() {return list;}
 };
 
+class ast_extra_info_map : public ast_extra_info {
+ public:
+     std::map<void*,void*> map;
+     ast_extra_info_map() {}
+     ~ast_extra_info_map() {}
+     virtual ast_extra_info* copy() {assert(false); return NULL;}
+     std::map<void*, void*>& get_map() {return map;}
+};
+
 
 class ast_node {
     friend class gm_apply;
@@ -203,9 +212,18 @@ class ast_node {
         void remove_info(const char* id);
         void remove_all_info();
 
-        void add_info_set_element(const char* id, void* element);
         bool has_info_set(const char* id);
+        void add_info_set_element(const char* id, void* element);
         std::set<void*>& get_info_set(const char* id);
+
+        bool has_info_list(const char* id);
+        void add_info_list_element(const char* id, void* element);
+        std::list<void*>& get_info_list(const char* id);
+
+        bool has_info_map(const char* id);
+        void add_info_map_key_value(const char* id, void* key, void* value);
+        void* find_info_map_value(const char* id, void* key);
+        std::map<void*,void*>& get_info_map(const char* id);
 
     protected:
         int line;
