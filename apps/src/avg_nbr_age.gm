@@ -1,4 +1,6 @@
-// An example for GPS paper
+//--------------------------------------
+// The example used in GPS paper
+//--------------------------------------
 Procedure agv_nbr_age(
         G: Graph, 
         age: N_P<Int>(G),
@@ -10,7 +12,6 @@ Procedure agv_nbr_age(
       n.avg_age = (n.InDegree() == 0) ? 0 : sum / n.InDegree();
     }
 
-    Float sum = (Float) Sum(n: G.Nodes)(n.InDegree() > K){n.avg_age};
-    Int cnt = Count(n:G.Nodes) (n.InDegree() > K);
-    Return (cnt==0)?0:sum/cnt;
+    Float avg = (Float) Avg(n: G.Nodes)(n.InDegree() > K){n.avg_age};
+    Return avg;
 }

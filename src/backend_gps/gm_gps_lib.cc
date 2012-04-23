@@ -698,7 +698,7 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     // check if any edge updates that should be done before message sending
     std::list<ast_sent*> sents_after_message;
 
-    if (fe->has_info_list(GPS_LIST_EDGE_PROP_WRITE))
+    if ((fe!=NULL) && (fe->has_info_list(GPS_LIST_EDGE_PROP_WRITE)))
     {
         std::list<void*>& L = fe->get_info_list(GPS_LIST_EDGE_PROP_WRITE);
 
