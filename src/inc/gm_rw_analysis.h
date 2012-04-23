@@ -116,6 +116,8 @@ public:
     // one exxample of  access instance 
     // i.e. location in the code (for error message generation)
     ast_id* location; 
+ 
+    int mutate_direction;
 
     gm_rwinfo() {
         driver = NULL;
@@ -123,9 +125,9 @@ public:
         location = NULL;
         always = true;
         reduce_op = GMREDUCE_NULL;
-        access_range = GM_RANGE_SINGLE; // default is single access
-    }
-    
+        access_range = GM_RANGE_SINGLE; // default is single access           
+	mutate_direction = -1;
+    }  
 
     static gm_rwinfo* new_scala_inst(ast_id* loc, 
             int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL,
@@ -139,6 +141,14 @@ public:
         g->org_lhs = org;
         return g;
     }
+
+    static gm_rwinfo* new_builtin_inst(ast_id* loc, int mutate_dir) {
+	gm_rwinfo *g = new gm_rwinfo();
+	g->location = loc;
+	g->mutate_direction = mutate_dir;
+	return g;
+    }
+
     static gm_rwinfo* new_field_inst(
             gm_symtab_entry* driver, ast_id* loc,
             int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL,
@@ -209,13 +219,15 @@ class gm_rwinfo_sets : public ast_extra_info
     public:
     gm_rwinfo_map read_set;  
     gm_rwinfo_map write_set;  
-    gm_rwinfo_map reduce_set;  
+    gm_rwinfo_map reduce_set; 
+    gm_rwinfo_map mutate_set; 
 
     public:
-      ~gm_rwinfo_sets() {
-          gm_delete_rwinfo_map(read_set);
-          gm_delete_rwinfo_map(write_set);
-          gm_delete_rwinfo_map(reduce_set);
+	~gm_rwinfo_sets() {
+            gm_delete_rwinfo_map(read_set);
+            gm_delete_rwinfo_map(write_set);
+            gm_delete_rwinfo_map(reduce_set);
+	    gm_delete_rwinfo_map(mutate_set);
       }
 };
 

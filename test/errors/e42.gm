@@ -1,0 +1,13 @@
+
+Proc P(G: Graph, n : Node(G))
+{
+	Node_Set(G) Set;
+	InBFS(c : G.Nodes From n) {
+		Set.Add(c);
+		Int size = 0;
+		Foreach(x : Set.Items) {
+			size += 1;	//warning: mutating and reading Set at the same time
+		}
+	}
+}
+

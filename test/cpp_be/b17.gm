@@ -1,0 +1,30 @@
+//tests if loop-merge merges correctly for collections
+Proc foo(G: Graph)
+{
+	Node_Set(G) Set; 
+	Foreach(n : G.Nodes) {
+		Set.Add(n);
+	}
+	Foreach(n : G.Nodes) {
+		Set.Add(n);	//can be merged with Foreach above
+	}
+
+	Node_Order(G) Ord;
+	Foreach(n : G.Nodes) {
+		Ord.PushBack(n);
+	}
+	Foreach(n : G.Nodes) {
+		Ord.PushBack(n);	//must not be merged with Foreach above
+	}
+
+/*
+// TODO: Fix compiler bug
+	Int x = 0;
+	Foreach(n : G.Nodes) {
+		x <= x / 2;
+	}
+	Foreach(n : G.Nodes) {
+		x += 1;		//must not be merged with Foreach above
+	}
+*/
+}

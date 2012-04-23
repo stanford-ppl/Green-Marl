@@ -14,6 +14,8 @@ void gm_cpp_gen::build_up_language_voca()
     V.add_word("long");
     V.add_word("while");
     V.add_word("for");
+    V.add_word("continue");
+    V.add_word("break");
     V.add_word("double");
     V.add_word("float");
     V.add_word("if");
