@@ -9,7 +9,6 @@ Procedure agv_nbr_age(
 {
     Foreach(n: G.Nodes) {
       n.avg_age = Avg(t:n.InNbrs) {t.age};
-      //n.avg_age = (n.InDegree() == 0) ? 0 : sum / n.InDegree();
     }
 
     Float avg = (Float) Avg(n: G.Nodes)(n.InDegree() > K){n.avg_age};

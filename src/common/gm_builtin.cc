@@ -228,6 +228,7 @@ ast_expr_builtin* ast_expr_builtin::new_builtin_expr(ast_id* id, gm_builtin_def*
     ast_expr_builtin* E = new ast_expr_builtin(); 
     E->expr_class = GMEXPR_BUILTIN;
     E->driver = id; if (id != NULL) id->set_parent(E); // type unknown yet.
+    E->def = d;
     E->orgname = gm_strdup(d->get_orgname());
     if (t!= NULL) {
         E->args = t->LIST;  // shallow copy LIST
