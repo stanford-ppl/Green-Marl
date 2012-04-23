@@ -57,6 +57,31 @@ class ss2_reduce_op : public gm_apply
     void post_process_body(ast_expr_reduce* target);
 };
 
+static int find_count_function(int source_type, int iter_type) {
+    if (gm_is_graph_type(source_type)) {
+        if (gm_is_all_graph_node_iter_type(iter_type)) {
+            return GM_BLTIN_GRAPH_NUM_NODES;
+        }
+        else if (gm_is_all_graph_node_iter_type(iter_type)) {
+            return GM_BLTIN_GRAPH_NUM_EDGES;
+        }
+    } 
+    else if (gm_is_node_compatible_type(source_type)) {
+        if (iter_type == GMTYPE_NODEITER_IN_NBRS) {
+            return GM_BLTIN_NODE_IN_DEGREE;
+        }
+        else if (iter_type == GMTYPE_NODEITER_NBRS) {
+            return GM_BLTIN_NODE_DEGREE;
+        }
+    }
+    else if (gm_is_collection_type(source_type)) {
+        if (gm_is_collection_iter_type(iter_type))
+            return GM_BLTIN_SET_SIZE;
+    }
+
+    return GM_BLTIN_END;
+}
+
 
 // replace selected expressions.
 void ss2_reduce_op::post_process_body(
@@ -101,6 +126,16 @@ void ss2_reduce_op::post_process_body(
         rtype = GMREDUCE_PLUS; // Need sum
 
         need_count = true;
+        if (target->get_filter() == NULL) 
+        {
+            int iter_type = target->get_iter_type();
+            int src_type = target->get_source()->getTypeInfo()->getTypeSummary();
+
+            if (find_count_function(src_type, iter_type) == GM_BLTIN_END)
+                need_count = true;
+            else need_count = false;
+        }
+        
     }
 
     // 1.2 initial value
@@ -216,6 +251,8 @@ void ss2_reduce_op::post_process_body(
     //----------------------------------------------
     if (is_avg) {
 
+
+
         int result_type =  (expr_type==GMTYPE_FLOAT) ? GMTYPE_FLOAT: GMTYPE_DOUBLE;
         // (cnt_val == 0)? 0 : sum_val / (float) cnt_val
         ast_expr* zero1 = ast_expr:: new_ival_expr(0); 
@@ -234,6 +271,24 @@ void ss2_reduce_op::post_process_body(
                 avg_val->getId()->copy(true), ter);
 
         gm_add_sent_after(fe_new, a);
+
+        if (!need_count) {
+            int iter_type = target->get_iter_type();
+            int src_type = target->get_source()->getTypeSummary();
+            int method_id = find_count_function(src_type, iter_type);
+            assert (method_id != GM_BLTIN_END);
+
+            // make a call to built-in funciton
+            gm_builtin_def* def =  BUILT_IN.find_builtin_def(src_type, method_id);
+            assert(def != NULL);
+
+            ast_expr_builtin* rhs = ast_expr_builtin::new_builtin_expr(target->get_source()->copy(true),def,NULL);
+            ast_assign* a = ast_assign::new_assign_scala(
+                cnt_val->getId()->copy(true),
+                rhs);
+
+            gm_add_sent_after(fe_new, a);
+        }
     }
 
 

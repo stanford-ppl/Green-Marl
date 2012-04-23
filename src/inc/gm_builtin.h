@@ -54,6 +54,7 @@ static enum {
     GM_BLTIN_SET_INTERSECT,
     GM_BLTIN_SET_COMPLEMENT,
     GM_BLTIN_SET_SUBSET,
+    GM_BLTIN_SET_SIZE,
 
     GM_BLTIN_END
 } gm_method_id_t;

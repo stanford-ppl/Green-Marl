@@ -1069,6 +1069,9 @@ class ast_expr_builtin : public ast_expr
         return E; 
     }
 
+    // defined in gm_builtin.cc
+    static ast_expr_builtin* new_builtin_expr(ast_id* id, gm_builtin_def* d, expr_list* t) ;
+
     char*                 get_orgname() {return orgname;}
     char*                 get_callname() {return orgname;}
     ast_id*               get_driver()  {return driver;}
