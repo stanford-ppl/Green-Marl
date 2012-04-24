@@ -104,6 +104,7 @@ class gm_gpslib : public gm_graph_library {
 
     // true if node == int false, if node == long
     virtual bool is_node_type_int() {return true;}
+    virtual bool is_edge_type_int() {return true;}
     protected:
 
     private:

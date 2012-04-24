@@ -359,6 +359,41 @@ void gm_gpslib::generate_vertex_prop_class_details(
     }
     Body.pushln(";");
     Body.pushln("}");
+
+    if (is_edge_prop) {
+        Body.pushln("//Input Data Parsing");
+        Body.pushln("@Override");
+        Body.pushln("public void read(String inputString) {");
+        Body.pushln("String[] split = inputString.split(\"###\");");
+        bool firstProperty = true;
+        int cnt = 0;
+        for(I=prop.begin(); I!=prop.end(); I++)
+        {
+            gm_symtab_entry * sym = *I;
+            const char* name1; 
+            const char* name2;
+            switch(sym->getType()->getTargetTypeSummary()) {
+                case GMTYPE_INT:   name1 = "Integer"; name2 = "parseInt"; break;
+                case GMTYPE_LONG:  name1 = "Long"; name2 = "parseLong"; break;
+                case GMTYPE_FLOAT: name1 = "Float"; name2 = "parseFloat"; break;
+                case GMTYPE_DOUBLE:name1 = "Double"; name2 = "parseDouble"; break;
+                case GMTYPE_BOOL:  name1 = "Boolean"; name2 = "parseBoolean"; break;
+                case GMTYPE_NODE:  
+                    if (is_node_type_int()) {name1 = "Integer"; name2 = "parseInt"; break;}
+                    else                    {name1 = "Long"; name2 = "parseLong"; break;}
+                case GMTYPE_EDGE:  
+                    if (is_edge_type_int()) {name1 = "Integer"; name2 = "parseInt"; break;}
+                    else                    {name1 = "Long"; name2 = "parseLong"; break;}
+                default: assert(false);
+            }
+             sprintf(temp, "this.%s = %s.%s((split[%d]==null)?\"0\":split[%d]);",
+                     sym->getId()->get_genname(),
+                     name1, name2, cnt, cnt);
+             Body.pushln(temp);
+             cnt++;
+        }
+    }
+    Body.pushln("}");
 }
 
 #define STATE_SHORT_CUT "_this"
