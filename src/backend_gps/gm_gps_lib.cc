@@ -392,8 +392,8 @@ void gm_gpslib::generate_vertex_prop_class_details(
              Body.pushln(temp);
              cnt++;
         }
+        Body.pushln("}");
     }
-    Body.pushln("}");
 }
 
 #define STATE_SHORT_CUT "_this"

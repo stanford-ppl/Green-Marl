@@ -68,7 +68,7 @@ void gm_gps_gen::do_generate_vertex_property_class(bool is_edge_prop)
   Body.NL();
   get_lib()->generate_vertex_prop_class_details(prop, Body, is_edge_prop);
 
-  Body.pushln("} // end of vertex-data"); // end of class
+  Body.pushln("} // end of data class"); // end of class
   Body.NL();
 
 }
@@ -390,17 +390,33 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     // Generate Main Routine
     //---------------------------------------------------------
     if (b->get_num_sents() > 0) {
+        //assert (b->get_num_sents() == 1);
         Body.pushln("/*------");
         Body.flush();
         b->reproduce_sents();
         Body.pushln("-----*/");
         Body.NL();
-    
+
+        std::list<ast_sent*>& sents = b->get_sents(); 
+        std::list<ast_sent*>::iterator I;
+        int cnt = 0;
+        for(I=sents.begin(); I!=sents.end(); I++) {
+            ast_sent* s = *I;
+            assert(s->get_nodetype() == AST_FOREACH);
+            ast_foreach* fe = (ast_foreach*) s;
+            ast_sent* body = fe->get_body();
+            if (cnt != 0) Body.NL();
+            cnt++;
+            generate_sent(body);
+        }
+        
+        /*
         ast_sent* s = b->get_1st_sent();
         assert(s->get_nodetype() == AST_FOREACH);
         ast_foreach * fe = (ast_foreach*) s;
         ast_sent* body = fe->get_body();
         generate_sent(body);
+        */
     }
 
     Body.pushln("}");

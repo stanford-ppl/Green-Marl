@@ -67,6 +67,8 @@ void gm_gps_basic_block::reproduce_sents()
         { 
             s->reproduce(0);
             s = get_next();
+            if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) && (s!=NULL))
+                gm_newline_reproduce();
         }
         gm_flush_reproduce(); 
    } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2)) {
@@ -166,6 +168,7 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
 {
     _curr = b;
     int type = _curr->get_type();
+    //printf("visiting :%d\n", _curr->get_id());
     if (type == GM_GPS_BBTYPE_SEQ) 
     {
         // traverse sentence block and apply this
@@ -212,10 +215,10 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
             set_under_receiver_traverse(false);
         }
 
-
         // traverse body
         if (_curr->get_num_sents() == 0) return;
 
+        /*
         assert(_curr->get_num_sents() == 1);
         ast_sent* s = _curr->get_1st_sent();
         assert(s->get_nodetype() == AST_FOREACH);
@@ -227,11 +230,20 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
         //ast_sent* b = fe->get_body(); // body of foreach only?
         //b->traverse(this, is_post(), is_pre());
         fe->traverse(this, is_post(), is_pre());
-
-
+        */
+        
+        std::list<ast_sent*>& sents = _curr->get_sents(); 
+        std::list<ast_sent*>::iterator I;
+        for(I=sents.begin(); I!=sents.end(); I++) {
+            ast_sent* s = *I;
+            assert(s->get_nodetype() == AST_FOREACH);
+            ast_foreach* fe = (ast_foreach*) s;
+            fe->traverse(this, is_post(), is_pre());
+        }
     }
     else if (type==GM_GPS_BBTYPE_IF_COND)
     {
+        assert(_curr->get_num_sents() == 1);
         // traverse cond expr
         std::list<ast_sent*> sents;
         ast_sent* s = _curr->get_1st_sent();
@@ -243,6 +255,8 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
     }
     else if (type == GM_GPS_BBTYPE_WHILE_COND)
     {
+        assert(_curr->get_num_sents() == 1);
+
         // traverse cond expr
         std::list<ast_sent*> sents;
         ast_sent* s = _curr->get_1st_sent();

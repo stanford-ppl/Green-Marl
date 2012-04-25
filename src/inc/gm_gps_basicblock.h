@@ -35,6 +35,7 @@ class gm_gps_basic_block {
     int get_num_sents() {return sents.size();}
     ast_sent* get_1st_sent() {return sents.front();}
 
+
     int get_id() {return id;}
     int get_type() {return type;}
     bool is_after_vertex() {return after_vertex;}
@@ -50,6 +51,7 @@ class gm_gps_basic_block {
     // while: body[0], exit[1]
     //-------------------------------
     void add_exit(gm_gps_basic_block* b, bool add_reverse=true) {
+        assert(b!=this);
         exits.push_back(b);
         if (add_reverse)
             b->add_entry(this); // add reverse link
@@ -59,10 +61,12 @@ class gm_gps_basic_block {
 
     int get_num_entries() {return entries.size();}
     void add_entry(gm_gps_basic_block* b) {
+        assert(b!=this);
         entries.push_back(b);
     }
     void update_entry_from(gm_gps_basic_block* old, gm_gps_basic_block* to)
     {
+        assert(to!=this);
         for(int i =0;i<entries.size();i++)
         {
             if (entries[i] == old) {
