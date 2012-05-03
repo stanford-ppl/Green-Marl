@@ -183,14 +183,14 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
     for(i1 = S1.begin(); i1 != S1.end(); i1++) {
         gm_symtab_entry* sym1 = i1->first;
         gm_rwinfo_list* list1 = i1->second;
-        gm_rwinfo* e1;
+        gm_rwinfo* e1=NULL;
 
 	// Damn o.O	if (!sym1->getType()->is_property()) continue; // todo 'scalar' check
 	  
         for(i2 = S2.begin(); i2 != S2.end(); i2++) {
             gm_symtab_entry* sym2 = i2->first;
             gm_rwinfo_list* list2 = i2->second;
-            gm_rwinfo* e2;
+            gm_rwinfo* e2=NULL;
 
             // find same symbol
             if (sym1 != sym2) continue;

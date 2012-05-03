@@ -5,7 +5,7 @@ PARSE = ./parse
 INC = ./inc
 OBJ = ../obj
 BIN = ../bin
-CFLAGS += -g -O1 -I$(INC) -I.
+CFLAGS += -g -O1 -I$(INC) -I. -W
 LDFLAGS += -lrt 
 
 # where to find sorce codes

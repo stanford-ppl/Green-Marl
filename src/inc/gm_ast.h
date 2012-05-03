@@ -187,8 +187,8 @@ class ast_node {
     public:
         int get_line() {return line;}
         int get_col() {return col;}
-        int set_line(int l) {line = l;}
-        int set_col(int c) {col = c;}
+        void set_line(int l) {line = l;}
+        void set_col(int c) {col = c;}
         void copy_line_info(ast_node* n) {this->col = n->col; this->line = n->line;}
 
 
@@ -269,7 +269,7 @@ class ast_id : public ast_node {
 
     private:
         ast_id() : ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL) {}
-        ast_id(const char* org, int l, int c) : ast_node(AST_ID),gen_name(NULL),info(NULL)  {
+        ast_id(const char* org, int l, int c) : ast_node(AST_ID),info(NULL),gen_name(NULL)  {
             if (org != NULL) {
                 name = new char[strlen(org)+1]; 
                 strcpy(name, org); 
@@ -305,8 +305,8 @@ class ast_id : public ast_node {
         char* name;
 
     private:
-        char* gen_name;
         gm_symtab_entry* info;
+        char* gen_name;
 
         char* get_orgname_from_symbol();  // gm_typecheck.cc
         char* get_genname_from_symbol();  // gm_typecheck.cc
@@ -321,13 +321,13 @@ class ast_idlist : public ast_node {
         ast_idlist() : ast_node(AST_IDLIST) {}
 
         virtual ~ast_idlist() { 
-            for(int i=0;i<lst.size();i++)
+            for(int i=0;i<(int)lst.size();i++)
                 delete lst[i];
             lst.clear();     
         }
         ast_idlist* copy(bool cp_sym=false) {
             ast_idlist* cpy = new ast_idlist;
-            for(int i=0;i<lst.size();i++)
+            for(int i=0;i<(int)lst.size();i++)
                 cpy->add_id(lst[i]->copy(cp_sym));
             return cpy;
         }
@@ -339,7 +339,7 @@ class ast_idlist : public ast_node {
         virtual void reproduce(int id_level); 
         virtual void dump_tree(int id_level); 
         bool contains(char* id) {
-            for(int i=0;i<lst.size();i++)
+            for(int i=0;i<(int)lst.size();i++)
                 if (!strcmp(id,lst[i]->get_orgname())) return true;
             return false;
         }
@@ -651,7 +651,7 @@ class ast_typedecl : public ast_node {  // property or type
 //==========================================================================
 class ast_sent : public ast_node { 
     protected:
-        ast_sent(int y) : eline(0), ast_node(y), _par(false) {}
+        ast_sent(int y) :  ast_node(y), eline(0), _par(false) {}
 
         // save original empty lines before this sentence
     public:
@@ -913,9 +913,10 @@ class ast_expr : public ast_node
        protected:
         ast_expr() : 
             ast_node(AST_EXPR),
-            left(NULL), right(NULL), id1(NULL), field(NULL), 
-            ival(0), fval(0), bval(false), op_type(GMOP_END), up(NULL), is_right(false),
-            type_of_expression(GMTYPE_UNKNOWN), cond(NULL),
+            expr_class(GMEXPR_ID),
+            left(NULL), right(NULL), cond(NULL), up(NULL), id1(NULL), field(NULL), 
+            ival(0), fval(0), bval(false), plus_inf(false), op_type(GMOP_END), is_right(false), is_cond(false),
+            type_of_expression(GMTYPE_UNKNOWN), 
             alternative_type_of_expression(GMTYPE_UNKNOWN),
             bound_graph_sym(NULL)
             {}
@@ -1148,7 +1149,8 @@ class ast_expr_reduce : public ast_expr
     virtual ast_expr* copy(bool cp_syminfo = false);
 
     private:
-    ast_expr_reduce() : ast_expr(), iter(NULL), src(NULL),body(NULL),filter(NULL),src2(NULL) {  set_nodetype(AST_EXPR_RDC); create_symtabs();}
+    ast_expr_reduce() : ast_expr(), iter(NULL), src(NULL), src2(NULL), body(NULL),filter(NULL), reduce_type(GMREDUCE_NULL) 
+    {  set_nodetype(AST_EXPR_RDC); create_symtabs();}
     ast_id* iter;
     ast_id* src;
     ast_id* src2;
@@ -1267,7 +1269,7 @@ class ast_vardecl : public ast_sent
             //assert(init_expr == NULL);
         }
     private: 
-        ast_vardecl() : ast_sent(AST_VARDECL), tc_finished(false), idlist(NULL), type(NULL), init_expr(NULL)  {}
+        ast_vardecl() : ast_sent(AST_VARDECL), idlist(NULL), type(NULL), init_expr(NULL), tc_finished(false) {}
 
     public:
         void set_typechecked(bool b) {tc_finished = b;}
@@ -1356,7 +1358,7 @@ class ast_foreach : public ast_sent
             delete_symtabs();
         }
     private: 
-        ast_foreach() : ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), cond(NULL) , seq_exe(false), use_reverse(false),source2(NULL)
+        ast_foreach() : ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), source2(NULL), cond(NULL) , seq_exe(false), use_reverse(false)
     {create_symtabs();}
 
     public:
@@ -1488,7 +1490,10 @@ class ast_bfs: public ast_sent
 
     protected:
         ast_bfs(): ast_sent(AST_BFS), f_body(NULL), b_body(NULL), f_filter(NULL), b_filter(NULL), 
-                   navigator(NULL), use_transpose(false), iter(NULL), src(NULL), iter2(NULL) {create_symtabs();}
+                   navigator(NULL), 
+                   iter(NULL), src(NULL), root(NULL), iter2(NULL),
+                   use_transpose(false),
+                   _bfs(true) {create_symtabs();}
                 
 
     private:
@@ -1670,9 +1675,9 @@ class ast_while : public ast_sent
         void set_cond(ast_expr* e) {cond = e; if (e!=NULL) {e->set_parent(this);}}
 
     private:
-        bool do_while; // if true do_while, else while
         ast_sentblock* body;
         ast_expr* cond;
+        bool do_while; // if true do_while, else while
 };
 
 // a dummy nop IR.

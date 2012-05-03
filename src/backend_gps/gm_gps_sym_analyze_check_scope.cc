@@ -57,6 +57,7 @@ class gps_check_symbol_scope_t : public gm_apply
             info->set_scope(GPS_SCOPE_GLOBAL);
         else
             info->set_scope(GPS_SCOPE_OUTER);
+        return true;
     }
 
 

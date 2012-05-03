@@ -194,7 +194,7 @@ bool gm_is_compatible_type(int op, int t1, int t2,
     if (gm_is_foreign_expr_type(t1)) {t1 = t2;} // believe that foreign-expression is type-compatible
     if (gm_is_foreign_expr_type(t2)) {t2 = t1;} 
 
-    for(int i =  0; i < GM_TYPE_RULES.size(); i++) 
+    for(int i =  0; i < (int)GM_TYPE_RULES.size(); i++) 
     {
         gm_type_rule& R = GM_TYPE_RULES[i];
 

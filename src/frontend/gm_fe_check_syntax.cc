@@ -48,6 +48,7 @@ public:
                 par_depth++;
             }
         }
+        return true;
     }
     virtual bool apply2(ast_sent* s) 
     {
@@ -65,7 +66,7 @@ public:
                 par_depth--;
             }
         }
-
+        return true;
     }
 private:
     int par_depth;

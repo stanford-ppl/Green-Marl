@@ -173,6 +173,7 @@ public:
     {
         if (type != GM_SYMTAB_FIELD) return true;
         this_scope = tab;
+        return true;
     }
     virtual bool apply(gm_symtab_entry* e, int type)
     {
@@ -180,6 +181,7 @@ public:
         if (curr_state == IN_LOOP) {
             save_target(e, this_scope, curr_top_scope);
         }
+        return true;
     }
 
     void save_target(gm_symtab_entry* t, gm_symtab* from, gm_symtab* to)

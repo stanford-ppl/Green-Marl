@@ -91,6 +91,7 @@ class make_all_seq_t : public gm_apply
                 ast_foreach* fe = (ast_foreach*) s;
                 fe->set_sequential(true);
             }
+            return true;
         }
 };
 

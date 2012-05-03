@@ -56,6 +56,7 @@ public:
 
         if (master_context) master_mode_post(s);
         else vertex_mode_post(s);
+        return true;
     }
 #define ASSERT_MARKED(s)   (assert(s_mark->find(s) != s_mark->end()))
 #define MARKED_AS_SEQ(s)   (s_mark->find(s)->second == GPS_TYPE_SEQ)

@@ -32,7 +32,7 @@ static bool is_conflict(list_t& L, gm_symtab_entry* t, gm_symtab_entry* b, int r
     }
     return false;
 }
-static bool add_bound(list_t& L, gm_symtab_entry* t, gm_symtab_entry* b, int r_type)
+static void add_bound(list_t& L, gm_symtab_entry* t, gm_symtab_entry* b, int r_type)
 {
     bound_info_t *T = new bound_info_t();
     T->target = t;
@@ -92,7 +92,7 @@ static bool check_add_and_report_conflicts(list_t& L, gm_rwinfo_map B)
     }
     return true;
 }
-static bool remove_all(list_t& L, gm_rwinfo_map B)
+static void remove_all(list_t& L, gm_rwinfo_map B)
 {
     gm_rwinfo_map::iterator i;
     for(i=B.begin(); i!= B.end(); i++) {

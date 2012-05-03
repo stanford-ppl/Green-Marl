@@ -111,6 +111,7 @@ public:
                 delete f;
             }
         }
+        return true;
     }
 
 
@@ -206,7 +207,7 @@ public:
             }
 
         }
-
+        return true;
 
         // TODO: procedure call
     }

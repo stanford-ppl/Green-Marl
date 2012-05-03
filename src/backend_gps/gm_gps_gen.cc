@@ -44,7 +44,7 @@ bool gm_gps_gen::open_output_files()
     Body.set_output_file(f_body);
 
     get_lib()->set_code_writer(&Body);
-
+    return true;
 }
 void gm_gps_gen::close_output_files()
 {

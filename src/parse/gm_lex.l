@@ -191,6 +191,7 @@ int GM_start_parse(char* fname)
     token_begin_next = 0;
     token_begin = 0;
     token_len = 0;
+    return 1;
 }
 
 static int GetNextLine()    // read a line from file

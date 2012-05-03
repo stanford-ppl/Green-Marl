@@ -48,6 +48,7 @@ bool gm_cpp_gen::open_output_files()
     Body.set_output_file(f_body);
 
     get_lib()->set_code_writer(&Body);
+    return true;
 
 }
 void gm_cpp_gen::close_output_files()
@@ -897,7 +898,7 @@ void gm_cpp_gen::generate_sent_reduce_argmin_assign(ast_assign *a)
 
     Body.pushln("}"); // end of reduction
     // clean-up
-    for(i=0;i<L.size(); i++)
+    for(i=0;i<(int)L.size(); i++)
         delete [] names[i];
     delete [] names;
     delete [] rhs_temp;

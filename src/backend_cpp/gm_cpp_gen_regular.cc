@@ -39,6 +39,7 @@ public:
                 targets.push_back(fe->get_body());
             }
         }
+        return true;
     }
 
     void post_process()

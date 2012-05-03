@@ -91,7 +91,7 @@ class ss2_group_assign : public gm_apply {
         // 5. rip off nop.
         //----------------------------------------------------
         gm_add_sent_after(a, NOP);
-        ast_sentblock *SB = (ast_sentblock*) a->get_parent();
+        //ast_sentblock *SB = (ast_sentblock*) a->get_parent();
         gm_ripoff_sent(a);
         ast_foreach* fe = create_surrounding_fe(a);
         gm_add_sent_after(NOP, fe);

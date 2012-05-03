@@ -378,10 +378,10 @@ bool gm_typechecker_stage_3::check_uop(ast_expr* e)
         //
         bool possible = 
             (gm_is_numeric_type(dest_type) && gm_is_numeric_type(exp_type)) ||
-            (gm_is_boolean_type(dest_type) && gm_is_boolean_type(exp_type) ||
+            (gm_is_boolean_type(dest_type) && gm_is_boolean_type(exp_type)) ||
             (gm_is_numeric_type(dest_type) && gm_is_nodeedge_type(exp_type)) ||
             false
-             ); 
+             ; 
                       
         if (!possible) {
             gm_type_error(GM_ERROR_TYPE_CONVERSION_BOOL_NUM, l,c,"");

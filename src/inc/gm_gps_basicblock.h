@@ -41,7 +41,7 @@ class gm_gps_basic_block {
     bool is_after_vertex() {return after_vertex;}
     void set_type(int t) {type = t;}
     void set_id(int i) {id = i;}
-    bool set_after_vertex(bool b) {after_vertex =  b;}
+    void set_after_vertex(bool b) {after_vertex =  b;}
 
     int get_num_exits() {return exits.size();}
     gm_gps_basic_block* get_nth_exit(int n) {return exits[n];}
@@ -67,7 +67,7 @@ class gm_gps_basic_block {
     void update_entry_from(gm_gps_basic_block* old, gm_gps_basic_block* to)
     {
         assert(to!=this);
-        for(int i =0;i<entries.size();i++)
+        for(int i =0;i<(int)entries.size();i++)
         {
             if (entries[i] == old) {
                 entries[i] = to;
@@ -123,7 +123,8 @@ public:
     gps_syminfo* find_symbol_info(gm_symtab_entry *sym) {
         if (symbols.find(sym) == symbols.end())
             return NULL;
-        else symbols.find(sym)->second;
+        else 
+            return symbols.find(sym)->second;
     }
     void add_symbol_info(gm_symtab_entry *sym,gps_syminfo* info)
     {
@@ -138,7 +139,7 @@ class gps_apply_bb {
 public:
     virtual void apply(gm_gps_basic_block* b)=0;
     virtual bool has_changed() {return changed;}
-    virtual bool set_changed(bool b) {changed = b;} 
+    virtual void set_changed(bool b) {changed = b;} 
 protected:
     bool changed;
 };
@@ -146,7 +147,7 @@ protected:
 class gps_apply_bb_ast : public gm_apply, public gps_apply_bb 
 {
 public:
-    gps_apply_bb_ast() : _under_receiver(false),_is_post(false), _is_pre(true), _receiver_type(GPS_COMM_NESTED) {}
+    gps_apply_bb_ast() : _curr(NULL), _under_receiver(false),_is_post(false), _is_pre(true), _receiver_type(GPS_COMM_NESTED) {}
 
     // defined in gm_gps_misc.cc
     virtual void apply(gm_gps_basic_block* b);
@@ -160,16 +161,16 @@ public:
     // set by traverse engine
 protected:
     gm_gps_basic_block *_curr;
+    bool _under_receiver;
     bool _is_post;
     bool _is_pre;
+    int  _receiver_type;  // GPS_COMM_NESTED, COMM_RAND_WRITE
 
     bool is_under_receiver_traverse() {return _under_receiver;}
     void  set_under_receiver_traverse(bool b) {_under_receiver = b;}
     bool get_receiver_type() {return _receiver_type; } 
     void set_receiver_type(int i) {_receiver_type = i;}
 
-    bool _under_receiver;
-    int  _receiver_type;  // GPS_COMM_NESTED, COMM_RAND_WRITE
 };
 
 bool gps_bb_apply_until_no_change(gm_gps_basic_block* entry, gps_apply_bb* apply);

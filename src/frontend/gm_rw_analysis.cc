@@ -465,7 +465,7 @@ bool gm_rw_analysis::apply_foreign(ast_foreign * f)
     //-----------------------------------------
     std::list<ast_node*>& L =f->get_modified();
     std::list<ast_node*>::iterator I;
-    gm_rwinfo* new_entry;
+    gm_rwinfo* new_entry=NULL;
     for (I= L.begin(); I!= L.end(); I++) {
         if ((*I)->get_nodetype() == AST_ID) {
             ast_id* id = (ast_id*) *I;
@@ -1334,6 +1334,7 @@ class gm_print_rw_info : public gm_apply
                  (s->get_parent()->get_nodetype() != AST_PROCDEF))) {
                 _tab --;
             }
+            return true;
         }
         virtual void begin_context(ast_node* n) {_tab++;} //printf("XXXX:%d\n",_tab);}
         virtual void end_context(ast_node* n) {_tab--;} //printf("YYYY\n");}

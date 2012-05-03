@@ -283,6 +283,7 @@ public:
     check_sym_used(gm_symtab_entry* t) { set_for_id(true); _target = t; _used = false;}
     virtual bool apply(ast_id* i) {
         if (i->getSymInfo() == _target) {_used = true;}
+        return true;
     }
     bool is_used() {return _used;}
 

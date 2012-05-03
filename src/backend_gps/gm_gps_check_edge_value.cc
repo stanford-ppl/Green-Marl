@@ -140,6 +140,7 @@ public:
             e->add_info_bool(GPS_FLAG_EDGE_DEFINED_INNER, true);
             inner_loop->add_info_bool(GPS_FLAG_EDGE_DEFINING_INNER, true);
         }
+        return true;
     }
 
     virtual bool apply(ast_sent* s)  

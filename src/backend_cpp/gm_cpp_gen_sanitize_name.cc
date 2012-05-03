@@ -33,6 +33,7 @@ public:
         char* new_name =  FE.voca_temp_name(buf, NULL, true);
         id->set_genname(new_name);
         FE.voca_add(new_name);
+        return true;
     } 
 };
 

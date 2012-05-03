@@ -311,19 +311,19 @@ class gm_rwinfo_query {
     gm_rwinfo_query() : 
         _check_range(false), _check_driver(false), _check_always(false),
         _check_reduceop(false), _check_bound(false),
-        range(GM_RANGE_INVALID), driver(NULL), always(true), reduce_op(GMREDUCE_NULL),
-        bound(NULL){}
-    bool check_range(int r) {_check_range = true, range = r;}
-    bool check_driver(gm_symtab_entry* d) {_check_driver = true, driver = d;}
-    bool check_always(bool a) {_check_always = true; always = a;}
-    bool check_reduce_op(int o) {_check_reduceop = true; reduce_op = o;}
-    bool check_bound(gm_symtab_entry* b) {_check_bound = true; bound = b;}
+        range(GM_RANGE_INVALID), reduce_op(GMREDUCE_NULL),
+        driver(NULL), bound(NULL), always(true) {}
+    void check_range(int r) {_check_range = true, range = r;}
+    void check_driver(gm_symtab_entry* d) {_check_driver = true, driver = d;}
+    void check_always(bool a) {_check_always = true; always = a;}
+    void check_reduce_op(int o) {_check_reduceop = true; reduce_op = o;}
+    void check_bound(gm_symtab_entry* b) {_check_bound = true; bound = b;}
     //bool is_any_set() {return _check_range || _check_driver || _check_always || _check_reduceop || _check_bound;}
 
     bool _check_range, _check_driver, _check_always;
     bool _check_reduceop, _check_bound;
     int range, reduce_op;
-    gm_symtab_entry *bound, *driver;
+    gm_symtab_entry *driver, *bound;
     bool always;
 };
     

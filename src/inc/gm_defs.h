@@ -348,4 +348,17 @@ static enum {   // 16 bit bitmap
 } GM_ACCESS_T;
 
 inline static bool gm_is_collection_access_none(int i)  {return (i==GMACCESS_NONE);}
+
+static enum {
+    GMUSAGE_READ_ONLY,
+    GMUSAGE_WRITE_FIRST,
+    GMUSAGE_READ_WRITE,
+    GMUSAGE_UNUSED,
+    GMUSAGE_INVALID
+} GM_PROP_USAGE_T;
+
+//DEF_STRING(GMUSAGE_PROPERTY);
+
 #endif 
+
+

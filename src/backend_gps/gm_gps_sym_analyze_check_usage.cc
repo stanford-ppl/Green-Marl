@@ -82,6 +82,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                 assert(false);
             }
         }
+        return true;
     }
 
     virtual bool apply2(ast_sent * s) {
@@ -90,6 +91,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             foreach_depth--;
         }
         target_is_edge = false;
+        return true;
     }
 
     virtual bool apply(ast_expr* e) 
@@ -179,6 +181,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             }
             tg->getSymInfo()->add_info_bool(GPS_FLAG_COMM_SYMBOL, true);
         }
+        return true;
     }
 
     protected:

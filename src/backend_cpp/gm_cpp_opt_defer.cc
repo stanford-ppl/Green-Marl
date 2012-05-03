@@ -82,6 +82,7 @@ public:
                 target_foreach->push_back(fe);
             }
         } 
+        return true;
     }
 
     bool find_deferred_writes(ast_procdef *s) {
@@ -253,6 +254,7 @@ public:
                 }
             }
         }
+        return true;
     }
     void replace_da(gm_symtab_entry *o, gm_symtab_entry *n, ast_sent* _s) {
         e_old = o;

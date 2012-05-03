@@ -26,7 +26,7 @@ void ast_idlist::dump_tree(int ind_lv)
     assert(parent!=NULL);
     IND(ind_lv);
     printf("[");
-    for(int i=0;i<lst.size();i++){
+    for(int i=0;i<(int)lst.size();i++){
         ast_id* id = lst[i];
         id->dump_tree(0);
         printf(" ");

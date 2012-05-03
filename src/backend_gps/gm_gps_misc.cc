@@ -43,7 +43,7 @@ void gm_gps_basic_block::reproduce_sents()
                     ast_foreach* fe = U.fe;
                     fe->reproduce(0);
                 }
-                else if (U.type_of_comm = GPS_COMM_RANDOM_WRITE) 
+                else if (U.type_of_comm == GPS_COMM_RANDOM_WRITE) 
                 {
                     gm_push_reproduce((char*)"//Receive Random Write Sent"); 
                     gm_newline_reproduce(); 
@@ -89,7 +89,7 @@ void gm_gps_basic_block::print()
             );
     //printf("\tnum_entries:%d\n", entries.size());
     printf("\t[ ");
-    for(int i=0;i<entries.size();i++) {
+    for(int i=0;i<(int)entries.size();i++) {
         printf("%d ", entries[i]->get_id());
     }
     printf("]=>...\n");
@@ -97,7 +97,7 @@ void gm_gps_basic_block::print()
     reproduce_sents();
     printf("\t...=>[ ");
     printf("\n");
-    for(int i=0;i<exits.size();i++) {
+    for(int i=0;i<(int)exits.size();i++) {
         printf("%d ", exits[i]->get_id());
     }
     printf("]\n");

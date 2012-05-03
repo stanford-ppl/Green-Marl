@@ -79,7 +79,9 @@ static enum {
 class gm_symtab {
     public:
         gm_symtab(int _symtab_type, ast_node* _ast) : 
-            symtab_type(_symtab_type), parent(NULL), ast(_ast) {}
+            parent(NULL), 
+            symtab_type(_symtab_type), 
+            ast(_ast) {}
         int get_symtab_type() {return symtab_type;}
 
         virtual ~gm_symtab() {
@@ -94,6 +96,7 @@ class gm_symtab {
                 gm_symtab_entry* e = *I;
                 delete e;
             }
+            //printf("delete:%p\n", this);
         }
 
         void set_parent(gm_symtab* p) {parent = p;}
@@ -107,6 +110,7 @@ class gm_symtab {
                 bool isRA=true, bool isWA=true)
         { 
             assert(id->getSymInfo() == NULL);
+            //printf("check duplicate for %s\n", id->get_orgname());
             old_def = find_symbol(id); 
             if (old_def != NULL) return false;
             add_entry(id, type, isRA, isWA); // copy is created inside 
@@ -124,6 +128,7 @@ class gm_symtab {
 
         gm_symtab_entry* find_symbol(ast_id* id) {
             //for(int i=0;i<entries.size(); i++) {
+                //printf("this:%p\n", this);
             std::set<gm_symtab_entry*>::iterator I;
             for(I=entries.begin(); I!=entries.end(); I++) {
                 gm_symtab_entry* e = *I;
@@ -206,7 +211,7 @@ class gm_symtab {
 class gm_scope
 {
     public:
-        gm_scope() : node_prop(false), for_group_expr(false), G(NULL), RT(NULL), tg(NULL) {}
+        gm_scope() :  for_group_expr(false), G(NULL), node_prop(false), RT(NULL), tg(NULL) {}
         virtual ~gm_scope() {}
 
     public:
@@ -249,7 +254,7 @@ class gm_scope
         bool is_for_group_expr() {return for_group_expr;}
         bool is_for_node_prop() {return node_prop;}
         gm_symtab_entry* get_target_sym() {return G;}
-        bool set_group_expr(bool for_group, gm_symtab_entry *g= NULL, bool np=false) {
+        void set_group_expr(bool for_group, gm_symtab_entry *g= NULL, bool np=false) {
             for_group_expr = for_group;G = g; node_prop = np;}
 
         void set_return_type(ast_typedecl* R) {RT = R;}

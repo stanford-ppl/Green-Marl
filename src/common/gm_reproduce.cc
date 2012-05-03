@@ -23,10 +23,10 @@ void ast_id::reproduce(int ind_level) {
 }
 
 void ast_idlist::reproduce(int ind_level) {
-    for(int i=0;i<lst.size();i++){
+    for(int i=0;i<(int)lst.size();i++){
         ast_id* id = lst[i];
         id->reproduce(0);
-        if (i!=(lst.size()-1)) 
+        if (i!=(int)(lst.size()-1)) 
             Out.push(", ");
     }
 }
@@ -572,7 +572,7 @@ void ast_foreign::reproduce(int ind_level)
         {
             ast_node* n= *I;
             n->reproduce(ind_level);
-            if (cnt != (modified.size()-1))
+            if (cnt != (int)(modified.size()-1))
                 Out.push(", ");
         }
         Out.push("]");

@@ -56,6 +56,7 @@ public:
                 e->add_info_bool(CPPBE_INFO_NEED_FROM_INFO, true);
             }
         }
+        return true;
     }
                          
     bool apply(ast_sent* s)
