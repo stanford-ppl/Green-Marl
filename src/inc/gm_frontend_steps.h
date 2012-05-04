@@ -20,6 +20,7 @@ GM_COMPILE_STEP(gm_fe_rw_analysis,        "Do RW analysis")
 GM_COMPILE_STEP(gm_fe_reduce_error_check, "Check reduction boundary errors")
 GM_COMPILE_STEP(gm_fe_rw_analysis_check2, "Check RW conflict errors")
 GM_COMPILE_STEP(gm_fe_remove_vardecl,     "Remove variable declarations (Use Symtab)")
+GM_COMPILE_STEP(gm_fe_check_property_argument_usage, "Checking property usages")
 
 // the following step is only applied during debug
 GM_COMPILE_STEP(gm_fe_restore_vardecl,    "Restore variable declarations (For Code Generation)")

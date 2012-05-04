@@ -629,6 +629,7 @@ void gm_frontend::init_steps()
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_reduce_error_check));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_rw_analysis_check2));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_remove_vardecl));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_check_property_argument_usage));
 }
 
 bool gm_frontend::do_local_frontend_process()
