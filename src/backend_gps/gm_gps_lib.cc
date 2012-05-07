@@ -423,14 +423,24 @@ void gm_gpslib::generate_vertex_prop_class_details(
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I;
-	Body.push(" + \"");
-	if (firstProperty) {
-	  firstProperty = false;
-	} else {
-	  Body.push("\\t");
-	}
-	sprintf(temp, "%s: \" + %s", sym->getId()->get_genname(), sym->getId()->get_genname());
-	Body.push(temp);
+        if (sym->find_info(GMUSAGE_PROPERTY) == NULL) // this property is set to procedure argument only
+        {
+            //printf("no argument property :%s\n", sym->getId()->get_genname());
+            continue;
+        }
+        if (sym->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_IN) // Used as input only
+        {
+            //printf("used as input only :%s\n", sym->getId()->get_genname());
+            continue;
+        }
+	    Body.push(" + \"");
+	    if (firstProperty) {
+	        firstProperty = false;
+	    } else {
+	        Body.push("\\t");
+	    }
+	    sprintf(temp, "%s: \" + %s", sym->getId()->get_genname(), sym->getId()->get_genname());
+	    Body.push(temp);
     }
     Body.pushln(";");
     Body.pushln("}");

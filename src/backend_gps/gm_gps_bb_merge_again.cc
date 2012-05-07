@@ -390,9 +390,8 @@ void gm_gps_opt_merge_ebb_again::process(ast_procdef* p)
 
     gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);
     gps_bb* entry = info->get_entry_basic_block();
-    
 
-    gps_bb_print_all(entry);
+    //gps_bb_print_all(entry);
 
     //-------------------------------------------
     // find linear segments
@@ -412,71 +411,21 @@ void gm_gps_opt_merge_ebb_again::process(ast_procdef* p)
         std::list<gps_bb*>& CL = *L;
         std::list<gps_bb*>::iterator I;
         if (CL.size() == 0) continue;
-        printf("//==== SEGMENT BEGIN\n");
+        /*
+        //printf("//==== SEGMENT BEGIN\n");
         for(I=CL.begin(); I!=CL.end(); I++)
         {
             gps_bb* b = *I;
             assert(b->get_num_entries() <= 1);
             // Test Print
-            b->print();
+            //b->print();
         
         }
+        */
+
         find_pattern_and_merge_bb(CL);
         //printf("\n");
     }
 
 }
 
-/*
-//    [prev -> BB -> next] ==>
-//    [prev -> BB(S) -> new_seq -> BB(R) -> next]
-gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
-{
-    //printf("splitting BB id = %d\n", BB->get_id());
-
-    assert(BB->is_vertex());
-    //assert(BB->has_sender());
-    assert(BB->has_receiver());
-    assert(BB->get_num_entries() == 1);
-    assert(BB->get_num_exits() == 1);
-
-    gps_bb* prev = BB->get_nth_entry(0);
-    gps_bb* next = BB->get_nth_exit(0);
-
-    assert(!prev->is_vertex());
-    assert(!next->is_vertex());
-    assert(next->get_num_entries() == 1);
-
-    gps_bb* new_seq = new gps_bb(gen->issue_basicblock_id());
-    new_seq->set_after_vertex(true);
-
-    gps_bb* new_BB = new gps_bb(gen->issue_basicblock_id(), GM_GPS_BBTYPE_BEGIN_VERTEX);
-
-    //--------------------------------------
-    // migrate receiver list to new_BB
-    //--------------------------------------
-    std::list<gm_gps_comm_unit>& L = BB->get_receivers(); 
-    std::list<gm_gps_comm_unit>::iterator I;
-    for(I=L.begin(); I!= L.end(); I++)
-    {
-        new_BB ->add_receiver(*I);
-    }
-    BB->clear_receivers();
-
-    // insert basic blocks
-    BB->remove_all_exits();
-    next->remove_all_entries();
-
-    BB->add_exit(new_seq);
-    new_seq->add_exit(new_BB);
-    new_BB->add_exit(next);
-
-    std::list<gm_gps_basic_block*>& BBLIST = gen->get_basic_blocks();
-    BBLIST.push_back(new_seq);
-    BBLIST.push_back(new_BB);
-
-    return new_BB;
-
-}
-
-*/
