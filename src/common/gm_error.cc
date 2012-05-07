@@ -229,6 +229,9 @@ void gm_backend_error(int errno, const char* str1, const char* str2)
         case GM_ERROR_GPS_NUM_PROCS:
             printf("Error: There must be one and only one procedure\n");
             break;
+        case GM_ERROR_GPS_PROC_NAME:
+            printf("Error: The name of the procedure(%s) must match with the name of file (%s)\n", str1, str2);
+            break;
         default:
             assert(false);
             printf("Unknown backend error\n"); break;

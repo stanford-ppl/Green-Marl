@@ -40,6 +40,7 @@ class gm_gpslib : public gm_graph_library {
 
     virtual void generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block* b);
 
+    virtual void generate_broadcast_reduce_initialize_master(ast_id* id, gm_code_writer& Body, int reduce_type, const char* base_value);
     virtual void generate_broadcast_prepare(gm_code_writer& Body);
     virtual void generate_broadcast_state_master(const char* state_var, gm_code_writer& Body);
     virtual void generate_broadcast_variable_type(int gm_type_id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
@@ -132,6 +133,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual ~gm_gps_gen() { close_output_files(); delete [] dname; delete [] fname; }
         virtual void setTargetDir(const char* dname) ;
         virtual void setFileName(const char* fname) ;
+        const char* getFileName() {return fname;}
 
         virtual bool do_local_optimize_lib() {return get_lib()->do_local_optimize();}
         virtual bool do_local_optimize() ;

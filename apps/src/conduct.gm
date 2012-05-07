@@ -1,4 +1,4 @@
-Proc conductance(G: Graph, member: N_P<Int>(G), num: Int) : Float
+Proc conduct(G: Graph, member: N_P<Int>(G), num: Int) : Float
 {
     Int Din, Dout, Cross;
 

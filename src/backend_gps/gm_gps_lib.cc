@@ -57,6 +57,19 @@ void gm_gpslib::generate_receive_state_vertex(
     Body.pushln(")).getValue().getValue();");
 }
 
+void gm_gpslib::generate_broadcast_reduce_initialize_master(ast_id* id, gm_code_writer& Body, int reduce_type, const char* base_value)
+{
+    Body.push("getGlobalObjectsMap().putOrUpdateGlobalObject(");
+    Body.push(create_key_string(id));
+    Body.push(",");
+    Body.push("new ");
+    generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_type);  // create BV by type
+    Body.push("(");
+    Body.push(base_value);
+    Body.push(")");
+    Body.pushln(");");
+
+}
 
 void gm_gpslib::generate_broadcast_send_master(ast_id* id, gm_code_writer& Body)
 {
@@ -101,10 +114,10 @@ void gm_gpslib::generate_broadcast_variable_type(
     // Generate following string
 
     //---------------------------------------------------
-    // Type:  Long, Int, Double, Float, Bool
+    // Type:  Long, Int, Double, Float, Bool, NODE,EDGE
     //---------------------------------------------------
-     if (gm_is_node_compatible_type(type_id))
-         type_id = GMTYPE_NODE;
+     if (gm_is_node_compatible_type(type_id)) type_id = GMTYPE_NODE;
+     if (gm_is_edge_compatible_type(type_id)) type_id = GMTYPE_EDGE;
 
      switch(type_id)
      {
@@ -146,6 +159,32 @@ void gm_gpslib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Bo
     // Read from BV to local value
     get_main()->generate_lhs_id(id);
     Body.push(" = ");
+    bool need_paren = false;
+
+    if (reduce_op_type != GMREDUCE_NULL) {
+        if (reduce_op_type == GMREDUCE_MIN) {
+            need_paren = true;
+            Body.push("Math.min(");
+            get_main()->generate_rhs_id(id);
+            Body.push(",");
+        }
+        else if (reduce_op_type == GMREDUCE_MAX) {
+            need_paren = true;
+            Body.push("Math.max(");
+            get_main()->generate_rhs_id(id);
+            Body.push(",");
+        }
+        else {
+            get_main()->generate_rhs_id(id);
+            switch(reduce_op_type) {
+                case GMREDUCE_PLUS: Body.push("+"); break;
+                case GMREDUCE_MULT: Body.push("*"); break;
+                case GMREDUCE_AND:  Body.push("&&"); break;
+                case GMREDUCE_OR:   Body.push("||"); break;
+                default: assert(false);
+            }
+        }
+    }
 
     Body.push("((");
     generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
@@ -153,7 +192,10 @@ void gm_gpslib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Bo
     Body.push("getGlobalObjectsMap().getGlobalObject(");
     Body.push(create_key_string(id));
     Body.push("))");
-    Body.pushln(".getValue().getValue();");
+    Body.push(".getValue().getValue()");
+    if (need_paren)
+        Body.push(")");
+    Body.pushln(";");
 }
 
 
@@ -212,8 +254,11 @@ int gm_gpslib::get_type_size(int gm_type )
     return get_java_type_size(gm_type);
 }
 
-static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body)
+static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gpslib* lib)
 {
+    if (gm_is_node_compatible_type(gm_type)) gm_type = GMTYPE_NODE;
+    if (gm_is_edge_compatible_type(gm_type)) gm_type = GMTYPE_EDGE;
+
     // assumtion: IOB name is IOB
     Body.push("IOB.");
     switch(gm_type) {
@@ -222,6 +267,13 @@ static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body)
         case GMTYPE_FLOAT:  Body.push("putFloat"); break;
         case GMTYPE_DOUBLE: Body.push("putDouble"); break;
         case GMTYPE_BOOL:   Body.push("put"); break;
+        case GMTYPE_NODE:
+            if (lib->is_node_type_int()) {Body.push("putInt"); break;}
+            else                         {Body.push("putLong"); break;}
+        case GMTYPE_EDGE:
+            if (lib->is_edge_type_int()) {Body.push("putInt"); break;}
+            else                         {Body.push("putLong"); break;}
+        default: assert(false);
     }
     Body.push("(");
     if (gm_type == GMTYPE_BOOL) {
@@ -235,10 +287,8 @@ static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body)
 }
 static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gpslib* lib)
 {
-    if (gm_is_node_compatible_type(gm_type)) {
-        if (lib->is_node_type_int()) gm_type = GMTYPE_INT;
-        else gm_type = GMTYPE_LONG;
-    }
+    if (gm_is_node_compatible_type(gm_type)) gm_type = GMTYPE_NODE;
+    if (gm_is_edge_compatible_type(gm_type)) gm_type = GMTYPE_EDGE;
 
     // assumtion: IOB name is IOB
     Body.push(name);
@@ -249,6 +299,12 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gp
         case GMTYPE_FLOAT:  Body.push("getFloat()"); break;
         case GMTYPE_DOUBLE: Body.push("getDouble()"); break;
         case GMTYPE_BOOL:   Body.push("get()==0?false:true"); break;
+        case GMTYPE_NODE:
+            if (lib->is_node_type_int()) {Body.push("getInt()"); break;}
+            else                         {Body.push("getLong()"); break;}
+        case GMTYPE_EDGE:
+            if (lib->is_edge_type_int()) {Body.push("getInt()"); break;}
+            else                         {Body.push("getLong()"); break;}
         default: assert(false);
     }
     Body.pushln(";");
@@ -275,6 +331,25 @@ static void genReadByte(const char* name, int gm_type, int offset, gm_code_write
     Body.pushln(str_buf);
 }
 
+static void get_java_parse_string(gm_gpslib* L, int gm_type,const char*& name1, const char*& name2)
+{
+    switch(gm_type) {
+        case GMTYPE_INT:   name1 = "Integer"; name2 = "parseInt"; break;
+        case GMTYPE_LONG:  name1 = "Long"; name2 = "parseLong"; break;
+        case GMTYPE_FLOAT: name1 = "Float"; name2 = "parseFloat"; break;
+        case GMTYPE_DOUBLE:name1 = "Double"; name2 = "parseDouble"; break;
+        case GMTYPE_BOOL:  name1 = "Boolean"; name2 = "parseBoolean"; break;
+        case GMTYPE_NODE:  
+            if (L->is_node_type_int()) {name1 = "Integer"; name2 = "parseInt"; break;}
+            else                    {name1 = "Long"; name2 = "parseLong"; break;}
+        case GMTYPE_EDGE:  
+            if (L->is_edge_type_int()) {name1 = "Integer"; name2 = "parseInt"; break;}
+            else                    {name1 = "Long"; name2 = "parseLong"; break;}
+        default: assert(false);
+    }
+
+}
+
 void gm_gpslib::generate_vertex_prop_class_details(
             std::set<gm_symtab_entry* >& prop,
             gm_code_writer& Body, bool is_edge_prop)
@@ -298,7 +373,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     {
         gm_symtab_entry * sym = *I; 
         genPutIOB(sym->getId()->get_genname(), 
-                sym->getType()->getTargetTypeSummary(), Body);
+                sym->getType()->getTargetTypeSummary(), Body, this);
     }
     Body.pushln("}");
 
@@ -360,37 +435,41 @@ void gm_gpslib::generate_vertex_prop_class_details(
     Body.pushln(";");
     Body.pushln("}");
 
-    if (is_edge_prop) {
+    if (is_edge_prop && prop.size() > 0) {
         Body.pushln("//Input Data Parsing");
         Body.pushln("@Override");
         Body.pushln("public void read(String inputString) {");
-        Body.pushln("String[] split = inputString.split(\"###\");");
-        bool firstProperty = true;
-        int cnt = 0;
-        for(I=prop.begin(); I!=prop.end(); I++)
+        if (prop.size() == (int) 1) 
         {
-            gm_symtab_entry * sym = *I;
-            const char* name1; 
-            const char* name2;
-            switch(sym->getType()->getTargetTypeSummary()) {
-                case GMTYPE_INT:   name1 = "Integer"; name2 = "parseInt"; break;
-                case GMTYPE_LONG:  name1 = "Long"; name2 = "parseLong"; break;
-                case GMTYPE_FLOAT: name1 = "Float"; name2 = "parseFloat"; break;
-                case GMTYPE_DOUBLE:name1 = "Double"; name2 = "parseDouble"; break;
-                case GMTYPE_BOOL:  name1 = "Boolean"; name2 = "parseBoolean"; break;
-                case GMTYPE_NODE:  
-                    if (is_node_type_int()) {name1 = "Integer"; name2 = "parseInt"; break;}
-                    else                    {name1 = "Long"; name2 = "parseLong"; break;}
-                case GMTYPE_EDGE:  
-                    if (is_edge_type_int()) {name1 = "Integer"; name2 = "parseInt"; break;}
-                    else                    {name1 = "Long"; name2 = "parseLong"; break;}
-                default: assert(false);
-            }
-             sprintf(temp, "this.%s = %s.%s((split[%d]==null)?\"0\":split[%d]);",
+            for(I=prop.begin(); I!=prop.end(); I++)
+            {
+                gm_symtab_entry * sym = *I;
+                const char* name1; 
+                const char* name2;
+                get_java_parse_string(this,sym->getType()->getTargetTypeSummary(), name1, name2); 
+                sprintf(temp, "this.%s = %s.%s(inputString);",
+                    sym->getId()->get_genname(),
+                    name1, name2);
+                Body.pushln(temp);
+             }
+        }
+        else {
+            Body.pushln("String[] split = inputString.split(\"###\");");
+            bool firstProperty = true;
+            int cnt = 0;
+            for(I=prop.begin(); I!=prop.end(); I++)
+            {
+                gm_symtab_entry * sym = *I;
+                const char* name1; 
+                const char* name2;
+
+                get_java_parse_string(this,sym->getType()->getTargetTypeSummary(), name1, name2); 
+                sprintf(temp, "this.%s = %s.%s((split[%d]==null)?\"0\":split[%d]);",
                      sym->getId()->get_genname(),
                      name1, name2, cnt, cnt);
-             Body.pushln(temp);
-             cnt++;
+                Body.pushln(temp);
+                cnt++;
+            }
         }
         Body.pushln("}");
     }
@@ -412,7 +491,7 @@ void gm_gpslib::generate_vertex_prop_access_lhs(ast_id* id, gm_code_writer& Body
 void gm_gpslib::generate_vertex_prop_access_lhs_edge(ast_id* id, gm_code_writer& Body)
 {
     char temp[1024];
-    sprintf(temp,"_outEdge.getValue().%s", id->get_genname());
+    sprintf(temp,"_outEdge.getEdgeValue().%s", id->get_genname());
     Body.push(temp);
 }
 void gm_gpslib::generate_vertex_prop_access_remote_lhs(ast_id* id, gm_code_writer& Body)
@@ -504,7 +583,7 @@ static void generate_message_write_each(gm_gpslib* lib, int cnt, int gm_type, gm
     for(int i=0;i<cnt; i++) {
         const char* vname = 
             lib->get_message_field_var_name(gm_type, i);
-        genPutIOB(vname, gm_type, Body);
+        genPutIOB(vname, gm_type, Body, lib);
         delete [] vname;
     }
 }
@@ -857,7 +936,10 @@ void gm_gpslib::generate_message_receive_begin(gm_gps_comm_unit& U, gm_code_writ
   {
     gm_gps_communication_symbol_info& SYM = *I;
     gm_symtab_entry * e = SYM.symbol;
-    if (e->getType()->is_property() || !is_symbol_defined_in_bb(b, e))
+
+    // check it once again later
+    if (e->getType()->is_property() || e->getType()->is_node_compatible() || 
+        e->getType()->is_edge_compatible() || !is_symbol_defined_in_bb(b, e))
     {
         const char* str = main->get_type_string(SYM.gm_type);
         Body.push(str);

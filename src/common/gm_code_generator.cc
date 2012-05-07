@@ -101,8 +101,14 @@ void gm_code_generator::generate_expr_val(ast_expr *e)
             _Body.push(temp);
             return ;
         case GMEXPR_FVAL:
-            sprintf(temp,"%lf",e->get_fval()); // to be changed
-            _Body.push(temp);
+            if (e->get_type_summary() == GMTYPE_FLOAT) {
+                sprintf(temp,"(float)(%lf)",e->get_fval()); // to be changed
+                _Body.push(temp);
+            }
+            else {
+                sprintf(temp,"%lf",e->get_fval()); // to be changed
+                _Body.push(temp);
+            }
             return ;
         case GMEXPR_BVAL:
             sprintf(temp,"%s",e->get_bval()?"true":"false");

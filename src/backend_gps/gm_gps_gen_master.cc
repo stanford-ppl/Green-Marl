@@ -401,6 +401,36 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
 
     Body.pushln("}"); // end of state function
 }
+static const char* get_reduce_base_value(int reduce_type, int gm_type)
+{
+    switch(reduce_type)
+    {
+        case GMREDUCE_PLUS: return "0";
+        case GMREDUCE_MULT: return "1";
+        case GMREDUCE_AND:  return "true";
+        case GMREDUCE_OR:   return "false";
+        case GMREDUCE_MIN:  
+            switch(gm_type) {
+                case GMTYPE_INT: return "Integer.MAX_VALUE";
+                case GMTYPE_LONG: return "Long.MAX_VALUE";
+                case GMTYPE_FLOAT: return "Float.MAX_VALUE";
+                case GMTYPE_DOUBLE: return "Double.MAX_VALUE";
+                default: assert(false); return "0";
+            }
+        case GMREDUCE_MAX:
+            switch(gm_type) {
+                case GMTYPE_INT: return "Integer.MIN_VALUE";
+                case GMTYPE_LONG: return "Long.MIN_VALUE";
+                case GMTYPE_FLOAT: return "Float.MIN_VALUE";
+                case GMTYPE_DOUBLE: return "Double.MIN_VALUE";
+                default: assert(false); return "0";
+            }
+        default:
+            assert( false);
+    }
+    return "0";
+}
+
 void gm_gps_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b) 
 {
     get_lib()->generate_broadcast_prepare(Body);
@@ -413,11 +443,20 @@ void gm_gps_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b)
         gps_syminfo* local_info = I->second;
         gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(TAG_BB_USAGE);
         if (!global_info->is_scalar()) continue;
+        if (local_info->is_used_as_reduce()) {
+             int reduce_type = local_info->get_reduce_type();
+
+            //printf("being used as reduce :%s\n", I->first->getId()->get_genname());
+            get_lib()->generate_broadcast_reduce_initialize_master(I->first->getId(), Body, 
+                    reduce_type,
+                    get_reduce_base_value(reduce_type, I->first->getType()->getTypeSummary()));
+            // [TODO] global argmax
+            continue;
+        }
         if (!global_info->is_used_in_master() && !global_info->is_argument()) continue;
         if (local_info->is_used_as_rhs()) {
             // create a broad cast variable
-            get_lib()->generate_broadcast_send_master(
-                    I->first->getId(), Body);
+            get_lib()->generate_broadcast_send_master(I->first->getId(), Body);
         }
     }
 }

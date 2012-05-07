@@ -364,6 +364,17 @@ private:
 
 void gm_gps_opt_check_canonical::process(ast_procdef* proc)
 {
+    // Check number of procedure name is same to the filename
+    const char *fname = GPS_BE.getFileName();
+    assert(fname!=NULL);
+    if (strcmp(proc->get_procname()->get_genname(), fname) != 0) 
+    {
+        gm_backend_error(GM_ERROR_GPS_PROC_NAME,proc->get_procname()->get_genname(), fname);
+        set_okay(false);
+        return;
+    }
+
+
     // analyze_symbol_scope should be done before.
     gps_check_canonical_t T;
     proc->traverse(&T, true, true);
