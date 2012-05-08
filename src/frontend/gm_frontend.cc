@@ -13,9 +13,10 @@
 // front_end is a singleton. 
 extern gm_frontend FE;
 
-void GM_procdef_begin(ast_node* id) {
+void GM_procdef_begin(ast_node* id, bool b) {
     assert(id->get_nodetype() == AST_ID);
     ast_procdef* def = ast_procdef::begin_new_procdef((ast_id*)id);
+    def->set_local(b);
     FE.start_new_procdef(def);
 }
 void GM_procdef_finish() {

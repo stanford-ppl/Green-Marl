@@ -153,6 +153,10 @@ void gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_body_file)
      // declare in the header or body
      gm_code_writer& Out = is_body_file ? Body : Header;
 
+     if (!is_body_file && proc->is_local()) return;
+
+     if (proc->is_local()) Out.push("static ");
+
      // return type
      Out.push_spc(get_type_string(proc->get_return_type()));
      Out.push( proc->get_procname()->get_genname() );
@@ -437,7 +441,7 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb)
 
 void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
 {
-    if (sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY))
+    if (sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY) && !FE.get_current_proc()->is_local())
     {
         Body.pushln("//Initializations");
         sprintf(temp,"%s();", RT_INIT);

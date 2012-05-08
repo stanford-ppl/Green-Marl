@@ -71,6 +71,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 
 
     /* Keywords */
+"Local" {MarkToken(); return T_LOCAL;}
 "Procedure" {MarkToken(); return T_PROC;}
 "Proc" {MarkToken(); return T_PROC;}
 "InBFS" {MarkToken(); return T_BFS;}

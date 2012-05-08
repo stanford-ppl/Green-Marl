@@ -761,7 +761,7 @@ class ast_procdef : public ast_node {
         virtual bool has_scope() {return true;}
 
     private:
-        ast_procdef() : ast_node(AST_PROCDEF), id(NULL), sents(NULL), ret_type(NULL) {
+        ast_procdef() : ast_node(AST_PROCDEF), id(NULL), sents(NULL), ret_type(NULL),local(false) {
             create_symtabs();
         }
 
@@ -784,6 +784,9 @@ class ast_procdef : public ast_node {
         ast_typedecl* get_return_type() {return ret_type;}
         ast_id* get_procname() {return id;}
 
+        void set_local(bool b) {local = b;}
+        bool is_local() {return local;}
+
         
     private:
         ast_id* id;       // function name
@@ -791,6 +794,7 @@ class ast_procdef : public ast_node {
         std::list<ast_argdecl*> out_args;
         ast_sentblock* sents;
         ast_typedecl* ret_type;
+        bool local;
 };
 
 //-------------------------------------------------------

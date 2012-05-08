@@ -36,7 +36,7 @@
 
 
  /*  Reserved Words */
-%token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP
+%token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP T_LOCAL
 %token T_NSET T_NORDER T_NSEQ T_ITEMS
 %token T_DFS T_POST 
 %token T_INT T_FLOAT T_BOOL T_DOUBLE  T_LONG
@@ -111,7 +111,8 @@
   proc_head : proc_name '(' arg_declist1 ')' proc_return_opt
             | proc_name '(' arg_declist1 ';' arg_declist2 ')' proc_return_opt
 
-  proc_name: T_PROC id                  { GM_procdef_begin($2);  }
+  proc_name: T_PROC id                  { GM_procdef_begin($2, false);  }
+           | T_LOCAL id                 { GM_procdef_begin($2, true);  }
 
   arg_declist1 :
                | arg_declist

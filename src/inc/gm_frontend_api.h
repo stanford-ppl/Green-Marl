@@ -36,7 +36,7 @@ extern "C" {
     // AST Build functions
     // defined in GM_Frontend.cc (called by parser)
     //---------------------------------------------------
-    extern void GM_procdef_begin(ast_node* id);
+    extern void GM_procdef_begin(ast_node* id, bool is_local);
     extern void GM_procdef_add_argdecl(ast_node* node);
     extern void GM_procdef_add_out_argdecl(ast_node* node);
     extern void GM_procdef_setbody(ast_node* body);
