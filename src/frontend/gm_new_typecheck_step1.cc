@@ -83,7 +83,8 @@ public:
     bool is_okay() {return _is_okay ;}
 
     bool find_symbol_field(ast_field* f);
-    bool find_symbol_id(ast_id* id);
+    bool find_symbol_id(ast_id* id, bool print_error=true);
+    bool find_symbol_field_id(ast_id* id);
 
     bool gm_symbol_check_iter_header(ast_id* it, ast_id* src, int iter_type, ast_id* src2=NULL);
     bool gm_symbol_check_bfs_header(ast_id* it, ast_id* src, ast_id* root, int iter_type);
@@ -129,14 +130,15 @@ bool gm_check_target_graph(ast_id* id1, ast_id* id2)
 }
 
 
-bool gm_find_and_connect_symbol(ast_id* id, gm_symtab* begin)
+static bool gm_find_and_connect_symbol(ast_id* id, gm_symtab* begin, bool print_error=true)
 {
     assert(id != NULL);
     assert(id->get_orgname() != NULL);
 
     gm_symtab_entry* se = begin->find_symbol(id); 
     if (se == NULL) {
-        gm_type_error(GM_ERROR_UNDEFINED, id);
+        if (print_error)
+            gm_type_error(GM_ERROR_UNDEFINED, id);
         return false;
     }
 
@@ -617,7 +619,11 @@ bool gm_typechecker_stage_1::apply(ast_sent* s)
         {
             if ((*I)->get_nodetype() == AST_ID) {
                 ast_id* id = (ast_id*) (*I);
-                is_okay = find_symbol_id(id) && is_okay;
+                bool b = find_symbol_id(id, false); 
+                if (!b) {
+                    b = find_symbol_field_id(id); 
+                }
+                is_okay = b && is_okay;
             } else if ((*I)->get_nodetype() == AST_FIELD) {
                 ast_field* ff = (ast_field*) (*I);
                 is_okay = find_symbol_field(ff) && is_okay;
@@ -696,7 +702,11 @@ bool gm_typechecker_stage_1::apply(ast_expr* p)
                 is_okay = find_symbol_field((ast_field*)n) && is_okay;
             }
             else {
-                is_okay = find_symbol_id((ast_id*)n) && is_okay;
+                bool b = find_symbol_id((ast_id*)n, false); 
+                if (!b) {
+                    b = find_symbol_field_id((ast_id*)n); 
+                }
+                is_okay = b && is_okay;
             }
         }
     }
@@ -707,9 +717,13 @@ bool gm_typechecker_stage_1::apply(ast_expr* p)
   return is_okay;
 }
 
-bool gm_typechecker_stage_1::find_symbol_id(ast_id* id)
+bool gm_typechecker_stage_1::find_symbol_id(ast_id* id, bool print_error)
 {
-  return gm_find_and_connect_symbol(id, curr_sym);
+  return gm_find_and_connect_symbol(id, curr_sym, print_error);
+}
+bool gm_typechecker_stage_1::find_symbol_field_id(ast_id* id)
+{
+  return gm_find_and_connect_symbol(id, curr_field);
 }
 
 bool gm_typechecker_stage_1::find_symbol_field(ast_field* f)

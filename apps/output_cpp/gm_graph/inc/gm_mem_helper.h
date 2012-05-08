@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <vector>
 #include <list>
+#include "gm_graph_typedef.h"
+
 //---------------------------------------------------------
 // A thin runtime for object deletion management
 //---------------------------------------------------------
@@ -107,6 +109,12 @@ static inline bool*   gm_rt_allocate_bool (size_t sz, int thread_id=0)
 static inline double*  gm_rt_allocate_double(size_t sz, int thread_id=0)
 { 
     double* ptr = new double[sz];
+    _GM_MEM.save(ptr, 0, thread_id); 
+    return ptr;
+}
+static inline node_t*  gm_rt_allocate_node_t(size_t sz, int thread_id=0)
+{ 
+    node_t* ptr = new node_t[sz];
     _GM_MEM.save(ptr, 0, thread_id); 
     return ptr;
 }

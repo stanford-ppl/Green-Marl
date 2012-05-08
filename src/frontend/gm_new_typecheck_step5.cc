@@ -176,7 +176,7 @@ public:
             gm_symtab_entry* r_sym = rhs->get_bound_graph();
             assert(l_sym != NULL);
             if (r_sym == NULL) {
-                assert(gm_is_nil_type(summary_rhs));
+                assert(gm_is_nil_type(summary_rhs) || gm_is_foreign_expr_type(summary_rhs));
             }
             else {
                 if (l_sym != r_sym) {

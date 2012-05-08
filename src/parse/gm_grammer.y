@@ -128,8 +128,8 @@
               | proc_return
 
   proc_return : ':' prim_type           { GM_procdef_return_type($2);}  /* return of function should be always primitive type */
+              | ':' node_type           { GM_procdef_return_type($2);}
               /*| ':' graph_type          { GM_procdef_return_type($2);}*/
-              /*| ':' node_type           { GM_procdef_return_type($2);}*/
 
 
   arg_decl : arg_target ':' typedecl           { $$ = GM_procdef_arg($1, $3);}
