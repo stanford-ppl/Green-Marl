@@ -30,7 +30,7 @@ public:
     virtual bool run() {
         C = 0;
         for(int i = 0; i < 4; i++)
-            C += conductance(get_graph(), membership, i);
+            C += conduct(get_graph(), membership, i);
 
         return true;
     }

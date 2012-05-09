@@ -22,7 +22,7 @@ public:
     }
 
     virtual bool run() {
-        PageRank(G, e, d, max_iter, rank);
+        pagerank(G, e, d, max_iter, rank);
         return true;
     }
 
