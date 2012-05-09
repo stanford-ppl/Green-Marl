@@ -25,6 +25,8 @@ protected:
     virtual void visit_rv(node_t t)=0;
     virtual bool check_navigator(node_t t, edge_t nx)=0;
 
+    node_t get_root() {return root;}
+
 public:
 gm_bfs_template(gm_graph& _G) : G(_G)
 {

@@ -117,11 +117,11 @@ public:
 //New Stuff
     bool is_subset_small(gm_sized_set<T>& superset)
     {
-	seq_iter II = prepare_seq_iteration();
-	while(II.has_next())
-	    if(!superset.is_in(II.get_next()))
-		return false;
-	return true;
+	    seq_iter II = prepare_seq_iteration();
+	    while(II.has_next())
+	        if(!superset.is_in(II.get_next()))
+		        return false;
+	    return true;
     }
 
     bool is_subset_large(gm_sized_set<T>& superset)
@@ -190,28 +190,28 @@ public:
 
    void intersect_small(gm_sized_set<T>& other)
    {
-	seq_iter II = prepare_seq_iteration();
-	while(II.has_next())
-	{
-	    T item = II.get_next();
-	    if(!other.is_in(item))
+	    seq_iter II = prepare_seq_iteration();
+	    while(II.has_next())
 	    {
-		remove(item);
-		est_size--;
+	        T item = II.get_next();
+	        if(!other.is_in(item))
+	        {
+		        remove(item);
+		        est_size--;
+	        }
 	    }
-	}
    }
 
    void intersect_large(gm_sized_set<T>& other)
    {
-	int newSize = 0;
-	#pragma omp parallel for reduction (+:newSize)
-	for(int i =  0; i < max_sz; i++)
-	{
-	    byte_map[i] = byte_map[i] && other.byte_map[i];
-	    newSize += byte_map[i];
-	}
-	est_size = newSize;
+	    int newSize = 0;
+	    #pragma omp parallel for reduction (+:newSize)
+	    for(int i =  0; i < max_sz; i++)
+	    {
+	        byte_map[i] = byte_map[i] && other.byte_map[i];
+	        newSize += byte_map[i];
+	    }
+	    est_size = newSize;
    }
 //End new Stuff
 
