@@ -297,11 +297,11 @@ ast_node* GM_id(char* orgname, int line, int col)
     assert(orgname != NULL);
     return ast_id::new_id(orgname, line, col);
 }
-ast_node* GM_field(ast_node* id1, ast_node* id2)
+ast_node* GM_field(ast_node* id1, ast_node* id2, bool is_rarrow)
 {
     assert(id1->get_nodetype() == AST_ID);
     assert(id2->get_nodetype() == AST_ID);
-    return ast_field::new_field((ast_id*)id1, (ast_id*)id2);
+    return ast_field::new_field((ast_id*)id1, (ast_id*)id2, is_rarrow);
 }
 
 void GM_add_id_comma_list(ast_node* id) {

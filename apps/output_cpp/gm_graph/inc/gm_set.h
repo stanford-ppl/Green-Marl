@@ -333,7 +333,7 @@ public:
             size_t cnt = max_sz / max_threads;
             T begin = cnt * thread_id;
             T end   = (thread_id == (max_threads-1)) ? max_sz : begin + cnt;
-            par_iter I(*this, small_set.begin(), small_set.end()); 
+            par_iter I(*this, begin, end); 
             return I;
         }
     }

@@ -51,7 +51,7 @@
 %token T_IF  T_ELSE T_DO T_WHILE
 %token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS T_ANDEQ T_OREQ
 %token T_M_INF T_P_INF
-%token T_DOUBLE_COLON
+%token T_DOUBLE_COLON T_RARROW
 %token T_NIL
 
 %token <text> ID
@@ -395,7 +395,10 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
   lhs_list : lhs                         { $$ = GM_single_lhs_list($1);}
            | lhs ',' lhs_list            { $$ = GM_add_lhs_list_front($1, $3);}
 
-  scala: id                               { $$ = $1; } field : id '.' id                       { $$ = GM_field($1, $3); }
+  scala: id                               { $$ = $1; } 
+ field : id '.' id                       { $$ = GM_field($1, $3, false); }
+       /*| id T_RARROW id                  { $$ = GM_field($1, $3, true);  }*/
+       | T_EDGE '('id ')' '.' id            { $$ = GM_field($3, $6, true);  }
 
   built_in : id '.' id arg_list            { $$ = GM_expr_builtin_expr($1, $3, $4);}
            | id arg_list                   { $$ = GM_expr_builtin_expr(NULL, $1, $2);}

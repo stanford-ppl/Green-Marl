@@ -762,30 +762,48 @@ bool gm_typechecker_stage_1::find_symbol_field(ast_field* f)
 
         if (!is_okay) return false;
 
-        if (name_type->is_graph() || name_type->is_collection()) 
-        {
-            // to be resolved more later
-        }
-        else if (name_type->is_node_compatible()) 
-        {
-            if (!field_type->is_node_property()) 
+        // n.X        ==> n is node iterator, X is node prop
+        // Edge(n).Y  ==> n is nbr iterator, Y is edge prop. Edge(n) is the current edge that goes to n
+        
+        if (f->is_rarrow()) {
+            int type = name_type->getTypeSummary();
+            if (!(gm_is_inout_nbr_node_iter_type(type) || (type == GMTYPE_NODEITER_BFS)))
             {
-                gm_type_error(GM_ERROR_WRONG_PROPERTY,field, 
-                              "Node_Property");
+                // not BFS, not in-out
+                gm_type_error(GM_ERROR_INVALID_ITERATOR_FOR_RARROW, driver);
                 return false;
             }
-        }
-        else if (name_type->is_edge_compatible())
-        {
             if (!field_type->is_edge_property()) 
             {
-                gm_type_error(GM_ERROR_WRONG_PROPERTY,field, 
-                              "Edge_Property");
+                gm_type_error(GM_ERROR_WRONG_PROPERTY,field, "Edge_Property");
                 return false;
-            }
+            } 
         }
         else {
-            assert(false);
+
+            if (name_type->is_graph() || name_type->is_collection()) 
+            {
+                // to be resolved more later (group assignment)
+            }
+            else if (name_type->is_node_compatible()) 
+            {
+                if (!field_type->is_node_property()) 
+                {
+                    gm_type_error(GM_ERROR_WRONG_PROPERTY,field, "Node_Property");
+                    return false;
+                }
+            }
+            else if (name_type->is_edge_compatible())
+            {
+                if (!field_type->is_edge_property()) 
+                {
+                    gm_type_error(GM_ERROR_WRONG_PROPERTY,field, "Edge_Property");
+                    return false;
+                }
+            }
+            else {
+                assert(false);
+            }
         }
 
         // check target graph matches

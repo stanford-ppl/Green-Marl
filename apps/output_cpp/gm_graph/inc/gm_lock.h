@@ -7,6 +7,13 @@
 
 typedef volatile int32_t gm_spinlock_t;
 
+// return true if quired
+static inline bool gm_spinlock_try_acquire(gm_spinlock_t* ptr)
+{
+    int ret = __sync_lock_test_and_set(ptr, 1);
+    return (ret == 0); // 0 means success
+}
+
 static inline void gm_spinlock_acquire(gm_spinlock_t* ptr)
 {
     while (__sync_lock_test_and_set(ptr, 1))

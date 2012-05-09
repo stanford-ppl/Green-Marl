@@ -148,6 +148,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "All"     {MarkToken(); return T_ALL;}
 "Exist"   {MarkToken(); return T_EXIST;}
 "NIL"     {MarkToken(); return T_NIL;}
+"->"      {MarkToken(); return T_RARROW;}
 
 
     /* Numbers and Identifies */

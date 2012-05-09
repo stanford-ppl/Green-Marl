@@ -100,13 +100,14 @@
      T_M_INF = 317,
      T_P_INF = 318,
      T_DOUBLE_COLON = 319,
-     T_NIL = 320,
-     ID = 321,
-     USER_TEXT = 322,
-     INT_NUM = 323,
-     FLOAT_NUM = 324,
-     BOOL_VAL = 325,
-     NEG = 326
+     T_RARROW = 320,
+     T_NIL = 321,
+     ID = 322,
+     USER_TEXT = 323,
+     INT_NUM = 324,
+     FLOAT_NUM = 325,
+     BOOL_VAL = 326,
+     NEG = 327
    };
 #endif
 
@@ -131,7 +132,7 @@ typedef union YYSTYPE
 
 
 /* Line 2638 of glr.c  */
-#line 135 "./parse/gm_grammer.tab.h"
+#line 136 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 #endif

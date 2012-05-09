@@ -23,7 +23,7 @@ class gm_bfs_template
 protected:
     virtual void visit_fw(node_t t)=0;
     virtual void visit_rv(node_t t)=0;
-    virtual bool check_navigator(node_t t)=0;
+    virtual bool check_navigator(node_t t, edge_t nx)=0;
 
 public:
 gm_bfs_template(gm_graph& _G) : G(_G)
@@ -65,6 +65,7 @@ void prepare(node_t root_node, int max_num_thread)
     curr_level = 0;
     root = root_node;
     state = ST_SMALL;
+    assert(root != gm_graph::NIL_NODE);
 
     global_queue = new node_t[G.num_nodes()];
     global_curr_level = global_queue;
@@ -273,7 +274,7 @@ inline void iterate_neighbor_small(node_t t)
         // check visited
         if (small_visited.find(u) == small_visited.end())
         {
-            if (has_navigator) {if (check_navigator(u)==false)  continue;}
+            if (has_navigator) {if (check_navigator(u, nx)==false)  continue;}
 
             if (save_child) {
                 save_down_edge_small(nx);
@@ -354,7 +355,7 @@ inline void iterate_neighbor_que(node_t t, int tid)
         // test & test& set
         if (_gm_get_bit(visited_bitmap,u) == 0)
         {
-            if (has_navigator) {if (check_navigator(u)==false)  continue;}
+            if (has_navigator) {if (check_navigator(u, nx)==false)  continue;}
 
 
             bool re_check_result;
@@ -414,7 +415,7 @@ void iterate_neighbor_rd(node_t t, node_t& local_cnt)
         // test & test& set
         if (_gm_get_bit(visited_bitmap,u) == 0)
         {
-            if (has_navigator) {if (check_navigator(u)==false)  continue;}
+            if (has_navigator) {if (check_navigator(u, nx)==false)  continue;}
             
             bool re_check_result;
             if (use_multithread) {

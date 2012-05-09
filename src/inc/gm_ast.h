@@ -362,24 +362,26 @@ class ast_field : public ast_node { // access of node/edge property
         virtual void dump_tree(int id_level); 
 
     private: 
-        ast_field() : ast_node(AST_FIELD), first(NULL), second(NULL) {}
-        ast_field(ast_id* l, ast_id* f) : ast_node(AST_FIELD) {
-                 first= l; second = f; 
+        ast_field() : ast_node(AST_FIELD), first(NULL), second(NULL), rarrow(false) {}
+        ast_field(ast_id* l, ast_id* f) : ast_node(AST_FIELD), first(l), second(f), rarrow(false) {
                  first->set_parent(this); 
                  second->set_parent(this);
                  this->line = first->get_line();
                  this->col = first->get_col();
              }
     public : 
-        static ast_field* new_field(ast_id* l, ast_id* f) {
+        static ast_field* new_field(ast_id* l, ast_id* f, bool is_r_arrow=false) {
             ast_field* af = new ast_field(l,f); 
             l->set_parent(af);
             f->set_parent(af);
+            af->set_rarrow(is_r_arrow);
             return af;
         }
         // FIRST.SECOND
         ast_id* get_first() {return first;}           // Identifier
         ast_id* get_second() {return second;}         // Field
+        bool    is_rarrow()  {return rarrow;}
+        void    set_rarrow(bool b) {rarrow = b;}
 
         // type information about source (node/edge/graph) 
         int getSourceTypeSummary() {return first->getTypeSummary();}
@@ -411,6 +413,7 @@ class ast_field : public ast_node { // access of node/edge property
     private:
         ast_id* first;
         ast_id* second;
+        bool rarrow;
 };
 
 //==========================================================================

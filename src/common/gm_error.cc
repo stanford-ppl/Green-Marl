@@ -27,6 +27,8 @@ void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2)
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", id->get_line(), id->get_col());
     switch(errno) {
+        case GM_ERROR_INVALID_ITERATOR_FOR_RARROW:
+            printf("%s cannot be used in Edge() syntax.\n", id->get_orgname()); break;
         case GM_ERROR_INVALID_GROUP_DRIVER:
             printf("%s cannot be used outside group assignment.\n", id->get_orgname()); break;
         case GM_ERROR_UNDEFINED:

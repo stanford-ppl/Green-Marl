@@ -244,8 +244,15 @@ void gm_cpp_gen::generate_lhs_field(ast_field* f)
 {
     Body.push( f->get_second()->get_genname());
     Body.push('[');
-    if (f->getTypeInfo()->is_node_property())
+    if (f->is_rarrow()) {
+        const char* alias_name = f->get_first()->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
+        assert(alias_name != NULL);
+        assert(strlen(alias_name) > 0);
+        Body.push(alias_name);
+    }
+    else if (f->getTypeInfo()->is_node_property()) {
         Body.push(get_lib()->node_index(f->get_first()));
+    }
     else if (f->getTypeInfo()->is_edge_property())
         Body.push(get_lib()->edge_index(f->get_first()));
     else {
