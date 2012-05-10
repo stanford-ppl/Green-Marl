@@ -17,8 +17,8 @@
 //---------------------------------------------------------------------
 class gps_merge_symbol_usage_t : public gps_apply_bb_ast  
 {
-    static bool const IS_SCALAR = true;
-    static bool const IS_FIELD  = false;
+    static bool const IS_SCALAR;
+    static bool const IS_FIELD;
 
     public:
         gps_merge_symbol_usage_t(gm_gps_beinfo* i) {
@@ -279,6 +279,9 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         ast_sentblock* random_write_target_sb;
         bool target_is_edge ;
 };
+
+const bool gps_merge_symbol_usage_t::IS_SCALAR = true;
+const bool gps_merge_symbol_usage_t::IS_FIELD = false;
 
 
 void gm_gps_opt_analyze_symbol_usage::process(ast_procdef* p)
