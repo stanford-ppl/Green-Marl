@@ -127,6 +127,10 @@ $(OBJ)/%.o : %.cc
 clean:
 	rm $(OBJ)/*.o
 
+veryclean:
+	-rm $(OBJ)/*.o
+	-rm $(PARSE)/gm_grammer.tab.c
+	-rm $(PARSE)/gm_lex.c
 
 #-----------------------------------------
 # rules to make parser
