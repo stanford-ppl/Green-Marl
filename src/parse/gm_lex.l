@@ -280,6 +280,10 @@ void GM_print_parse_error(const char* err_msg)
 
 }
 
+void yyerror(const char* str) {
+    GM_print_parse_error(str);
+}
+
 void GM_lex_begin_user_text() {
     BEGIN(USER_TEXT_MODE);
     MarkToken();

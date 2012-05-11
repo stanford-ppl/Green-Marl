@@ -11,14 +11,7 @@
     #define YYERROR_VERBOSE 1
     extern void   GM_lex_begin_user_text();
 
-    void yyerror(const char* str) 
-    {
-        GM_print_parse_error(str);
-    }
-    int yywrap()
-    {
-        return 1;
-    }
+    extern void yyerror(const char* str);
     extern int yylex();
 %}
 
