@@ -311,7 +311,7 @@ static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symt
     int iter_type = is_nodeprop ?  GMTYPE_NODEITER_ALL : GMTYPE_EDGEITER_ALL;
     ast_foreach* fe = gm_new_foreach_after_tc(itor, src, a, iter_type);
     assert(itor->getSymInfo()!=NULL);
-    delete iter_name;
+    delete [] iter_name;
 
     //-------------------------------
     // set up symbol info of the body

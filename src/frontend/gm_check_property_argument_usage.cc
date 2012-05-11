@@ -77,10 +77,10 @@ public:
     }
 
     virtual bool apply2(ast_sent*s) {
-        if (s == condition_stack.back()) {
+        if (!condition_stack.empty() && s == condition_stack.back()) {
             condition_stack.pop_back();
         }
-        else if (s == random_iter_stack.back()) {
+        else if (!random_iter_stack.empty() && s == random_iter_stack.back()) {
             random_iter_stack.pop_back();
         }
         else {

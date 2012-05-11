@@ -42,6 +42,7 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
         assert(org_def!=NULL);
 
         this->synonym = true;
+        this->need_strict = false;	  
         this->org_def = org_def;
         this->src_type = org_def->src_type;  // need source type.
         this->orgname = gm_strdup(&temp[1]);
@@ -50,9 +51,14 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
         //this->res_type = org_def->res_type;
 
     } else {
+        this->synonym = false;
+
         if (temp[0] == '!') {
             this->need_strict = true;
             temp = temp+1;
+        }
+        else {
+            this->need_strict = false;	  
         }
 
         // parse and fill

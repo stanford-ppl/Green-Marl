@@ -1047,7 +1047,7 @@ class ast_expr_builtin : public ast_expr
 {
     public:
     ~ast_expr_builtin() {
-        delete orgname;
+        delete [] orgname;
         delete driver;
         std::list<ast_expr*>::iterator I;
         for( I=args.begin(); I!=args.end(); I++) 

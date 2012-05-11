@@ -109,7 +109,6 @@ class ss2_group_assign : public gm_apply {
         ast_id* iter = fe->get_iterator()->copy(true);
         iter->set_line(old->get_line()); iter->set_col(old->get_col());
         lhs->set_first(iter);
-        delete old;
         
         // 2.
         this->old_driver_sym = old->getSymInfo();
@@ -118,6 +117,8 @@ class ss2_group_assign : public gm_apply {
         ast_expr* rhs = a->get_rhs();
         rhs->traverse_pre(this);
         this->set_for_expr(false);
+
+        delete old;
 
         return true;
     }
