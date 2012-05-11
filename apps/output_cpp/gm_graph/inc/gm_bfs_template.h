@@ -24,6 +24,8 @@ protected:
     virtual void visit_fw(node_t t)=0;
     virtual void visit_rv(node_t t)=0;
     virtual bool check_navigator(node_t t, edge_t nx)=0;
+    virtual void do_end_of_level_fw() {}
+    virtual void do_end_of_level_rv() {}
 
     node_t get_root() {return root;}
 
@@ -180,6 +182,7 @@ void do_bfs_forward()
         }
       } // end of switch
 
+      do_end_of_level_fw();
       is_finished = get_next_state();
     } // end of while
 }
@@ -479,6 +482,7 @@ void do_bfs_reverse()
             }
         }
 
+        do_end_of_level_rv();
         if (level == 0) break;
         level--;
     }

@@ -127,7 +127,31 @@ void gm_gps_opt_analyze_symbol_summary::process(ast_procdef* p)
     beinfo->set_total_edge_property_size(comp_start_byte(e_prop));
 
     beinfo->compute_max_communication_size();
+
+    //--------------------------------------------------------
+    // check if input node parsing parsing is required
+    //--------------------------------------------------------
+    gm_gps_beinfo * info =  (gm_gps_beinfo *) FE.get_current_backend_info();
+    bool need_node_prop_init = false;
+    std::set<gm_symtab_entry* >::iterator I;
+    for(I=prop.begin(); I!=prop.end(); I++)
+    {
+        gm_symtab_entry* e = *I;
+        if  ((e->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_IN) 
+            || (e->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_INOUT)) 
+        {
+            /*
+            printf("in/inout -> %s :%d\n", 
+                    e->getId()->get_genname(),
+                    e->find_info_int(GMUSAGE_PROPERTY)
+                    );
+                    */
+            need_node_prop_init = true;
+        }
+    }
     
+    ast_procdef* proc = FE.get_current_proc();
+    proc->add_info_bool(GPS_FLAG_NODE_VALUE_INIT, need_node_prop_init);
 
     set_okay(true);
 }

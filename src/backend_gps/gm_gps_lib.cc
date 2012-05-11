@@ -445,15 +445,34 @@ void gm_gpslib::generate_vertex_prop_class_details(
     Body.pushln(";");
     Body.pushln("}");
 
-    if (is_edge_prop && prop.size() > 0) {
+    // Edge Property is read-only
+    //if (is_edge_prop && prop.size() > 0) {
+    ast_procdef* proc = FE.get_current_proc();
+    if ((is_edge_prop && prop.size() > 0) 
+        || (!is_edge_prop && proc->find_info_bool(GPS_FLAG_NODE_VALUE_INIT))) {
         Body.pushln("//Input Data Parsing");
         Body.pushln("@Override");
         Body.pushln("public void read(String inputString) {");
-        if (prop.size() == (int) 1) 
+        int total_count=0;
+        if (is_edge_prop) total_count = prop.size();
+        else {
+            for(I=prop.begin(); I!=prop.end(); I++)
+            {
+                gm_symtab_entry *e = *I;
+                if  ((e->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_IN) 
+                    || (e->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_INOUT)) 
+                    total_count++;
+            }
+        }
+
+        if (total_count == 1) 
         {
             for(I=prop.begin(); I!=prop.end(); I++)
             {
                 gm_symtab_entry * sym = *I;
+                if  (!is_edge_prop &&
+                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_IN) && 
+                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_INOUT)) continue;
                 const char* name1; 
                 const char* name2;
                 get_java_parse_string(this,sym->getType()->getTargetTypeSummary(), name1, name2); 
@@ -472,6 +491,9 @@ void gm_gpslib::generate_vertex_prop_class_details(
                 gm_symtab_entry * sym = *I;
                 const char* name1; 
                 const char* name2;
+                if  (!is_edge_prop &&
+                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_IN) && 
+                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_INOUT)) continue;
 
                 get_java_parse_string(this,sym->getType()->getTargetTypeSummary(), name1, name2); 
                 sprintf(temp, "this.%s = %s.%s((split[%d]==null)?\"0\":split[%d]);",
@@ -1088,8 +1110,4 @@ bool gm_gpslib::do_local_optimize()
     }
     return is_okay;
 }
-
-
-
-
 
