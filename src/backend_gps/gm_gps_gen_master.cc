@@ -324,6 +324,24 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
             assert(b->get_num_entries() == 1);
             do_generate_scalar_broadcast_receive(b);
         }
+       
+        // define local variables 
+        std::map<gm_symtab_entry*, gps_syminfo*>& symbols = b->get_symbols();
+        std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
+        for(I=symbols.begin(); I!=symbols.end(); I ++)
+        {
+            gm_symtab_entry* sym = I->first;
+            gps_syminfo* local_info = I->second;
+            if (!local_info->is_scalar()) continue;
+            gps_syminfo* global_info = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+
+            if (!global_info->is_used_in_multiple_BB())
+            {
+                generate_scalar_var_def(sym, true);
+            }
+        }
+        Body.NL();
+
 
         // generate sentences
         b->prepare_iter();

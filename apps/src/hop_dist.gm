@@ -17,7 +17,7 @@ Procedure hop_dist(G:Graph, dist:N_P<Int>(G), root: Node(G))
 
         Foreach(n: G.Nodes)(n.updated) {
             Foreach(s: n.Nbrs) {
-                Edge(G) e = s.ToEdge(); // the edge to s
+                //Edge(G) e = s.ToEdge(); // the edge to s
                 // updated_nxt becomes true only if dist_nxt is actually updated
                 <s.dist_nxt; s.updated_nxt> min= <n.dist + 1; True>; 
             }

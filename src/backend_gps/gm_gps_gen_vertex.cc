@@ -41,8 +41,7 @@ void gm_gps_gen::do_generate_vertex_property_class(bool is_edge_prop)
 
   // list out property
   Body.pushln("// properties");
-  gm_gps_beinfo * info =  
-        (gm_gps_beinfo *) FE.get_current_backend_info();
+  gm_gps_beinfo * info =  (gm_gps_beinfo *) FE.get_current_backend_info();
   std::set<gm_symtab_entry*>& prop = 
       is_edge_prop ?
       info->get_edge_prop_symbols() :
