@@ -117,7 +117,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2638 of glr.c  */
-#line 25 "parse/gm_grammer.y"
+#line 18 "parse/gm_grammer.y"
 
     int  info;
     long ival;

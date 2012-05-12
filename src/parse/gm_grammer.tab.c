@@ -63,19 +63,12 @@
     #define YYERROR_VERBOSE 1
     extern void   GM_lex_begin_user_text();
 
-    void yyerror(const char* str) 
-    {
-        GM_print_parse_error(str);
-    }
-    int yywrap()
-    {
-        return 1;
-    }
+    extern void yyerror(const char* str);
     extern int yylex();
 
 
 /* Line 172 of glr.c  */
-#line 79 "./parse/gm_grammer.tab.c"
+#line 72 "./parse/gm_grammer.tab.c"
 
 
 
@@ -110,7 +103,7 @@ static YYSTYPE yyval_default;
 
 
 /* Line 243 of glr.c  */
-#line 114 "./parse/gm_grammer.tab.c"
+#line 107 "./parse/gm_grammer.tab.c"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -363,26 +356,26 @@ static const short int yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short int yyrline[] =
 {
-       0,   106,   106,   107,   109,   111,   112,   114,   115,   117,
-     118,   120,   121,   124,   125,   127,   128,   130,   131,   135,
-     137,   139,   140,   141,   142,   143,   146,   149,   151,   153,
-     155,   157,   160,   161,   163,   165,   168,   170,   172,   175,
-     178,   181,   184,   188,   189,   192,   194,   195,   196,   198,
-     199,   201,   202,   203,   204,   205,   206,   207,   208,   209,
-     210,   211,   212,   213,   214,   215,   216,   218,   220,   222,
-     225,   226,   228,   229,   230,   232,   233,   235,   236,   237,
-     238,   239,   240,   241,   242,   244,   248,   252,   253,   254,
-     256,   257,   258,   260,   267,   268,   270,   271,   274,   275,
-     276,   277,   278,   280,   282,   285,   286,   288,   290,   291,
-     292,   294,   296,   301,   302,   304,   305,   306,   307,   308,
-     309,   311,   312,   314,   317,   318,   323,   324,   327,   328,
-     331,   332,   333,   335,   336,   337,   338,   339,   343,   348,
-     349,   350,   351,   352,   353,   354,   355,   356,   357,   358,
-     359,   360,   362,   364,   365,   366,   367,   368,   369,   370,
-     371,   372,   375,   378,   379,   380,   381,   382,   383,   384,
-     386,   389,   390,   392,   393,   395,   396,   398,   399,   401,
-     403,   404,   406,   407,   409,   410,   412,   413,   416,   416,
-     422
+       0,    99,    99,   100,   102,   104,   105,   107,   108,   110,
+     111,   113,   114,   117,   118,   120,   121,   123,   124,   128,
+     130,   132,   133,   134,   135,   136,   139,   142,   144,   146,
+     148,   150,   153,   154,   156,   158,   161,   163,   165,   168,
+     171,   174,   177,   181,   182,   185,   187,   188,   189,   191,
+     192,   194,   195,   196,   197,   198,   199,   200,   201,   202,
+     203,   204,   205,   206,   207,   208,   209,   211,   213,   215,
+     218,   219,   221,   222,   223,   225,   226,   228,   229,   230,
+     231,   232,   233,   234,   235,   237,   241,   245,   246,   247,
+     249,   250,   251,   253,   260,   261,   263,   264,   267,   268,
+     269,   270,   271,   273,   275,   278,   279,   281,   283,   284,
+     285,   287,   289,   294,   295,   297,   298,   299,   300,   301,
+     302,   304,   305,   307,   310,   311,   316,   317,   320,   321,
+     324,   325,   326,   328,   329,   330,   331,   332,   336,   341,
+     342,   343,   344,   345,   346,   347,   348,   349,   350,   351,
+     352,   353,   355,   357,   358,   359,   360,   361,   362,   363,
+     364,   365,   368,   371,   372,   373,   374,   375,   376,   377,
+     379,   382,   383,   385,   386,   388,   389,   391,   392,   394,
+     396,   397,   399,   400,   402,   403,   405,   406,   409,   409,
+     415
 };
 #endif
 
@@ -1443,119 +1436,119 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
         case 4:
 
 /* Line 936 of glr.c  */
-#line 109 "parse/gm_grammer.y"
+#line 102 "parse/gm_grammer.y"
     {GM_procdef_finish();;}
     break;
 
   case 7:
 
 /* Line 936 of glr.c  */
-#line 114 "parse/gm_grammer.y"
+#line 107 "parse/gm_grammer.y"
     { GM_procdef_begin((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr), false);  ;}
     break;
 
   case 8:
 
 /* Line 936 of glr.c  */
-#line 115 "parse/gm_grammer.y"
+#line 108 "parse/gm_grammer.y"
     { GM_procdef_begin((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr), true);  ;}
     break;
 
   case 11:
 
 /* Line 936 of glr.c  */
-#line 120 "parse/gm_grammer.y"
+#line 113 "parse/gm_grammer.y"
     { GM_procdef_add_argdecl((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 12:
 
 /* Line 936 of glr.c  */
-#line 121 "parse/gm_grammer.y"
+#line 114 "parse/gm_grammer.y"
     { GM_procdef_add_argdecl((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 13:
 
 /* Line 936 of glr.c  */
-#line 124 "parse/gm_grammer.y"
+#line 117 "parse/gm_grammer.y"
     { GM_procdef_add_out_argdecl((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 14:
 
 /* Line 936 of glr.c  */
-#line 125 "parse/gm_grammer.y"
+#line 118 "parse/gm_grammer.y"
     { GM_procdef_add_out_argdecl((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 17:
 
 /* Line 936 of glr.c  */
-#line 130 "parse/gm_grammer.y"
+#line 123 "parse/gm_grammer.y"
     { GM_procdef_return_type((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 18:
 
 /* Line 936 of glr.c  */
-#line 131 "parse/gm_grammer.y"
+#line 124 "parse/gm_grammer.y"
     { GM_procdef_return_type((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 19:
 
 /* Line 936 of glr.c  */
-#line 135 "parse/gm_grammer.y"
+#line 128 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_procdef_arg((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 20:
 
 /* Line 936 of glr.c  */
-#line 137 "parse/gm_grammer.y"
+#line 130 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_finish_id_comma_list();;}
     break;
 
   case 21:
 
 /* Line 936 of glr.c  */
-#line 139 "parse/gm_grammer.y"
+#line 132 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 22:
 
 /* Line 936 of glr.c  */
-#line 140 "parse/gm_grammer.y"
+#line 133 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 23:
 
 /* Line 936 of glr.c  */
-#line 141 "parse/gm_grammer.y"
+#line 134 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 24:
 
 /* Line 936 of glr.c  */
-#line 142 "parse/gm_grammer.y"
+#line 135 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 25:
 
 /* Line 936 of glr.c  */
-#line 143 "parse/gm_grammer.y"
+#line 136 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 26:
 
 /* Line 936 of glr.c  */
-#line 146 "parse/gm_grammer.y"
+#line 139 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_graphtype_ref(GMTYPE_GRAPH); 
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
@@ -1563,7 +1556,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 27:
 
 /* Line 936 of glr.c  */
-#line 149 "parse/gm_grammer.y"
+#line 142 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_primtype_ref(GMTYPE_INT);
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
@@ -1571,7 +1564,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 28:
 
 /* Line 936 of glr.c  */
-#line 151 "parse/gm_grammer.y"
+#line 144 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_primtype_ref(GMTYPE_LONG);
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
@@ -1579,7 +1572,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 29:
 
 /* Line 936 of glr.c  */
-#line 153 "parse/gm_grammer.y"
+#line 146 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_primtype_ref(GMTYPE_FLOAT);
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
@@ -1587,7 +1580,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 30:
 
 /* Line 936 of glr.c  */
-#line 155 "parse/gm_grammer.y"
+#line 148 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_primtype_ref(GMTYPE_DOUBLE);
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
@@ -1595,7 +1588,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 31:
 
 /* Line 936 of glr.c  */
-#line 157 "parse/gm_grammer.y"
+#line 150 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_primtype_ref(GMTYPE_BOOL);
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
@@ -1603,21 +1596,21 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 32:
 
 /* Line 936 of glr.c  */
-#line 160 "parse/gm_grammer.y"
+#line 153 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 33:
 
 /* Line 936 of glr.c  */
-#line 161 "parse/gm_grammer.y"
+#line 154 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 34:
 
 /* Line 936 of glr.c  */
-#line 163 "parse/gm_grammer.y"
+#line 156 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_nodetype_ref((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr)); 
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column);;}
     break;
@@ -1625,7 +1618,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 35:
 
 /* Line 936 of glr.c  */
-#line 165 "parse/gm_grammer.y"
+#line 158 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_edgetype_ref((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr)); 
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column);;}
     break;
@@ -1633,7 +1626,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 36:
 
 /* Line 936 of glr.c  */
-#line 168 "parse/gm_grammer.y"
+#line 161 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_settype_ref(GMTYPE_NSET, (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr));
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column);;}
     break;
@@ -1641,7 +1634,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 37:
 
 /* Line 936 of glr.c  */
-#line 170 "parse/gm_grammer.y"
+#line 163 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_settype_ref(GMTYPE_NSEQ, (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr));
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column);;}
     break;
@@ -1649,7 +1642,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 38:
 
 /* Line 936 of glr.c  */
-#line 172 "parse/gm_grammer.y"
+#line 165 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_settype_ref(GMTYPE_NORDER, (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr));
                    GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column);;}
     break;
@@ -1657,7 +1650,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 39:
 
 /* Line 936 of glr.c  */
-#line 175 "parse/gm_grammer.y"
+#line 168 "parse/gm_grammer.y"
     {
                        ((*yyvalp).ptr) = GM_nodeprop_ref((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (7))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((6) - (7))].yystate.yysemantics.yysval.ptr) );
                        GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_column);;}
@@ -1666,7 +1659,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 40:
 
 /* Line 936 of glr.c  */
-#line 178 "parse/gm_grammer.y"
+#line 171 "parse/gm_grammer.y"
     {
                        ((*yyvalp).ptr) = GM_nodeprop_ref((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (7))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((6) - (7))].yystate.yysemantics.yysval.ptr) );
                        GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_column);;}
@@ -1675,7 +1668,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 41:
 
 /* Line 936 of glr.c  */
-#line 181 "parse/gm_grammer.y"
+#line 174 "parse/gm_grammer.y"
     {
                        ((*yyvalp).ptr) = GM_edgeprop_ref((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (7))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((6) - (7))].yystate.yysemantics.yysval.ptr));
                        GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_column);;}
@@ -1684,7 +1677,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 42:
 
 /* Line 936 of glr.c  */
-#line 184 "parse/gm_grammer.y"
+#line 177 "parse/gm_grammer.y"
     {
                        ((*yyvalp).ptr) = GM_edgeprop_ref((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (7))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((6) - (7))].yystate.yysemantics.yysval.ptr));
                        GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (7))].yystate.yyloc).first_column);;}
@@ -1693,287 +1686,287 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 43:
 
 /* Line 936 of glr.c  */
-#line 188 "parse/gm_grammer.y"
+#line 181 "parse/gm_grammer.y"
     { GM_add_id_comma_list((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 44:
 
 /* Line 936 of glr.c  */
-#line 189 "parse/gm_grammer.y"
+#line 182 "parse/gm_grammer.y"
     { GM_add_id_comma_list((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 45:
 
 /* Line 936 of glr.c  */
-#line 192 "parse/gm_grammer.y"
+#line 185 "parse/gm_grammer.y"
     { GM_procdef_setbody((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 46:
 
 /* Line 936 of glr.c  */
-#line 194 "parse/gm_grammer.y"
+#line 187 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_finish_sentblock(); ;}
     break;
 
   case 47:
 
 /* Line 936 of glr.c  */
-#line 195 "parse/gm_grammer.y"
+#line 188 "parse/gm_grammer.y"
     { GM_start_sentblock(); ;}
     break;
 
   case 50:
 
 /* Line 936 of glr.c  */
-#line 199 "parse/gm_grammer.y"
+#line 192 "parse/gm_grammer.y"
     { if ((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr)!=NULL) GM_add_sent((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 51:
 
 /* Line 936 of glr.c  */
-#line 201 "parse/gm_grammer.y"
+#line 194 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 52:
 
 /* Line 936 of glr.c  */
-#line 202 "parse/gm_grammer.y"
+#line 195 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 53:
 
 /* Line 936 of glr.c  */
-#line 203 "parse/gm_grammer.y"
+#line 196 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 54:
 
 /* Line 936 of glr.c  */
-#line 204 "parse/gm_grammer.y"
+#line 197 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 55:
 
 /* Line 936 of glr.c  */
-#line 205 "parse/gm_grammer.y"
+#line 198 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 56:
 
 /* Line 936 of glr.c  */
-#line 206 "parse/gm_grammer.y"
+#line 199 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 57:
 
 /* Line 936 of glr.c  */
-#line 207 "parse/gm_grammer.y"
+#line 200 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 58:
 
 /* Line 936 of glr.c  */
-#line 208 "parse/gm_grammer.y"
+#line 201 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 59:
 
 /* Line 936 of glr.c  */
-#line 209 "parse/gm_grammer.y"
+#line 202 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 60:
 
 /* Line 936 of glr.c  */
-#line 210 "parse/gm_grammer.y"
+#line 203 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 61:
 
 /* Line 936 of glr.c  */
-#line 211 "parse/gm_grammer.y"
+#line 204 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 62:
 
 /* Line 936 of glr.c  */
-#line 212 "parse/gm_grammer.y"
+#line 205 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 63:
 
 /* Line 936 of glr.c  */
-#line 213 "parse/gm_grammer.y"
+#line 206 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 64:
 
 /* Line 936 of glr.c  */
-#line 214 "parse/gm_grammer.y"
+#line 207 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 65:
 
 /* Line 936 of glr.c  */
-#line 215 "parse/gm_grammer.y"
+#line 208 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 66:
 
 /* Line 936 of glr.c  */
-#line 216 "parse/gm_grammer.y"
+#line 209 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = NULL;;}
     break;
 
   case 67:
 
 /* Line 936 of glr.c  */
-#line 218 "parse/gm_grammer.y"
+#line 211 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_new_call_sent((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr), true);;}
     break;
 
   case 68:
 
 /* Line 936 of glr.c  */
-#line 220 "parse/gm_grammer.y"
+#line 213 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_while((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (5))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (5))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 69:
 
 /* Line 936 of glr.c  */
-#line 222 "parse/gm_grammer.y"
+#line 215 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_dowhile((((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (6))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (6))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 70:
 
 /* Line 936 of glr.c  */
-#line 225 "parse/gm_grammer.y"
+#line 218 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_foreach((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).p1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).p2, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).i1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr), false, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).b1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).p3); GM_set_lineinfo(((*yyvalp).ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column);;}
     break;
 
   case 71:
 
 /* Line 936 of glr.c  */
-#line 226 "parse/gm_grammer.y"
+#line 219 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_foreach((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).p1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).p2, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).i1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr), true, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).b1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.pair).p3); GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column);;}
     break;
 
   case 72:
 
 /* Line 936 of glr.c  */
-#line 228 "parse/gm_grammer.y"
+#line 221 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (7))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (7))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).b1 = false; ((*yyvalp).pair).i1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((6) - (7))].yystate.yysemantics.yysval.pair).i1; ((*yyvalp).pair).p3 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((6) - (7))].yystate.yysemantics.yysval.pair).p1;;}
     break;
 
   case 73:
 
 /* Line 936 of glr.c  */
-#line 229 "parse/gm_grammer.y"
+#line 222 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (8))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (8))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).b1 = false; ((*yyvalp).pair).i1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (8))].yystate.yysemantics.yysval.pair).i1; ((*yyvalp).pair).p3 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (8))].yystate.yysemantics.yysval.pair).p1;;}
     break;
 
   case 74:
 
 /* Line 936 of glr.c  */
-#line 230 "parse/gm_grammer.y"
+#line 223 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (8))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (8))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).b1 = true;  ((*yyvalp).pair).i1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (8))].yystate.yysemantics.yysval.pair).i1; ((*yyvalp).pair).p3 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (8))].yystate.yysemantics.yysval.pair).p1;;}
     break;
 
   case 75:
 
 /* Line 936 of glr.c  */
-#line 232 "parse/gm_grammer.y"
+#line 225 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = NULL;;}
     break;
 
   case 76:
 
 /* Line 936 of glr.c  */
-#line 233 "parse/gm_grammer.y"
+#line 226 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 77:
 
 /* Line 936 of glr.c  */
-#line 235 "parse/gm_grammer.y"
+#line 228 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_ALL; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 78:
 
 /* Line 936 of glr.c  */
-#line 236 "parse/gm_grammer.y"
+#line 229 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_EDGEITER_ALL; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 79:
 
 /* Line 936 of glr.c  */
-#line 237 "parse/gm_grammer.y"
+#line 230 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_NBRS; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 80:
 
 /* Line 936 of glr.c  */
-#line 238 "parse/gm_grammer.y"
+#line 231 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_IN_NBRS; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 81:
 
 /* Line 936 of glr.c  */
-#line 239 "parse/gm_grammer.y"
+#line 232 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_UP_NBRS; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 82:
 
 /* Line 936 of glr.c  */
-#line 240 "parse/gm_grammer.y"
+#line 233 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_DOWN_NBRS;((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 83:
 
 /* Line 936 of glr.c  */
-#line 241 "parse/gm_grammer.y"
+#line 234 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_ITER_ANY;((*yyvalp).pair).p1=NULL; /* should be resolved after typechecking */;}
     break;
 
   case 84:
 
 /* Line 936 of glr.c  */
-#line 242 "parse/gm_grammer.y"
+#line 235 "parse/gm_grammer.y"
     { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_COMMON_NBRS;((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 85:
 
 /* Line 936 of glr.c  */
-#line 245 "parse/gm_grammer.y"
+#line 238 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_bfs( (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).p1,(((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).p2,(((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).p3,  (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (5))].yystate.yysemantics.yysval.pair).p1,(((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (5))].yystate.yysemantics.yysval.pair).p2, (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (5))].yystate.yysemantics.yysval.pair).p2,   (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (5))].yystate.yysemantics.yysval.ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (5))].yystate.yysemantics.yysval.pair).p1,   (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).b1, false); 
                   GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (5))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (5))].yystate.yyloc).first_column);;}
     break;
@@ -1981,7 +1974,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 86:
 
 /* Line 936 of glr.c  */
-#line 249 "parse/gm_grammer.y"
+#line 242 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_bfs( (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).p1,(((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).p2,(((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).p3,  (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (5))].yystate.yysemantics.yysval.pair).p1,(((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (5))].yystate.yysemantics.yysval.pair).p2, (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (5))].yystate.yysemantics.yysval.pair).p2,   (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (5))].yystate.yysemantics.yysval.ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (5))].yystate.yysemantics.yysval.pair).p1,   (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.pair).b1, true); 
                   GM_set_lineinfo(((*yyvalp).ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (5))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (5))].yystate.yyloc).first_column);;}
     break;
@@ -1989,49 +1982,49 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 87:
 
 /* Line 936 of glr.c  */
-#line 252 "parse/gm_grammer.y"
+#line 245 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = NULL; ((*yyvalp).pair).p2 = NULL;;}
     break;
 
   case 88:
 
 /* Line 936 of glr.c  */
-#line 253 "parse/gm_grammer.y"
+#line 246 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.ptr);   ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr);  ;}
     break;
 
   case 89:
 
 /* Line 936 of glr.c  */
-#line 254 "parse/gm_grammer.y"
+#line 247 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr);   ((*yyvalp).pair).p2 = NULL;  ;}
     break;
 
   case 90:
 
 /* Line 936 of glr.c  */
-#line 256 "parse/gm_grammer.y"
+#line 249 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = NULL; ((*yyvalp).pair).p2 = NULL;;}
     break;
 
   case 91:
 
 /* Line 936 of glr.c  */
-#line 257 "parse/gm_grammer.y"
+#line 250 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.ptr);   ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr);  ;}
     break;
 
   case 92:
 
 /* Line 936 of glr.c  */
-#line 258 "parse/gm_grammer.y"
+#line 251 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr);   ((*yyvalp).pair).p2 = NULL;  ;}
     break;
 
   case 93:
 
 /* Line 936 of glr.c  */
-#line 260 "parse/gm_grammer.y"
+#line 253 "parse/gm_grammer.y"
     {
                            ((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (10))].yystate.yysemantics.yysval.ptr); // it
                            ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (10))].yystate.yysemantics.yysval.ptr); // source
@@ -2043,133 +2036,133 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 94:
 
 /* Line 936 of glr.c  */
-#line 267 "parse/gm_grammer.y"
+#line 260 "parse/gm_grammer.y"
     {((*yyvalp).bval) = false;;}
     break;
 
   case 95:
 
 /* Line 936 of glr.c  */
-#line 268 "parse/gm_grammer.y"
+#line 261 "parse/gm_grammer.y"
     {((*yyvalp).bval) = true;;}
     break;
 
   case 96:
 
 /* Line 936 of glr.c  */
-#line 270 "parse/gm_grammer.y"
+#line 263 "parse/gm_grammer.y"
     {((*yyvalp).ival) = 0;;}
     break;
 
   case 97:
 
 /* Line 936 of glr.c  */
-#line 271 "parse/gm_grammer.y"
+#line 264 "parse/gm_grammer.y"
     {((*yyvalp).ival) = 0;;}
     break;
 
   case 98:
 
 /* Line 936 of glr.c  */
-#line 274 "parse/gm_grammer.y"
+#line 267 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = NULL; ((*yyvalp).pair).p2 = NULL;;}
     break;
 
   case 99:
 
 /* Line 936 of glr.c  */
-#line 275 "parse/gm_grammer.y"
+#line 268 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);   ((*yyvalp).pair).p2 = NULL;;}
     break;
 
   case 100:
 
 /* Line 936 of glr.c  */
-#line 276 "parse/gm_grammer.y"
+#line 269 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = NULL; ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 101:
 
 /* Line 936 of glr.c  */
-#line 277 "parse/gm_grammer.y"
+#line 270 "parse/gm_grammer.y"
     {((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);   ((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 102:
 
 /* Line 936 of glr.c  */
-#line 278 "parse/gm_grammer.y"
+#line 271 "parse/gm_grammer.y"
     {((*yyvalp).pair).p2 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr);   ((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 103:
 
 /* Line 936 of glr.c  */
-#line 280 "parse/gm_grammer.y"
+#line 273 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 104:
 
 /* Line 936 of glr.c  */
-#line 282 "parse/gm_grammer.y"
+#line 275 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 105:
 
 /* Line 936 of glr.c  */
-#line 285 "parse/gm_grammer.y"
+#line 278 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) =  GM_vardecl_prim((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr)); ;}
     break;
 
   case 106:
 
 /* Line 936 of glr.c  */
-#line 286 "parse/gm_grammer.y"
+#line 279 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) =  GM_vardecl_and_assign((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yysemantics.yysval.ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.ptr),(((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 107:
 
 /* Line 936 of glr.c  */
-#line 288 "parse/gm_grammer.y"
+#line 281 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_finish_id_comma_list();;}
     break;
 
   case 108:
 
 /* Line 936 of glr.c  */
-#line 290 "parse/gm_grammer.y"
+#line 283 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_normal_assign((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr)); GM_set_lineinfo(((*yyvalp).ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);}
     break;
 
   case 109:
 
 /* Line 936 of glr.c  */
-#line 291 "parse/gm_grammer.y"
+#line 284 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_reduce_assign((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.ival)); GM_set_lineinfo(((*yyvalp).ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yyloc).first_column);;}
     break;
 
   case 110:
 
 /* Line 936 of glr.c  */
-#line 292 "parse/gm_grammer.y"
+#line 285 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_reduce_assign((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), GM_expr_ival(1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMREDUCE_PLUS); ;}
     break;
 
   case 111:
 
 /* Line 936 of glr.c  */
-#line 294 "parse/gm_grammer.y"
+#line 287 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_defer_assign((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.ptr)); GM_set_lineinfo(((*yyvalp).ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yyloc).first_column);;}
     break;
 
   case 112:
 
 /* Line 936 of glr.c  */
-#line 296 "parse/gm_grammer.y"
+#line 289 "parse/gm_grammer.y"
     {
                                   ((*yyvalp).ptr) = GM_argminmax_assign((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yysemantics.yysval.pair).p1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.pair).p1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.ival), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yysemantics.yysval.pair).l_list, (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.pair).e_list);
                                   GM_set_lineinfo(((*yyvalp).ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yyloc).first_column);
@@ -2179,175 +2172,175 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 113:
 
 /* Line 936 of glr.c  */
-#line 301 "parse/gm_grammer.y"
+#line 294 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = NULL; ;}
     break;
 
   case 114:
 
 /* Line 936 of glr.c  */
-#line 302 "parse/gm_grammer.y"
+#line 295 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr);   ;}
     break;
 
   case 115:
 
 /* Line 936 of glr.c  */
-#line 304 "parse/gm_grammer.y"
+#line 297 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_PLUS;;}
     break;
 
   case 116:
 
 /* Line 936 of glr.c  */
-#line 305 "parse/gm_grammer.y"
+#line 298 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MULT;;}
     break;
 
   case 117:
 
 /* Line 936 of glr.c  */
-#line 306 "parse/gm_grammer.y"
+#line 299 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MIN;;}
     break;
 
   case 118:
 
 /* Line 936 of glr.c  */
-#line 307 "parse/gm_grammer.y"
+#line 300 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MAX;;}
     break;
 
   case 119:
 
 /* Line 936 of glr.c  */
-#line 308 "parse/gm_grammer.y"
+#line 301 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_AND;;}
     break;
 
   case 120:
 
 /* Line 936 of glr.c  */
-#line 309 "parse/gm_grammer.y"
+#line 302 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_OR;;}
     break;
 
   case 121:
 
 /* Line 936 of glr.c  */
-#line 311 "parse/gm_grammer.y"
+#line 304 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MIN;;}
     break;
 
   case 122:
 
 /* Line 936 of glr.c  */
-#line 312 "parse/gm_grammer.y"
+#line 305 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MAX;;}
     break;
 
   case 123:
 
 /* Line 936 of glr.c  */
-#line 314 "parse/gm_grammer.y"
+#line 307 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 124:
 
 /* Line 936 of glr.c  */
-#line 317 "parse/gm_grammer.y"
+#line 310 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_return ((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yyloc).first_column) ;;}
     break;
 
   case 125:
 
 /* Line 936 of glr.c  */
-#line 318 "parse/gm_grammer.y"
+#line 311 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_return (NULL, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
 
   case 126:
 
 /* Line 936 of glr.c  */
-#line 323 "parse/gm_grammer.y"
+#line 316 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_if((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (5))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (5))].yystate.yysemantics.yysval.ptr), NULL);;}
     break;
 
   case 127:
 
 /* Line 936 of glr.c  */
-#line 324 "parse/gm_grammer.y"
+#line 317 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_if((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (7))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (7))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (7))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 128:
 
 /* Line 936 of glr.c  */
-#line 327 "parse/gm_grammer.y"
+#line 320 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) =  GM_foreign_sent((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 129:
 
 /* Line 936 of glr.c  */
-#line 328 "parse/gm_grammer.y"
+#line 321 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) =  GM_foreign_sent_mut((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (5))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (5))].yystate.yysemantics.yysval.l_list));;}
     break;
 
   case 130:
 
 /* Line 936 of glr.c  */
-#line 331 "parse/gm_grammer.y"
+#line 324 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 131:
 
 /* Line 936 of glr.c  */
-#line 332 "parse/gm_grammer.y"
+#line 325 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_uop((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.ptr), GMOP_ABS, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yyloc).first_column); ;}
     break;
 
   case 132:
 
 /* Line 936 of glr.c  */
-#line 334 "parse/gm_grammer.y"
+#line 327 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_uop((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr), GMOP_NEG, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yyloc).first_column); ;}
     break;
 
   case 133:
 
 /* Line 936 of glr.c  */
-#line 335 "parse/gm_grammer.y"
+#line 328 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_luop((((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.ptr), GMOP_NOT, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yyloc).first_column); ;}
     break;
 
   case 134:
 
 /* Line 936 of glr.c  */
-#line 336 "parse/gm_grammer.y"
+#line 329 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_conversion((((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (4))].yystate.yysemantics.yysval.ptr) , (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yyloc).first_column); ;}
     break;
 
   case 135:
 
 /* Line 936 of glr.c  */
-#line 337 "parse/gm_grammer.y"
+#line 330 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_reduceop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (14))].yystate.yysemantics.yysval.ival), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (14))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (14))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (14))].yystate.yysemantics.yysval.pair).i1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((13) - (14))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((10) - (14))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (14))].yystate.yysemantics.yysval.pair).p1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (14))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (14))].yystate.yyloc).first_column);;}
     break;
 
   case 136:
 
 /* Line 936 of glr.c  */
-#line 338 "parse/gm_grammer.y"
+#line 331 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_reduceop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (11))].yystate.yysemantics.yysval.ival), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (11))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (11))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (11))].yystate.yysemantics.yysval.pair).i1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((10) - (11))].yystate.yysemantics.yysval.ptr), NULL, (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (11))].yystate.yysemantics.yysval.pair).p1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (11))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (11))].yystate.yyloc).first_column);;}
     break;
 
   case 137:
 
 /* Line 936 of glr.c  */
-#line 339 "parse/gm_grammer.y"
+#line 332 "parse/gm_grammer.y"
     {
                  ((*yyvalp).ptr) = GM_expr_reduceop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (11))].yystate.yysemantics.yysval.ival), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (11))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (11))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (11))].yystate.yysemantics.yysval.pair).i1, 
                          GM_expr_ival(1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (11))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (11))].yystate.yyloc).first_column),
@@ -2357,7 +2350,7 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 138:
 
 /* Line 936 of glr.c  */
-#line 343 "parse/gm_grammer.y"
+#line 336 "parse/gm_grammer.y"
     {
                  ((*yyvalp).ptr) = GM_expr_reduceop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (8))].yystate.yysemantics.yysval.ival), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (8))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (8))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((7) - (8))].yystate.yysemantics.yysval.pair).i1, 
                      GM_expr_ival(1, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (8))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (8))].yystate.yyloc).first_column),
@@ -2367,357 +2360,357 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 139:
 
 /* Line 936 of glr.c  */
-#line 348 "parse/gm_grammer.y"
+#line 341 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_biop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_MOD, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 140:
 
 /* Line 936 of glr.c  */
-#line 349 "parse/gm_grammer.y"
+#line 342 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_biop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_MULT, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 141:
 
 /* Line 936 of glr.c  */
-#line 350 "parse/gm_grammer.y"
+#line 343 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_biop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_DIV, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 142:
 
 /* Line 936 of glr.c  */
-#line 351 "parse/gm_grammer.y"
+#line 344 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_biop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_ADD, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 143:
 
 /* Line 936 of glr.c  */
-#line 352 "parse/gm_grammer.y"
+#line 345 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_biop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_SUB, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 144:
 
 /* Line 936 of glr.c  */
-#line 353 "parse/gm_grammer.y"
+#line 346 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_comp((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_LE, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 145:
 
 /* Line 936 of glr.c  */
-#line 354 "parse/gm_grammer.y"
+#line 347 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_comp((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_GE, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 146:
 
 /* Line 936 of glr.c  */
-#line 355 "parse/gm_grammer.y"
+#line 348 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_comp((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_LT, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 147:
 
 /* Line 936 of glr.c  */
-#line 356 "parse/gm_grammer.y"
+#line 349 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_comp((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_GT, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 148:
 
 /* Line 936 of glr.c  */
-#line 357 "parse/gm_grammer.y"
+#line 350 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_comp((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_EQ, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 149:
 
 /* Line 936 of glr.c  */
-#line 358 "parse/gm_grammer.y"
+#line 351 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_comp((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_NEQ, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 150:
 
 /* Line 936 of glr.c  */
-#line 359 "parse/gm_grammer.y"
+#line 352 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_lbiop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_AND, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 151:
 
 /* Line 936 of glr.c  */
-#line 360 "parse/gm_grammer.y"
+#line 353 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_lbiop((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), GMOP_OR, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yyloc).first_column);;}
     break;
 
   case 152:
 
 /* Line 936 of glr.c  */
-#line 362 "parse/gm_grammer.y"
+#line 355 "parse/gm_grammer.y"
     { ((*yyvalp).ptr)= GM_expr_ternary((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (5))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (5))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((5) - (5))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yyloc).first_column);;}
     break;
 
   case 153:
 
 /* Line 936 of glr.c  */
-#line 364 "parse/gm_grammer.y"
+#line 357 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_bval((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.bval), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
 
   case 154:
 
 /* Line 936 of glr.c  */
-#line 365 "parse/gm_grammer.y"
+#line 358 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_ival((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ival), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
 
   case 155:
 
 /* Line 936 of glr.c  */
-#line 366 "parse/gm_grammer.y"
+#line 359 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_fval((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.fval), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
 
   case 156:
 
 /* Line 936 of glr.c  */
-#line 367 "parse/gm_grammer.y"
+#line 360 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_inf((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.bval), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
 
   case 157:
 
 /* Line 936 of glr.c  */
-#line 368 "parse/gm_grammer.y"
+#line 361 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_nil((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column);;}
     break;
 
   case 158:
 
 /* Line 936 of glr.c  */
-#line 369 "parse/gm_grammer.y"
+#line 362 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_id_access((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 159:
 
 /* Line 936 of glr.c  */
-#line 370 "parse/gm_grammer.y"
+#line 363 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_expr_field_access((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 160:
 
 /* Line 936 of glr.c  */
-#line 371 "parse/gm_grammer.y"
+#line 364 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 161:
 
 /* Line 936 of glr.c  */
-#line 372 "parse/gm_grammer.y"
+#line 365 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr);;}
     break;
 
   case 162:
 
 /* Line 936 of glr.c  */
-#line 375 "parse/gm_grammer.y"
+#line 368 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 163:
 
 /* Line 936 of glr.c  */
-#line 378 "parse/gm_grammer.y"
+#line 371 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_PLUS; ;}
     break;
 
   case 164:
 
 /* Line 936 of glr.c  */
-#line 379 "parse/gm_grammer.y"
+#line 372 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MULT; ;}
     break;
 
   case 165:
 
 /* Line 936 of glr.c  */
-#line 380 "parse/gm_grammer.y"
+#line 373 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MIN;  ;}
     break;
 
   case 166:
 
 /* Line 936 of glr.c  */
-#line 381 "parse/gm_grammer.y"
+#line 374 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_MAX;  ;}
     break;
 
   case 167:
 
 /* Line 936 of glr.c  */
-#line 382 "parse/gm_grammer.y"
+#line 375 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_OR;  ;}
     break;
 
   case 168:
 
 /* Line 936 of glr.c  */
-#line 383 "parse/gm_grammer.y"
+#line 376 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_AND;  ;}
     break;
 
   case 169:
 
 /* Line 936 of glr.c  */
-#line 384 "parse/gm_grammer.y"
+#line 377 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_AVG;  /* syntactic sugar*/;}
     break;
 
   case 170:
 
 /* Line 936 of glr.c  */
-#line 386 "parse/gm_grammer.y"
+#line 379 "parse/gm_grammer.y"
     {((*yyvalp).ival) = GMREDUCE_PLUS; ;}
     break;
 
   case 171:
 
 /* Line 936 of glr.c  */
-#line 389 "parse/gm_grammer.y"
+#line 382 "parse/gm_grammer.y"
     {((*yyvalp).bval) = true;;}
     break;
 
   case 172:
 
 /* Line 936 of glr.c  */
-#line 390 "parse/gm_grammer.y"
+#line 383 "parse/gm_grammer.y"
     {((*yyvalp).bval) = false;;}
     break;
 
   case 173:
 
 /* Line 936 of glr.c  */
-#line 392 "parse/gm_grammer.y"
+#line 385 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 174:
 
 /* Line 936 of glr.c  */
-#line 393 "parse/gm_grammer.y"
+#line 386 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 175:
 
 /* Line 936 of glr.c  */
-#line 395 "parse/gm_grammer.y"
+#line 388 "parse/gm_grammer.y"
     { ((*yyvalp).l_list) = GM_single_lhs_list((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 176:
 
 /* Line 936 of glr.c  */
-#line 396 "parse/gm_grammer.y"
+#line 389 "parse/gm_grammer.y"
     { ((*yyvalp).l_list) = GM_add_lhs_list_front((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.l_list));;}
     break;
 
   case 177:
 
 /* Line 936 of glr.c  */
-#line 398 "parse/gm_grammer.y"
+#line 391 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 178:
 
 /* Line 936 of glr.c  */
-#line 399 "parse/gm_grammer.y"
+#line 392 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_field((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.ptr), false); ;}
     break;
 
   case 179:
 
 /* Line 936 of glr.c  */
-#line 401 "parse/gm_grammer.y"
+#line 394 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_field((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (6))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((6) - (6))].yystate.yysemantics.yysval.ptr), true);  ;}
     break;
 
   case 180:
 
 /* Line 936 of glr.c  */
-#line 403 "parse/gm_grammer.y"
+#line 396 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_expr_builtin_expr((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (4))].yystate.yysemantics.yysval.e_list));;}
     break;
 
   case 181:
 
 /* Line 936 of glr.c  */
-#line 404 "parse/gm_grammer.y"
+#line 397 "parse/gm_grammer.y"
     { ((*yyvalp).ptr) = GM_expr_builtin_expr(NULL, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (2))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (2))].yystate.yysemantics.yysval.e_list));;}
     break;
 
   case 182:
 
 /* Line 936 of glr.c  */
-#line 406 "parse/gm_grammer.y"
+#line 399 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (3))].yystate.yysemantics.yysval.e_list);;}
     break;
 
   case 183:
 
 /* Line 936 of glr.c  */
-#line 407 "parse/gm_grammer.y"
+#line 400 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = GM_empty_expr_list();;}
     break;
 
   case 184:
 
 /* Line 936 of glr.c  */
-#line 409 "parse/gm_grammer.y"
+#line 402 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = GM_single_expr_list((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.ptr));;}
     break;
 
   case 185:
 
 /* Line 936 of glr.c  */
-#line 410 "parse/gm_grammer.y"
+#line 403 "parse/gm_grammer.y"
     { ((*yyvalp).e_list) = GM_add_expr_front((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (3))].yystate.yysemantics.yysval.ptr), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (3))].yystate.yysemantics.yysval.e_list));;}
     break;
 
   case 186:
 
 /* Line 936 of glr.c  */
-#line 412 "parse/gm_grammer.y"
+#line 405 "parse/gm_grammer.y"
     { ((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).l_list = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (5))].yystate.yysemantics.yysval.l_list);;}
     break;
 
   case 187:
 
 /* Line 936 of glr.c  */
-#line 413 "parse/gm_grammer.y"
+#line 406 "parse/gm_grammer.y"
     { ((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((2) - (5))].yystate.yysemantics.yysval.ptr); ((*yyvalp).pair).e_list = (((yyGLRStackItem const *)yyvsp)[YYFILL ((4) - (5))].yystate.yysemantics.yysval.e_list);;}
     break;
 
   case 188:
 
 /* Line 936 of glr.c  */
-#line 416 "parse/gm_grammer.y"
+#line 409 "parse/gm_grammer.y"
     {GM_lex_begin_user_text();;}
     break;
 
   case 189:
 
 /* Line 936 of glr.c  */
-#line 417 "parse/gm_grammer.y"
+#line 410 "parse/gm_grammer.y"
     { 
                                             ((*yyvalp).ptr) = GM_expr_foreign((((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.text), (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yyloc).first_column);
                                           ;}
@@ -2726,14 +2719,14 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
   case 190:
 
 /* Line 936 of glr.c  */
-#line 422 "parse/gm_grammer.y"
+#line 415 "parse/gm_grammer.y"
     {((*yyvalp).ptr) = GM_id((((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yysemantics.yysval.text), (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_line, (((yyGLRStackItem const *)yyvsp)[YYFILL ((1) - (1))].yystate.yyloc).first_column); ;}
     break;
 
 
 
 /* Line 936 of glr.c  */
-#line 2737 "./parse/gm_grammer.tab.c"
+#line 2730 "./parse/gm_grammer.tab.c"
       default: break;
     }
 
@@ -4442,7 +4435,7 @@ yypdumpstack (yyGLRStack* yystackp)
 
 
 /* Line 2634 of glr.c  */
-#line 424 "parse/gm_grammer.y"
+#line 417 "parse/gm_grammer.y"
 
 
 

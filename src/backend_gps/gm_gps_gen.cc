@@ -139,7 +139,7 @@ void gm_gps_gen::do_generate_job_configuration()
     // check if node property value parsing is required
     if (proc->find_info_bool(GPS_FLAG_NODE_VALUE_INIT)) {
         Body.pushln("@Override");
-        Body.pushln("public bool hasVertexValuesInInput() {");
+        Body.pushln("public boolean hasVertexValuesInInput() {");
         // [XXX]
         Body.pushln("return true;");
         Body.pushln("}");
