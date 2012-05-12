@@ -88,7 +88,10 @@ void gm_gps_beinfo::add_communication_symbol(gm_gps_comm_unit& C, gm_symtab_entr
         size_info->num_float = (idx+1);
     else if (target_type == GMTYPE_DOUBLE) 
         size_info->num_double = (idx+1);
-    else assert(false);
+    else {
+        printf("symbol = %s, target type = %d\n", sym->getId()->get_genname(), target_type);
+        assert(false);
+    }
 
 }
 

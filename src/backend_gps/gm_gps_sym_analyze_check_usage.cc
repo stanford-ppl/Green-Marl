@@ -34,6 +34,8 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
     
     virtual bool apply(ast_sent* s) 
     {
+        is_random_write_target = false;
+
         // only need to look at assign statement (for LHS)
         // (RHS usages will be gathered in apply(expr)
         if (s->get_nodetype() == AST_ASSIGN)
@@ -41,11 +43,13 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             ast_assign * a = (ast_assign*) s;
 
             int context = get_current_context();
-            random_write_target_sb = (ast_sentblock*) s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
+            random_write_target_sb = (ast_sentblock*) 
+                s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
 
             // check if random write
             is_random_write_target = (random_write_target_sb != NULL);
             if (is_random_write_target) {
+
                 assert(!a->is_target_scalar());
                 random_write_target = a->get_lhs_field()->get_first()->getSymInfo();
             }
@@ -171,7 +175,7 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 
         if (comm_symbol) {
             if (is_random_write_target) {
-                //printf("adding r.w comm symbol :%s\n", tg->get_genname());
+                //printf("adding random write comm symbol :%s\n", tg->get_genname());
                 beinfo->add_communication_symbol_random_write(
                         random_write_target_sb, random_write_target, 
                         tg->getSymInfo());
