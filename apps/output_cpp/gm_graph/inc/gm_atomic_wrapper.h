@@ -123,6 +123,7 @@ static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, dou
     }
 
     gm_spinlock_release_for_ptr(dest);
+    return ret;
 }
 
 #endif
