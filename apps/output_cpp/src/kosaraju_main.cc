@@ -14,6 +14,7 @@ public:
     virtual bool prepare() {
         membership = new int[G.num_nodes()];
         num_membership = 0;
+        return true;
     }
 
     virtual bool run() 
@@ -24,6 +25,7 @@ public:
 
     virtual bool post_process() {
         printf("num_membership = %d\n", num_membership);
+        return true;
     }
 };
 

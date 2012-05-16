@@ -25,6 +25,7 @@ public:
             else
                 membership[i] = 3;  // 40%
         }
+        return true;
     }
 
     virtual bool run() {
@@ -40,6 +41,7 @@ public:
         // values
         //---------------------------------
         printf("sum C = %lf\n", C);
+        return true;
     }
 };
 

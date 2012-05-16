@@ -190,7 +190,7 @@ void do_bfs_forward()
 private:
 bool get_next_state()
 {
-    const char* state_name[5] = {"SMALL","QUEUE","Q2R","RD","R2Q"};
+    //const char* state_name[5] = {"SMALL","QUEUE","Q2R","RD","R2Q"};
     //printf("level = %d, state=%s, next = %d\n", curr_level, state_name[state], next_count);
 
     if (next_count ==0) 
@@ -293,11 +293,11 @@ inline void iterate_neighbor_small(node_t t)
 
 
 // should be used only when save_child is enabled
-inline bool save_down_edge_small(edge_t idx)
+inline void save_down_edge_small(edge_t idx)
 {
     down_edge_set->insert(idx);
 }
-inline bool save_down_edge_large(edge_t idx)
+inline void save_down_edge_large(edge_t idx)
 {
     down_edge_array[idx] = 1;
 }

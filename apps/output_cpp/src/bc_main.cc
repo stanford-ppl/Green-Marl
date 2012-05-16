@@ -43,6 +43,7 @@ public:
         printf("BC[1] = %0.9lf\n", BC[1]);
         printf("BC[2] = %0.9lf\n", BC[2]);
         printf("BC[3] = %0.9lf\n", BC[3]);
+        return true;
     }
 };
 

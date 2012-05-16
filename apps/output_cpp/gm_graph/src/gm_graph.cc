@@ -113,6 +113,7 @@ bool   gm_graph::has_edge(node_id from, node_id to) {
     for(I=nbrs.begin(); I!=nbrs.end(); I++) {
         if (I->dest == to) return true;
     }
+    return false;
 
 }
 //----------------------------------------------
@@ -610,7 +611,7 @@ bool gm_graph::is_neighbor(node_t src, node_t to)
     if (to == left_node) return true;
     if (to == right_node) return true;
 
-    int cnt = 0;
+    /*int cnt = 0;*/
     while(begin_edge < end_edge)
     {
         left_node = node_idx[begin_edge];

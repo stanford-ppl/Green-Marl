@@ -75,6 +75,9 @@ int main(int argc, char** argv)
 		    g = create_RMAT_graph(N, M, random_seed, need_back_edge);
             break;
             */
+        default:
+            printf("UNKNOWN GRAPH TYPE\n");
+            exit(-1);
     }
     gettimeofday(&T2, NULL);
     printf("creation time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 + (T2.tv_usec - T1.tv_usec)*0.001);
