@@ -9,7 +9,6 @@
 #define NUM_NODES "num_nodes"
 #define NUM_EDGES "num_edges"
 
-//#define INDEX_T      "index_t"
 #define NODE_T       "node_t"
 #define EDGE_T       "edge_t"
 #define NODEITER_T   "node_t" // [todo] clarify later
