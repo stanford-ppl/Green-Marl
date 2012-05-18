@@ -15,6 +15,10 @@ ifeq ($(TARGET),cpp_omp)
     ODIR = ../output_cpp/generated
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.cc))
 endif
+ifeq ($(TARGET),cpp_seq)
+    ODIR = ../output_cpp/generated
+    OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.cc))
+endif
 ifeq ($(TARGET), gps)
     ODIR = ../output_gps/generated
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java))
