@@ -1,0 +1,17 @@
+Procedure test_nested_sum(G:Graph)
+{
+    Int a,b,c,d;
+    a = 1;
+    b = 1;
+    c = 1;
+
+    d = Sum(x: G.Nodes) {
+            Sum(y: x.Nbrs) {
+                Sum(z: y.Nbrs) {
+                    Sum(w: z.Nbrs) {a} 
+                    * b
+                }
+            } 
+            + c
+        };
+}
