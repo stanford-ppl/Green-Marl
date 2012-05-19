@@ -19,24 +19,6 @@ if len(sys.argv) == 2 and sys.argv[1] == "-nostop":
 
 # CHECK EXISTENCE AND VERSIONS OF THE REQUIRED TOOLS
 
-def version_check(command_s, out_s, supported_versions):
-    # re.escape is needed for "pluses" in "g++"
-    if len(re.findall(re.escape(command_s), out_s)) > 0:
-        version_ok = False;
-        for s in supported_versions:
-            # replace "." with "_" otherwise substrings (e.g. "2.5" of
-            # "2.5.35" constitute a correct match
-            if len(re.findall('\\b'+re.sub("\.", "_", s)+'\\b', re.sub("\.", "_", out_s))) > 0:
-                version_ok = True;
-                break;
-        if (version_ok == False):
-            if (interactive):
-                in_s = raw_input("Unsupported version of "+command_s+". Continue (y/n)?");
-                if in_s != "y":
-                    sys.exit(-1);
-    else:
-        sys.exit("Cannot find "+command_s);
-
 def find_version(command_s, out_s, tool_config):
     if len(re.findall(re.escape(command_s), out_s)) == 0:
         sys.exit("Cannot find "+command_s);
@@ -50,14 +32,6 @@ gpp_out = commands.getoutput("g++ -v");
 # element of the array is a triple representing a version of flex,
 # bison and g++, respectively
 supported_configs = [ [ "2.5.35", "2.4.1", "4.6.1"] ];
-
-#supported_flex = [ "2.5.35" ];
-#supported_bison = [ "2.4.1" ];
-#supported_gpp = [ "4.6.1" ];
-
-#version_check("flex", flex_out, supported_flex);
-#version_check("bison", bison_out, supported_bison);
-#version_check("g++", gpp_out, supported_gpp);
 
 config_found = False;
 for config in supported_configs:
