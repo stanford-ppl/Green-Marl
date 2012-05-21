@@ -131,6 +131,7 @@ veryclean:
 	-rm $(OBJ)/*.o
 	-rm $(PARSE)/gm_grammer.tab.c
 	-rm $(PARSE)/gm_lex.c
+	-rm $(BIN)/gm_comp
 
 #-----------------------------------------
 # rules to make parser

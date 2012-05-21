@@ -4,19 +4,28 @@
 # Set target envrionment (cpp or gps)
 #----------------------------------------
 ifndef env
-env=cpp
-endif
-
-ifeq ($(env),cpp)
+TARGET=cpp_omp
+tdir=output_cpp
+else 
+ ifeq ($(env),cpp_omp)
    TARGET=cpp_omp
-else
- ifeq ($(env),gps)
-   TARGET=gps
+   tdir=output_cpp
  else
-	@echo "unknown target environment"
-	false
+  ifeq ($(env),cpp_seq)
+    TARGET=cpp_seq
+    tdir=output_cpp
+  else
+   ifeq ($(env),gps)
+     TARGET=gps
+     tdir=output_gps
+   else
+     @echo "unknown target environment"
+	 false
+   endif
+  endif
  endif
 endif
+
 export TARGET
 
 #----------------------------------------
@@ -25,8 +34,6 @@ export TARGET
 ifndef PROGS
 include ./Programs.mk
 endif
-
-tdir = output_$(env)
 
 all: lib gen bin
 
@@ -48,7 +55,7 @@ clean_all:
 
 help:
 	@echo "make [env=<env>] <what>"
-	@echo "  env: target execution environment; cpp or gps"
+	@echo "  env: target execution environment; cpp_omp, cpp_seq or gps"
 	@echo "  what: what to build"
 	@echo "      lib: build runtime library for the environment (once)"
 	@echo "      gen: generate target code from Green-Marl"
