@@ -56,6 +56,25 @@ void gm_gpslib::generate_receive_state_vertex(
     Body.push(GPS_KEY_FOR_STATE);
     Body.pushln(")).getValue().getValue();");
 }
+void gm_gpslib::generate_broadcast_isFirst_master(
+    const char* is_first_var, gm_code_writer& Body)
+{
+    Body.push("getGlobalObjectsMap().putOrUpdateGlobalObject(\"");
+    Body.push(is_first_var);
+    Body.push("\",");
+    Body.push("new BooleanOverwriteGlobalObject(");
+    Body.push(is_first_var);
+    Body.pushln("));");
+}
+void gm_gpslib::generate_receive_isFirst_vertex(
+    const char* is_first_var, gm_code_writer& Body)
+{
+    char temp[1024];
+    sprintf(temp, "boolean %s = ((BooleanOverwriteGlobalObject) getGlobalObjectsMap().getGlobalObject(\"%s\"", is_first_var, is_first_var);
+    Body.push(temp);
+    Body.pushln(")).getValue().getValue();");
+}
+
 
 void gm_gpslib::generate_broadcast_reduce_initialize_master(ast_id* id, gm_code_writer& Body, int reduce_type, const char* base_value)
 {

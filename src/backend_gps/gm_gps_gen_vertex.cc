@@ -257,7 +257,7 @@ void gm_gps_gen::do_generate_vertex_states()
 void gm_gps_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *b)
 {
 
-    // l. load scalar variable
+    // load scalar variable
     std::map<gm_symtab_entry*, gps_syminfo*>& symbols = b->get_symbols();
     std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
     for(I=symbols.begin(); I!=symbols.end(); I ++)
@@ -289,6 +289,13 @@ void gm_gps_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *b)
             generate_scalar_var_def(sym, true);
         }
     }
+
+    if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+        char temp[1024];
+        sprintf(temp, "%s%d", 
+                GPS_INTRA_MERGE_IS_FIRST, b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO));
+        get_lib()->generate_receive_isFirst_vertex(temp, Body);
+    }
 }
 
 void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
@@ -303,6 +310,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     Body.pushln(temp);
 
     get_lib()->generate_vertex_prop_access_prepare(Body);
+
     do_generate_vertex_state_receive_global(b);
 
     if (b->is_prepare()) {
@@ -311,8 +319,12 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
         return;
     }
 
-
     assert (type == GM_GPS_BBTYPE_BEGIN_VERTEX); 
+    bool is_conditional = b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL);
+    char cond_var[128];
+    if (is_conditional) 
+        sprintf(cond_var,"%s%d",GPS_INTRA_MERGE_IS_FIRST, b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO));
+
     //---------------------------------------------------------
     // Generate Receiver Routine
     //---------------------------------------------------------
@@ -320,6 +332,12 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     {
         set_receiver_generate(true);
         Body.NL();
+
+        if (is_conditional) {
+            sprintf(temp, "if (!%s) {", cond_var);
+            Body.pushln(temp);
+        }
+
         Body.pushln("// Begin msg receive");
         Body.pushln("for(MessageData _msg : _msgs) {");
 
@@ -335,7 +353,8 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
                 Body.pushln("/*------");
                 Body.pushln("(Nested Loop)");
                 Body.flush();
-                gm_baseindent_reproduce(4);
+                if (is_conditional) gm_baseindent_reproduce(5);
+                else gm_baseindent_reproduce(4);
                 fe->reproduce(0);
                 gm_flush_reproduce(); 
                 Body.pushln("-----*/");
@@ -355,7 +374,8 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
                 Body.pushln("(Random Write)");
                 Body.pushln("{");
                 Body.flush();
-                gm_baseindent_reproduce(5);
+                if (is_conditional) gm_baseindent_reproduce(6);
+                else gm_baseindent_reproduce(5);
                 std::list<ast_sent*>& sents = sb->get_sents();
                 std::list<ast_sent*>::iterator I;
                 for(I=sents.begin(); I!=sents.end();I++) {
@@ -381,6 +401,9 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
         }
         set_receiver_generate(false);
         Body.pushln("}");
+        if (is_conditional) {
+            Body.pushln("}");
+        }
         Body.NL();
         gm_baseindent_reproduce(3);
     }
@@ -406,16 +429,23 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
             ast_sent* body = fe->get_body();
             if (cnt != 0) Body.NL();
             cnt++;
+            if (fe->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+                sprintf(temp, "if (!%s)", cond_var);
+                Body.push(temp);
+                if (body->get_nodetype() != AST_SENTBLOCK)
+                    Body.pushln(" {");
+                else 
+                    Body.NL();
+            }
+
             generate_sent(body);
+
+            if (fe->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+                if (body->get_nodetype() != AST_SENTBLOCK)
+                    Body.pushln("}");
+            }
+
         }
-        
-        /*
-        ast_sent* s = b->get_1st_sent();
-        assert(s->get_nodetype() == AST_FOREACH);
-        ast_foreach * fe = (ast_foreach*) s;
-        ast_sent* body = fe->get_body();
-        generate_sent(body);
-        */
     }
 
     Body.pushln("}");

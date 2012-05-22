@@ -225,6 +225,8 @@ class ast_node {
         void* find_info_map_value(const char* id, void* key);
         std::map<void*,void*>& get_info_map(const char* id);
 
+        void copy_info_from(ast_node* n); // [xxx] what happens to the entry with same key?
+
     protected:
         int line;
         int col;
@@ -1041,6 +1043,7 @@ private:
     std::list<ast_node*>    parsed_gm;
     std::list<std::string>  parsed_foreign;
     void apply_id(gm_apply*a, bool apply2);
+    void apply_rhs(gm_apply*a, bool apply2);
 };
 
 class ast_expr_builtin : public ast_expr

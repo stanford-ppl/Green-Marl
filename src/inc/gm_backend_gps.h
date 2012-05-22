@@ -43,6 +43,7 @@ class gm_gpslib : public gm_graph_library {
     virtual void generate_broadcast_reduce_initialize_master(ast_id* id, gm_code_writer& Body, int reduce_type, const char* base_value);
     virtual void generate_broadcast_prepare(gm_code_writer& Body);
     virtual void generate_broadcast_state_master(const char* state_var, gm_code_writer& Body);
+    virtual void generate_broadcast_isFirst_master(const char* var, gm_code_writer& Body);
     virtual void generate_broadcast_variable_type(int gm_type_id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
     virtual void generate_broadcast_send_master(ast_id* id, gm_code_writer& Body);
     virtual void generate_broadcast_receive_master(ast_id* id, gm_code_writer& Body, int reduce_op=GMREDUCE_NULL);
@@ -54,6 +55,7 @@ class gm_gpslib : public gm_graph_library {
     virtual void generate_vertex_prop_class_details( 
             std::set<gm_symtab_entry* >& props, gm_code_writer& Body, bool is_edge_prop);
     virtual void generate_receive_state_vertex( const char* state_var, gm_code_writer& Body);
+    virtual void generate_receive_isFirst_vertex( const char* var, gm_code_writer& Body);
 
     virtual void generate_message_fields_define(int gm_type, int count, gm_code_writer& Body);
     virtual void generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body);
@@ -253,12 +255,24 @@ DEF_STRING(GPS_MAP_EDGE_PROP_ACCESS);
 DEF_STRING(GPS_LIST_EDGE_PROP_WRITE);
 DEF_STRING(GPS_FLAG_NODE_VALUE_INIT);
 
+DEF_STRING(GPS_FLAG_WHILE_HEAD);  // used for intra-loop merging
+DEF_STRING(GPS_FLAG_WHILE_TAIL);
+
+DEF_STRING(GPS_FLAG_HAS_COMMUNICATION);         // an outerloop that has communication
+DEF_STRING(GPS_FLAG_HAS_COMMUNICATION_RANDOM);  // an outerloop that random has communication
+DEF_STRING(GPS_FLAG_IS_OUTER_LOOP); // set during bb-split
+DEF_STRING(GPS_FLAG_IS_INNER_LOOP); // set during bb-split
+DEF_STRING(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL);
+DEF_STRING(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+DEF_STRING(GPS_LIST_INTRA_MERGED_CONDITIONAL);
+
 static const int   GPS_PREPARE_STEP1         = 100000;
 static const int   GPS_PREPARE_STEP2         = 100001;
 static const char* GPS_RET_VALUE = "_ret_value";
 static const char* GPS_REV_NODE_ID = "_revNodeId";
 static const char* GPS_DUMMY_ID = "_remoteNodeId";
 static const char* GPS_NAME_IN_DEGREE_PROP = "_in_degree";
+static const char* GPS_INTRA_MERGE_IS_FIRST = "_is_first_";
 
 static enum {
   GPS_ENUM_EDGE_VALUE_WRITE,
@@ -267,6 +281,7 @@ static enum {
   GPS_ENUM_EDGE_VALUE_WRITE_SENT,
   GPS_ENUM_EDGE_VALUE_ERROR
 } gm_edge_access_t;
+
 
 
 #endif

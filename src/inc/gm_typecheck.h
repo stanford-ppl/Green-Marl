@@ -19,7 +19,7 @@ class gm_symtab_entry {
     public: 
         // always call with a copy of ID
         gm_symtab_entry(ast_id* _id, ast_typedecl* _type, bool _isRA=true, bool _isWA=true) : 
-            id(_id), type(_type), isRA(_isRA), isWA(_isWA) {
+            id(_id), type(_type), isRA(_isRA), isWA(_isWA), isArg(false) {
                 id->setSymInfo(this, true);
                 assert(type != NULL);
                 assert(id->name != NULL);
@@ -38,6 +38,7 @@ class gm_symtab_entry {
 
         bool isReadable() {return (isRA==GM_READ_AVAILABLE);}
         bool isWriteable() {return (isWA==GM_WRITE_AVAILABLE);}
+        bool isArgument()  {return isArg;}
 
         // defined in gm_node_info.cc
         bool has_info(const char* id);
@@ -57,12 +58,15 @@ class gm_symtab_entry {
         void remove_info(const char* id);
         void remove_all_info();
 
+        void setArgument(bool b) {isArg = b;}
+
 
     private:
         ast_id* id;
         ast_typedecl* type;
         bool isRA;
         bool isWA;
+        bool isArg;
         std::map<std::string , ast_extra_info*> extra;
 };
 

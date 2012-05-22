@@ -190,15 +190,22 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     //a->begin_context(this);
 
     bool for_id = a->is_for_id();
+    bool for_rhs = a->is_for_rhs();
 
     if (is_pre) {
+        ast_id* src = get_source();
+        ast_id* src2 = get_source2();
+        ast_id* it = get_iterator();
         if (for_id) {
-            ast_id* src = get_source();
-            ast_id* src2 = get_source2();
-            ast_id* it = get_iterator();
             a->apply(src);
             a->apply(it);
             if (src2!=NULL) a->apply(src2);
+        }
+        if (for_rhs) {
+            a->apply_rhs(src);
+            a->apply_rhs(it);
+            if (src2!=NULL) a->apply_rhs(src2);
+
         }
     }
 
@@ -213,10 +220,10 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 
 
     if (is_post) {
+        ast_id* src = get_source();
+        ast_id* src2 = get_source2();
+        ast_id* id = get_iterator();
         if (for_id) {
-            ast_id* src = get_source();
-            ast_id* src2 = get_source2();
-            ast_id* id = get_iterator();
             if (a->has_separate_post_apply()) {
                 a->apply2(src);
                 a->apply2(id);
@@ -227,21 +234,39 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
                 if (src2!=NULL) a->apply(src2);
             }
         }
+        if (for_rhs) {
+            if (a->has_separate_post_apply()) {
+                a->apply_rhs(src);
+                a->apply_rhs(id);
+                if (src2!=NULL) a->apply_rhs(src2);
+            } else {
+                a->apply_rhs2(src);
+                a->apply_rhs2(id);
+                if (src2!=NULL) a->apply_rhs2(src2);
+            }
+        }
     }
 }
 
 void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
 {
     bool for_id = a->is_for_id();
+    bool for_rhs = a->is_for_rhs();
 
     if (is_pre) {
+        ast_id* src = get_source();
+        ast_id* it = get_iterator();
+        ast_id* root = get_root();
         if (for_id) {
-            ast_id* src = get_source();
-            ast_id* it = get_iterator();
-            ast_id* root = get_root();
             a->apply(src);
             a->apply(it);
             a->apply(root);
+        }
+        if (for_rhs) {
+            a->apply_rhs(src);
+            a->apply_rhs(it);
+            a->apply_rhs(root);
+
         }
     }
 
@@ -267,10 +292,10 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     }
 
     if (is_post) {
+        ast_id* src = get_source();
+        ast_id* id = get_iterator();
+        ast_id* root = get_root();
         if (for_id) {
-            ast_id* src = get_source();
-            ast_id* id = get_iterator();
-            ast_id* root = get_root();
             if (a->has_separate_post_apply()) {
                 a->apply2(src);
                 a->apply2(id);
@@ -280,6 +305,17 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
                 a->apply(src);
                 a->apply(id);
                 a->apply(root);
+            }
+        }
+        if (for_rhs) {
+            if (a->has_separate_post_apply()) {
+                a->apply_rhs2(src);
+                a->apply_rhs2(id);
+                a->apply_rhs2(root);
+            } else {
+                a->apply_rhs(src);
+                a->apply_rhs(id);
+                a->apply_rhs(root);
             }
         }
     }
@@ -316,17 +352,67 @@ void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
                     }
                 }
             } 
-
         }
     }
 
+    bool for_rhs = a->is_for_rhs();
+    bool for_lhs = a->is_for_lhs();
+
+    if (is_pre && for_lhs) {
+        if (get_lhs_type() == GMASSIGN_LHS_SCALA) {
+            a->apply_lhs(get_lhs_scala());
+        } else { // LHS_FIELD
+            a->apply_lhs(get_lhs_field());
+        }
+    }
     get_rhs()->traverse(a, is_post, is_pre);
+    if (is_post && for_lhs) {
+        if (get_lhs_type() == GMASSIGN_LHS_SCALA) {
+            if (a->has_separate_post_apply()) 
+                a->apply_lhs2(get_lhs_scala());
+            else
+                a->apply_lhs(get_lhs_scala());
+        } else { // LHS_FIELD
+            if (a->has_separate_post_apply()) 
+                a->apply_lhs2(get_lhs_field());
+            else 
+                a->apply_lhs(get_lhs_field());
+        }
+    }
+
+
     if (is_argminmax_assign()) {
+        std::list<ast_node*>::iterator J;
         std::list<ast_expr*>::iterator I;
-        for(I=r_list.begin(); I!=r_list.end(); I++)
+        for(I=r_list.begin(), J = l_list.begin(); I!=r_list.end(); I++, J++)
         {
+            ast_node* n = *J;
+            if (is_pre && for_lhs) {
+                if (n->get_nodetype() == AST_ID) {
+                    a->apply_lhs((ast_id*)n);
+                } else {
+                    a->apply_lhs((ast_field*)n);
+                }
+            }
             ast_expr* e = *I;
             e->traverse(a, is_post, is_pre);
+            if (is_post && for_lhs) {
+                if (a->has_separate_post_apply()) {
+                    if (n->get_nodetype() == AST_ID) {
+                        a->apply_lhs2((ast_id*)n);
+                    } else {
+                        a->apply_lhs2((ast_field*)n);
+                    }
+                }
+                else {
+                    if (n->get_nodetype() == AST_ID) {
+                        a->apply_lhs((ast_id*)n);
+                    } else {
+                        a->apply_lhs((ast_field*)n);
+                    }
+
+                }
+            }
         }
     }
 
@@ -426,6 +512,7 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre)
 {
     bool for_id = a->is_for_id();
     bool for_expr = a->is_for_expr();
+    bool for_lhs = a->is_for_lhs();
     bool b = a->has_separate_post_apply();
     if (is_pre) {
         if (for_id) {
@@ -440,6 +527,19 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre)
                     ast_id* id2 = ((ast_field*) (*I))->get_second();
                     a->apply(id1);
                     a->apply(id2);
+                }
+            }
+        }
+        if (for_lhs) {
+            std::list<ast_node*>::iterator I;
+            for(I=modified.begin(); I!= modified.end(); I++) {
+                if ((*I)->get_nodetype() == AST_ID) {
+                    ast_id* id = (ast_id*) (*I);
+                    a->apply_lhs(id);
+                }
+                else if ((*I)->get_nodetype() == AST_FIELD) {
+                    ast_field* f = ((ast_field*) (*I));
+                    a->apply_lhs(f);
                 }
             }
         }
@@ -466,6 +566,21 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre)
                 }
             }
         }
+        if (for_lhs) {
+            std::list<ast_node*>::iterator I;
+            for(I=modified.begin(); I!= modified.end(); I++) {
+                if ((*I)->get_nodetype() == AST_ID) {
+                    ast_id* id = (ast_id*) (*I); 
+                    if (b) a->apply_lhs2(id);
+                    else   a->apply_lhs(id);
+                }
+                else if ((*I)->get_nodetype() == AST_FIELD) {
+                    ast_field* f = ((ast_field*) (*I));
+                    if (b) a->apply_lhs2(f);
+                    else   a->apply_lhs(f);
+                }
+            }
+        }
         if (for_expr) {
             if (b) a->apply2(expr);
             else   a->apply(expr);
@@ -481,19 +596,25 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre)
     bool for_id = a->is_for_id();
     bool for_expr = a->is_for_expr();
     bool for_symtab = a->is_for_symtab();
+    bool for_rhs = a->is_for_rhs();
 
 
     if (is_pre) {
         if (for_symtab) {
             apply_symtabs(a, PRE_APPLY);
         }
+        ast_id* src = get_source();
+        ast_id* it = get_iterator();
+        ast_id* src2 = get_source2();
         if (for_id) {
-            ast_id* src = get_source();
-            ast_id* it = get_iterator();
-            ast_id* src2 = get_source2();
             a->apply(src);
             a->apply(it);
             if (src2!=NULL) a->apply(src2);
+        }
+        if (for_rhs) {
+            a->apply_rhs(src);
+            a->apply_rhs(it);
+            if (src2!=NULL) a->apply_rhs(src2);
         }
         if (for_expr)
             a->apply(this);
@@ -509,10 +630,10 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre)
         if (for_symtab) {
             apply_symtabs(a, POST_APPLY);
         }
+        ast_id* src = get_source();
+        ast_id* it = get_iterator();
+        ast_id* src2 = get_source2();
         if (for_id) {
-            ast_id* src = get_source();
-            ast_id* it = get_iterator();
-            ast_id* src2 = get_source2();
             if (b) {
                 a->apply2(src);
                 a->apply2(it);
@@ -521,6 +642,17 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre)
                 a->apply(src);
                 a->apply(it);
                 if (src2!=NULL) a->apply(src2);
+            }
+        }
+        if (for_rhs) {
+            if (b) {
+                a->apply_rhs2(src);
+                a->apply_rhs2(it);
+                if (src2!=NULL) a->apply_rhs2(src2);
+            } else {
+                a->apply_rhs(src);
+                a->apply_rhs(it);
+                if (src2!=NULL) a->apply_rhs(src2);
             }
         }
         if (for_expr) {
@@ -537,14 +669,21 @@ void ast_expr_builtin::traverse(gm_apply* a, bool is_post, bool is_pre)
     bool for_sent = a->is_for_sent();
     bool for_id = a->is_for_id();
     bool for_expr = a->is_for_expr();
+    bool for_rhs = a->is_for_rhs();
+    bool for_builtin = a->is_for_builtin();
 
     if (is_pre) {
         if (for_id && (driver != NULL))
             a->apply(driver);
+        if (for_rhs && (driver != NULL)) 
+            a->apply_rhs(driver);
+        if (for_builtin) 
+            a->apply(this);
         if (for_expr)
             a->apply(this);
     }
 
+    // built-in arguments are always rhs
     std::list<ast_expr*>::iterator I;
     for(I = args.begin(); I!= args.end(); I++) {
         ast_expr* e = *I;
@@ -557,6 +696,15 @@ void ast_expr_builtin::traverse(gm_apply* a, bool is_post, bool is_pre)
         {
             if (b) a->apply2(driver);
             else a->apply(driver);
+        }
+        if (for_rhs && (driver != NULL))
+        {
+            if (b) a->apply_rhs2(driver);
+            else a->apply_rhs(driver);
+        }
+        if (for_builtin) {
+            if (b) a->apply_builtin2(this);
+            else a->apply_builtin(this);
         }
         if (for_expr) {
             if (b) a->apply2(this);
@@ -583,15 +731,37 @@ void ast_expr_foreign::apply_id(gm_apply* a, bool apply2)
         }
     }
 }
+void ast_expr_foreign::apply_rhs(gm_apply* a, bool apply2)
+{
+    std::list<ast_node*>::iterator I;
+    for(I=parsed_gm.begin(); I!=parsed_gm.end(); I++) {
+        ast_node* n = *I;
+        if (n==NULL) continue;
+        if (n->get_nodetype() == AST_ID) {
+            ast_id* id = (ast_id*) n;
+            if (apply2) a->apply_rhs2(id);
+            else a->apply_rhs(id);
+        }
+        else if (n->get_nodetype() == AST_FIELD) {
+            ast_field* f = (ast_field*) n;
+            if (apply2) {a->apply_rhs2(f);}
+            else {a->apply_rhs(f);}
+        }
+    }
+}
 
 void ast_expr_foreign::traverse(gm_apply*a, bool is_post, bool is_pre)
 {
     bool for_id = a->is_for_id();
     bool for_expr = a->is_for_expr();
+    bool for_rhs = a->is_for_rhs();
     if (is_pre) {
         if (for_id) {
             apply_id(a, false);
         } 
+        if (for_rhs) {
+            apply_rhs(a, false);
+        }
     }
 
     if (for_expr)
@@ -601,6 +771,9 @@ void ast_expr_foreign::traverse(gm_apply*a, bool is_post, bool is_pre)
         if (for_id) {
             apply_id(a, a->has_separate_post_apply());
         } 
+        if (for_rhs) {
+            apply_rhs(a, a->has_separate_post_apply());
+        }
     }
 
 
@@ -613,8 +786,9 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre)
     bool for_id = a->is_for_id();
     bool for_expr = a->is_for_expr();
     bool for_symtab = a->is_for_symtab();
+    bool for_rhs = a->is_for_rhs();
 
-    if (!(for_id || for_expr || for_symtab)) return; // no more sentence behind this
+    if (!(for_id || for_expr || for_symtab || for_rhs)) return; // no more sentence behind this
 
     if (for_expr && is_pre)
         a->apply(this);
@@ -628,6 +802,13 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre)
                 if (is_post) {
                     if (b) a->apply2(get_id());
                     else a->apply(get_id());
+                }
+            }
+            if (for_rhs) {
+                if (is_pre) a->apply_rhs(get_id());
+                if (is_post) {
+                    if (b) a->apply_rhs2(get_id());
+                    else   a->apply_rhs(get_id());
                 }
             }
             break;
@@ -645,6 +826,13 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre)
                         a->apply(get_field()->get_first());
                         a->apply(get_field()->get_second());
                     }
+                }
+            }
+            if (for_rhs) {
+                if (is_pre) a->apply_rhs(get_field());
+                if (is_post) {
+                    if (b) a->apply_rhs2(get_field());
+                    else   a->apply_rhs(get_field());
                 }
             }
             break;

@@ -71,8 +71,8 @@ void gm_gps_basic_block::reproduce_sents()
                 gm_newline_reproduce();
         }
         gm_flush_reproduce(); 
-   } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2)) {
-       // do nithing;
+   } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2) || (type == GM_GPS_BBTYPE_MERGED_TAIL)) {
+       // do nothing;
    } else {
        assert(false);
    }
@@ -218,20 +218,6 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
         // traverse body
         if (_curr->get_num_sents() == 0) return;
 
-        /*
-        assert(_curr->get_num_sents() == 1);
-        ast_sent* s = _curr->get_1st_sent();
-        assert(s->get_nodetype() == AST_FOREACH);
-        ast_foreach* fe = (ast_foreach*) s;
-        // traverse sentences inside foreach
-        assert(fe->get_filter() == NULL); // should be changed into if
-
-
-        //ast_sent* b = fe->get_body(); // body of foreach only?
-        //b->traverse(this, is_post(), is_pre());
-        fe->traverse(this, is_post(), is_pre());
-        */
-        
         std::list<ast_sent*>& sents = _curr->get_sents(); 
         std::list<ast_sent*>::iterator I;
         for(I=sents.begin(); I!=sents.end(); I++) {
@@ -272,6 +258,9 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b)
     } else if (type == GM_GPS_BBTYPE_PREPARE2) {
         // nothing
     }
+    else if (type == GM_GPS_BBTYPE_MERGED_TAIL) {
+        // nothing
+    }
     else
     {
         assert(false);
@@ -292,3 +281,10 @@ void gps_bb_traverse_ast(gm_gps_basic_block* entry,
 
 }
 
+void gps_bb_traverse_ast_single(gm_gps_basic_block* entry, 
+                         gps_apply_bb_ast* apply, bool is_post, bool is_pre)
+{
+    apply->set_is_post(is_post);
+    apply->set_is_pre(is_pre);
+    apply->apply(entry);
+} 

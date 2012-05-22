@@ -52,8 +52,12 @@ public:
                     B->add_exit(D, auto_insert_remote_entry); 
                     D->update_entry_from(C, B);
 
-                //printf("merging %d %d %d\n", B->get_id(), C->get_id(), D->get_id());
                 }
+
+                // migrate extra info from B to C
+                //printf("merging %d %d \n", B->get_id(), C->get_id());
+                B->copy_info_from(C);
+
                 
                 // delete C
                 delete C;

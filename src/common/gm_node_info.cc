@@ -236,6 +236,19 @@ std::map<void*,void*>& ast_node::get_info_map(const char* id)
     return INFO->get_map();
 }
 
+void ast_node::copy_info_from(ast_node * n)
+{
+    std::map<std::string , ast_extra_info*>::iterator I;
+    for (I=n->extra.begin(); I!= n->extra.end(); I++)
+    {
+        std::string s = I->first;
+        ast_extra_info* e = I->second;
+        if (this->extra.find(s) == this->extra.end()) {
+            this->extra[s] = e->copy();
+        }
+    }
+}
+
 //---------------------------------------------------------------------
 // implementing same inferface to ast_symtab_entry
 //---------------------------------------------------------------------

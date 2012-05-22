@@ -400,7 +400,11 @@ bool gm_has_dependency(ast_sent* P, ast_sent *Q)
     //---------------------------------------------------------
     gm_rwinfo_sets* P_SET = get_rwinfo_sets(P);
     gm_rwinfo_sets* Q_SET = get_rwinfo_sets(Q);
+    return gm_has_dependency(P_SET, Q_SET);
+}
 
+bool gm_has_dependency(gm_rwinfo_sets* P_SET, gm_rwinfo_sets* Q_SET)
+{
     gm_rwinfo_map& P_R = P_SET->read_set;
     gm_rwinfo_map& P_W = P_SET->write_set;
     gm_rwinfo_map& P_M = P_SET->mutate_set;

@@ -178,6 +178,18 @@ void gm_gps_gen::do_generate_master_scalar()
         Body.pushln(temp);
     }
 
+    // Intra-Loop Merging
+    if (proc->has_info(GPS_LIST_INTRA_MERGED_CONDITIONAL))
+    {
+        std::list<void*>& L = proc->get_info_list(GPS_LIST_INTRA_MERGED_CONDITIONAL);
+        std::list<void*>::iterator l; 
+        for(l = L.begin(); l!=L.end(); l++) {
+            gm_gps_basic_block* bb = (gm_gps_basic_block*) (*l);
+            sprintf(temp, "private boolean %s%d = true;", GPS_INTRA_MERGE_IS_FIRST, bb->get_id());
+            Body.pushln(temp);
+        }
+    }
+
     Body.NL();
 }
 
@@ -309,6 +321,11 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         // generate Broadcast
         do_generate_scalar_broadcast_send(b);
         get_lib()->generate_broadcast_state_master("_master_state", Body);
+        if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+            int cond_bb_no= b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+            sprintf(temp, "%s%d", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
+            get_lib()->generate_broadcast_isFirst_master(temp, Body);
+        }
         Body.NL();
 
         // generate next statement
@@ -343,11 +360,23 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         Body.NL();
 
 
-        // generate sentences
+        int cond_bb_no= b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+
+        // generate sequential sentences
         b->prepare_iter();
         ast_sent* s = b->get_next();
         while (s != NULL) {
+            if (s->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+                sprintf(temp, "if (!%s%d) {", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
+                Body.pushln(temp);
+            }
+
             generate_sent(s);
+
+            if (s->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+                Body.pushln("}");
+            }
+
              s = b->get_next();
         }
 
@@ -395,8 +424,15 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         Body.pushln(";");
 
         sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;\n",
-                b->get_nth_exit(0)->get_id(), 
-                b->get_nth_exit(1)->get_id());
+                b->get_nth_exit(0)->get_id(),  // continue while
+                b->get_nth_exit(1)->get_id()); // exit
+        Body.pushln(temp);
+
+        if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+            sprintf(temp, "if (!_expression_result) %s%d=true; // reset is_first\n\n",
+                    GPS_INTRA_MERGE_IS_FIRST, b->get_id());
+        }
+
         Body.pushln(temp);
 
     }
@@ -412,6 +448,17 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         sprintf(temp,"_master_state_nxt = %d;", n);
         Body.pushln(temp);
         Body.pushln("_master_should_start_workers = true;");
+    }
+    else if (type == GM_GPS_BBTYPE_MERGED_TAIL) {
+        Body.pushln("// Intra-Loop Merged");
+        int source_id = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+        sprintf(temp, "if (%s%d) _master_state_nxt = %d", GPS_INTRA_MERGE_IS_FIRST, source_id,
+                b->get_nth_exit(0)->get_id());
+        Body.pushln(temp);
+        sprintf(temp, "else _master_state_nxt = %d", b->get_nth_exit(1)->get_id());
+        Body.pushln(temp);
+        sprintf(temp, "%s%d = false;\n", GPS_INTRA_MERGE_IS_FIRST, source_id);
+        Body.pushln(temp);
     }
     else {
         assert(false);

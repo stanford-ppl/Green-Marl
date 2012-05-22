@@ -62,6 +62,7 @@ void gm_gps_gen::init_gen_steps()
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));               // create (Extended) basic block
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));           // split communicating every BB into two
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_again));          // Merging Ebbs
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_intra_loop));     // Merging Ebbs Inside Loops
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_usage));     // check how symbols are used
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_summary));   // make a summary of symbols per BB
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_reachable));           // make a list of reachable BB

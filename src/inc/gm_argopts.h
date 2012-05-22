@@ -39,7 +39,8 @@ struct GM_comp_args  {
 #define GMARGFLAG_FLIP_PULL         "FlipPull"
 #define GMARGFLAG_FLIP_BFSUP        "FlipUp"
 
-#define GMARGFLAG_MERGE_BB          "MergeBB"
+#define GMARGFLAG_MERGE_BB          "GPSMerge"
+#define GMARGFLAG_MERGE_BB_INTRA    "GPSMergeIntra"
 //#define GMARGFLAG_DUMPIR            "Dd"
 //#define GMARGFLAG_NOMERGE           "NoMerge"
 //#define GMARGFLAG_NOSCREDUCE        "NoScalarReduce"
@@ -57,7 +58,8 @@ static struct GM_comp_args GM_compiler_options[] =
     {GMARGFLAG_FLIP_BFSUP,   GMARG_BOOL, "Enable 'flipping edges for BFS Up-nbrs'", "1"},
     {GMARGFLAG_FLIP_REVERSE, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of reverse edges", "0"},
     {GMARGFLAG_FLIP_PULL,    GMARG_BOOL, "Enable 'flipping edges' to avoid the use of pull-based computation", "0"},
-    {GMARGFLAG_MERGE_BB, GMARG_BOOL,  "(For gps) Enable merge-bb optimization", "1"},
+    {GMARGFLAG_MERGE_BB,        GMARG_BOOL,  "(For gps) Enable bb merge optimization", "1"},
+    {GMARGFLAG_MERGE_BB_INTRA,  GMARG_BOOL,  "(For gps) Enable intra-loop bb merge optimization", "1"},
 
     {GMARGFLAG_STOP_STRING, GMARG_STRING, "(For debug) Stop the compiler after certain stage. <string>=(step)[.(step)]", "0"},
 

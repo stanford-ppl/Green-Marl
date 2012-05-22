@@ -450,6 +450,7 @@ bool gm_typechecker_stage_1::apply(ast_procdef* p)
                 ast_id* id = idlist->get_item(i);
                 is_okay = gm_declare_symbol(S, id, type, 
                         GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE) && is_okay;
+                if (is_okay) {id->getSymInfo()->setArgument(true);}
             }
         }
     }
@@ -475,6 +476,7 @@ bool gm_typechecker_stage_1::apply(ast_procdef* p)
                     ast_id* id = idlist->get_item(i);
                     is_okay = gm_declare_symbol(curr_sym, id, type, 
                             GM_READ_NOT_AVAILABLE, GM_WRITE_AVAILABLE) && is_okay;
+                    if (is_okay) {id->getSymInfo()->setArgument(true);}
                 }
             }
         }

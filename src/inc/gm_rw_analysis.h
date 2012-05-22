@@ -126,7 +126,7 @@ public:
         always = true;
         reduce_op = GMREDUCE_NULL;
         access_range = GM_RANGE_SINGLE; // default is single access           
-	mutate_direction = -1;
+	    mutate_direction = -1;
     }  
 
     static gm_rwinfo* new_scala_inst(ast_id* loc, 
@@ -143,10 +143,10 @@ public:
     }
 
     static gm_rwinfo* new_builtin_inst(ast_id* loc, int mutate_dir) {
-	gm_rwinfo *g = new gm_rwinfo();
-	g->location = loc;
-	g->mutate_direction = mutate_dir;
-	return g;
+	    gm_rwinfo *g = new gm_rwinfo();
+	    g->location = loc;
+	    g->mutate_direction = mutate_dir;
+	    return g;
     }
 
     static gm_rwinfo* new_field_inst(
@@ -303,7 +303,9 @@ extern bool gm_redo_rw_analysis(ast_sent* s);
 //--------------------------------------------------------
 extern bool gm_has_dependency(ast_sent* P , ast_sent* Q);
 
-extern bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2); // return true, if any of they have same symbool table
+extern bool gm_has_dependency(gm_rwinfo_sets* P1, gm_rwinfo_sets* Q1);
+
+extern bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool regard_mutate_direction=false); // return true, if any of they have same symbool table
 
 // returns true if the symbol is modified in ths sentence subtree S.
 class gm_rwinfo_query {

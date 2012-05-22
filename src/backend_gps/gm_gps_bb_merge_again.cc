@@ -255,6 +255,8 @@ void check_and_merge_bb_main(gps_bb* par1, gps_bb* seq1, gps_bb* par2, gps_bb* s
 
         //printf("deleting %d\n", seq2->get_id());
         //printf("deleting %d\n", par2->get_id());
+        seq1->copy_info_from(seq2);
+        par2->copy_info_from(par1);
         delete seq2;
         delete par2;
     }

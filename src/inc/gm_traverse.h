@@ -10,8 +10,8 @@ class gm_apply {
     public:
         gm_apply() : for_id (false), for_symtab(false), 
                      for_sent(false), for_expr(false), 
-                     for_proc(false),
-                     separate_post_apply(false),
+                     for_proc(false), for_lhs(false), for_rhs(false), for_builtin(false),
+                     separate_post_apply(false), 
                      traverse_local_expr_only(false),
                      curr_sent_being_traversed(NULL)
     {}
@@ -25,12 +25,24 @@ class gm_apply {
     virtual void begin_context(ast_node* n) {return;}
     virtual void end_context(ast_node* n) {return ;}
 
+    virtual bool apply_lhs(ast_id* e) {return true;}
+    virtual bool apply_lhs(ast_field* e) {return true;}
+    virtual bool apply_rhs(ast_id *e) {return true;}
+    virtual bool apply_rhs(ast_field *e) {return true;}
+    virtual bool apply_builtin(ast_expr_builtin *e) {return true;}
+
     virtual bool apply2(gm_symtab* e, int symtab_type){ return true;}      // SYMTAB_ARG, SYMTAB_FIELD, SYMTAB_VAR, SYMTAB_PROC
     virtual bool apply2(gm_symtab_entry* e, int symtab_type){ return true;}
     virtual bool apply2(ast_id* e){ return true;}
     virtual bool apply2(ast_sent* s) {return true;}
     virtual bool apply2(ast_expr* e) {return true;}
     virtual bool apply2(ast_procdef* s) {return true;}
+
+    virtual bool apply_lhs2(ast_id* e) {return true;}
+    virtual bool apply_lhs2(ast_field* e) {return true;}
+    virtual bool apply_rhs2(ast_id *e) {return true;}
+    virtual bool apply_rhs2(ast_field *e) {return true;}
+    virtual bool apply_builtin2(ast_expr_builtin *e) {return true;}
 
     // (for bfs iteration)
     virtual bool begin_traverse_reverse(ast_bfs* bfs) {return true;}
@@ -42,6 +54,9 @@ class gm_apply {
         bool for_sent;
         bool for_expr;
         bool for_proc;
+        bool for_lhs;
+        bool for_rhs;
+        bool for_builtin;
         bool separate_post_apply;
         bool traverse_local_expr_only;
         ast_sent* curr_sent_being_traversed; //
@@ -52,16 +67,22 @@ class gm_apply {
         bool is_for_sent() {return for_sent;}
         bool is_for_expr() {return for_expr;}
         bool is_for_proc() {return for_proc;}
+        bool is_for_lhs() {return for_lhs;}
+        bool is_for_rhs() {return for_rhs;}
+        bool is_for_builtin() {return for_builtin;}
         void set_for_id(bool b) {for_id =b;}
         void set_for_symtab(bool b) {for_symtab=b;}
         void set_for_sent(bool b) {for_sent=b;}
         void set_for_expr(bool b) {for_expr=b;}
         void set_for_proc(bool b) {for_proc=b;}
+        void set_for_lhs(bool b) {for_lhs =b;}
+        void set_for_rhs(bool b) {for_rhs =b;}
+        void set_for_builtin(bool b) {for_builtin = b;}
 
         bool has_separate_post_apply() {return separate_post_apply;}
         void set_separate_post_apply(bool b)  {separate_post_apply = b;}
         bool is_traverse_local_expr_only() {return traverse_local_expr_only;}
-        void set_traverse_local_expr_only(bool b) {traverse_local_expr_only = b;}
+        void set_traverse_local_expr_only(bool b) {traverse_local_expr_only = b;} // what is this for?
 
         ast_sent* get_current_sent() {return curr_sent_being_traversed;}
         void set_current_sent(ast_sent* s) {curr_sent_being_traversed = s;}

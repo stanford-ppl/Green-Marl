@@ -23,6 +23,7 @@ public:
     {
         gen = g;
         set_for_sent(true);
+        current_outer_loop = NULL;
     }
 
     virtual bool apply(ast_sent* s) 
@@ -41,11 +42,16 @@ public:
         {
             ast_foreach* fe = (ast_foreach*) s;
 
-            if (gm_is_all_graph_iter_type(fe->get_iter_type())) return true;
+            if (gm_is_all_graph_iter_type(fe->get_iter_type())) {
+                current_outer_loop = fe;
+                fe->add_info_bool(GPS_FLAG_IS_OUTER_LOOP, true);
+                return true;
+            }
 
             //curr->set_has_sender(true);
    
             gen->add_communication_unit_nested(fe); // adding inner loop
+            fe->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
 
             // add the foreach loop as 'receiver' of this state, temporariliy.
             // (Receiver loop will be moved away later)
@@ -53,6 +59,10 @@ public:
 
             // list of bbs that should be splited
             target_bb.insert(curr);
+
+            // mark current outer loop to have communication
+            assert(current_outer_loop != NULL);
+            current_outer_loop->add_info_bool(GPS_FLAG_HAS_COMMUNICATION, true);
         }
         else if (s->get_nodetype() == AST_ASSIGN)
         {
@@ -68,6 +78,9 @@ public:
                 curr->add_random_write_receiver(sb, sym);
 
                 target_bb.insert(curr);
+
+                assert(current_outer_loop != NULL);
+                current_outer_loop->add_info_bool(GPS_FLAG_HAS_COMMUNICATION_RANDOM, true);
             }
         }
 
@@ -79,6 +92,7 @@ public:
 private:
     gm_gps_beinfo* gen;
     std::set<gps_bb*> target_bb;
+    ast_foreach* current_outer_loop;
 
 };
 

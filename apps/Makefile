@@ -3,6 +3,14 @@
 #----------------------------------------
 # Set target envrionment (cpp or gps)
 #----------------------------------------
+ifndef gm_args
+GM_ARGS=
+else
+GM_ARGS=$(gm_args)
+endif
+export GM_ARGS
+
+
 ifndef env
 TARGET=cpp_omp
 tdir=output_cpp
