@@ -7,6 +7,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#if defined(__x86_64__) || defined(__i386__)
+#include "../platform/x86/inc/gm_platform_helpers.h"
+#else
+#if defined(__sparc)
+#if defined (__ORACLE__)
+#include "../platform/sparc/inc/gm_platform_helpers.h"
+#endif
+#else
+#error "We need x86 (32bit or 64bit) or Sparc environment" 
+#endif
+#endif
 
 typedef int32_t node_t;
 typedef int32_t indlong_t;
@@ -644,29 +655,6 @@ static inline bool _gm_CAS(float   *dest, float*  old_valp,  float* new_valp)
     return __sync_bool_compare_and_swap(D, *O, *P);
 }
 */
-// FOR x86 only
-#define _gm_CAS_asm(ptr, oldval, newval) \
-    ({ \
-      typeof(ptr) ___p = (ptr); \
-      typeof(*___p) ___oldval = (oldval); \
-      typeof(*___p) ___newval = (newval); \
-      register unsigned char ___result; \
-      register typeof(*___p) ___readval; \
-      if (sizeof(*___p) == 4) { \
-        __asm__ __volatile__ ("lock; cmpxchgl %3,%1; sete %0" \
-                              : "=q"(___result), "=m"(*___p), "=a"(___readval) \
-                              : "r"(___newval), "m"(*___p), "2"(___oldval) \
-                              : "memory"); \
-      } else if (sizeof(*___p) == 8) { \
-        __asm__ __volatile__ ("lock; cmpxchgq %3,%1; sete %0" \
-                              : "=q"(___result), "=m"(*___p), "=a"(___readval) \
-                              : "r"(___newval), "m"(*___p), "2"(___oldval) \
-                              : "memory"); \
-      } else { \
-        abort(); \
-      } \
-      ___result; \
-    })
 static inline bool _gm_CAS(double  *dest, double old_val,  double new_val) 
 {
     return _gm_CAS_asm(dest, old_val, new_val);

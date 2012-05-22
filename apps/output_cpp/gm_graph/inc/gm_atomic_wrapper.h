@@ -3,7 +3,17 @@
 #define GM_ATOMIC_WRAP_H
 #include <stdlib.h>
 #include <stdint.h>
-
+#if defined(__x86_64__) || defined(__i386__)
+#include "../platform/x86/inc/gm_platform_helpers.h"
+#else
+#if defined(__sparc)
+#if defined (__ORACLE__)
+#include "../platform/sparc/inc/gm_platform_helpers.h"
+#endif
+#else
+#error "We need x86 (32bit or 64bit) or Sparc environment" 
+#endif
+#endif
 //---------------------------------------------------------
 // A thin layer of atomic operations
 //---------------------------------------------------------
@@ -31,63 +41,33 @@
 #error "GM_Graph library requires gcc for now" 
 #endif // no GNUC
 
-#if defined(__x86_64__) || defined(__i386__)
-
-#define __asm_sync_bool_compare_and_swap(ptr,oldval,newval) \
-    ({ \
-      typeof(ptr) __p = (ptr); \
-      typeof(*__p) __oldval = (oldval); \
-      typeof(*__p) __newval = (newval); \
-      register unsigned char __result; \
-      register typeof(*__p) __readval; \
-      if (sizeof(*__p) == 4) { \
-        __asm__ __volatile__ ("lock; cmpxchgl %3,%1; sete %0" \
-                              : "=q"(__result), "=m"(*__p), "=a"(__readval) \
-                              : "r"(__newval), "m"(*__p), "2"(__oldval) \
-                              : "memory"); \
-      } else if (sizeof(*__p) == 8) { \
-        __asm__ __volatile__ ("lock; cmpxchgq %3,%1; sete %0" \
-                              : "=q"(__result), "=m"(*__p), "=a"(__readval) \
-                              : "r"(__newval), "m"(*__p), "2"(__oldval) \
-                              : "memory"); \
-      } else { \
-        abort(); \
-      } \
-      __result; \
-    })
-
 static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val)
 { return __sync_bool_compare_and_swap(dest, old_val, new_val);}
 
 // It is not possible to use gcc's inherent CAS for double and float
 // (Reinterpret_cast does not work here)
 static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float new_val)
-{ unsigned char  c = __asm_sync_bool_compare_and_swap(dest, old_val, new_val);
+{ unsigned char  c = _gm_CAS_asm(dest, old_val, new_val);
   return (c==1);
 }
 
 static inline bool _gm_atomic_compare_and_swap(bool *dest, bool old_val, bool new_val)
 { return __sync_bool_compare_and_swap(dest, old_val, new_val);}
 
-#else
-#error "We need x86 (32bit or 64bit environment" 
-#endif
 
 
-#ifdef __x86_64__
+#ifdef __arch64__
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
 { return __sync_bool_compare_and_swap(dest, old_val, new_val);}
 
 static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
 { 
-  unsigned char c =  __asm_sync_bool_compare_and_swap(dest, old_val, new_val);
+  unsigned char c =  _gm_CAS_asm(dest, old_val, new_val);
   return (c==1);
 }
 
-#endif
-
-#ifdef __i386__
+#else
 
 #include "gm_lock.h"
 #warning "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
