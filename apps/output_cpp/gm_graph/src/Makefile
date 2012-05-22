@@ -10,6 +10,10 @@ ifdef ORACLE
 CFLAGS += -D__ORACLE__
 endif
 
+ifdef FORCE_64BIT
+CFLAGS += -m64
+endif
+
 
 all: $(OUT)
 

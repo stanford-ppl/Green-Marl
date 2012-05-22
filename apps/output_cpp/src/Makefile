@@ -13,6 +13,11 @@ ifdef ORACLE
 CFLAGS += -D__ORACLE__
 endif
 
+ifdef FORCE_64BIT
+CFLAGS += -m64
+endif
+
+
 #include program list
 include ../../Programs.mk
 ifndef PROGS
