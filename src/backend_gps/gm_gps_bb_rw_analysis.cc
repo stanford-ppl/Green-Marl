@@ -20,7 +20,7 @@ class gm_gps_find_rwinfo_simple : public gps_apply_bb_ast
 {
 public:
     // find
-    gm_gps_find_rwinfo_simple( gm_rwinfo_sets* _S) : S(_S) {
+    gm_gps_find_rwinfo_simple( gm_rwinfo_sets* _SS) : S(_SS) {
         set_for_rhs(true);
         set_for_lhs(true);
         set_for_sent(true);
