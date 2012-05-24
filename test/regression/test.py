@@ -13,7 +13,7 @@ APPS_PATH=s_path+"/../../apps/";
 
 # PROCESS COMMAND LINE
 interactive = True;
-if len(sys.argv) == 2 and sys.argv[1] == "-nostop":
+if (len(sys.argv) == 2 and sys.argv[1] == "-nostop") or os.getenv("gm_regress_nostop") != None:
     interactive = False;
 
 
@@ -31,7 +31,8 @@ gpp_out = commands.getoutput("g++ -v");
 # supported_configs is an array of supported configurations where each
 # element of the array is a triple representing a version of flex,
 # bison and g++, respectively
-supported_configs = [ [ "2.5.35", "2.4.1", "4.6.1"] ];
+supported_configs = [ [ "2.5.35", "2.4.1", "4.6.1"],
+                      [ "2.5.35", "2.3"  , "4.5.2"]];
 
 config_found = False;
 for config in supported_configs:
