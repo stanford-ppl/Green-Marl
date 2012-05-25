@@ -33,6 +33,7 @@ gpp_out = commands.getoutput("g++ -v");
 # element of the array is a triple representing a version of flex,
 # bison and g++, respectively
 supported_configs = [ [ "2.5.35", "2.4.1", "4.6.1"],
+                      [ "2.5.35", "2.4.1", "4.5.2"],
                       [ "2.5.35", "2.3"  , "4.5.2"]];
 
 config_found = False;
