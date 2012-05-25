@@ -21,7 +21,8 @@ if (len(sys.argv) == 2 and sys.argv[1] == "-nostop") or os.getenv("gm_regress_no
 
 def find_version(command_s, out_s, tool_config):
     if len(re.findall(re.escape(command_s), out_s)) == 0:
-        sys.exit("Cannot find "+command_s);
+        print "Cannot find "+command_s;
+        sys.exit(-1);
     return len(re.findall('\\b'+re.sub("\.", "_", tool_config)+'\\b', re.sub("\.", "_", out_s)));
 
 flex_out = commands.getoutput("flex --version");
@@ -72,6 +73,7 @@ def build_compiler():
     make_res = commands.getstatusoutput("make");
     if make_res[0] != 0:
         print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
     assert os.path.isfile(COMP_BINARY_PATH)
 
 build_compiler();
@@ -92,6 +94,7 @@ def build_and_run_apps(apps_out_dir, run_apps):
     make_res = commands.getstatusoutput("make all");
     if make_res[0] != 0:
         print "APPLICATION BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
 
     if run_apps:
         assert os.path.isfile(APPS_PATH+apps_out_dir+"/bin/graph_gen")
