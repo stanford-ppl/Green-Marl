@@ -13,7 +13,8 @@ class gm_apply {
                      for_proc(false), for_lhs(false), for_rhs(false), for_builtin(false),
                      separate_post_apply(false), 
                      traverse_local_expr_only(false),
-                     curr_sent_being_traversed(NULL)
+                     curr_sent_being_traversed(NULL),
+                     matching_lhs(NULL), matching_rhs(NULL)
     {}
 
     virtual bool apply(gm_symtab* e, int symtab_type){ return true;}      // SYMTAB_ARG, SYMTAB_FIELD, SYMTAB_VAR, SYMTAB_PROC
@@ -48,6 +49,14 @@ class gm_apply {
     virtual bool begin_traverse_reverse(ast_bfs* bfs) {return true;}
     virtual bool end_traverse_reverse(ast_bfs* bfs) {return true;}
 
+    // (should be called inside apply_lhs or apply_rhs of assignment
+    virtual ast_node* get_matching_lhs()     {return matching_lhs;}
+    virtual ast_node* get_matching_rhs_top() {return matching_rhs;}
+
+    // used by traversal engine
+    void set_matching_lhs(ast_node* n)     {matching_lhs = n;}
+    void set_matching_rhs_top(ast_expr* n) {matching_rhs = n;}
+
     protected:
         bool for_id;
         bool for_symtab;
@@ -59,7 +68,9 @@ class gm_apply {
         bool for_builtin;
         bool separate_post_apply;
         bool traverse_local_expr_only;
-        ast_sent* curr_sent_being_traversed; //
+        ast_sent* curr_sent_being_traversed; // [xxx]  who sets up this?
+        ast_node* matching_lhs;
+        ast_expr* matching_rhs;
 
     public:
         bool is_for_id() {return for_id;}

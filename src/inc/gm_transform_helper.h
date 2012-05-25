@@ -78,6 +78,8 @@ gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, cha
 gm_symtab_entry* gm_add_new_symbol_property(ast_sentblock* sb, int primtype, bool is_nodeprop, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
 gm_symtab_entry* gm_add_new_symbol_nodeedge_type(ast_sentblock* sb, int nodeedge_type, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
 
+// returns sentblock that defines the given entry
+ast_sentblock*  gm_find_defining_sentblock_up(ast_node* begin, gm_symtab_entry *e, bool is_property=false);
 
 
 //------------------------------------------------------------

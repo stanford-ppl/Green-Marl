@@ -282,6 +282,17 @@ static enum {
   GPS_ENUM_EDGE_VALUE_ERROR
 } gm_edge_access_t;
 
+static enum {
+    GPS_NEW_SCOPE_GLOBAL = 0,
+    GPS_NEW_SCOPE_OUT ,
+    GPS_NEW_SCOPE_EDGE,
+    GPS_NEW_SCOPE_IN ,
+    GPS_NEW_SCOPE_RANDOM,
+} gm_new_scope_analysis_t;
 
+DEF_STRING (GPS_INT_ASSIGN_SCOPE);  // where each assignment is destinated
+DEF_STRING (GPS_INT_EXPR_SCOPE);    // where sub-expression is dependent on
+DEF_STRING (GPS_INT_SYMBOL_SCOPE);   // where each symbol is defined (in syntax)
+DEF_STRING (GPS_INT_SYNTAX_CONTEXT); // where each statement is located (in syntax)
 
 #endif

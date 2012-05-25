@@ -133,16 +133,28 @@ void ast_node::add_info(const char* id, ast_extra_info* e)
 
 void ast_node::add_info_int(const char* id, int i)
 {
-    add_info(id, new ast_extra_info(i));
+    ast_extra_info* e = find_info(id);
+    if (e == NULL) 
+        add_info(id, new ast_extra_info(i));
+    else 
+        e->ival = i;
 }
 
 void ast_node::add_info_bool(const char* id, bool b)
 {
-    add_info(id, new ast_extra_info(b));
+    ast_extra_info* e = find_info(id);
+    if (e == NULL) 
+        add_info(id, new ast_extra_info(b));
+    else 
+        e->bval = b;
 }
 void ast_node::add_info_float(const char* id, float f)
 {
-    add_info(id, new ast_extra_info(f));
+    ast_extra_info* e = find_info(id);
+    if (e == NULL) 
+        add_info(id, new ast_extra_info(f));
+    else 
+        e->fval = f;
 }
 // str is copied
 void ast_node::add_info_string(const char* id, const char* str)

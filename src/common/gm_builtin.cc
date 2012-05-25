@@ -113,16 +113,28 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
 
 void gm_builtin_def::add_info_int(const char* key, int v)
 {
-    ast_extra_info I; I.ival = v;
     std::string s(key);
-    extra_info[s] = I;
+    if (extra_info.find(key) == extra_info.end())
+    {
+        ast_extra_info I; I.ival = v;
+        extra_info[s] = I;
+    }
+    else {
+        extra_info[s].ival = v;
+    }
 }
 
 void gm_builtin_def::add_info_bool(const char* key, bool v)
 {
-    ast_extra_info I; I.bval = v;
     std::string s(key);
-    extra_info[s] = I;
+    if (extra_info.find(key) == extra_info.end())
+    {
+        ast_extra_info I; I.bval = v;
+        extra_info[s] = I;
+    }
+    else {
+        extra_info[s].bval = v;
+    }
 }
 
 bool gm_builtin_def::has_info(const char* key)

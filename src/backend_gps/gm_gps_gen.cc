@@ -55,18 +55,21 @@ void gm_gps_gen::init_gen_steps()
 {
     std::list<gm_compile_step*>& L = get_gen_steps();
     // no more change of AST at this point
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_scope));     // check where symbols are defined
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_scope));      // check where symbols are defined
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_reverse_edges));       // check if canonical form
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));       // check if canonical form
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_canonical));          // check if canonical form
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));               // create (Extended) basic block
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));           // split communicating every BB into two
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_again));          // Merging Ebbs
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_intra_loop));     // Merging Ebbs Inside Loops
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_usage));     // check how symbols are used
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_summary));   // make a summary of symbols per BB
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_reachable));           // make a list of reachable BB
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_congruent_message));   // Find congruent message
+    //L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_canonical));           // check if canonical form
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_depth_two));           // check if two-depth foreach
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_pull_data));           // check 
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_access));       // check
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));          // 
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));                // create (Extended) basic block
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));            // split communicating every BB into two
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_again));           // Merging Ebbs
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_intra_loop));      // Merging Ebbs Inside Loops
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_usage));      // check how symbols are used
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_analyze_symbol_summary));    // make a summary of symbols per BB
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_reachable));            // make a list of reachable BB
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_congruent_message));    // Find congruent message
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_gen_class));                    // finally make classes
 }

@@ -270,7 +270,7 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
             printf("Random node write should happen in the outer loop\n");
             break;
         case GM_ERROR_GPS_RANDOM_NODE_WRITE_DEF_SCOPE:
-            printf("Random node write should destinated to a node variable, defined in the outer loop\n");
+            printf("Random node write should destinated to a out-scoped node variable\n");
             break;
         case GM_ERROR_GPS_RANDOM_NODE_WRITE_REDEF:
             printf("Random node destination has been re-defined\n");

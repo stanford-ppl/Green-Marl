@@ -382,7 +382,7 @@ class ast_field : public ast_node { // access of node/edge property
         // FIRST.SECOND
         ast_id* get_first() {return first;}           // Identifier
         ast_id* get_second() {return second;}         // Field
-        bool    is_rarrow()  {return rarrow;}
+        bool    is_rarrow()  {return rarrow;}         // Is it Edge(x).y? 
         void    set_rarrow(bool b) {rarrow = b;}
 
         // type information about source (node/edge/graph) 

@@ -228,3 +228,31 @@ void gm_remove_symbol(ast_node* top, gm_symtab_entry* e)
     gm_remove_symbols_t T(S);
     top->traverse_pre(&T);
 }
+
+
+ast_sentblock*  gm_find_defining_sentblock_up(ast_node* node, gm_symtab_entry* e, bool is_property)
+{
+    while (node != NULL) {
+        if (node->has_symtab()) 
+        {
+            if (is_property) {
+                if (node->get_symtab_field()->is_entry_in_the_tab(e)) {
+                    assert(node->get_nodetype() == AST_SENTBLOCK);
+                    return (ast_sentblock*) node;
+                }
+            } else {
+                if (node->get_symtab_var()->is_entry_in_the_tab(e)) {
+                    if (node->get_nodetype()!=AST_SENTBLOCK) {
+                        printf("%s not defined in a sentblock\n", e->getId()->get_genname());
+                    }
+                    assert(node->get_nodetype() == AST_SENTBLOCK);
+                    return (ast_sentblock*) node;
+                }
+            }
+
+        }
+        node = node->get_parent();
+    }
+
+    return NULL;
+}

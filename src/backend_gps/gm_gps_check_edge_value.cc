@@ -60,7 +60,6 @@
 //         <symbol, state>
 //    - Inner loop maintains a list of edge-prop writes
 //------------------------------------------------------------------------------------
-//
 // return: is_error
 #define SENDING     1
 #define WRITING     2

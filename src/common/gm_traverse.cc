@@ -358,6 +358,14 @@ void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
     bool for_rhs = a->is_for_rhs();
     bool for_lhs = a->is_for_lhs();
 
+    if (for_lhs || for_rhs) {
+        a->set_matching_lhs(
+            (get_lhs_type() == GMASSIGN_LHS_SCALA)  ?
+                (ast_node*)get_lhs_scala() : (ast_node*)get_lhs_field());
+
+        a->set_matching_rhs_top(get_rhs());
+    }
+
     if (is_pre && for_lhs) {
         if (get_lhs_type() == GMASSIGN_LHS_SCALA) {
             a->apply_lhs(get_lhs_scala());
@@ -386,6 +394,11 @@ void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
         std::list<ast_expr*>::iterator I;
         for(I=r_list.begin(), J = l_list.begin(); I!=r_list.end(); I++, J++)
         {
+            if (for_lhs || for_rhs) {
+                a->set_matching_lhs(*J);
+                a->set_matching_rhs_top(*I);
+            }
+
             ast_node* n = *J;
             if (is_pre && for_lhs) {
                 if (n->get_nodetype() == AST_ID) {
@@ -459,6 +472,11 @@ void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre)
                 }
             } 
         }
+    }
+
+    if (for_lhs || for_rhs) {
+        a->set_matching_lhs(NULL);
+        a->set_matching_rhs_top(NULL);
     }
 }
 
