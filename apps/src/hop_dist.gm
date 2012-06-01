@@ -1,0 +1,31 @@
+
+// This routine is, in fact, BFS 
+Procedure hop_dist(G:Graph, dist:N_P<Int>(G), root: Node(G))
+{
+    N_P<Bool>(G) updated;
+    N_P<Bool>(G) updated_nxt;
+    N_P<Int> (G) dist_nxt;
+    Bool fin = False;
+
+    G.dist = (G == root) ? 0 : +INF;
+    G.updated = (G == root) ? True: False;
+    G.dist_nxt = G.dist;
+    G.updated_nxt = G.updated;
+
+    While(!fin) {
+        fin = True;
+
+        Foreach(n: G.Nodes)(n.updated) {
+            Foreach(s: n.Nbrs) {
+                //Edge(G) e = s.ToEdge(); // the edge to s
+                // updated_nxt becomes true only if dist_nxt is actually updated
+                <s.dist_nxt; s.updated_nxt> min= <n.dist + 1; True>; 
+            }
+        }
+
+        G.dist = G.dist_nxt;
+        G.updated = G.updated_nxt;
+        G.updated_nxt = False;
+        fin = ! Exist(n: G.Nodes){n.updated};
+    }
+}

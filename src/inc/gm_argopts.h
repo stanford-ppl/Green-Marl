@@ -38,6 +38,9 @@ struct GM_comp_args  {
 #define GMARGFLAG_FLIP_REVERSE      "FlipRev"
 #define GMARGFLAG_FLIP_PULL         "FlipPull"
 #define GMARGFLAG_FLIP_BFSUP        "FlipUp"
+
+#define GMARGFLAG_MERGE_BB          "GPSMerge"
+#define GMARGFLAG_MERGE_BB_INTRA    "GPSMergeIntra"
 //#define GMARGFLAG_DUMPIR            "Dd"
 //#define GMARGFLAG_NOMERGE           "NoMerge"
 //#define GMARGFLAG_NOSCREDUCE        "NoScalarReduce"
@@ -55,12 +58,15 @@ static struct GM_comp_args GM_compiler_options[] =
     {GMARGFLAG_FLIP_BFSUP,   GMARG_BOOL, "Enable 'flipping edges for BFS Up-nbrs'", "1"},
     {GMARGFLAG_FLIP_REVERSE, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of reverse edges", "0"},
     {GMARGFLAG_FLIP_PULL,    GMARG_BOOL, "Enable 'flipping edges' to avoid the use of pull-based computation", "0"},
+    {GMARGFLAG_MERGE_BB,        GMARG_BOOL,  "(For gps) Enable bb merge optimization", "1"},
+    {GMARGFLAG_MERGE_BB_INTRA,  GMARG_BOOL,  "(For gps) Enable intra-loop bb merge optimization", "1"},
 
     {GMARGFLAG_STOP_STRING, GMARG_STRING, "(For debug) Stop the compiler after certain stage. <string>=(step)[.(step)]", "0"},
 
     {GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For debug) When stopped, reproduce green-marl program", "1"},
     {GMARGFLAG_PRINTRW, GMARG_BOOL,  "(For  debug) When stopped, print rw analysis information", "0"},
     {GMARGFLAG_PRINTBB, GMARG_BOOL,  "(For  gps-debug) When stopped, print basicblock information", "0"},
+
 
     //{GMARGFLAG_DUMPIR, GMARG_BOOL, "(For internal debug) When stopped, dump IR tree", "0"},
     //{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},

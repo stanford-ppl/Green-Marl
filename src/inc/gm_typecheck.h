@@ -19,7 +19,7 @@ class gm_symtab_entry {
     public: 
         // always call with a copy of ID
         gm_symtab_entry(ast_id* _id, ast_typedecl* _type, bool _isRA=true, bool _isWA=true) : 
-            id(_id), type(_type), isRA(_isRA), isWA(_isWA) {
+            id(_id), type(_type), isRA(_isRA), isWA(_isWA), isArg(false) {
                 id->setSymInfo(this, true);
                 assert(type != NULL);
                 assert(id->name != NULL);
@@ -38,6 +38,7 @@ class gm_symtab_entry {
 
         bool isReadable() {return (isRA==GM_READ_AVAILABLE);}
         bool isWriteable() {return (isWA==GM_WRITE_AVAILABLE);}
+        bool isArgument()  {return isArg;}
 
         // defined in gm_node_info.cc
         bool has_info(const char* id);
@@ -57,12 +58,15 @@ class gm_symtab_entry {
         void remove_info(const char* id);
         void remove_all_info();
 
+        void setArgument(bool b) {isArg = b;}
+
 
     private:
         ast_id* id;
         ast_typedecl* type;
         bool isRA;
         bool isWA;
+        bool isArg;
         std::map<std::string , ast_extra_info*> extra;
 };
 
@@ -79,7 +83,9 @@ static enum {
 class gm_symtab {
     public:
         gm_symtab(int _symtab_type, ast_node* _ast) : 
-            symtab_type(_symtab_type), parent(NULL), ast(_ast) {}
+            parent(NULL), 
+            symtab_type(_symtab_type), 
+            ast(_ast) {}
         int get_symtab_type() {return symtab_type;}
 
         virtual ~gm_symtab() {
@@ -94,6 +100,7 @@ class gm_symtab {
                 gm_symtab_entry* e = *I;
                 delete e;
             }
+            //printf("delete:%p\n", this);
         }
 
         void set_parent(gm_symtab* p) {parent = p;}
@@ -107,6 +114,7 @@ class gm_symtab {
                 bool isRA=true, bool isWA=true)
         { 
             assert(id->getSymInfo() == NULL);
+            //printf("check duplicate for %s\n", id->get_orgname());
             old_def = find_symbol(id); 
             if (old_def != NULL) return false;
             add_entry(id, type, isRA, isWA); // copy is created inside 
@@ -124,6 +132,7 @@ class gm_symtab {
 
         gm_symtab_entry* find_symbol(ast_id* id) {
             //for(int i=0;i<entries.size(); i++) {
+                //printf("this:%p\n", this);
             std::set<gm_symtab_entry*>::iterator I;
             for(I=entries.begin(); I!=entries.end(); I++) {
                 gm_symtab_entry* e = *I;
@@ -206,7 +215,7 @@ class gm_symtab {
 class gm_scope
 {
     public:
-        gm_scope() : node_prop(false), for_group_expr(false), G(NULL), RT(NULL), tg(NULL) {}
+        gm_scope() :  for_group_expr(false), G(NULL), node_prop(false), RT(NULL), tg(NULL) {}
         virtual ~gm_scope() {}
 
     public:
@@ -249,7 +258,7 @@ class gm_scope
         bool is_for_group_expr() {return for_group_expr;}
         bool is_for_node_prop() {return node_prop;}
         gm_symtab_entry* get_target_sym() {return G;}
-        bool set_group_expr(bool for_group, gm_symtab_entry *g= NULL, bool np=false) {
+        void set_group_expr(bool for_group, gm_symtab_entry *g= NULL, bool np=false) {
             for_group_expr = for_group;G = g; node_prop = np;}
 
         void set_return_type(ast_typedecl* R) {RT = R;}

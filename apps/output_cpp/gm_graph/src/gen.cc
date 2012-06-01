@@ -5,11 +5,11 @@
 #include <assert.h>
 #include <sys/time.h>
 
-gm_graph* create_uniform_random_graph(index_t N, index_t M, long seed);
-gm_graph* create_uniform_random_graph2(index_t N, index_t M, long seed);
+gm_graph* create_uniform_random_graph(indlong_t N, indlong_t M, long seed);
+gm_graph* create_uniform_random_graph2(indlong_t N, indlong_t M, long seed);
 
 /*
-gm_graph* create_RMAT_graph(index_t N, index_t M, int rseed=2387, bool need_gackedge = true, double a=0.45, double b=0.25, double c=0.15, bool permute=true);
+gm_graph* create_RMAT_graph(indlong_t N, indlong_t M, int rseed=2387, bool need_gackedge = true, double a=0.45, double b=0.25, double c=0.15, bool permute=true);
 */
 
 bool test_backedge(gm_graph* g)
@@ -75,6 +75,9 @@ int main(int argc, char** argv)
 		    g = create_RMAT_graph(N, M, random_seed, need_back_edge);
             break;
             */
+        default:
+            printf("UNKNOWN GRAPH TYPE\n");
+            exit(-1);
     }
     gettimeofday(&T2, NULL);
     printf("creation time (ms) = %lf\n",  ((T2.tv_sec) - (T1.tv_sec))* 1000 + (T2.tv_usec - T1.tv_usec)*0.001);

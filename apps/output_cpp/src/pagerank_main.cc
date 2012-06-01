@@ -22,7 +22,7 @@ public:
     }
 
     virtual bool run() {
-        PageRank(G, e, d, max_iter, rank);
+        pagerank(G, e, d, max_iter, rank);
         return true;
     }
 
@@ -34,6 +34,7 @@ public:
         printf("rank[1] = %0.9lf\n", rank[1]);
         printf("rank[2] = %0.9lf\n", rank[2]);
         printf("rank[3] = %0.9lf\n", rank[3]);
+        return true;
     }
 
     virtual void print_arg_info() {

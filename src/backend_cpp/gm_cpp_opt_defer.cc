@@ -82,6 +82,7 @@ public:
                 target_foreach->push_back(fe);
             }
         } 
+        return true;
     }
 
     bool find_deferred_writes(ast_procdef *s) {
@@ -253,6 +254,7 @@ public:
                 }
             }
         }
+        return true;
     }
     void replace_da(gm_symtab_entry *o, gm_symtab_entry *n, ast_sent* _s) {
         e_old = o;
@@ -309,7 +311,7 @@ static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symt
     int iter_type = is_nodeprop ?  GMTYPE_NODEITER_ALL : GMTYPE_EDGEITER_ALL;
     ast_foreach* fe = gm_new_foreach_after_tc(itor, src, a, iter_type);
     assert(itor->getSymInfo()!=NULL);
-    delete iter_name;
+    delete [] iter_name;
 
     //-------------------------------
     // set up symbol info of the body

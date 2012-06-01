@@ -20,10 +20,12 @@
 #define FINISH_ELEMENT() {                          \
     if (TEXT_begin == NULL) {                       \
         std::string S;                              \
+        /*printf("parsed text:%s\n", S.c_str()); */   \
         parsed_foreign.push_back(S);                \
     } else {                                                    \
         assert (TEXT_end >= TEXT_begin );                       \
         std::string S(TEXT_begin, (TEXT_end - TEXT_begin +1));  \
+        /*printf("parsed text:%s\n", S.c_str());*/      \
         parsed_foreign.push_back(S);                            \
     }                                               \
     ast_id* id1=NULL;                               \
@@ -56,7 +58,7 @@
 void ast_expr_foreign::parse_foreign_syntax()
 {
     // scan through the original text and find '$' symbol
-    int size = strlen(orig_text);
+    //int size = strlen(orig_text);
 
     char* ID_begin = NULL;
     char* ID_end = NULL;                // inclusive
@@ -66,12 +68,12 @@ void ast_expr_foreign::parse_foreign_syntax()
     char* TEXT_end = NULL;              // inclusive
     char* curr_ptr = orig_text;
 
-    int  ID_begin_line;
-    int  ID_begin_col;
-    int  FIELD_begin_line;
-    int  FIELD_begin_col;
-    int  TEXT_begin_line;
-    int  TEXT_begin_col;
+    int  ID_begin_line=0;
+    int  ID_begin_col=0;
+    int  FIELD_begin_line=0;
+    int  FIELD_begin_col=0;
+    int  TEXT_begin_line=0;
+    int  TEXT_begin_col=0;
     
     int  state = 0;
     int  line = get_line();
@@ -82,6 +84,10 @@ void ast_expr_foreign::parse_foreign_syntax()
     const int BEFORE_DOT    = 2;  // . WILL BE SEEN has white space
     const int AFTER_DOT     = 3;  // . SEEN has while space
     const int S_FIELD       = 4;
+
+#if 0
+    printf("ORG:[%s]\n", orig_text);
+#endif
 
 #define FROM_NEXT   true
 #define FROM_CURR   false
@@ -217,7 +223,6 @@ void ast_expr_foreign::parse_foreign_syntax()
     //-----------------------------------------
 #if 0
 
-    printf("ORG:[%s]\n", orig_text);
     std::list<ast_node*>::iterator I;   
     std::list<std::string>::iterator J; 
 

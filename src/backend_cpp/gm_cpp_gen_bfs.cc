@@ -60,6 +60,13 @@ void gm_cpp_gen::generate_bfs_navigator(ast_bfs* bfs)
     Body.push(get_lib()->get_type_string(GMTYPE_NODE));
     Body.SPC();
     Body.push(bfs->get_iterator()->get_genname());
+    Body.push(", ");
+    Body.push(get_lib()->get_type_string(GMTYPE_EDGE));
+    Body.SPC();
+    const char* alias_name = bfs->get_iterator()->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
+    assert(alias_name != NULL);
+    assert(strlen(alias_name) > 0);
+    Body.push(alias_name);
     Body.push(") ");
     if (bfs->get_navigator() == NULL) {
         Body.pushln("{return true;}");
@@ -95,6 +102,7 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
 
     const char* has_post_visit = bool_string((bfs->get_bbody()!=NULL) && 
                                   (bfs->get_bbody()->get_sents().size() >=1));
+
 
     ast_extra_info_set* info = (ast_extra_info_set*)  bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
     std::set<void*>& SET = info->get_set();
@@ -195,6 +203,11 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs)
     Body.pop_indent();
     Body.pushln("protected:");
     Body.push_indent();
+
+    ast_id* iter = bfs->get_iterator();
+    const char* a_name = FE.voca_temp_name_and_add(iter->get_orgname(),"_idx");
+    iter->getSymInfo()->add_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR, a_name);
+    delete [] a_name;
 
     generate_bfs_body_fw(bfs);
     generate_bfs_body_bw(bfs);

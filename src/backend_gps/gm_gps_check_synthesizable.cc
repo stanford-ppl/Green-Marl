@@ -165,6 +165,7 @@ public:
                 _error = true;
             }
         }
+        return true;
     }
 private:
     bool _error;

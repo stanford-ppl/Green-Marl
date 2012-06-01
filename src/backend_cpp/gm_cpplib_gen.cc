@@ -98,6 +98,7 @@ bool gm_cpplib::add_collection_def(ast_id* i)
     if (t->is_set_collection() || t->is_order_collection()) 
     {
         // total size;
+        assert(t->get_target_graph_id() != NULL);
         Body->push(t->get_target_graph_id()->get_genname());
         if (t->is_node_collection())
             Body->push("."NUM_NODES"()");
@@ -166,18 +167,21 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
         case GMTYPE_NODE:
             switch(method_id) {
                 case GM_BLTIN_NODE_DEGREE:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
                     sprintf(str_buf,"(%s.%s[%s+1] - %s.%s[%s])", 
                         i->getTypeInfo()->get_target_graph_id() -> get_genname(), BEGIN, i->get_genname(), 
                         i->getTypeInfo()->get_target_graph_id() -> get_genname(), BEGIN, i->get_genname());
                     Body.push(str_buf);
                     break;
                 case GM_BLTIN_NODE_IN_DEGREE:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
                     sprintf(str_buf,"(%s.%s[%s+1] - %s.%s[%s])", 
                             i->getTypeInfo()->get_target_graph_id() -> get_genname(), R_BEGIN, i->get_genname(), 
                             i->getTypeInfo()->get_target_graph_id() -> get_genname(), R_BEGIN, i->get_genname());
                     Body.push(str_buf);
                     break;
                 case GM_BLTIN_NODE_IS_NBR:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
                     sprintf(str_buf,"%s.is_neighbor(",
                             i->getTypeInfo()->get_target_graph_id() -> get_genname());
                     Body.push(str_buf);
@@ -235,10 +239,10 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                 case GM_BLTIN_SET_HAS:      func_name = "is_in";  break;
                 case GM_BLTIN_SET_REMOVE:   func_name = "remove"; break;
                 case GM_BLTIN_SET_ADD:      func_name = "add";    break;
-		case GM_BLTIN_SET_UNION:    func_name = "union_"; break;
-		case GM_BLTIN_SET_COMPLEMENT:	func_name = "complement";	break;
-		case GM_BLTIN_SET_INTERSECT:	func_name = "intersect";	break;
-		case GM_BLTIN_SET_SUBSET:	func_name = "is_subset";	break;
+		        case GM_BLTIN_SET_UNION:    func_name = "union_"; break;
+		        case GM_BLTIN_SET_COMPLEMENT:	func_name = "complement";	break;
+		        case GM_BLTIN_SET_INTERSECT:	func_name = "intersect";	break;
+		        case GM_BLTIN_SET_SUBSET:	func_name = "is_subset";	break;
                 default: assert(false);
             }
             break;

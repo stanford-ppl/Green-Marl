@@ -36,6 +36,7 @@ class gm_prepare_genname_T : public gm_apply
             // add gen_name into proc_voca
             proc_info->add_voca(gen_name);
             ID->set_genname(gen_name);
+            return true;
         }
 
     private:

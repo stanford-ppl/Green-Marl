@@ -94,6 +94,7 @@ public:
     virtual bool begin_traverse_reverse(ast_bfs* bfs) {
         gm_symtab_entry* iter = bfs->get_iterator()->getSymInfo();
         is_bfs_reverse[iter] = true;
+        return true;
     }
 
     void post_process() {

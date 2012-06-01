@@ -56,6 +56,7 @@ public:
 
         if (master_context) master_mode_post(s);
         else vertex_mode_post(s);
+        return true;
     }
 #define ASSERT_MARKED(s)   (assert(s_mark->find(s) != s_mark->end()))
 #define MARKED_AS_SEQ(s)   (s_mark->find(s)->second == GPS_TYPE_SEQ)
@@ -248,7 +249,7 @@ public:
                 gps_bb* head = newBB();
 
                 body_begin->add_exit(body_end);
-                if (w->is_do_while()) {
+                if (w->is_do_while()) { // do-while
                     head->add_exit(body_begin);
                     cond->add_exit(head);
                     cond->add_exit(dummy);
@@ -258,7 +259,11 @@ public:
                     body_end->add_exit(cond);
                     insert_between_prev_next(head, dummy);
 
-                } else {
+                    //printf("head:%d, tail:%d\n", head->get_id(), cond->get_id());
+                    cond->add_info_int(GPS_FLAG_WHILE_TAIL, head->get_id());
+                    head->add_info_int(GPS_FLAG_WHILE_HEAD, head->get_id());
+
+                } else {  // while
                     //            V-------------------------+
                     // (prev) -> cond -> begin ... end -> head   dummy -> (next)
                     //            |                                ^
@@ -268,6 +273,10 @@ public:
                     body_end->add_exit(head);
                     head->add_exit(cond);
                     insert_between_prev_next(cond, dummy);
+
+                    //printf("head:%d, tail:%d\n", cond->get_id(), head->get_id());
+                    cond->add_info_int(GPS_FLAG_WHILE_HEAD, cond->get_id());
+                    head->add_info_int(GPS_FLAG_WHILE_TAIL, cond->get_id());
                 }
 
                 // begin/end for while sentence block

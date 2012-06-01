@@ -80,7 +80,7 @@ inline static bool gm_is_nil_type(int i) {return
     (i==GMTYPE_NIL_UNKNOWN) || (i==GMTYPE_NIL_NODE) || (i==GMTYPE_NIL_EDGE);}
 
 inline static bool gm_is_all_graph_node_iter_type(int i) {
-    return (i==GMTYPE_NODEITER_ALL) || (i==GMTYPE_NODEITER_BFS);
+    return (i==GMTYPE_NODEITER_ALL) || (i==GMTYPE_NODEITER_BFS); // [XXX] to be finxed
 }
 
 inline static bool gm_is_all_graph_edge_iter_type(int i) {
@@ -348,4 +348,17 @@ static enum {   // 16 bit bitmap
 } GM_ACCESS_T;
 
 inline static bool gm_is_collection_access_none(int i)  {return (i==GMACCESS_NONE);}
+
+static enum {
+    GMUSAGE_UNUSED,
+    GMUSAGE_IN,              // Read only          
+    GMUSAGE_OUT,             // Write all, then optionally read
+    GMUSAGE_INOUT,              // Read and Write
+    GMUSAGE_INVALID
+} GM_PROP_USAGE_T;
+
+//DEF_STRING(GMUSAGE_PROPERTY);
+
 #endif 
+
+

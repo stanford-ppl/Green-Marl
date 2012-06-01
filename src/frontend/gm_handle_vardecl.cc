@@ -42,6 +42,7 @@ public:
             gm_ripoff_sent(z,false);
             delete z;
         }
+        return true;
     }
 
 public:
@@ -81,6 +82,7 @@ public:
         // add to vocabulary
         FE.voca_add(id->get_orgname());
         //assert(FE.voca_isin(id->get_orgname()));
+        return true;
     }
 
     //-------------------------------------------------
@@ -170,6 +172,7 @@ public:
             }
             top = v;
         }
+        return true;
     }
 
 public:

@@ -11,14 +11,7 @@
     #define YYERROR_VERBOSE 1
     extern void   GM_lex_begin_user_text();
 
-    void yyerror(const char* str) 
-    {
-        GM_print_parse_error(str);
-    }
-    int yywrap()
-    {
-        return 1;
-    }
+    extern void yyerror(const char* str);
     extern int yylex();
 %}
 
@@ -36,7 +29,7 @@
 
 
  /*  Reserved Words */
-%token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP
+%token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP T_LOCAL
 %token T_NSET T_NORDER T_NSEQ T_ITEMS
 %token T_DFS T_POST 
 %token T_INT T_FLOAT T_BOOL T_DOUBLE  T_LONG
@@ -51,7 +44,7 @@
 %token T_IF  T_ELSE T_DO T_WHILE
 %token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS T_ANDEQ T_OREQ
 %token T_M_INF T_P_INF
-%token T_DOUBLE_COLON
+%token T_DOUBLE_COLON T_RARROW
 %token T_NIL
 
 %token <text> ID
@@ -111,7 +104,8 @@
   proc_head : proc_name '(' arg_declist1 ')' proc_return_opt
             | proc_name '(' arg_declist1 ';' arg_declist2 ')' proc_return_opt
 
-  proc_name: T_PROC id                  { GM_procdef_begin($2);  }
+  proc_name: T_PROC id                  { GM_procdef_begin($2, false);  }
+           | T_LOCAL id                 { GM_procdef_begin($2, true);  }
 
   arg_declist1 :
                | arg_declist
@@ -127,8 +121,8 @@
               | proc_return
 
   proc_return : ':' prim_type           { GM_procdef_return_type($2);}  /* return of function should be always primitive type */
+              | ':' node_type           { GM_procdef_return_type($2);}
               /*| ':' graph_type          { GM_procdef_return_type($2);}*/
-              /*| ':' node_type           { GM_procdef_return_type($2);}*/
 
 
   arg_decl : arg_target ':' typedecl           { $$ = GM_procdef_arg($1, $3);}
@@ -394,7 +388,10 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
   lhs_list : lhs                         { $$ = GM_single_lhs_list($1);}
            | lhs ',' lhs_list            { $$ = GM_add_lhs_list_front($1, $3);}
 
-  scala: id                               { $$ = $1; } field : id '.' id                       { $$ = GM_field($1, $3); }
+  scala: id                               { $$ = $1; } 
+ field : id '.' id                       { $$ = GM_field($1, $3, false); }
+       /*| id T_RARROW id                  { $$ = GM_field($1, $3, true);  }*/
+       | T_EDGE '('id ')' '.' id            { $$ = GM_field($3, $6, true);  }
 
   built_in : id '.' id arg_list            { $$ = GM_expr_builtin_expr($1, $3, $4);}
            | id arg_list                   { $$ = GM_expr_builtin_expr(NULL, $1, $2);}

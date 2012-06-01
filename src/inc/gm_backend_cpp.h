@@ -62,11 +62,11 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
 {
     friend class nop_reduce_scalar;
     public:
-        gm_cpp_gen() : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL),_target_omp(false), _pblock(false), gm_code_generator(Body) {
+        gm_cpp_gen() : gm_code_generator(Body),fname(NULL), dname(NULL), f_header(NULL), f_body(NULL),_target_omp(false), _pblock(false) {
             glib = new gm_cpplib(this);
             init();
         }
-        gm_cpp_gen(gm_cpplib* l) : fname(NULL), dname(NULL), f_header(NULL), f_body(NULL), _target_omp(false),_pblock(false), gm_code_generator(Body) {
+        gm_cpp_gen(gm_cpplib* l) : gm_code_generator(Body), fname(NULL), dname(NULL), f_header(NULL), f_body(NULL), _target_omp(false),_pblock(false) {
             assert(l != NULL);
             glib = l;
             glib->set_main(this);
@@ -120,7 +120,6 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         // data structure for generation 
         char *fname;        // current source file (without extension)
         char *dname;        // output directory
-        bool _target_omp;
 
         gm_code_writer Header;
         gm_code_writer Body;
@@ -129,6 +128,7 @@ class gm_cpp_gen : public gm_backend , public gm_code_generator
         bool open_output_files();
         void close_output_files();
 
+        bool _target_omp;
         gm_cpplib* glib; // graph library
 
         // some common sentence

@@ -104,6 +104,18 @@ void gm_graph::thaw()
     _reverse_edge = false;
 }
 
+bool   gm_graph::has_edge(node_id from, node_id to) {
+
+    assert(!_frozen);
+
+    std::vector<edge_dest_t>& nbrs = flexible_graph[from];
+    std::vector<edge_dest_t>::iterator I;
+    for(I=nbrs.begin(); I!=nbrs.end(); I++) {
+        if (I->dest == to) return true;
+    }
+    return false;
+
+}
 //----------------------------------------------
 // in_array and out_array can be same
 //   ex> in_array [1, 3, 2, 0, 4, 8]
@@ -197,9 +209,8 @@ void gm_graph::make_reverse_edges()
     }
 
     // finishing source array by computing prefix-sum
-#if 0
+#if 1
     edge_t sum = 0;
-    r_begin[0] = 0;
     for(node_t i = 0; i <_numNodes; i++)
     {
         edge_t sum_old = sum;
@@ -600,7 +611,7 @@ bool gm_graph::is_neighbor(node_t src, node_t to)
     if (to == left_node) return true;
     if (to == right_node) return true;
 
-    int cnt = 0;
+    /*int cnt = 0;*/
     while(begin_edge < end_edge)
     {
         left_node = node_idx[begin_edge];

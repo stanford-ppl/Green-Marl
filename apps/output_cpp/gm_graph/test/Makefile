@@ -5,7 +5,7 @@ LIB=../lib
 CFLAGS = -I$(INC) -g -O3 -fopenmp
 LFLAGS = -L$(LIB) -lgmgraph
 
-TARGET = test_graph test_set test_seq test_order
+TARGET = a_main test_graph test_set test_seq test_order 
 all: $(TARGET)
 
 %:%.cc

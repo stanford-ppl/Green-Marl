@@ -27,10 +27,19 @@ Proc random_bipartite_matching(
         // Right node accepts only one and replies
         Foreach(t: G.Nodes)(!t.isLeft && t.Match == NIL) {
             If (t.Suitor != NIL) {
-                t.Match = t.Suitor;
                 Node(G) n = t.Suitor; // the lucky chosen one
-                n.Match = t;          // compiler suspects read/write, write/write conflict.
-                count ++;
+                n.Suitor = t;         // Now replies I'm available
+                t.Suitor = NIL;       // clear my suitor for future use
+            }
+        }
+
+        // Left node accepts only one and replies
+        Foreach(n: G.Nodes)(n.isLeft && n.Match == NIL) {
+            If (n.Suitor != NIL) {
+                Node(G) t = n.Suitor; // the lucky chosen one
+                n.Match = t;          
+                t.Match = n;
+                count++;        // now matched!
             }
         }
     }

@@ -91,7 +91,7 @@ class ss2_group_assign : public gm_apply {
         // 5. rip off nop.
         //----------------------------------------------------
         gm_add_sent_after(a, NOP);
-        ast_sentblock *SB = (ast_sentblock*) a->get_parent();
+        //ast_sentblock *SB = (ast_sentblock*) a->get_parent();
         gm_ripoff_sent(a);
         ast_foreach* fe = create_surrounding_fe(a);
         gm_add_sent_after(NOP, fe);
@@ -109,7 +109,6 @@ class ss2_group_assign : public gm_apply {
         ast_id* iter = fe->get_iterator()->copy(true);
         iter->set_line(old->get_line()); iter->set_col(old->get_col());
         lhs->set_first(iter);
-        delete old;
         
         // 2.
         this->old_driver_sym = old->getSymInfo();
@@ -118,6 +117,8 @@ class ss2_group_assign : public gm_apply {
         ast_expr* rhs = a->get_rhs();
         rhs->traverse_pre(this);
         this->set_for_expr(false);
+
+        delete old;
 
         return true;
     }

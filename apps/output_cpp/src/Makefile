@@ -9,6 +9,15 @@ LFLAGS = -L$(LIBDIR) -l$(LIB)
 INCFILES = $(shell ls $(INCDIR))
 H_FILES = $(addprefix $(INCDIR)/, $(INCFILES))
 
+ifdef ORACLE
+CFLAGS += -D__ORACLE__
+endif
+
+ifdef FORCE_64BIT
+CFLAGS += -m64
+endif
+
+
 #include program list
 include ../../Programs.mk
 ifndef PROGS

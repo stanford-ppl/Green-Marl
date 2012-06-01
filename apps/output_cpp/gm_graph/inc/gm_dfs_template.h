@@ -33,7 +33,7 @@ class gm_dfs_template
 protected:
     virtual void visit_pre(node_t t)=0;
     virtual void visit_post(node_t t)=0;
-    virtual bool check_navigator(node_t t)=0;
+    virtual bool check_navigator(node_t t,edge_t idx)=0;
 
 public:
 gm_dfs_template(gm_graph& _G) : G(_G)
@@ -148,11 +148,11 @@ void main_loop()
             } else {
                 z = G.node_idx[curr_idx];
             }
-            curr_idx++;
             if (has_visited(z)) continue;
             if (has_navigator) {
-                if (check_navigator(z) == false) continue;
+                if (check_navigator(z, curr_idx) == false) continue;
             }
+            curr_idx++;
             enter_node(z);
             continue;
         }

@@ -144,10 +144,6 @@ public:
         assert(i->getSymInfo() != NULL);
         if (i->getSymInfo() == _src) {
             i->setSymInfo(_target);
-            //if (_need_change_name) {
-            //    char* new_name = i->getSymInfo()->getId()->get_orgname();
-            //    i->set_orgname(new_name); // old name is deleted. new name is copied
-            //}
             _changed = true;
         }
         return true;

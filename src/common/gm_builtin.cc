@@ -42,6 +42,7 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
         assert(org_def!=NULL);
 
         this->synonym = true;
+        this->need_strict = false;	  
         this->org_def = org_def;
         this->src_type = org_def->src_type;  // need source type.
         this->orgname = gm_strdup(&temp[1]);
@@ -50,9 +51,14 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
         //this->res_type = org_def->res_type;
 
     } else {
+        this->synonym = false;
+
         if (temp[0] == '!') {
             this->need_strict = true;
             temp = temp+1;
+        }
+        else {
+            this->need_strict = false;	  
         }
 
         // parse and fill
@@ -107,16 +113,28 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def)  {
 
 void gm_builtin_def::add_info_int(const char* key, int v)
 {
-    ast_extra_info I; I.ival = v;
     std::string s(key);
-    extra_info[s] = I;
+    if (extra_info.find(key) == extra_info.end())
+    {
+        ast_extra_info I; I.ival = v;
+        extra_info[s] = I;
+    }
+    else {
+        extra_info[s].ival = v;
+    }
 }
 
 void gm_builtin_def::add_info_bool(const char* key, bool v)
 {
-    ast_extra_info I; I.bval = v;
     std::string s(key);
-    extra_info[s] = I;
+    if (extra_info.find(key) == extra_info.end())
+    {
+        ast_extra_info I; I.bval = v;
+        extra_info[s] = I;
+    }
+    else {
+        extra_info[s].bval = v;
+    }
 }
 
 bool gm_builtin_def::has_info(const char* key)
@@ -223,3 +241,20 @@ found:
 }
 
 
+ast_expr_builtin* ast_expr_builtin::new_builtin_expr(ast_id* id, gm_builtin_def* d, expr_list* t) 
+{
+    ast_expr_builtin* E = new ast_expr_builtin(); 
+    E->expr_class = GMEXPR_BUILTIN;
+    E->driver = id; if (id != NULL) id->set_parent(E); // type unknown yet.
+    E->def = d;
+    E->orgname = gm_strdup(d->get_orgname());
+    if (t!= NULL) {
+        E->args = t->LIST;  // shallow copy LIST
+        // but not set 'up' pointer. 
+        std::list<ast_expr*>::iterator I;
+        for( I=E->args.begin(); I!=E->args.end(); I++) 
+           (*I)->set_parent(E);
+        delete t; // t is only temporary, delete it.
+    }
+    return E; 
+}

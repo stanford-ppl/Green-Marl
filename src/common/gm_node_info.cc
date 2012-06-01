@@ -133,16 +133,28 @@ void ast_node::add_info(const char* id, ast_extra_info* e)
 
 void ast_node::add_info_int(const char* id, int i)
 {
-    add_info(id, new ast_extra_info(i));
+    ast_extra_info* e = find_info(id);
+    if (e == NULL) 
+        add_info(id, new ast_extra_info(i));
+    else 
+        e->ival = i;
 }
 
 void ast_node::add_info_bool(const char* id, bool b)
 {
-    add_info(id, new ast_extra_info(b));
+    ast_extra_info* e = find_info(id);
+    if (e == NULL) 
+        add_info(id, new ast_extra_info(b));
+    else 
+        e->bval = b;
 }
 void ast_node::add_info_float(const char* id, float f)
 {
-    add_info(id, new ast_extra_info(f));
+    ast_extra_info* e = find_info(id);
+    if (e == NULL) 
+        add_info(id, new ast_extra_info(f));
+    else 
+        e->fval = f;
 }
 // str is copied
 void ast_node::add_info_string(const char* id, const char* str)
@@ -234,6 +246,19 @@ std::map<void*,void*>& ast_node::get_info_map(const char* id)
     ast_extra_info_map* INFO = ((ast_extra_info_map*) find_info(id));
     assert(INFO != NULL);
     return INFO->get_map();
+}
+
+void ast_node::copy_info_from(ast_node * n)
+{
+    std::map<std::string , ast_extra_info*>::iterator I;
+    for (I=n->extra.begin(); I!= n->extra.end(); I++)
+    {
+        std::string s = I->first;
+        ast_extra_info* e = I->second;
+        if (this->extra.find(s) == this->extra.end()) {
+            this->extra[s] = e->copy();
+        }
+    }
 }
 
 //---------------------------------------------------------------------

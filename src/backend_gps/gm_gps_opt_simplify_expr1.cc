@@ -58,6 +58,7 @@ public:
         {
             depth --;
         }
+        return true;
     }
 
 

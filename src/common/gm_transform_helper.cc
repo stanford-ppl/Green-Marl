@@ -382,6 +382,7 @@ class replace_subexpr_A : public gm_apply
                     else {assert(false);}
                 }
             }
+            return true;
         }
 
     private:

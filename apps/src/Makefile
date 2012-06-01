@@ -10,8 +10,16 @@ ifndef PROGS
 PROGS = pagerank
 endif
 
+ifndef GM_ARGS
+GMARGS =
+endif
+
 
 ifeq ($(TARGET),cpp_omp)
+    ODIR = ../output_cpp/generated
+    OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.cc))
+endif
+ifeq ($(TARGET),cpp_seq)
     ODIR = ../output_cpp/generated
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.cc))
 endif
@@ -20,7 +28,7 @@ ifeq ($(TARGET), gps)
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java))
 endif
 
-FLAGS = -o=$(ODIR) -t=$(TARGET)
+FLAGS = -o=$(ODIR) -t=$(TARGET) $(GM_ARGS)
 SRCS = $(addsuffix .gm, $(PROGS))
 
 all: $(OUTS)

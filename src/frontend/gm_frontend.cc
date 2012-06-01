@@ -13,9 +13,10 @@
 // front_end is a singleton. 
 extern gm_frontend FE;
 
-void GM_procdef_begin(ast_node* id) {
+void GM_procdef_begin(ast_node* id, bool b) {
     assert(id->get_nodetype() == AST_ID);
     ast_procdef* def = ast_procdef::begin_new_procdef((ast_id*)id);
+    def->set_local(b);
     FE.start_new_procdef(def);
 }
 void GM_procdef_finish() {
@@ -296,11 +297,11 @@ ast_node* GM_id(char* orgname, int line, int col)
     assert(orgname != NULL);
     return ast_id::new_id(orgname, line, col);
 }
-ast_node* GM_field(ast_node* id1, ast_node* id2)
+ast_node* GM_field(ast_node* id1, ast_node* id2, bool is_rarrow)
 {
     assert(id1->get_nodetype() == AST_ID);
     assert(id2->get_nodetype() == AST_ID);
-    return ast_field::new_field((ast_id*)id1, (ast_id*)id2);
+    return ast_field::new_field((ast_id*)id1, (ast_id*)id2, is_rarrow);
 }
 
 void GM_add_id_comma_list(ast_node* id) {
@@ -331,6 +332,8 @@ ast_node* GM_normal_assign(ast_node* lhs, ast_node* rhs)
         return ast_assign::new_assign_field(
                 (ast_field*)lhs, (ast_expr*)rhs, GMASSIGN_NORMAL, NULL, GMREDUCE_NULL);
     }
+    assert(false);
+    return NULL;
 }
 ast_node* GM_reduce_assign(ast_node* lhs, ast_node* rhs, ast_node* id, int reduce_type)
 {
@@ -351,6 +354,7 @@ ast_node* GM_reduce_assign(ast_node* lhs, ast_node* rhs, ast_node* id, int reduc
     }
     else {
         assert(false);
+        return NULL;
     }
 }
 ast_node* GM_argminmax_assign(ast_node* lhs, ast_node* rhs, ast_node* id, int reduce_type, lhs_list* l_list, expr_list* r_list)
@@ -409,6 +413,9 @@ ast_node* GM_defer_assign(ast_node* lhs, ast_node* rhs, ast_node* id)
         return ast_assign::new_assign_field(
                 (ast_field*)lhs, (ast_expr*)rhs, GMASSIGN_DEFER, (ast_id*)id, GMREDUCE_DEFER);
     }
+
+    assert(false);
+    return NULL;
 }
 
 ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sent, ast_node* filter, bool is_seq, bool is_backward, ast_node* source2)
@@ -561,7 +568,7 @@ gm_frontend::gm_frontend() : curr_proc(NULL), curr_idlist(NULL),vardecl_removed(
 
 gm_frontend::~gm_frontend() {
     // delete all procs
-    for( int i = 0; i<procs.size();i++) { 
+    for( int i = 0; i<(int)procs.size();i++) { 
         delete procs[i];
     }
 }
@@ -623,6 +630,7 @@ void gm_frontend::init_steps()
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_reduce_error_check));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_rw_analysis_check2));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_remove_vardecl));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_check_property_argument_usage));
 }
 
 bool gm_frontend::do_local_frontend_process()

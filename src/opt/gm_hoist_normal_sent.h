@@ -75,6 +75,7 @@ public:
                 gm_add_sent_after(top_position, target, GM_NOFIX_SYMTAB);
             }
         }
+        return true;
     }
 
 protected:

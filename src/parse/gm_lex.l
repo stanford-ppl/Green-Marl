@@ -71,6 +71,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 
 
     /* Keywords */
+"Local" {MarkToken(); return T_LOCAL;}
 "Procedure" {MarkToken(); return T_PROC;}
 "Proc" {MarkToken(); return T_PROC;}
 "InBFS" {MarkToken(); return T_BFS;}
@@ -147,6 +148,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "All"     {MarkToken(); return T_ALL;}
 "Exist"   {MarkToken(); return T_EXIST;}
 "NIL"     {MarkToken(); return T_NIL;}
+"->"      {MarkToken(); return T_RARROW;}
 
 
     /* Numbers and Identifies */
@@ -191,6 +193,7 @@ int GM_start_parse(char* fname)
     token_begin_next = 0;
     token_begin = 0;
     token_len = 0;
+    return 1;
 }
 
 static int GetNextLine()    // read a line from file
@@ -275,6 +278,10 @@ void GM_print_parse_error(const char* err_msg)
     printf("\n");
     GM_set_parse_error(true);
 
+}
+
+void yyerror(const char* str) {
+    GM_print_parse_error(str);
 }
 
 void GM_lex_begin_user_text() {

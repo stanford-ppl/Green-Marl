@@ -101,8 +101,14 @@ void gm_code_generator::generate_expr_val(ast_expr *e)
             _Body.push(temp);
             return ;
         case GMEXPR_FVAL:
-            sprintf(temp,"%lf",e->get_fval()); // to be changed
-            _Body.push(temp);
+            if (e->get_type_summary() == GMTYPE_FLOAT) {
+                sprintf(temp,"(float)(%lf)",e->get_fval()); // to be changed
+                _Body.push(temp);
+            }
+            else {
+                sprintf(temp,"%lf",e->get_fval()); // to be changed
+                _Body.push(temp);
+            }
             return ;
         case GMEXPR_BVAL:
             sprintf(temp,"%s",e->get_bval()?"true":"false");
@@ -121,7 +127,6 @@ void gm_code_generator::generate_expr_inf(ast_expr *e)
     char* temp = temp_str;
     assert(e->get_opclass() == GMEXPR_INF);
     int t = e->get_type_summary();
-    char* str;
     switch(t) {
        case GMTYPE_INF:
        case GMTYPE_INF_INT:
@@ -147,7 +152,7 @@ void gm_code_generator::generate_expr_inf(ast_expr *e)
 
 void gm_code_generator::generate_expr_uop(ast_expr *e)
 {
-    char* temp = temp_str;
+   // char* temp = temp_str;
     switch (e->get_opclass())
     {
         case GMEXPR_UOP:
@@ -196,7 +201,7 @@ void gm_code_generator::generate_expr_ter(ast_expr *e)
 
 void gm_code_generator:: generate_expr_bin(ast_expr * e)
 {
-    char* temp = temp_str;
+    //char* temp = temp_str;
     ast_expr* up = e->get_up_op();
     bool need_para=false; 
     if (up==NULL) 
@@ -222,7 +227,7 @@ void gm_code_generator:: generate_expr_bin(ast_expr * e)
 
 void gm_code_generator:: generate_expr_comp(ast_expr * e)
 {
-    char* temp = temp_str;
+    //char* temp = temp_str;
     ast_expr* up = e->get_up_op();
     bool need_para = (up==NULL) ? false : true; 
 

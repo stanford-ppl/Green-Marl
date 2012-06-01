@@ -49,6 +49,7 @@ static enum {
  GM_ERROR_NEED_ORDER,
  GM_ERROR_NESTED_BFS,
  GM_ERROR_INVALID_GROUP_DRIVER,
+ GM_ERROR_INVALID_ITERATOR_FOR_RARROW,
 
  // Conflict erors
  GM_ERROR_READ_REDUCE_CONFLICT,
@@ -77,6 +78,7 @@ static enum {
  GM_ERROR_FILEWRITE_ERROR,
 
  GM_ERROR_GPS_NUM_PROCS,
+ GM_ERROR_GPS_PROC_NAME,
  GM_ERROR_GPS_UNSUPPORTED_OP,
  GM_ERROR_GPS_UNSUPPORTED_RANGE_MASTER,
  GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX,
@@ -106,17 +108,17 @@ static enum {
  GM_ERROR_END   // END_MARKER
 } GM_ERRORS_AND_WARNINGS;
 
-extern void gm_type_error(int errno, ast_id* id, const char* str1 ="", const char* str2="");
-extern void gm_type_error(int errno, ast_id* id, ast_id* id2);
-extern void gm_type_error(int errno, int l, int c, const char* str1="", const char* str2="", const char* str3="");
-extern void gm_type_error(int errno, const char* str);
+extern void gm_type_error(int errnumber, ast_id* id, const char* str1 ="", const char* str2="");
+extern void gm_type_error(int errnumber, ast_id* id, ast_id* id2);
+extern void gm_type_error(int errnumber, int l, int c, const char* str1="", const char* str2="", const char* str3="");
+extern void gm_type_error(int errnumber, const char* str);
 
-//extern void gm_conf_error(int errno, gm_symtab_entry* target, ast_id* evidence1);
-extern void gm_conf_error(int errno, gm_symtab_entry* target, ast_id* ev1,  ast_id* ev2, bool is_warning);
-//extern void gm_conf_warning(int errno, gm_symtab_entry* target, ast_id* evidence1, ast_id* evidence2);
+//extern void gm_conf_error(int errnumber, gm_symtab_entry* target, ast_id* evidence1);
+extern void gm_conf_error(int errnumber, gm_symtab_entry* target, ast_id* ev1,  ast_id* ev2, bool is_warning);
+//extern void gm_conf_warning(int errnumber, gm_symtab_entry* target, ast_id* evidence1, ast_id* evidence2);
 
-extern void gm_backend_error(int errno, const char* str1, const char* str2="");
-extern void gm_backend_error(int errno, int l, int c, const char* str1="");
+extern void gm_backend_error(int errnumber, const char* str1, const char* str2="");
+extern void gm_backend_error(int errnumber, int l, int c, const char* str1="");
 
 
 extern void gm_set_current_filename(char* fname); 

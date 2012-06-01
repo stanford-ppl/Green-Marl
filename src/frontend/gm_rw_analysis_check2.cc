@@ -183,14 +183,14 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
     for(i1 = S1.begin(); i1 != S1.end(); i1++) {
         gm_symtab_entry* sym1 = i1->first;
         gm_rwinfo_list* list1 = i1->second;
-        gm_rwinfo* e1;
+        gm_rwinfo* e1=NULL;
 
 	// Damn o.O	if (!sym1->getType()->is_property()) continue; // todo 'scalar' check
 	  
         for(i2 = S2.begin(); i2 != S2.end(); i2++) {
             gm_symtab_entry* sym2 = i2->first;
             gm_rwinfo_list* list2 = i2->second;
-            gm_rwinfo* e2;
+            gm_rwinfo* e2=NULL;
 
             // find same symbol
             if (sym1 != sym2) continue;
@@ -400,7 +400,11 @@ bool gm_has_dependency(ast_sent* P, ast_sent *Q)
     //---------------------------------------------------------
     gm_rwinfo_sets* P_SET = get_rwinfo_sets(P);
     gm_rwinfo_sets* Q_SET = get_rwinfo_sets(Q);
+    return gm_has_dependency(P_SET, Q_SET);
+}
 
+bool gm_has_dependency(gm_rwinfo_sets* P_SET, gm_rwinfo_sets* Q_SET)
+{
     gm_rwinfo_map& P_R = P_SET->read_set;
     gm_rwinfo_map& P_W = P_SET->write_set;
     gm_rwinfo_map& P_M = P_SET->mutate_set;

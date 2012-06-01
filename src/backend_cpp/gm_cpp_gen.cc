@@ -48,6 +48,7 @@ bool gm_cpp_gen::open_output_files()
     Body.set_output_file(f_body);
 
     get_lib()->set_code_writer(&Body);
+    return true;
 
 }
 void gm_cpp_gen::close_output_files()
@@ -152,6 +153,10 @@ void gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_body_file)
      // declare in the header or body
      gm_code_writer& Out = is_body_file ? Body : Header;
 
+     if (!is_body_file && proc->is_local()) return;
+
+     if (proc->is_local()) Out.push("static ");
+
      // return type
      Out.push_spc(get_type_string(proc->get_return_type()));
      Out.push( proc->get_procname()->get_genname() );
@@ -239,8 +244,15 @@ void gm_cpp_gen::generate_lhs_field(ast_field* f)
 {
     Body.push( f->get_second()->get_genname());
     Body.push('[');
-    if (f->getTypeInfo()->is_node_property())
+    if (f->is_rarrow()) {
+        const char* alias_name = f->get_first()->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
+        assert(alias_name != NULL);
+        assert(strlen(alias_name) > 0);
+        Body.push(alias_name);
+    }
+    else if (f->getTypeInfo()->is_node_property()) {
         Body.push(get_lib()->node_index(f->get_first()));
+    }
     else if (f->getTypeInfo()->is_edge_property())
         Body.push(get_lib()->edge_index(f->get_first()));
     else {
@@ -436,7 +448,7 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb)
 
 void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb)
 {
-    if (sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY))
+    if (sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY) && !FE.get_current_proc()->is_local())
     {
         Body.pushln("//Initializations");
         sprintf(temp,"%s();", RT_INIT);
@@ -897,7 +909,7 @@ void gm_cpp_gen::generate_sent_reduce_argmin_assign(ast_assign *a)
 
     Body.pushln("}"); // end of reduction
     // clean-up
-    for(i=0;i<L.size(); i++)
+    for(i=0;i<(int)L.size(); i++)
         delete [] names[i];
     delete [] names;
     delete [] rhs_temp;

@@ -60,7 +60,6 @@
 //         <symbol, state>
 //    - Inner loop maintains a list of edge-prop writes
 //------------------------------------------------------------------------------------
-//
 // return: is_error
 #define SENDING     1
 #define WRITING     2
@@ -140,6 +139,7 @@ public:
             e->add_info_bool(GPS_FLAG_EDGE_DEFINED_INNER, true);
             inner_loop->add_info_bool(GPS_FLAG_EDGE_DEFINING_INNER, true);
         }
+        return true;
     }
 
     virtual bool apply(ast_sent* s)  
@@ -195,7 +195,7 @@ public:
                         assert(b == false);
 
                         // [TODO]
-                        // grouped assignment
+                        // grouped assignment?
                         //
                         //
                         

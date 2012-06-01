@@ -27,6 +27,8 @@ void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2)
     if (curr_file!=NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", id->get_line(), id->get_col());
     switch(errno) {
+        case GM_ERROR_INVALID_ITERATOR_FOR_RARROW:
+            printf("%s cannot be used in Edge() syntax.\n", id->get_orgname()); break;
         case GM_ERROR_INVALID_GROUP_DRIVER:
             printf("%s cannot be used outside group assignment.\n", id->get_orgname()); break;
         case GM_ERROR_UNDEFINED:
@@ -229,6 +231,9 @@ void gm_backend_error(int errno, const char* str1, const char* str2)
         case GM_ERROR_GPS_NUM_PROCS:
             printf("Error: There must be one and only one procedure\n");
             break;
+        case GM_ERROR_GPS_PROC_NAME:
+            printf("Error: The name of the procedure(%s) must match with the name of file (%s)\n", str1, str2);
+            break;
         default:
             assert(false);
             printf("Unknown backend error\n"); break;
@@ -265,7 +270,7 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
             printf("Random node write should happen in the outer loop\n");
             break;
         case GM_ERROR_GPS_RANDOM_NODE_WRITE_DEF_SCOPE:
-            printf("Random node write should destinated to a node variable, defined in the outer loop\n");
+            printf("Random node write should destinated to a out-scoped node variable\n");
             break;
         case GM_ERROR_GPS_RANDOM_NODE_WRITE_REDEF:
             printf("Random node destination has been re-defined\n");

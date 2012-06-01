@@ -169,4 +169,6 @@ extern gm_frontend  FE;
 extern bool gm_apply_compiler_stage(std::list<gm_compile_step*>& LIST);
 extern bool gm_apply_all_proc(gm_compile_step* S);
 
+DEF_STRING(GMUSAGE_PROPERTY);
+
 #endif

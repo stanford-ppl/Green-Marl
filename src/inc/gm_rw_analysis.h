@@ -126,7 +126,7 @@ public:
         always = true;
         reduce_op = GMREDUCE_NULL;
         access_range = GM_RANGE_SINGLE; // default is single access           
-	mutate_direction = -1;
+	    mutate_direction = -1;
     }  
 
     static gm_rwinfo* new_scala_inst(ast_id* loc, 
@@ -143,10 +143,10 @@ public:
     }
 
     static gm_rwinfo* new_builtin_inst(ast_id* loc, int mutate_dir) {
-	gm_rwinfo *g = new gm_rwinfo();
-	g->location = loc;
-	g->mutate_direction = mutate_dir;
-	return g;
+	    gm_rwinfo *g = new gm_rwinfo();
+	    g->location = loc;
+	    g->mutate_direction = mutate_dir;
+	    return g;
     }
 
     static gm_rwinfo* new_field_inst(
@@ -303,7 +303,9 @@ extern bool gm_redo_rw_analysis(ast_sent* s);
 //--------------------------------------------------------
 extern bool gm_has_dependency(ast_sent* P , ast_sent* Q);
 
-extern bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2); // return true, if any of they have same symbool table
+extern bool gm_has_dependency(gm_rwinfo_sets* P1, gm_rwinfo_sets* Q1);
+
+extern bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool regard_mutate_direction=false); // return true, if any of they have same symbool table
 
 // returns true if the symbol is modified in ths sentence subtree S.
 class gm_rwinfo_query {
@@ -311,19 +313,19 @@ class gm_rwinfo_query {
     gm_rwinfo_query() : 
         _check_range(false), _check_driver(false), _check_always(false),
         _check_reduceop(false), _check_bound(false),
-        range(GM_RANGE_INVALID), driver(NULL), always(true), reduce_op(GMREDUCE_NULL),
-        bound(NULL){}
-    bool check_range(int r) {_check_range = true, range = r;}
-    bool check_driver(gm_symtab_entry* d) {_check_driver = true, driver = d;}
-    bool check_always(bool a) {_check_always = true; always = a;}
-    bool check_reduce_op(int o) {_check_reduceop = true; reduce_op = o;}
-    bool check_bound(gm_symtab_entry* b) {_check_bound = true; bound = b;}
+        range(GM_RANGE_INVALID), reduce_op(GMREDUCE_NULL),
+        driver(NULL), bound(NULL), always(true) {}
+    void check_range(int r) {_check_range = true, range = r;}
+    void check_driver(gm_symtab_entry* d) {_check_driver = true, driver = d;}
+    void check_always(bool a) {_check_always = true; always = a;}
+    void check_reduce_op(int o) {_check_reduceop = true; reduce_op = o;}
+    void check_bound(gm_symtab_entry* b) {_check_bound = true; bound = b;}
     //bool is_any_set() {return _check_range || _check_driver || _check_always || _check_reduceop || _check_bound;}
 
     bool _check_range, _check_driver, _check_always;
     bool _check_reduceop, _check_bound;
     int range, reduce_op;
-    gm_symtab_entry *bound, *driver;
+    gm_symtab_entry *driver, *bound;
     bool always;
 };
     

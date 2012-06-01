@@ -25,6 +25,7 @@ public:
             gps_bb* C = B->get_nth_exit(0);
             if (C->get_num_entries() == 1)  {
 
+
                 if (B->get_type() != C->get_type()) return;
                 if (B->get_type() != GM_GPS_BBTYPE_SEQ) return;
 
@@ -49,8 +50,14 @@ public:
                     gps_bb* D = C->get_nth_exit(0);
                     bool auto_insert_remote_entry = false; // do not auto-add entries at D
                     B->add_exit(D, auto_insert_remote_entry); 
-                    D->update_entry_from(C, D);
+                    D->update_entry_from(C, B);
+
                 }
+
+                // migrate extra info from B to C
+                //printf("merging %d %d \n", B->get_id(), C->get_id());
+                B->copy_info_from(C);
+
                 
                 // delete C
                 delete C;

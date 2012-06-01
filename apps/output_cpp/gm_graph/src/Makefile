@@ -6,6 +6,15 @@ INCDIR = ../inc
 CFLAGS = -O3 -g  -I$(INCDIR) -fopenmp 
 OUT = $(BINDIR)/graph_gen $(LIBDIR)/libgmgraph.a
 
+ifdef ORACLE
+CFLAGS += -D__ORACLE__
+endif
+
+ifdef FORCE_64BIT
+CFLAGS += -m64
+endif
+
+
 all: $(OUT)
 
 $(BINDIR)/graph_gen: gen.o graph_generate.o  gm_graph.o

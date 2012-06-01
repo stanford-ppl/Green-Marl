@@ -9,7 +9,7 @@
 
 #include "gm_graph.h"
 
-gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed)
+gm_graph* create_uniform_random_graph(indlong_t N, indlong_t M, long seed)
 {
     srand(seed);
 
@@ -19,9 +19,9 @@ gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed)
 	node_t* src = new node_t[M];
 	node_t* dest = new node_t[M];
 	edge_t* degree = new edge_t[N];
-	memset(degree, 0, sizeof(index_t)*N);
+	memset(degree, 0, sizeof(indlong_t)*N);
 
-	for(index_t i =0; i < M; i++) {
+	for(indlong_t i =0; i < M; i++) {
 		src[i] = rand() % N;
 		dest[i] = rand() % N;
 
@@ -53,7 +53,7 @@ gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed)
 //-----------------------------------------------------------------------------
 // Note: this method is 20x slower than the above method
 //-----------------------------------------------------------------------------
-gm_graph* create_uniform_random_graph2(node_t N, edge_t M, long seed)
+gm_graph* create_uniform_random_graph2(indlong_t N, indlong_t M, long seed)
 {
     srand(seed);
 
@@ -103,9 +103,9 @@ gm_graph* create_RMAT_graph(node_t N, edge_t M, long rseed,
 	node_t* src = new node_t[M];
 	node_t* dest = new node_t[M];
 	edge_t* degree = new edge_t[N];
-	memset(degree, 0, sizeof(index_t)*N);
+	memset(degree, 0, sizeof(indlong_t)*N);
 
-	index_t SCALE = (index_t) log2((double)N);
+	indlong_t SCALE = (indlong_t) log2((double)N);
 
 	// 1. edge-gen 
 	for(edge_t i = 0; i < M; i++)
@@ -165,18 +165,18 @@ gm_graph* create_RMAT_graph(node_t N, edge_t M, long rseed,
 	// 2. permutate vertice 
 	// so that, one can't know what are the high-degree edges from node_id
 	if (permute) {
-		index_t* P = new index_t[N];
-		for( index_t i = 0; i < N; i++)
+		indlong_t* P = new indlong_t[N];
+		for( indlong_t i = 0; i < N; i++)
 			 P[i] = i;
 		
-		for( index_t i = 0; i < N; i++) {
-			index_t j = (index_t) (N * drand48());
-			index_t temp = P[j];
+		for( indlong_t i = 0; i < N; i++) {
+			indlong_t j = (indlong_t) (N * drand48());
+			indlong_t temp = P[j];
 			P[j] = P[i]; 
 			P[i] = temp;
 		}
 
-		for( index_t i = 0; i < M ; i++) {
+		for( indlong_t i = 0; i < M ; i++) {
 			src[i] = P[src[i]];
 			dest[i] = P[dest[i]];
 		}
@@ -185,7 +185,7 @@ gm_graph* create_RMAT_graph(node_t N, edge_t M, long rseed,
 	}
 
 	// 3. count degree 
-	for( index_t i = 0; i < M ; i++) {
+	for( indlong_t i = 0; i < M ; i++) {
 		degree[src[i]]++;
     }
 
@@ -195,14 +195,14 @@ gm_graph* create_RMAT_graph(node_t N, edge_t M, long rseed,
 
 	// 4. Now setup G's data structures
 	g->begin[0] = 0;
-	for(index_t i=1; i <=N; i++) {
+	for(indlong_t i=1; i <=N; i++) {
 		g->begin[i] = g->begin[i-1] + degree[i-1];
     }
 
-	for(index_t i=0; i <M; i++) {
-		index_t u = src[i];
-		index_t v = dest[i];
-		index_t pos = degree[u]--;
+	for(indlong_t i=0; i <M; i++) {
+		indlong_t u = src[i];
+		indlong_t v = dest[i];
+		indlong_t pos = degree[u]--;
 
 		g->node_idx[ g->begin[u] + pos -1] = v;  // set end node of this edge
 	}
@@ -225,11 +225,11 @@ gm_graph* create_graph_from_file(FILE* F)
    // #comment
    // from_node to_node
 
-   index_t curr_num=0;
-   index_t base = -1;
+   indlong_t curr_num=0;
+   indlong_t base = -1;
 
-   std::vector<index_t> nodes;
-   std::vector<index_t> edges;
+   std::vector<indlong_t> nodes;
+   std::vector<indlong_t> edges;
 
    char line[1024];
    while (fgets(line,  1024, F) != NULL)
@@ -237,7 +237,7 @@ gm_graph* create_graph_from_file(FILE* F)
         if (line[0] == '#')
             continue;
 
-        index_t from, to;
+        indlong_t from, to;
         sscanf(line,"%d%d", &from, &to);
         
 		if (base == -1) {
@@ -265,12 +265,12 @@ gm_graph* create_graph_from_file(FILE* F)
    }
    nodes.push_back(edges.size());
 
-   index_t N = nodes.size() -1;
-   index_t M = edges.size();
+   indlong_t N = nodes.size() -1;
+   indlong_t M = edges.size();
 
    // sanitize edges
    srand(16384);
-   for(index_t i=0; i < M; i++)
+   for(indlong_t i=0; i < M; i++)
 		if (edges[i] >= N) edges[i] = rand() % N;
 
    gpgraph *g = new gpgraph();
@@ -278,8 +278,8 @@ gm_graph* create_graph_from_file(FILE* F)
    g->allocate_nodes(N);
    g->allocate_edges(M);
 
-   memcpy(g->begin, &(nodes[0]), sizeof(index_t)*(N+1));
-   memcpy(g->node_idx, &(edges[0]), sizeof(index_t)*M);
+   memcpy(g->begin, &(nodes[0]), sizeof(indlong_t)*(N+1));
+   memcpy(g->node_idx, &(edges[0]), sizeof(indlong_t)*M);
 
    return g;
 }

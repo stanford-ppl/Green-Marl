@@ -5,7 +5,7 @@ PARSE = ./parse
 INC = ./inc
 OBJ = ../obj
 BIN = ../bin
-CFLAGS += -g -O1 -I$(INC) -I.
+CFLAGS += -g -O1 -I$(INC) -I. -W
 LDFLAGS += -lrt 
 
 # where to find sorce codes
@@ -65,6 +65,7 @@ SRCS2 =\
        gm_syntax_sugar2.cc gm_flip_be.cc\
        gm_ind_opt.cc gm_hoist_assign.cc gm_hoist_foreach.cc\
        gm_merge_loops.cc gm_moveup_propdecl.cc\
+	   gm_check_property_argument_usage.cc\
 	   gm_opt_nonconf_reduce.cc\
 	   gm_flip_edges.cc\
        gm_cpp_opt.cc\
@@ -92,8 +93,11 @@ SRCS2 =\
 	   gm_gps_opt_simplify_expr1.cc\
 	   gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_create_stages.cc \
-       gm_gps_check_canonical.cc gm_gps_check_synthesizable.cc\
+       gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc gm_gps_bb_merge.cc\
+	   gm_gps_bb_merge_again.cc\
+	   gm_gps_bb_merge_intra_loop.cc\
+	   gm_gps_bb_rw_analysis.cc\
        gm_gps_beinfo.cc\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
        gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
@@ -106,6 +110,10 @@ SRCS2 =\
        gm_gps_bb_find_reachable.cc\
        gm_gps_java.cc gm_gps_lib.cc\
 	   gm_gps_lib_random_write.cc\
+	   gm_gps_new_analysis_scope.cc\
+	   gm_gps_new_check_pull_data.cc\
+	   gm_gps_new_check_depth_two.cc\
+	   gm_gps_new_check_random_access.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.
@@ -125,6 +133,11 @@ $(OBJ)/%.o : %.cc
 clean:
 	rm $(OBJ)/*.o
 
+veryclean:
+	-rm $(OBJ)/*.o
+	-rm $(PARSE)/gm_grammer.tab.c
+	-rm $(PARSE)/gm_lex.c
+	-rm $(BIN)/gm_comp
 
 #-----------------------------------------
 # rules to make parser

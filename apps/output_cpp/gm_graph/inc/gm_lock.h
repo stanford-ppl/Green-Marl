@@ -2,10 +2,26 @@
 #define GM_LOCK_H
 #include <stdint.h>
 #include "gm_graph.h"
-
-#if defined (__i386__) || (__x86_64__)
+#if defined(__x86_64__) || defined(__i386__)
+#include "../platform/x86/inc/gm_platform_helpers.h"
+#else
+#if defined(__sparc)
+#if defined (__ORACLE__)
+#include "../platform/sparc/inc/gm_platform_helpers.h"
+#endif
+#else
+#error "We need x86 (32bit or 64bit) or Sparc environment" 
+#endif
+#endif
 
 typedef volatile int32_t gm_spinlock_t;
+
+// return true if quired
+static inline bool gm_spinlock_try_acquire(gm_spinlock_t* ptr)
+{
+    int ret = __sync_lock_test_and_set(ptr, 1);
+    return (ret == 0); // 0 means success
+}
 
 static inline void gm_spinlock_acquire(gm_spinlock_t* ptr)
 {
@@ -14,7 +30,7 @@ static inline void gm_spinlock_acquire(gm_spinlock_t* ptr)
         while(*ptr == 1)            // spin on local cache, until the pointer is updated by remote cpu
         {
             // pause (let other hw-threads to proceed)
-            asm volatile ("pause" ::: "memory");
+ 	    _gm_pause();
         }
     }
 
@@ -31,12 +47,6 @@ static inline void gm_spinlock_release(gm_spinlock_t* ptr)
 
     *ptr = 0;
 }
-
-#else
-
-#error "Need x86 (32 or 64bit) architecture"
-
-#endif
 
 
 // Use small lock-table
