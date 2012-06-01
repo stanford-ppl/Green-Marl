@@ -1,0 +1,54 @@
+Procedure randomwalk(G : Graph, seed : Node(G), ratio : Double, nodes : Node_Set(G)) {
+	
+	Int remaining = (Int)(G.NumNodes() * ratio);
+	Int switch = 0;
+	Node_Property<Bool>(G) visited;
+	G.visited = False;
+	Node(G) current = seed;
+	
+	While(remaining > 0) {
+		If(switch == 0) {
+			Int newSeed = 0;
+			Int nodeCount = G.NumNodes();
+			[newSeed = rand() % nodeCount];
+			[seed = (node_t)newSeed];
+			current = seed;
+			If(!current.visited) {
+				remaining = remaining - 1;
+				current.visited = True;
+			}
+			switch = 100 * G.NumNodes();
+		}
+
+		Int outNbrCount = Count(n : current.OutNbrs);
+		If(outNbrCount == 0) {
+			switch = 0; //no out edges -> select new seed
+		} Else {
+			//jump home?
+			Int home = 0;
+			[home = rand() % 100]; //evil hack
+			If(home < 15) {
+				current = seed; //jump home
+			} Else {
+				Int select = 0;
+				[select = rand() % outNbrCount]; //evil hack
+				Node(G) tmp = current;
+				For(n : current.OutNbrs) {
+					If(select == 0) tmp = n;
+					select = select - 1;
+				}
+				current = tmp;
+				If(!current.visited) {
+					remaining = remaining - 1;
+					current.visited = True;
+				}
+				current.visited = True;
+			}
+		}
+	}
+
+	Foreach(n : G.Nodes) {
+		If(n.visited)
+			nodes.Add(n);
+	} 
+}

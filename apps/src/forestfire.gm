@@ -1,0 +1,32 @@
+Procedure forestfire(G : Graph, seed : Node(G), probPercent : Int, nodes : Node_Set(G)) {
+
+
+	Node_Property<Int>(G) visit;
+	Foreach(n : G.Nodes) {
+		n.visit = Count(x : n.OutNbrs);
+	}
+
+	
+	
+	InBFS(c : G.Nodes From seed) { //(c.visit > 0) {
+		Foreach(neighbor : c.OutNbrs) {
+			Bool bla = All(u : c.UpNbrs) {u != neighbor};
+			If(bla) {
+				Int dice = 0;
+				[dice = rand() % 100]; //evil hack...
+				If(dice > probPercent) {
+					neighbor.visit = neighbor.visit - 1;	
+				}
+			}
+		}
+	}
+	InReverse {
+		If(c.visit != 0)
+			nodes.Add(c);
+	}
+
+	Foreach(c : nodes.Items) {
+//		[printf("Node: %d\n", c1)];
+	}
+}
+
