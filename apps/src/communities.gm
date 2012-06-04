@@ -1,7 +1,6 @@
 Procedure communities(G : Graph, com : Node_Property<Int>(G))
 {
 	//as described in 'Near linear time algorithm to detect community structures in large-scale networks' by Raghavan et al
-
 	//initialize the labels for all nodes in the network
 	Int label = 0;
 	For(n : G.Nodes) {
@@ -21,6 +20,8 @@ Procedure communities(G : Graph, com : Node_Property<Int>(G))
 			}
 		}
 		continue = False;
+
+
 		Foreach(x : G.Nodes) {
 			// can I stop?
 			Int max = Max(n : x.Nbrs) { Count(n2 : x.Nbrs) (n.com == n2.com) };
