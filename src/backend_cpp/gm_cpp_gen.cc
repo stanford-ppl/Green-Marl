@@ -1042,7 +1042,10 @@ void gm_cpp_gen::generate_expr_builtin(ast_expr* ee)
         Body.push('(');
         generate_expr_list(e->get_args());
         if (add_thread_id) {
+	  if (e->get_args().size() > 0)
             Body.push(",gm_rt_thread_id()");
+	  else
+	    Body.push("gm_rt_thread_id()");
         }
         Body.push(")");
     } else {
