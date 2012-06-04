@@ -139,9 +139,9 @@ class gm_symtab {
                 //gm_symtab_entry* e = entries[i];
                 const char* c = e->id->get_orgname();
                 const char* c2 = id->get_orgname();
-		if (!strcmp(c,c2)) return e;
-	    }
-	    if (parent == NULL) return NULL;
+                if (!strcmp(c,c2)) return e;
+            }
+            if (parent == NULL) return NULL;
             return parent->find_symbol(id);
         }
 
