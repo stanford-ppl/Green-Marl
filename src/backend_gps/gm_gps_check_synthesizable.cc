@@ -163,6 +163,7 @@ public:
                 gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_OP, 
                     e->get_line(), e->get_col(), "Builtin (function)");
                 _error = true;
+                break;
             }
         }
         return true;
