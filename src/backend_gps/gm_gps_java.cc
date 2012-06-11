@@ -16,7 +16,7 @@ const char* gm_gps_gen::get_type_string(int gm_type)
         case GMTYPE_BOOL: return "boolean";
         case GMTYPE_NODE: if (get_lib()->is_node_type_int()) return "int";
                           else return "long";
-        default: assert(false);
+        default: assert(false); break;
     }
 }
 
@@ -270,7 +270,7 @@ void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a)
                 case GMREDUCE_MULT: Body.push(" * ("); break;
                 case GMREDUCE_AND: Body.push(" && ("); break;
                 case GMREDUCE_OR: Body.push(" || ("); break;
-                default: assert(false);
+                default: assert(false); break;
             }
             generate_expr(a->get_rhs());
             Body.pushln(");");
@@ -416,7 +416,7 @@ void gm_gps_gen::generate_expr_builtin(ast_expr *e)
         Body.push(")");
         break;
     default:
-        assert(false);
+        assert(false); break;
     }
 }
 

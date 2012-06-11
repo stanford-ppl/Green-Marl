@@ -10,7 +10,7 @@
 typedef gm_gps_basic_block gps_bb;
 
 //------------------------------------------------------------------
-// Merge siple basic blocks
+// Merge simple basic blocks
 //    B -> C
 //      C does not have any other predecessor
 //      B does not have any other successor
