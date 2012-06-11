@@ -245,11 +245,11 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         {
             gm_symtab_entry* sym = i->getSymInfo(); 
 
-            ast_extra_info* info = sym->find_info(TAG_BB_USAGE);
+            ast_extra_info* info = sym->find_info(GPS_TAG_BB_USAGE);
             gps_syminfo* syminfo;
             if (info == NULL)  {
                 syminfo = new gps_syminfo(is_scalar);
-                sym->add_info(TAG_BB_USAGE, syminfo);
+                sym->add_info(GPS_TAG_BB_USAGE, syminfo);
             } else {
                 syminfo = (gps_syminfo*) info;
             }

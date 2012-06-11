@@ -88,7 +88,7 @@ void gm_gps_gen::do_generate_message_class()
    Body.pushln(temp);
     
    if (info->is_single_message()) {
-        Body.pushln("//single messge type; argument ignored");
+        Body.pushln("//single message type; argument ignored");
         Body.pushln("public MessageData(byte type) {}");
    }
    else {
@@ -266,7 +266,7 @@ void gm_gps_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *b)
         gps_syminfo* local_info = I->second;
         if (!local_info->is_scalar()) continue;
 
-        gps_syminfo* global_info = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+        gps_syminfo* global_info = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         assert(global_info!=NULL);
 
         if (sym->getType()->is_node_iterator())

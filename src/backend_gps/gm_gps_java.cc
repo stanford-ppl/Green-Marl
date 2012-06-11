@@ -195,7 +195,7 @@ void gm_gps_gen::generate_sent_reduce_assign(ast_assign* a)
     }
 
     //--------------------------------------------------
-    // target is vertex-drivven
+    // target is vertex-driven
     // reduction now became normal read/write
     //--------------------------------------------------
     if (a->is_argminmax_assign()) {
@@ -333,7 +333,7 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
         ast_id* i = a->get_lhs_scala();
 
         gps_syminfo* syminfo = (gps_syminfo*) 
-            i->getSymInfo()->find_info(TAG_BB_USAGE);
+            i->getSymInfo()->find_info(GPS_TAG_BB_USAGE);
 
         // normal assign
         if (!syminfo->is_scoped_global())

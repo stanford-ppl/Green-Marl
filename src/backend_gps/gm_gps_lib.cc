@@ -14,7 +14,6 @@ void gm_gpslib::generate_headers(gm_code_writer& Body)
     Body.pushln("import gps.*;");
     Body.pushln("import gps.graph.*;");
     Body.pushln("import gps.node.*;");
-    Body.pushln("import gps.node.*;");
     Body.pushln("import gps.writable.*;");
     Body.pushln("import gps.globalobjects.*;");
     Body.pushln("import org.apache.commons.cli.CommandLine;");
@@ -200,7 +199,7 @@ void gm_gpslib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Bo
                 case GMREDUCE_MULT: Body.push("*"); break;
                 case GMREDUCE_AND:  Body.push("&&"); break;
                 case GMREDUCE_OR:   Body.push("||"); break;
-                default: assert(false);
+                default: assert(false); break;
             }
         }
     }
@@ -292,7 +291,7 @@ static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gp
         case GMTYPE_EDGE:
             if (lib->is_edge_type_int()) {Body.push("putInt"); break;}
             else                         {Body.push("putLong"); break;}
-        default: assert(false);
+        default: assert(false); break;
     }
     Body.push("(");
     if (gm_type == GMTYPE_BOOL) {
@@ -324,7 +323,7 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gp
         case GMTYPE_EDGE:
             if (lib->is_edge_type_int()) {Body.push("getInt()"); break;}
             else                         {Body.push("getLong()"); break;}
-        default: assert(false);
+        default: assert(false); break;
     }
     Body.pushln(";");
 }
@@ -343,7 +342,7 @@ static void genReadByte(const char* name, int gm_type, int offset, gm_code_write
         case GMTYPE_FLOAT:  Body.push("byteArrayToFloatBigEndian("); break;
         case GMTYPE_DOUBLE: Body.push("byteArrayToDoubleBigEndian("); break;
         case GMTYPE_BOOL:   Body.push("byteArrayToBooleanBigEndian("); break;
-        default: assert(false);
+        default: assert(false); break;
     }
     char str_buf[1024];
     sprintf(str_buf,"_BA, _idx + %d);", offset);
@@ -364,7 +363,7 @@ static void get_java_parse_string(gm_gpslib* L, int gm_type,const char*& name1, 
         case GMTYPE_EDGE:  
             if (L->is_edge_type_int()) {name1 = "Integer"; name2 = "parseInt"; break;}
             else                    {name1 = "Long"; name2 = "parseLong"; break;}
-        default: assert(false);
+        default: assert(false); break;
     }
 
 }
@@ -411,7 +410,7 @@ void gm_gpslib::generate_vertex_prop_class_details(
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I; 
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         int base = syminfo->get_start_byte(); // 
         genReadByte(sym->getId()->get_genname(), 
                     sym->getType()->getTargetTypeSummary(),
@@ -1058,7 +1057,7 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
         break;
 
     default:
-        assert(false);
+        assert(false); break;
     }
 }
 
@@ -1121,7 +1120,7 @@ bool gm_gpslib::do_local_optimize()
                      break;
                 case COUNT:
                 default:
-                     assert(false);
+                     assert(false); break;
             }
         }
         gm_end_minor_compiler_stage();
