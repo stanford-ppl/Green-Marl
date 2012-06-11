@@ -24,7 +24,7 @@ public:
 
     virtual bool apply(gm_symtab_entry* sym, int symtab_type)
     {
-        ast_extra_info* info = sym->find_info(TAG_BB_USAGE);
+        ast_extra_info* info = sym->find_info(GPS_TAG_BB_USAGE);
         if (info == NULL) return true;
 
         gps_syminfo* syminfo = (gps_syminfo*) info;
@@ -83,7 +83,7 @@ static int comp_start_byte(std::set<gm_symtab_entry*>& prop)
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I; 
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
 
         int size = GPS_BE.get_lib()->get_type_size(sym->getType()->get_target_type());
         syminfo->set_start_byte(byte_begin);
@@ -104,7 +104,7 @@ void gm_gps_opt_analyze_symbol_summary::process(ast_procdef* p)
     for(J=args.begin(); J!= args.end(); J++)
     {
         gm_symtab_entry *sym = *J; 
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         assert(syminfo!=NULL);
         syminfo->set_is_argument(true);
     }

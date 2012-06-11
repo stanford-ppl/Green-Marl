@@ -283,14 +283,14 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e)
     if (w1_warn && gm_is_prim_type(l_type)) {
         // adding explicit coercions
         if (!e->get_left_op()->is_literal()) {
-            printf("warning: adding type convresion %s->%s\n", gm_get_type_string(l_type), gm_get_type_string(l_new) );
+            printf("warning: adding type conversion %s->%s\n", gm_get_type_string(l_type), gm_get_type_string(l_new) );
             coercion_targets[e->get_left_op()] = l_new;
         }
     }
     if (w2_warn && gm_is_prim_type(r_type)) {
         // adding explicit coercions
         if (!e->get_right_op()->is_literal()) {
-            printf("warning: adding type convresion %s->%s\n", gm_get_type_string(r_type), gm_get_type_string(r_new) );
+            printf("warning: adding type conversion %s->%s\n", gm_get_type_string(r_type), gm_get_type_string(r_new) );
             coercion_targets[e->get_right_op()] = r_new;
         }
     }
