@@ -107,7 +107,7 @@ static bool manage_edge_prop_access_state(ast_foreach* fe,
                 else
                     return false;
             default:
-                assert(false);
+                assert(false); break;
         }
     }
     return false;
