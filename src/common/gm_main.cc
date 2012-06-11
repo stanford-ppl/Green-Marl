@@ -21,6 +21,7 @@
 #include "gm_backend.h"
 #include "gm_backend_cpp.h"
 #include "gm_backend_gps.h"
+#include "gm_backend_giraph.h"
 #include "gm_argopts.h"
 #include "gm_ind_opt.h"
 
@@ -29,6 +30,7 @@
 gm_frontend FE;
 gm_cpp_gen CPP_BE;  // CPP Backend
 gm_gps_gen GPS_BE;  // GPS Backend
+gm_giraph_gen GIRAPH_BE;  // Giraph Backend
 gm_backend* BACK_END;
 gm_userargs OPTIONS;
 gm_independent_optimize IND_OPT; // extern defined in gm_ind_opt.h
@@ -139,9 +141,17 @@ void do_compiler_action_at_stop()
         printf("\n");
     }
 
-    if (OPTIONS.get_arg_bool(GMARGFLAG_PRINTBB)) {
+    // TODO: cleaner solution for two statements below?
+    if (OPTIONS.get_arg_bool(GMARGFLAG_PRINTBB) && BACK_END == & GPS_BE) {
         printf("======================================================\n");
         GPS_BE.print_basicblock();
+        printf("======================================================\n");
+        printf("\n");
+    }
+
+    if (OPTIONS.get_arg_bool(GMARGFLAG_PRINTBB) && BACK_END == & GIRAPH_BE) {
+        printf("======================================================\n");
+        GIRAPH_BE.print_basicblock();
         printf("======================================================\n");
         printf("\n");
     }
@@ -176,6 +186,11 @@ int main (int argc, char** argv)
     else if (gm_is_same_string(name, "gps"))
     {
         BACK_END = & GPS_BE;
+        OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
+    }
+    else if (gm_is_same_string(name, "giraph"))
+    {
+        BACK_END = & GIRAPH_BE;
         OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
     }
     else {
