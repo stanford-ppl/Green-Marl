@@ -4,7 +4,7 @@
 #include "gm_giraph_beinfo.h"
 
 //-------------------------------------------------------------
-// Giraph Backend inforation per procedure
+// GIRAPH Backend inforation per procedure
 //-------------------------------------------------------------
 
 // prepare to manage a communication loop
