@@ -18,7 +18,7 @@ vpath %.h  inc
 vpath %.c parse
 vpath %.l parse
 vpath %.y parse
-vpath %.cc common parse backend_cpp backend_gps frontend opt
+vpath %.cc common parse backend_cpp backend_gps backend_giraph frontend opt
 
 HEADERS =  \
     gm_frontend_api.h \
@@ -118,6 +118,33 @@ SRCS2 =\
        gm_gps_new_check_depth_two.cc\
        gm_gps_new_check_edge_value.cc\
        gm_gps_new_check_random_access.cc\
+	   gm_giraph_opt_check_reverse_edges.cc\
+	   gm_giraph_opt_find_nested_foreach_loops.cc\
+	   gm_giraph_opt_insert_temp_property.cc\
+	   gm_giraph_opt_simplify_expr1.cc\
+	   gm_giraph_opt_split_loops_for_flipping.cc\
+       gm_giraph_create_stages.cc \
+       gm_giraph_check_synthesizable.cc\
+       gm_giraph_bb_split.cc gm_giraph_bb_merge.cc\
+	   gm_giraph_bb_merge_again.cc\
+	   gm_giraph_bb_merge_intra_loop.cc\
+	   gm_giraph_bb_rw_analysis.cc\
+       gm_giraph_beinfo.cc\
+       gm_giraph_gen.cc gm_giraph_opt.cc gm_giraph_misc.cc\
+       gm_giraph_gen_master.cc gm_giraph_gen_vertex.cc\
+       gm_giraph_sym_analyze_check_usage.cc\
+       gm_giraph_sym_analyze_check_scope.cc\
+       gm_giraph_sym_analyze_create_summary.cc\
+	   gm_giraph_find_congruent_message.cc\
+	   gm_giraph_check_edge_value.cc\
+       giraph_syminfo.cc \
+       gm_giraph_bb_find_reachable.cc\
+       gm_giraph_java.cc gm_giraph_lib.cc\
+	   gm_giraph_lib_random_write.cc\
+	   gm_giraph_new_analysis_scope.cc\
+ 	   gm_giraph_new_check_pull_data.cc\
+ 	   gm_giraph_new_check_depth_two.cc\
+ 	   gm_giraph_new_check_random_access.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.
