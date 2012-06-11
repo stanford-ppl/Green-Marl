@@ -7,7 +7,7 @@
 #include "gm_transform_helper.h"
 
 //--------------------------------------------------------------
-// A Back-End for Giraph generation
+// A Back-End for GIRAPH generation
 //--------------------------------------------------------------
 void gm_giraph_gen::setTargetDir(const char* d)
 {
@@ -59,9 +59,9 @@ void gm_giraph_gen::init_gen_steps()
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_opt_check_reverse_edges));       // check if canonical form
     //L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_opt_check_canonical));           // check if canonical form
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_new_check_depth_two));           // check if two-depth foreach
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_new_check_pull_data));           // check
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_new_check_pull_data));           // check 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_new_check_random_access));       // check
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_opt_check_edge_value));          //
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_opt_check_edge_value));          // 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_opt_create_ebb));                // create (Extended) basic block
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_opt_split_comm_ebb));            // split communicating every BB into two
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_giraph_opt_merge_ebb_again));           // Merging Ebbs
@@ -79,6 +79,7 @@ void gm_giraph_gen::init_gen_steps()
 //----------------------------------------------------
 bool gm_giraph_gen::do_generate()
 {
+
     if (!open_output_files())
         return false;
 
@@ -319,6 +320,7 @@ void gm_giraph_gen::generate_proc(ast_procdef* proc)
     begin_class();
     do_generate_global_variables();
     do_generate_master();
+
 
     do_generate_vertex();
 
