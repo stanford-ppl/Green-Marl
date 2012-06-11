@@ -37,7 +37,7 @@
 //      }
 //  }
 //-----------------------------------------------------------------------------------------------------------------------
-
+static void add_syminfo_struct(gm_symtab_entry * sym, bool is_scalar, int scope);
 class gm_gps_new_analysis_step1_t : public gm_apply 
 {
 public:
@@ -52,7 +52,17 @@ public:
 
     bool apply(gm_symtab_entry* e, int symtab_type) 
     {
-        e->add_info_int(GPS_INT_SYMBOL_SCOPE, current_scope);
+        e->add_info_int(GPS_INT_SYMBOL_SCOPE, current_scope); 
+
+        //---------------------------------------------------------------------------
+        // okay this information is redundant at this moment. Need to be clear up 
+        //---------------------------------------------------------------------------
+        add_syminfo_struct(e, 
+                (symtab_type != GM_SYMTAB_FIELD), 
+                (current_scope == GPS_NEW_SCOPE_GLOBAL) ? GPS_SCOPE_GLOBAL :
+                (current_scope == GPS_NEW_SCOPE_IN) ? GPS_SCOPE_INNER :
+                 GPS_SCOPE_OUTER);
+
         return true;
     }
 
@@ -152,6 +162,9 @@ static inline int get_more_restricted_scope(int i, int j)
     return std::max(i,j);
 }
 
+//---------------------------------------------------------------------
+// Find scope of each expression
+//---------------------------------------------------------------------
 class gm_gps_new_analysis_step2_t : public gm_apply 
 {
 public:
@@ -305,6 +318,21 @@ void gm_gps_do_new_analysis_step2(ast_procdef* proc)
 
 void gm_gps_do_new_scope_analysis(ast_procdef* proc)
 {
-    gm_gps_do_new_analysis_step1(proc);
-    gm_gps_do_new_analysis_step2(proc);
+    gm_gps_do_new_analysis_step1(proc); // check scope of each variable
+    gm_gps_do_new_analysis_step2(proc); // check scope of each expression
+}
+
+
+static void add_syminfo_struct(gm_symtab_entry * sym, bool is_scalar, int scope)
+{
+    ast_extra_info* info = sym->find_info(GPS_TAG_BB_USAGE);
+    gps_syminfo* syminfo;
+    if (info == NULL) {
+        syminfo = new gps_syminfo(is_scalar);
+        sym->add_info(GPS_TAG_BB_USAGE, syminfo);
+    } else {
+        syminfo = (gps_syminfo*) info;
+    }
+
+    syminfo->set_scope(scope);
 }

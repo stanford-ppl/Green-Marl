@@ -107,7 +107,6 @@ SRCS2 =\
        gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
        gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
        gm_gps_sym_analyze_check_usage.cc\
-       gm_gps_sym_analyze_check_scope.cc\
        gm_gps_sym_analyze_create_summary.cc\
        gm_gps_find_congruent_message.cc\
        gm_gps_check_edge_value.cc\

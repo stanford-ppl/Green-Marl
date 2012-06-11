@@ -25,11 +25,16 @@ public:
     virtual bool apply(gm_symtab_entry* sym, int symtab_type)
     {
         ast_extra_info* info = sym->find_info(GPS_TAG_BB_USAGE);
-        if (info == NULL) return true;
+        if (info == NULL) return true; // no information
 
         gps_syminfo* syminfo = (gps_syminfo*) info;
         if (syminfo->is_scalar())
         {
+            // ignore iterator and graph
+            if (sym->getType()->is_graph() || sym->getType()->is_node_edge_iterator()) {
+                return true;
+            }
+
             if (symtab_type == GM_SYMTAB_ARG)
             {
                 syminfo->set_is_argument(true);
@@ -50,6 +55,7 @@ public:
                 edge_prop.insert(sym);
             }
             else {
+                printf("sym = %s\n", sym->getId()->get_genname());
                 assert(false);
             }
 
