@@ -262,11 +262,7 @@ void ast_node::copy_info_from(ast_node * n)
 }
 
 //---------------------------------------------------------------------
-// implementing same inferface to ast_symtab_entry
-//---------------------------------------------------------------------
-
-//---------------------------------------------------------------------
-// implementing same inferface to ast_symtab_entry
+// implementing same interface to ast_symtab_entry
 //---------------------------------------------------------------------
 
 ast_extra_info* gm_symtab_entry::find_info(const char* id) 

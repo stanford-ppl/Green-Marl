@@ -280,7 +280,7 @@ static enum {
   GPS_ENUM_EDGE_VALUE_SENT_WRITE,
   GPS_ENUM_EDGE_VALUE_WRITE_SENT,
   GPS_ENUM_EDGE_VALUE_ERROR
-} gm_edge_access_t;
+} gm_gps_edge_access_t;
 
 static enum {
     GPS_NEW_SCOPE_GLOBAL = 0,
@@ -288,7 +288,7 @@ static enum {
     GPS_NEW_SCOPE_EDGE,
     GPS_NEW_SCOPE_IN ,
     GPS_NEW_SCOPE_RANDOM,
-} gm_new_scope_analysis_t;
+} gm_gps_new_scope_analysis_t;
 
 DEF_STRING (GPS_INT_ASSIGN_SCOPE);  // where each assignment is destinated
 DEF_STRING (GPS_INT_EXPR_SCOPE);    // where sub-expression is dependent on

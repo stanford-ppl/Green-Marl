@@ -156,7 +156,7 @@ void gm_gps_gen::do_generate_master_scalar()
     for (I = scalar.begin(); I!=scalar.end();I++)
     {
         gm_symtab_entry *e = *I;
-        gps_syminfo* syminfo = (gps_syminfo*) e->find_info(TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) e->find_info(GPS_TAG_BB_USAGE);
         if (!syminfo->is_used_in_master() &&
             !syminfo->is_argument()) continue;
 
@@ -205,7 +205,7 @@ void gm_gps_gen::do_generate_shared_variables_keys()
     for(I=scalar.begin(); I!=scalar.end();I++)
     {
         gm_symtab_entry* sym = *I;
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         assert(syminfo!=NULL);
 
         /*
@@ -350,7 +350,7 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
             gm_symtab_entry* sym = I->first;
             gps_syminfo* local_info = I->second;
             if (!local_info->is_scalar()) continue;
-            gps_syminfo* global_info = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
+            gps_syminfo* global_info = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
 
             if (!global_info->is_used_in_multiple_BB())
             {
@@ -452,10 +452,10 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     else if (type == GM_GPS_BBTYPE_MERGED_TAIL) {
         Body.pushln("// Intra-Loop Merged");
         int source_id = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
-        sprintf(temp, "if (%s%d) _master_state_nxt = %d", GPS_INTRA_MERGE_IS_FIRST, source_id,
+        sprintf(temp, "if (%s%d) _master_state_nxt = %d;", GPS_INTRA_MERGE_IS_FIRST, source_id,
                 b->get_nth_exit(0)->get_id());
         Body.pushln(temp);
-        sprintf(temp, "else _master_state_nxt = %d", b->get_nth_exit(1)->get_id());
+        sprintf(temp, "else _master_state_nxt = %d;", b->get_nth_exit(1)->get_id());
         Body.pushln(temp);
         sprintf(temp, "%s%d = false;\n", GPS_INTRA_MERGE_IS_FIRST, source_id);
         Body.pushln(temp);
@@ -506,7 +506,7 @@ void gm_gps_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b)
     for(I=syms.begin(); I!= syms.end(); I++)
     {
         gps_syminfo* local_info = I->second;
-        gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(TAG_BB_USAGE);
+        gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(GPS_TAG_BB_USAGE);
         if (!global_info->is_scalar()) continue;
         if (local_info->is_used_as_reduce()) {
              int reduce_type = local_info->get_reduce_type();
@@ -538,7 +538,7 @@ void gm_gps_gen::do_generate_scalar_broadcast_receive(gm_gps_basic_block* b)
     for(I=syms.begin(); I!= syms.end(); I++)
     {
         gps_syminfo* local_info = I->second;
-        gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(TAG_BB_USAGE);
+        gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(GPS_TAG_BB_USAGE);
         if (!global_info->is_scalar()) continue;
         if (!global_info->is_used_in_master()) continue;
         if (local_info->is_used_as_lhs() || local_info->is_used_as_reduce()) {
