@@ -163,6 +163,9 @@
 
   set_type :  T_NSET      '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NSET                     { $$ = GM_settype_ref(GMTYPE_NSET, NULL);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+
            |  T_NSEQ   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSEQ, $3);
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);

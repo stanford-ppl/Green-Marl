@@ -226,6 +226,8 @@ ast_node* GM_primtype_ref(int prim_type_id)
 { return ast_typedecl::new_primtype( prim_type_id); }
 ast_node* GM_settype_ref(int set_type_id, ast_node* id)
 {
+    if(id == NULL)
+        return ast_typedecl::new_set(NULL, set_type_id);
     assert(id->get_nodetype() == AST_ID);
     return ast_typedecl::new_set((ast_id*)id, set_type_id);
 }

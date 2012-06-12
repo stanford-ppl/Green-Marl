@@ -508,9 +508,11 @@ class ast_typedecl : public ast_node {  // property or type
             return t;
         }
         static ast_typedecl* new_set(ast_id* tg, int set_type)
-        {
+        {	        
             ast_typedecl* t = new ast_typedecl();
             t->type_id = set_type;
+	    if(tg == NULL) //no graph defined for this set - we will handle this later (typecheck step 1)
+	        return t;
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
