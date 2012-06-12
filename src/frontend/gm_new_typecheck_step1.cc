@@ -209,7 +209,10 @@ ast_id* gm_get_single_graph(gm_symtab* symTab)
 	  ast_typedecl* entryType = (*II)->getType();
 	  if(entryType->is_graph()) {
 	      foundCount++;
-	      assert(foundCount < 2);
+	      if(foundCount > 1) {
+		gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
+		assert(false);
+	      }
 	      //TODO throw error to inform user that he made an error
 	      targetGraph = (*II)->getId();   
 	  }
