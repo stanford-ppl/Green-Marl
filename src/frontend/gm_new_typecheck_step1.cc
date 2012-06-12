@@ -110,22 +110,20 @@ private:
 // returns is_okay;
 bool gm_check_target_graph(ast_id* id1, ast_id* id2)
 {
-    ast_typedecl* t1 = id1->getTypeInfo(); assert(t1!=NULL);
-    ast_typedecl* t2 = id2->getTypeInfo(); assert(t2!=NULL);
+    ast_typedecl* t1 = id1->getTypeInfo(); assert(t1 != NULL);
+    ast_typedecl* t2 = id2->getTypeInfo(); assert(t2 != NULL);
     gm_symtab_entry* e1;
     gm_symtab_entry* e2;
-    if (t1->is_graph()) e1=id1->getSymInfo();
+    if (t1->is_graph()) e1 = id1->getSymInfo();
     else e1 = t1->get_target_graph_sym();
 
-    if (t2->is_graph()) e2=id2->getSymInfo();
+    if (t2->is_graph()) e2 = id2->getSymInfo();
     else e2 = t2->get_target_graph_sym();
 
-    if (e1!=e2) {
-        //printf("id1 = %s, typd = %s %p\n", id1->get_orgname(), gm_get_type_string(t1->getTypeSummary()), e1);
-        //printf("id2 = %s, typd = %s %p\n", id2->get_orgname(), gm_get_type_string(t2->getTypeSummary()), e2);
-
+    if (e1 != e2) {
+      //printf("id1 = %s, typd = %s %p\n", id1->get_orgname(), gm_get_type_string(t1->getTypeSummary()), e1);
+      //printf("id2 = %s, typd = %s %p\n", id2->get_orgname(), gm_get_type_string(t2->getTypeSummary()), e2);
     }
-
     return (e1 == e2);
 }
 
@@ -165,7 +163,6 @@ bool gm_check_target_is_defined(ast_id* target, gm_symtab* vars,
 {
     // check graph is defined
     assert(target->get_orgname() != NULL);
-
     if (gm_find_and_connect_symbol(target, vars) == false) 
         return false;
 
@@ -196,6 +193,33 @@ bool gm_check_target_is_defined(ast_id* target, gm_symtab* vars,
 }
 
 //------------------------------------------------
+// Searches the symbol table and its parents for a 
+// single graph instance.
+// If exactly one is found it is returned.
+// If none is found, NULL is returned.
+// Else an assertion fails
+//------------------------------------------------
+ast_id* gm_get_single_graph(gm_symtab* symTab)
+{
+    int foundCount = 0;
+    ast_id* targetGraph = NULL;
+    do {//search for a single graph instance in the symbol table
+        std::set<gm_symtab_entry*> entries = symTab->get_entries();
+	for(std::set<gm_symtab_entry*>::iterator II = entries.begin(); II != entries.end(); II++) {
+	  ast_typedecl* entryType = (*II)->getType();
+	  if(entryType->is_graph()) {
+	      foundCount++;
+	      assert(foundCount < 2);
+	      //TODO throw error to inform user that he made an error
+	      targetGraph = (*II)->getId();   
+	  }
+	}
+	symTab = symTab->get_parent();
+    } while(symTab != NULL); 
+    return targetGraph;
+}
+
+//------------------------------------------------
 // (a) For node/edge/collection/all-graph iterator
 //     - check graph_id is defined and a graph
 //     - connect graph_id with the symbol
@@ -222,7 +246,15 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
     else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator())
     {
         ast_id* graph = type->get_target_graph_id();
-        assert(graph != NULL);
+
+	if(graph == NULL) {
+	    //no associated graph found - try to find default graph
+	    graph = gm_get_single_graph(SYM_V);
+	    assert(graph != NULL);
+	  
+	    type->set_target_graph_id(graph);
+	    graph->set_parent(type);
+	} 
         bool is_okay = gm_check_target_is_defined(graph, SYM_V, SHOULD_BE_A_GRAPH);
         if (!is_okay) return is_okay;
     }

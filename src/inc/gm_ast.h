@@ -461,10 +461,13 @@ class ast_typedecl : public ast_node {  // property or type
             t->type_id = gtype_id;
             return t;
         }
-        static ast_typedecl* new_nodetype(
-                ast_id* tg) {
+        static ast_typedecl* new_nodetype(ast_id* tg) {
             ast_typedecl* t = new ast_typedecl();
             t->type_id = GMTYPE_NODE;
+	    if(tg == NULL) {
+	      //no graph defined for this node - we will handle this later (typecheck step 1)
+	      return t;
+	    }
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }

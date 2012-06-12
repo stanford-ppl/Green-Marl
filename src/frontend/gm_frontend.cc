@@ -248,12 +248,17 @@ ast_node* GM_edgeprop_ref(ast_node* typedecl, ast_node* id)
             (ast_id*) id
         ); 
 }
+
 ast_node* GM_nodetype_ref(ast_node* id)
 {
+    if(id == NULL) {
+      return ast_typedecl::new_nodetype(NULL);
+    }
     assert(id->get_nodetype() == AST_ID);
     return ast_typedecl::new_nodetype( 
             (ast_id*) id); 
 }
+
 ast_node* GM_edgetype_ref(ast_node* id)
 {
     assert(id->get_nodetype() == AST_ID);

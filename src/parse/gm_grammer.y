@@ -155,10 +155,12 @@
 
   node_type : T_NODE '(' id  ')'      { $$ = GM_nodetype_ref($3); 
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_NODE      { $$ = GM_nodetype_ref(NULL);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
   edge_type : T_EDGE '(' id  ')'      { $$ = GM_edgetype_ref($3); 
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
-  set_type :  T_NSET   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);
+  set_type :  T_NSET      '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            |  T_NSEQ   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSEQ, $3);
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
