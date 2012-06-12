@@ -2,9 +2,10 @@ Procedure test_nested_sum(G:Graph)
 {
     //must compile since only one graph is present
     Node n;
+    Edge e;
     For(x : G.Nodes) {
 	n = x;
     }
-
+    Edge(G) e2 = e;
     Node(G) n2 = n;
 }
