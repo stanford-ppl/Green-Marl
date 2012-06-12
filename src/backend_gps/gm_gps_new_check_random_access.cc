@@ -51,13 +51,19 @@
 //   }
 // }
 //
-// [Multiple definitions? ]
+// [Todo: Multiple definitions? ]
 // {
 //   Node(G) y1= root1;
 //   Node(G) y2= root2;
 //   y1.X = 0;
 //   y2.X = 1;
 // }
+//
+// Constructed Information
+//    FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN: 
+//       (to => assign_sttement, what: the sentblock that contains random write for this assign statement)
+//    FLAG_RANDWM_WRITE_SYMBOL_FOR_SB
+//       (to => sent_block, what: set of symbols that are used as ramdom-write driver in the sent-block) 
 //-----------------------------------------------------------------
 static bool check_if_met_conditional_before(ast_node *s, gm_symtab_entry *symbol)
 {
@@ -99,7 +105,6 @@ public:
               _error = true;
           }
           else {
-              //printf("add defined :%p\n", sym);
               add_define(sym);
           }
       }

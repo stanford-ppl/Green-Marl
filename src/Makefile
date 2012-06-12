@@ -109,7 +109,6 @@ SRCS2 =\
        gm_gps_sym_analyze_check_usage.cc\
        gm_gps_sym_analyze_create_summary.cc\
        gm_gps_find_congruent_message.cc\
-       gm_gps_new_check_edge_value.cc\
        gps_syminfo.cc \
        gm_gps_bb_find_reachable.cc\
        gm_gps_java.cc gm_gps_lib.cc\
@@ -117,6 +116,7 @@ SRCS2 =\
        gm_gps_new_analysis_scope.cc\
        gm_gps_new_check_pull_data.cc\
        gm_gps_new_check_depth_two.cc\
+       gm_gps_new_check_edge_value.cc\
        gm_gps_new_check_random_access.cc\
 
 
