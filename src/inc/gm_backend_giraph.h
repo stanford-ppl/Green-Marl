@@ -1,11 +1,12 @@
 #ifndef GM_BACKEND_GIRAPH
 #define GM_BACKEND_GIRAPH
 
+#include "gm_backend_gps.h"
 #include "gm_backend.h"
 #include "gm_misc.h"
 #include "gm_code_writer.h"
-#include "gm_giraph_basicblock.h"
-#include "gm_giraph_beinfo.h"
+#include "gm_gps_basicblock.h"
+#include "gm_gps_beinfo.h"
 #include "gm_backend_giraph_opt_steps.h"
 #include "gm_backend_giraph_gen_steps.h"
 
@@ -16,8 +17,6 @@
 //-----------------------------------------------------------------
 // interface for graph library Layer
 //-----------------------------------------------------------------
-class gm_giraph_beinfo;
-class gm_giraph_communication_size_info;
 class gm_giraph_gen;
 
 // Nothing happens in this class
@@ -38,7 +37,7 @@ class gm_giraphlib : public gm_graph_library {
         return str_buf;
     }
 
-    virtual void generate_prepare_bb(gm_code_writer& Body, gm_giraph_basic_block* b);
+    virtual void generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block* b);
 
     virtual void generate_broadcast_reduce_initialize_master(ast_id* id, gm_code_writer& Body, int reduce_type, const char* base_value);
     virtual void generate_broadcast_state_master(const char* state_var, gm_code_writer& Body);
@@ -60,7 +59,7 @@ class gm_giraphlib : public gm_graph_library {
     virtual void generate_receive_isFirst_vertex( const char* var, gm_code_writer& Body);
 
     virtual void generate_message_fields_define(int gm_type, int count, gm_code_writer& Body);
-    virtual void generate_message_class_details(gm_giraph_beinfo* info, gm_code_writer& Body);
+    virtual void generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body);
 
     virtual void generate_vertex_prop_access_lhs(ast_id *id, gm_code_writer& Body);
     virtual void generate_vertex_prop_access_lhs_edge(ast_id *id, gm_code_writer& Body);
@@ -81,9 +80,9 @@ class gm_giraphlib : public gm_graph_library {
     const char* get_message_field_var_name(int gm_type, int idx);
     virtual void generate_message_send(ast_foreach* fe, gm_code_writer& Body);
 
-    virtual void generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_giraph_basic_block* b, bool is_only_comm);
-    virtual void generate_message_receive_begin(ast_sentblock* sb, gm_symtab_entry* drv, gm_code_writer& Body, gm_giraph_basic_block* b, bool is_only_comm);
-    virtual void generate_message_receive_begin(gm_giraph_comm_unit& U,gm_code_writer& Body,  gm_giraph_basic_block* b, bool is_only_comm);
+    virtual void generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm);
+    virtual void generate_message_receive_begin(ast_sentblock* sb, gm_symtab_entry* drv, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm);
+    virtual void generate_message_receive_begin(gm_gps_comm_unit& U,gm_code_writer& Body,  gm_gps_basic_block* b, bool is_only_comm);
 
     virtual void generate_message_receive_end(gm_code_writer& Body, bool is_only_comm);
 
@@ -118,18 +117,17 @@ class gm_giraphlib : public gm_graph_library {
 };
 
 
-DEF_STRING(GIRAPH_TAG_COMM_ID);
-
 //-----------------------------------------------------------------
 // interface for graph library Layer
 //-----------------------------------------------------------------
 // state number,
 // begin sentence
 // is pararell
-class gm_giraph_gen : public gm_backend , public gm_code_generator
+class gm_giraph_gen : public gm_gps_gen
 {
     public:
-        gm_giraph_gen() : gm_code_generator(Body), dname(NULL), fname(NULL), f_body(NULL)        {
+        gm_giraph_gen() {
+        	//: gm_code_generator(Body), dname(NULL), fname(NULL), f_body(NULL)  {
             glib = new gm_giraphlib(this);
             init_opt_steps();
             init_gen_steps();
@@ -141,7 +139,7 @@ class gm_giraph_gen : public gm_backend , public gm_code_generator
 
         virtual bool do_local_optimize_lib() {return get_lib()->do_local_optimize();}
         virtual bool do_local_optimize() ;
-        virtual bool do_generate(); 
+        virtual bool do_generate();
 
         gm_giraphlib* get_lib() {return glib;}
 
@@ -176,9 +174,9 @@ class gm_giraph_gen : public gm_backend , public gm_code_generator
         void do_generate_master_class();
         void do_generate_master_scalar();
         void do_generate_master_serialization();
-        void do_generate_master_state_body(gm_giraph_basic_block* b);
-        void do_generate_scalar_broadcast_send(gm_giraph_basic_block* b);
-        void do_generate_scalar_broadcast_receive(gm_giraph_basic_block *b);
+        void do_generate_master_state_body(gm_gps_basic_block* b);
+        void do_generate_scalar_broadcast_send(gm_gps_basic_block* b);
+        void do_generate_scalar_broadcast_receive(gm_gps_basic_block *b);
         void do_generate_shared_variables_keys();
 
 
@@ -186,13 +184,13 @@ class gm_giraph_gen : public gm_backend , public gm_code_generator
         void do_generate_worker_context_class();
         void do_generate_vertex_property_class(bool is_edge_prop);
         void do_generate_vertex_class();
-	void do_generate_vertex_constructor();
-	void do_generate_vertex_get_initial_state_method();
+        void do_generate_vertex_constructor();
+        void do_generate_vertex_get_initial_state_method();
         void do_generate_message_class();
-	void do_generate_message_class_default_constructor();
+        void do_generate_message_class_default_constructor();
         void do_generate_vertex_states();
-        void do_generate_vertex_state_body(gm_giraph_basic_block *b);
-        void do_generate_vertex_state_receive_global(gm_giraph_basic_block *b);
+        void do_generate_vertex_state_body(gm_gps_basic_block *b);
+        void do_generate_vertex_state_receive_global(gm_gps_basic_block *b);
 
         void generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent);
 
@@ -244,61 +242,6 @@ class gm_giraph_gen : public gm_backend , public gm_code_generator
 
 };
 
-extern gm_giraph_gen GIRAPH_BE;
-
-// string used in code generator
-DEF_STRING(GIRAPH_FLAG_USE_REVERSE_EDGE);
-DEF_STRING(GIRAPH_FLAG_USE_IN_DEGREE);
-DEF_STRING(GIRAPH_FLAG_COMM_SYMBOL);
-DEF_STRING(GIRAPH_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
-DEF_STRING(GIRAPH_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
-DEF_STRING(GIRAPH_FLAG_USE_EDGE_PROP);
-DEF_STRING(GIRAPH_FLAG_EDGE_DEFINED_INNER);   // edge which is used inside in a inner llop
-DEF_STRING(GIRAPH_FLAG_EDGE_DEFINING_WRITE);
-DEF_STRING(GIRAPH_FLAG_EDGE_DEFINING_INNER); // inner loops that contains edges
-DEF_STRING(GIRAPH_MAP_EDGE_PROP_ACCESS);
-DEF_STRING(GIRAPH_LIST_EDGE_PROP_WRITE);
-DEF_STRING(GIRAPH_FLAG_NODE_VALUE_INIT);
-
-DEF_STRING(GIRAPH_FLAG_WHILE_HEAD);  // used for intra-loop merging
-DEF_STRING(GIRAPH_FLAG_WHILE_TAIL);
-
-DEF_STRING(GIRAPH_FLAG_HAS_COMMUNICATION);         // an outerloop that has communication
-DEF_STRING(GIRAPH_FLAG_HAS_COMMUNICATION_RANDOM);  // an outerloop that random has communication
-DEF_STRING(GIRAPH_FLAG_IS_OUTER_LOOP); // set during bb-split
-DEF_STRING(GIRAPH_FLAG_IS_INNER_LOOP); // set during bb-split
-DEF_STRING(GIRAPH_FLAG_IS_INTRA_MERGED_CONDITIONAL);
-DEF_STRING(GIRAPH_INT_INTRA_MERGED_CONDITIONAL_NO);
-DEF_STRING(GIRAPH_LIST_INTRA_MERGED_CONDITIONAL);
-
-static const int   GIRAPH_PREPARE_STEP1         = 100000;
-static const int   GIRAPH_PREPARE_STEP2         = 100001;
-static const char* GIRAPH_RET_VALUE = "_ret_value";
-static const char* GIRAPH_REV_NODE_ID = "_revNodeId";
-static const char* GIRAPH_DUMMY_ID = "_remoteNodeId";
-static const char* GIRAPH_NAME_IN_DEGREE_PROP = "_in_degree";
-static const char* GIRAPH_INTRA_MERGE_IS_FIRST = "_is_first_";
-static const char* GIRAPH_KEY_FOR_STATE = "\"__gm_giraph_state\"";
-
-static enum {
-  GIRAPH_ENUM_EDGE_VALUE_WRITE,
-  GIRAPH_ENUM_EDGE_VALUE_SENT,
-  GIRAPH_ENUM_EDGE_VALUE_SENT_WRITE,
-  GIRAPH_ENUM_EDGE_VALUE_WRITE_SENT,
-  GIRAPH_ENUM_EDGE_VALUE_ERROR
-} gm_giraph_edge_access_t;
-
-static enum {
-    GIRAPH_NEW_SCOPE_GLOBAL = 0,
-    GIRAPH_NEW_SCOPE_OUT ,
-    GIRAPH_NEW_SCOPE_EDGE,
-    GIRAPH_NEW_SCOPE_IN ,
-    GIRAPH_NEW_SCOPE_RANDOM,
-} gm_giraph_new_scope_analysis_t;
-
-DEF_STRING (GIRAPH_INT_ASSIGN_SCOPE);  // where each assignment is destinated
-DEF_STRING (GIRAPH_INT_EXPR_SCOPE);    // where sub-expression is dependent on
-DEF_STRING (GIRAPH_INT_SYMBOL_SCOPE);   // where each symbol is defined (in syntax)
-DEF_STRING (GIRAPH_INT_SYNTAX_CONTEXT); // where each statement is located (in syntax)
+extern gm_gps_gen* PREGEL_BE;
 
 #endif

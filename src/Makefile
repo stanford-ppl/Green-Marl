@@ -99,52 +99,36 @@ SRCS2 =\
        gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_synthesizable.cc\
-       gm_gps_bb_split.cc gm_gps_bb_merge.cc\
+       gm_gps_bb_split.cc\
+       gm_gps_bb_merge.cc\
        gm_gps_bb_merge_again.cc\
        gm_gps_bb_merge_intra_loop.cc\
        gm_gps_bb_rw_analysis.cc\
        gm_gps_beinfo.cc\
-       gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
+       gm_gps_gen.cc\
+       gm_gps_opt.cc\
+       gm_gps_misc.cc\
        gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
        gm_gps_sym_analyze_check_usage.cc\
        gm_gps_sym_analyze_create_summary.cc\
        gm_gps_find_congruent_message.cc\
        gps_syminfo.cc \
        gm_gps_bb_find_reachable.cc\
-       gm_gps_java.cc gm_gps_lib.cc\
+       gm_gps_java.cc\
+       gm_gps_lib.cc\
        gm_gps_lib_random_write.cc\
        gm_gps_new_analysis_scope.cc\
        gm_gps_new_check_pull_data.cc\
        gm_gps_new_check_depth_two.cc\
        gm_gps_new_check_edge_value.cc\
        gm_gps_new_check_random_access.cc\
-	   gm_giraph_opt_check_reverse_edges.cc\
-	   gm_giraph_opt_find_nested_foreach_loops.cc\
-	   gm_giraph_opt_insert_temp_property.cc\
-	   gm_giraph_opt_simplify_expr1.cc\
-	   gm_giraph_opt_split_loops_for_flipping.cc\
-       gm_giraph_create_stages.cc \
-       gm_giraph_check_synthesizable.cc\
-       gm_giraph_bb_split.cc gm_giraph_bb_merge.cc\
-	   gm_giraph_bb_merge_again.cc\
-	   gm_giraph_bb_merge_intra_loop.cc\
-	   gm_giraph_bb_rw_analysis.cc\
-       gm_giraph_beinfo.cc\
-       gm_giraph_gen.cc gm_giraph_opt.cc gm_giraph_misc.cc\
-       gm_giraph_gen_master.cc gm_giraph_gen_vertex.cc\
-       gm_giraph_sym_analyze_check_usage.cc\
-       gm_giraph_sym_analyze_check_scope.cc\
-       gm_giraph_sym_analyze_create_summary.cc\
-	   gm_giraph_find_congruent_message.cc\
-	   gm_giraph_check_edge_value.cc\
-       giraph_syminfo.cc \
-       gm_giraph_bb_find_reachable.cc\
-       gm_giraph_java.cc gm_giraph_lib.cc\
-	   gm_giraph_lib_random_write.cc\
-	   gm_giraph_new_analysis_scope.cc\
- 	   gm_giraph_new_check_pull_data.cc\
- 	   gm_giraph_new_check_depth_two.cc\
- 	   gm_giraph_new_check_random_access.cc\
+       gm_giraph_gen.cc\
+       gm_giraph_gen_master.cc\
+       gm_giraph_gen_vertex.cc\
+       gm_giraph_lib.cc\
+       gm_giraph_lib_random_write.cc\
+       gm_giraph_java.cc\
+       gm_giraph_opt.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.

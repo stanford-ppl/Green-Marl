@@ -7,8 +7,6 @@
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
 
-#define GPS_KEY_FOR_STATE       "\"__gm_gps_state\""
-
 void gm_gpslib::generate_headers(gm_code_writer& Body)
 {
     Body.pushln("import gps.*;");

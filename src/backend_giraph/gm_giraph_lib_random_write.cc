@@ -11,13 +11,13 @@ void gm_giraphlib::generate_message_create_for_random_write(
     ast_sentblock* sb, gm_symtab_entry* sym, 
     gm_code_writer& Body) 
 {
-  gm_giraph_beinfo * info =  
-        (gm_giraph_beinfo *) FE.get_current_backend_info();
-  int m_type = GIRAPH_COMM_RANDOM_WRITE;
+  gm_gps_beinfo * info =
+        (gm_gps_beinfo *) FE.get_current_backend_info();
+  int m_type = GPS_COMM_RANDOM_WRITE;
 
-  gm_giraph_comm_unit U(m_type, sb, sym);
+  gm_gps_comm_unit U(m_type, sb, sym);
 
-  gm_giraph_communication_size_info& SINFO
+  gm_gps_communication_size_info& SINFO
       = *(info->find_communication_size_info(U));
 
   Body.NL();
@@ -47,9 +47,9 @@ public:
     : sb(_sb), sym(_sym), lib(l), Body(b)
     {
         set_for_expr(true);
-        U = new gm_giraph_comm_unit(GIRAPH_COMM_RANDOM_WRITE, sb, sym);
+        U = new gm_gps_comm_unit(GPS_COMM_RANDOM_WRITE, sb, sym);
         INFO =  
-                (gm_giraph_beinfo *) FE.get_current_backend_info();
+                (gm_gps_beinfo *) FE.get_current_backend_info();
     }
 
     bool apply(ast_expr* e)
@@ -57,7 +57,7 @@ public:
         if (!e->is_id() && !e->is_field())
             return true;
 
-        gm_giraph_communication_symbol_info* SS; 
+        gm_gps_communication_symbol_info* SS;
         gm_symtab_entry* tg;
 
         if (e->is_id())
@@ -96,8 +96,8 @@ public:
 private:
     ast_sentblock* sb;
     gm_symtab_entry* sym;
-    gm_giraph_comm_unit* U;
-    gm_giraph_beinfo* INFO; 
+    gm_gps_comm_unit* U;
+    gm_gps_beinfo* INFO;
     gm_giraphlib* lib; 
     gm_code_writer& Body;
 
@@ -109,7 +109,7 @@ void gm_giraphlib::generate_message_payload_packing_for_random_write(ast_assign 
     assert(!a->is_argminmax_assign());
     assert(!a->is_target_scalar());
 
-    ast_sentblock* sb = (ast_sentblock*)a->find_info_ptr(GIRAPH_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
+    ast_sentblock* sb = (ast_sentblock*)a->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
     assert(sb!=NULL);
 
     // driver

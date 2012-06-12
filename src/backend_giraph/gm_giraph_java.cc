@@ -41,9 +41,9 @@ void gm_giraph_gen::generate_sent_block(ast_sentblock* sb, bool need_brace)
     
     std::list<ast_sent*>::iterator i;
     if (need_brace) _Body.pushln("{") ;
-    if (sb->has_info_set(GIRAPH_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB)) 
+    if (sb->has_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB))
     {
-        std::set<void*> S = sb->get_info_set(GIRAPH_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
+        std::set<void*> S = sb->get_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
         std::set<void*>::iterator I;
         for(I=S.begin(); I!=S.end(); I++) 
         {
@@ -60,11 +60,11 @@ void gm_giraph_gen::generate_sent_block(ast_sentblock* sb, bool need_brace)
         generate_sent(s);
     }
 
-    if (sb->has_info_set(GIRAPH_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB)) 
+    if (sb->has_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB))
     {
         Body.NL();
 
-        std::set<void*> S = sb->get_info_set(GIRAPH_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
+        std::set<void*> S = sb->get_info_set(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
         std::set<void*>::iterator I;
         for(I=S.begin(); I!=S.end(); I++) 
         {
@@ -99,7 +99,7 @@ void gm_giraph_gen::generate_expr_minmax(ast_expr* e)
     _Body.push(")");
 }
 
-void gm_giraph_gen::generate_lhs_id(ast_id* i) 
+void gm_giraph_gen::generate_lhs_id(ast_id* i)
 {
     _Body.push(i->get_genname());
 }
@@ -137,11 +137,11 @@ void gm_giraph_gen::generate_lhs_field(ast_field* f)
     }
 }
 
-void gm_giraph_gen::generate_rhs_id(ast_id* i) 
+void gm_giraph_gen::generate_rhs_id(ast_id* i)
 {
     if (i->getSymInfo()->getType()->is_node_iterator())
     {
-        if (i->getSymInfo()->find_info_bool(GIRAPH_FLAG_COMM_SYMBOL)) 
+        if (i->getSymInfo()->find_info_bool(GPS_FLAG_COMM_SYMBOL))
         {
             if  (!this->is_receiver_generate()) 
             {
@@ -167,7 +167,7 @@ void gm_giraph_gen::generate_rhs_field(ast_field* f)
 }
 
 
-void gm_giraph_gen::generate_sent_reduce_assign(ast_assign* a) 
+void gm_giraph_gen::generate_sent_reduce_assign(ast_assign* a)
 {
     if (is_master_generate())
     {
@@ -175,7 +175,7 @@ void gm_giraph_gen::generate_sent_reduce_assign(ast_assign* a)
         assert(false);
     }
 
-    if (a->find_info_ptr(GIRAPH_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
+    if (a->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
     {
         if (!is_receiver_generate())
         {
@@ -307,18 +307,18 @@ void gm_giraph_gen::generate_sent_assign(ast_assign *a)
         return;
     }
 
-    if (a->find_info_bool(GIRAPH_FLAG_EDGE_DEFINING_WRITE)) {
+    if (a->find_info_bool(GPS_FLAG_EDGE_DEFINING_WRITE)) {
         return;  // skip edge-defining writes
     } 
 
     if (!a->is_target_scalar() && 
-        a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GIRAPH_FLAG_EDGE_DEFINED_INNER))
+        a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
     {
         if (is_receiver_generate()) return;
     }
 
     // vertex or receiver generate
-    if (a->find_info_ptr(GIRAPH_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
+    if (a->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
     {
         if (!is_receiver_generate())
         {
@@ -332,8 +332,8 @@ void gm_giraph_gen::generate_sent_assign(ast_assign *a)
     {
         ast_id* i = a->get_lhs_scala();
 
-        giraph_syminfo* syminfo = (giraph_syminfo*) 
-            i->getSymInfo()->find_info(GIRAPH_TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*)
+            i->getSymInfo()->find_info(GPS_TAG_BB_USAGE);
 
         // normal assign
         if (!syminfo->is_scoped_global())
@@ -360,7 +360,7 @@ void gm_giraph_gen::generate_sent_assign(ast_assign *a)
 void gm_giraph_gen::generate_sent_return(ast_return *r)
 {
     if (r->get_expr() != NULL) {
-        _Body.push(GIRAPH_RET_VALUE);
+        _Body.push(GPS_RET_VALUE);
         _Body.push(" = ");
         generate_expr(r->get_expr());
         _Body.pushln(";");

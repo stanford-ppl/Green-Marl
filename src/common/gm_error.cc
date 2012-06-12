@@ -234,12 +234,6 @@ void gm_backend_error(int errno, const char* str1, const char* str2)
         case GM_ERROR_GPS_PROC_NAME:
             printf("Error: The name of the procedure(%s) must match with the name of file (%s)\n", str1, str2);
             break;
-        case GM_ERROR_GIRAPH_NUM_PROCS:
-            printf("Error: There must be one and only one procedure\n");
-            break;
-        case GM_ERROR_GIRAPH_PROC_NAME:
-            printf("Error: The name of the procedure(%s) must match with the name of file (%s)\n", str1, str2);
-            break;
         default:
             assert(false);
             printf("Unknown backend error\n"); break;
@@ -318,75 +312,6 @@ void gm_backend_error(int errno, int l, int c, const char* str1)
             printf("Loop depth too deep\n");
             break;
         case GM_ERROR_GPS_MULTIPLE_INNER_LOOP:
-            printf("There can be only one inner loop\n");
-            break;
-        case GM_ERROR_GIRAPH_EDGE_SEND_VERSIONS:
-            printf("Communicating multiple versions of edge value in one message: %s\n", str1);
-            break;
-        case GM_ERROR_GIRAPH_EDGE_WRITE_RHS:
-            printf("Unacceptible driver for rhs in edge property writing: %s\n", str1);
-            break;
-        case GM_ERROR_GIRAPH_EDGE_WRITE_CONDITIONAL:
-            printf("Write to edge property should not be conditional.\n");
-            break;
-        case GM_ERROR_GIRAPH_EDGE_INIT:
-            printf("Edge variable should be initialize only to out_nbr.ToEdge().\n");
-            break;
-        case GM_ERROR_GIRAPH_EDGE_WRITE_RANDOM:
-            printf("Random writing of edge values is not supported.\n");
-            break;
-        case GM_ERROR_GIRAPH_EDGE_READ_RANDOM:
-            printf("Random reading of edge values is not supported.\n");
-            break;
-        case GM_ERROR_GIRAPH_RANDOM_NODE_WRITE_CONDITIONAL:
-            printf("Random node write cannot happen inside a conditional block\n");
-            break;
-        case GM_ERROR_GIRAPH_RANDOM_NODE_WRITE_USE_SCOPE:
-            printf("Random node write should happen in the outer loop\n");
-            break;
-        case GM_ERROR_GIRAPH_RANDOM_NODE_WRITE_DEF_SCOPE:
-            printf("Random node write should destinated to a out-scoped node variable\n");
-            break;
-        case GM_ERROR_GIRAPH_RANDOM_NODE_WRITE_REDEF:
-            printf("Random node destination has been re-defined\n");
-            break;
-        case GM_ERROR_GIRAPH_RANDOM_NODE_READ:
-            printf("Random node read is not supported\n");
-            break;
-        case GM_ERROR_GIRAPH_RANDOM_NODE_WRITE:
-            printf("Random node write is not supported\n");
-            break;
-        case GM_ERROR_GIRAPH_UNSUPPORTED_OP:
-            printf("%s operation is not supported\n", str1);
-            break;
-        case GM_ERROR_GIRAPH_UNSUPPORTED_RANGE_MASTER:
-            printf("Only node-wide parallel iteration is supported in master mode\n");
-            break;
-        case GM_ERROR_GIRAPH_UNSUPPORTED_RANGE_VERTEX:
-            printf("Only neighbor-wide iteration is supported in vertex mode\n");
-            break;
-        case GM_ERROR_GIRAPH_NEED_PARALLEL:
-            printf("Only parallel iteration is avaiable\n");
-            break;
-        case GM_ERROR_GIRAPH_NBR_LOOP_INSIDE_WHILE:
-            printf("Inner loop cannot be inside extra loop or if statement.\n");
-            break;
-        case GM_ERROR_GIRAPH_UNSUPPORTED_COLLECTION:
-            printf("%s is an unsupported collection type\n", str1);
-            break;
-        case GM_ERROR_GIRAPH_NO_GRAPH:
-            printf("There should be at least one graph defined at the entry function\n");
-            break;
-        case GM_ERROR_GIRAPH_MULTIPLE_GRAPH:
-            printf("There should only one graph defined at the entry function\n");
-            break;
-        case GM_ERROR_GIRAPH_PULL_SYNTAX:
-            printf("Syntax is based in 'Pulling' and cannot be transformed into 'Pushing'\n");
-            break;
-        case GM_ERROR_GIRAPH_NBR_LOOP_TOO_DEEP:
-            printf("Loop depth too deep\n");
-            break;
-        case GM_ERROR_GIRAPH_MULTIPLE_INNER_LOOP:
             printf("There can be only one inner loop\n");
             break;
         case GM_ERROR_CPP_UNSUPPORTED_SYNTAX:

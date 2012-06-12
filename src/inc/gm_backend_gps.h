@@ -181,10 +181,10 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void do_generate_vertex();
         void do_generate_vertex_property_class(bool is_edge_prop);
         void do_generate_vertex_class();
-	void do_generate_vertex_constructor();
-	void do_generate_vertex_get_initial_state_method();
+        void do_generate_vertex_constructor();
+        void do_generate_vertex_get_initial_state_method();
         void do_generate_message_class();
-	void do_generate_message_class_default_constructor();
+        void do_generate_message_class_default_constructor();
         void do_generate_vertex_states();
         void do_generate_vertex_state_body(gm_gps_basic_block *b);
         void do_generate_vertex_state_receive_global(gm_gps_basic_block *b);
@@ -239,7 +239,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
 
 };
 
-extern gm_gps_gen GPS_BE;
+extern gm_gps_gen* PREGEL_BE;
 
 // string used in code generator
 DEF_STRING(GPS_FLAG_USE_REVERSE_EDGE);
@@ -273,6 +273,7 @@ static const char* GPS_REV_NODE_ID = "_revNodeId";
 static const char* GPS_DUMMY_ID = "_remoteNodeId";
 static const char* GPS_NAME_IN_DEGREE_PROP = "_in_degree";
 static const char* GPS_INTRA_MERGE_IS_FIRST = "_is_first_";
+static const char* GPS_KEY_FOR_STATE = "\"__gm_gps_state\"";
 
 static enum {
   GPS_ENUM_EDGE_VALUE_WRITE,

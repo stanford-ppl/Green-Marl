@@ -31,6 +31,7 @@ gm_frontend FE;
 gm_cpp_gen CPP_BE;  // CPP Backend
 gm_gps_gen GPS_BE;  // GPS Backend
 gm_giraph_gen GIRAPH_BE;  // Giraph Backend
+gm_gps_gen* PREGEL_BE; //TODO
 gm_backend* BACK_END;
 gm_userargs OPTIONS;
 gm_independent_optimize IND_OPT; // extern defined in gm_ind_opt.h
@@ -186,11 +187,13 @@ int main (int argc, char** argv)
     else if (gm_is_same_string(name, "gps"))
     {
         BACK_END = & GPS_BE;
+        PREGEL_BE = & GPS_BE;
         OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
     }
     else if (gm_is_same_string(name, "giraph"))
     {
         BACK_END = & GIRAPH_BE;
+        PREGEL_BE = & GIRAPH_BE;
         OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
     }
     else {

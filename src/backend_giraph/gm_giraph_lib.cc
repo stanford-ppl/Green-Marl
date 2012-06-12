@@ -41,7 +41,7 @@ void gm_giraphlib::generate_broadcast_state_master(
     const char* state_var, gm_code_writer& Body)
 {
     char temp[1024];
-    sprintf(temp, "((IntOverwriteAggregator) getAggregator(%s)).setAggregatedValue(%s);", GIRAPH_KEY_FOR_STATE, state_var);
+    sprintf(temp, "((IntOverwriteAggregator) getAggregator(%s)).setAggregatedValue(%s);", GPS_KEY_FOR_STATE, state_var);
     Body.pushln(temp);
 }
 
@@ -49,7 +49,7 @@ void gm_giraphlib::generate_receive_state_vertex(
     const char* state_var, gm_code_writer& Body)
 {
     char temp[1024];
-    sprintf(temp, "int %s = ((IntOverwriteAggregator) getAggregator(%s)).getAggregatedValue().get();", state_var, GIRAPH_KEY_FOR_STATE);
+    sprintf(temp, "int %s = ((IntOverwriteAggregator) getAggregator(%s)).getAggregatedValue().get();", state_var, GPS_KEY_FOR_STATE);
     Body.push(temp);
 }
 void gm_giraphlib::generate_broadcast_isFirst_master(
@@ -384,7 +384,7 @@ void gm_giraphlib::generate_master_class_details(
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I;
-        giraph_syminfo* syminfo = (giraph_syminfo*) sym->find_info(GIRAPH_TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         if (!syminfo->is_used_in_master()) continue;
 
         genPutIOB(sym->getId()->get_genname(),
@@ -401,7 +401,7 @@ void gm_giraphlib::generate_master_class_details(
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I;
-        giraph_syminfo* syminfo = (giraph_syminfo*) sym->find_info(GIRAPH_TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         if (!syminfo->is_used_in_master()) continue;
 
         genGetIOB(sym->getId()->get_genname(),
@@ -417,8 +417,8 @@ void gm_giraphlib::generate_vertex_prop_class_details(
     char temp[1024];
     int total = 
         is_edge_prop ? 
-        ((gm_giraph_beinfo*)FE.get_current_backend_info())-> get_total_edge_property_size():
-        ((gm_giraph_beinfo*)FE.get_current_backend_info())-> get_total_node_property_size();
+        ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_edge_property_size():
+        ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_node_property_size();
 
     /*REMOVE*/
     /*Body.pushln("@Override");
@@ -454,7 +454,7 @@ void gm_giraphlib::generate_vertex_prop_class_details(
     for(I=prop.begin(); I!=prop.end(); I++)
     {
         gm_symtab_entry * sym = *I; 
-        giraph_syminfo* syminfo = (giraph_syminfo*) sym->find_info(GIRAPH_TAG_BB_USAGE);
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         int base = syminfo->get_start_byte(); // 
         genReadByte(sym->getId()->get_genname(), 
                     sym->getType()->getTargetTypeSummary(),
@@ -514,7 +514,7 @@ void gm_giraphlib::generate_vertex_prop_class_details(
     //if (is_edge_prop && prop.size() > 0) {
     /*ast_procdef* proc = FE.get_current_proc();
     if ((is_edge_prop && prop.size() > 0) 
-        || (!is_edge_prop && proc->find_info_bool(GIRAPH_FLAG_NODE_VALUE_INIT))) {
+        || (!is_edge_prop && proc->find_info_bool(GPS_FLAG_NODE_VALUE_INIT))) {
         Body.pushln("//Input Data Parsing");
         Body.pushln("@Override");
         Body.pushln("public void read(String inputString) {");
@@ -639,7 +639,7 @@ void gm_giraphlib::generate_message_fields_define(int gm_type, int count, gm_cod
     }
 }
 
-static int get_total_size(gm_giraph_communication_size_info& I)
+static int get_total_size(gm_gps_communication_size_info& I)
 {
     int sz = 0;
     sz += get_java_type_size(GMTYPE_INT) * I.num_int;
@@ -652,12 +652,12 @@ static int get_total_size(gm_giraph_communication_size_info& I)
 }
 
 #define MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf) \
-    std::list<gm_giraph_congruent_msg_class*>& LOOPS = info->get_congruent_message_classes(); \
-    std::list<gm_giraph_congruent_msg_class*>::iterator I;\
+    std::list<gm_gps_congruent_msg_class*>& LOOPS = info->get_congruent_message_classes(); \
+    std::list<gm_gps_congruent_msg_class*>::iterator I;\
     bool is_single = info->is_single_message(); \
     bool is_first = true;\
     for(I=LOOPS.begin(); I!=LOOPS.end(); I++) {\
-        gm_giraph_communication_size_info& SYMS = \
+        gm_gps_communication_size_info& SYMS = \
           *((*I)->sz_info);\
         int sz = get_total_size(SYMS); \
         /*if (!is_single && (sz == 0)) {continue;}*/\
@@ -707,7 +707,7 @@ static void generate_message_read1_each(gm_giraphlib* lib, int cnt, int gm_type,
 
 
 /*REMOVE*/
-/*static void generate_message_class_get_size(gm_giraph_beinfo* info, gm_code_writer& Body)
+/*static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer& Body)
 {
     Body.pushln("@Override");
     Body.pushln("public int numBytes() {");
@@ -731,7 +731,7 @@ static void generate_message_read1_each(gm_giraphlib* lib, int cnt, int gm_type,
     Body.pushln("}");
 }*/
 
-static void generate_message_class_write(gm_giraphlib* lib, gm_giraph_beinfo* info, gm_code_writer& Body)
+static void generate_message_class_write(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
     Body.pushln("@Override");
     Body.pushln("public void write(DataOutput out) throws IOException {");
@@ -752,7 +752,7 @@ static void generate_message_class_write(gm_giraphlib* lib, gm_giraph_beinfo* in
     Body.pushln("}");
 }
 
-static void generate_message_class_read1(gm_giraphlib* lib, gm_giraph_beinfo* info, gm_code_writer& Body)
+static void generate_message_class_read1(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
     Body.pushln("@Override");
     Body.pushln("public void readFields(DataInput in) throws IOException {");
@@ -774,7 +774,7 @@ static void generate_message_class_read1(gm_giraphlib* lib, gm_giraph_beinfo* in
 }
 
 /*REMOVE*/
-/*static void generate_message_class_read2(gm_giraphlib* lib, gm_giraph_beinfo* info, gm_code_writer& Body)
+/*static void generate_message_class_read2(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
     Body.pushln("@Override");
     Body.pushln("public int read(byte[] _BA, int _idx) {");
@@ -813,7 +813,7 @@ static void generate_message_class_read1(gm_giraphlib* lib, gm_giraph_beinfo* in
 }*/
 
 /*REMOVE*/
-/*static void generate_message_class_read3(gm_giraphlib* lib, gm_giraph_beinfo* info, gm_code_writer& Body)
+/*static void generate_message_class_read3(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
     Body.pushln("@Override");
     Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
@@ -851,7 +851,7 @@ static void generate_message_class_read1(gm_giraphlib* lib, gm_giraph_beinfo* in
 }*/
 
 /*REMOVE*/
-/*static void generate_message_class_combine(gm_giraphlib* lib, gm_giraph_beinfo* info, gm_code_writer& Body)
+/*static void generate_message_class_combine(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
     Body.pushln("@Override");
     Body.pushln("public void combine(byte[] _MQ, byte [] _tA) {");
@@ -860,11 +860,11 @@ static void generate_message_class_read1(gm_giraphlib* lib, gm_giraph_beinfo* in
     Body.pushln("}");
 }*/
 
-void gm_giraphlib::generate_message_class_details(gm_giraph_beinfo* info, gm_code_writer& Body)
+void gm_giraphlib::generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body)
 {
 
     Body.pushln("// union of all message fields  ");
-    gm_giraph_communication_size_info& size_info =
+    gm_gps_communication_size_info& size_info =
         *(info->get_max_communication_size()); 
 
     generate_message_fields_define(GMTYPE_INT,    size_info.num_int,    Body);
@@ -887,20 +887,20 @@ void gm_giraphlib::generate_message_class_details(gm_giraph_beinfo* info, gm_cod
 
 void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
 {
-  gm_giraph_beinfo * info =  
-        (gm_giraph_beinfo *) FE.get_current_backend_info();
+  gm_gps_beinfo * info =
+        (gm_gps_beinfo *) FE.get_current_backend_info();
 
-  int m_type = (fe == NULL) ? GIRAPH_COMM_INIT : GIRAPH_COMM_NESTED;
+  int m_type = (fe == NULL) ? GPS_COMM_INIT : GPS_COMM_NESTED;
 
-  gm_giraph_comm_unit U(m_type, fe);
+  gm_gps_comm_unit U(m_type, fe);
 
-  std::list<gm_giraph_communication_symbol_info>& LIST
+  std::list<gm_gps_communication_symbol_info>& LIST
       = info->get_all_communication_symbols(U);
 
-  gm_giraph_communication_size_info& SINFO
+  gm_gps_communication_size_info& SINFO
       = *(info->find_communication_size_info(U));
 
-  bool need_separate_message = (fe==NULL) ? false : fe->find_info_bool(GIRAPH_FLAG_EDGE_DEFINING_INNER);
+  bool need_separate_message = (fe==NULL) ? false : fe->find_info_bool(GPS_FLAG_EDGE_DEFINING_INNER);
 
   if (!need_separate_message) {
     Body.pushln("// Sending messages to all neighbors");
@@ -915,9 +915,9 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     // check if any edge updates that should be done before message sending
     std::list<ast_sent*> sents_after_message;
 
-    if ((fe!=NULL) && (fe->has_info_list(GIRAPH_LIST_EDGE_PROP_WRITE)))
+    if ((fe!=NULL) && (fe->has_info_list(GPS_LIST_EDGE_PROP_WRITE)))
     {
-        std::list<void*>& L = fe->get_info_list(GIRAPH_LIST_EDGE_PROP_WRITE);
+        std::list<void*>& L = fe->get_info_list(GPS_LIST_EDGE_PROP_WRITE);
 
         std::list<void*>::iterator I;
         for(I=L.begin(); I!=L.end(); I++) {
@@ -926,10 +926,10 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
             ast_assign* a = (ast_assign*) s;
             assert(!a->is_target_scalar());
             gm_symtab_entry* e = a->get_lhs_field()->get_second()->getSymInfo();
-            int* i = (int*) fe->find_info_map_value(GIRAPH_MAP_EDGE_PROP_ACCESS,e);
+            int* i = (int*) fe->find_info_map_value(GPS_MAP_EDGE_PROP_ACCESS,e);
             assert(i!= NULL);
 
-            if (*i == GIRAPH_ENUM_EDGE_VALUE_SENT_WRITE) {
+            if (*i == GPS_ENUM_EDGE_VALUE_SENT_WRITE) {
                 sents_after_message.push_back(s);
             } else {
                 get_main()->generate_sent(s);
@@ -944,10 +944,10 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     Body.push(str_buf);
     Body.pushln(");");
 
-  std::list<gm_giraph_communication_symbol_info>::iterator I;
+  std::list<gm_gps_communication_symbol_info>::iterator I;
   for(I=LIST.begin(); I!=LIST.end(); I++)
   {
-    gm_giraph_communication_symbol_info& SYM = *I;
+    gm_gps_communication_symbol_info& SYM = *I;
     Body.push("_msg.");
     const char* fname = gm_giraphlib::get_message_field_var_name(
             SYM.gm_type, SYM.idx);
@@ -976,7 +976,7 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
         char temp[1024];
         sprintf(temp, "sendMsg(%s.%s, _msg);",
             STATE_SHORT_CUT,
-            GIRAPH_REV_NODE_ID);
+            GPS_REV_NODE_ID);
         Body.pushln(temp);
     }
   } else {
@@ -997,34 +997,34 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   assert (sents_after_message.size() == 0);
 }
 
-static bool is_symbol_defined_in_bb(gm_giraph_basic_block* b, gm_symtab_entry *e)
+static bool is_symbol_defined_in_bb(gm_gps_basic_block* b, gm_symtab_entry *e)
 {
-    std::map<gm_symtab_entry*, giraph_syminfo*>& SYMS = b->get_symbols();
+    std::map<gm_symtab_entry*, gps_syminfo*>& SYMS = b->get_symbols();
     if (SYMS.find(e) == SYMS.end()) return false;
     else return true;
 }
 
-void gm_giraphlib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_giraph_basic_block* b, bool is_only_comm)
+void gm_giraphlib::generate_message_receive_begin(ast_foreach* fe, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm)
 {
-    gm_giraph_beinfo * info = (gm_giraph_beinfo *) FE.get_current_backend_info();
-    int comm_type = (fe == NULL) ? GIRAPH_COMM_INIT : GIRAPH_COMM_NESTED;
-    gm_giraph_comm_unit U(comm_type, fe);
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
+    int comm_type = (fe == NULL) ? GPS_COMM_INIT : GPS_COMM_NESTED;
+    gm_gps_comm_unit U(comm_type, fe);
     generate_message_receive_begin(U, Body, b, is_only_comm);
 }
-void gm_giraphlib::generate_message_receive_begin(ast_sentblock* sb, gm_symtab_entry* drv, gm_code_writer& Body, gm_giraph_basic_block* b, bool is_only_comm)
+void gm_giraphlib::generate_message_receive_begin(ast_sentblock* sb, gm_symtab_entry* drv, gm_code_writer& Body, gm_gps_basic_block* b, bool is_only_comm)
 {
-    gm_giraph_beinfo * info = (gm_giraph_beinfo *) FE.get_current_backend_info();
-    int comm_type = GIRAPH_COMM_RANDOM_WRITE;
-    gm_giraph_comm_unit U(comm_type, sb, drv);
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
+    int comm_type = GPS_COMM_RANDOM_WRITE;
+    gm_gps_comm_unit U(comm_type, sb, drv);
     generate_message_receive_begin(U, Body, b, is_only_comm);
 }
 
-void gm_giraphlib::generate_message_receive_begin(gm_giraph_comm_unit& U, gm_code_writer& Body, gm_giraph_basic_block *b, bool is_only_comm)
+void gm_giraphlib::generate_message_receive_begin(gm_gps_comm_unit& U, gm_code_writer& Body, gm_gps_basic_block *b, bool is_only_comm)
 {
-  gm_giraph_beinfo * info =  
-        (gm_giraph_beinfo *) FE.get_current_backend_info();
+  gm_gps_beinfo * info =
+        (gm_gps_beinfo *) FE.get_current_backend_info();
 
-  std::list<gm_giraph_communication_symbol_info>& LIST = info->get_all_communication_symbols(U);
+  std::list<gm_gps_communication_symbol_info>& LIST = info->get_all_communication_symbols(U);
   //int comm_id = info->find_communication_size_info(fe).id;
   int comm_id = (info->find_communication_size_info(U))->msg_class->id;
 
@@ -1034,10 +1034,10 @@ void gm_giraphlib::generate_message_receive_begin(gm_giraph_comm_unit& U, gm_cod
       Body.pushln(temp);
   }
 
-  std::list<gm_giraph_communication_symbol_info>::iterator I;
+  std::list<gm_gps_communication_symbol_info>::iterator I;
   for(I=LIST.begin(); I!=LIST.end(); I++)
   {
-    gm_giraph_communication_symbol_info& SYM = *I;
+    gm_gps_communication_symbol_info& SYM = *I;
     gm_symtab_entry * e = SYM.symbol;
 
     // check it once again later
@@ -1103,7 +1103,7 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
     case GM_BLTIN_NODE_IN_DEGREE:
         Body.push(STATE_SHORT_CUT);
         Body.push(".");
-        Body.push(GIRAPH_REV_NODE_ID);
+        Body.push(GPS_REV_NODE_ID);
         Body.push(".length");
         break;
 
@@ -1113,20 +1113,20 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
 }
 
 void gm_giraphlib::generate_prepare_bb(
-        gm_code_writer& Body, gm_giraph_basic_block* bb)
+        gm_code_writer& Body, gm_gps_basic_block* bb)
 {
     char temp[1024];
 
-    if (bb->get_type() == GM_GIRAPH_BBTYPE_PREPARE1) {
+    if (bb->get_type() == GM_GPS_BBTYPE_PREPARE1) {
         Body.pushln("// Preperation: creating reverse edges");
         sprintf(temp, "%s %s = getVertexId().get();",
                 main->get_type_string(GMTYPE_NODE), 
-                GIRAPH_DUMMY_ID);
+                GPS_DUMMY_ID);
         Body.pushln(temp);
 
         generate_message_send(NULL, Body);
 
-    } else if (bb->get_type() == GM_GIRAPH_BBTYPE_PREPARE2) {
+    } else if (bb->get_type() == GM_GPS_BBTYPE_PREPARE2) {
         Body.pushln("//Preperation creating reverse edges");
         Body.pushln("int i = 0; // iterable does not have length(), so we have to count it");
         Body.pushln("while (_msgs.hasNext()) {");
@@ -1135,7 +1135,7 @@ void gm_giraphlib::generate_prepare_bb(
         Body.pushln("}");
 
         sprintf(temp,"%s.%s = new %s[i];", 
-                STATE_SHORT_CUT, GIRAPH_REV_NODE_ID, 
+                STATE_SHORT_CUT, GPS_REV_NODE_ID,
                 main->get_type_string(GMTYPE_NODE));
         Body.pushln(temp);
         Body.NL();
@@ -1145,7 +1145,7 @@ void gm_giraphlib::generate_prepare_bb(
         Body.pushln("while (_msgs.hasNext()) {");
         Body.pushln("_msg = _msgs.next();");
             generate_message_receive_begin(NULL, Body, bb, true);
-            sprintf(temp,"%s.%s[i] = %s;", STATE_SHORT_CUT, GIRAPH_REV_NODE_ID, GIRAPH_DUMMY_ID);
+            sprintf(temp,"%s.%s[i] = %s;", STATE_SHORT_CUT, GPS_REV_NODE_ID, GPS_DUMMY_ID);
             Body.pushln(temp);
             generate_message_receive_end(Body, true);
             Body.pushln("i++;");

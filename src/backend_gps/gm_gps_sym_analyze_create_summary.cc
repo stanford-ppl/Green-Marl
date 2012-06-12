@@ -91,7 +91,7 @@ static int comp_start_byte(std::set<gm_symtab_entry*>& prop)
         gm_symtab_entry * sym = *I; 
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
 
-        int size = GPS_BE.get_lib()->get_type_size(sym->getType()->get_target_type());
+        int size = PREGEL_BE->get_lib()->get_type_size(sym->getType()->get_target_type());
         syminfo->set_start_byte(byte_begin);
         byte_begin += size;
     }
