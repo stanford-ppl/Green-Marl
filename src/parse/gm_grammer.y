@@ -168,7 +168,12 @@
 
            |  T_NSEQ   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSEQ, $3);
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NSEQ                  { $$ = GM_settype_ref(GMTYPE_NSEQ, NULL);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+
            |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);
+                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NORDER                { $$ = GM_settype_ref(GMTYPE_NORDER, NULL);
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   property : T_NODEPROP '<' prim_type '>' '(' id ')'  {
