@@ -159,6 +159,7 @@
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
   edge_type : T_EDGE '(' id  ')'      { $$ = GM_edgetype_ref($3); 
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_EDGE      { $$ = GM_edgetype_ref(NULL);}
 
   set_type :  T_NSET      '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);
                    GM_set_lineinfo($$,@1.first_line, @1.first_column);}
