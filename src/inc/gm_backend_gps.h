@@ -245,8 +245,8 @@ extern gm_gps_gen GPS_BE;
 DEF_STRING(GPS_FLAG_USE_REVERSE_EDGE);
 DEF_STRING(GPS_FLAG_USE_IN_DEGREE); 
 DEF_STRING(GPS_FLAG_COMM_SYMBOL);
-DEF_STRING(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
-DEF_STRING(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
+DEF_STRING(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN); // where:check_random_access, to:assign_statement, what:ptr to sent block
+DEF_STRING(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB); //where:check_random_access, to:sentblock,what:set of symbols that are random-write driver
 DEF_STRING(GPS_FLAG_USE_EDGE_PROP);
 DEF_STRING(GPS_FLAG_EDGE_DEFINED_INNER);   // edge which is used inside in a inner llop
 DEF_STRING(GPS_FLAG_EDGE_DEFINING_WRITE);
@@ -260,8 +260,8 @@ DEF_STRING(GPS_FLAG_WHILE_TAIL);
 
 DEF_STRING(GPS_FLAG_HAS_COMMUNICATION);         // an outerloop that has communication
 DEF_STRING(GPS_FLAG_HAS_COMMUNICATION_RANDOM);  // an outerloop that random has communication
-DEF_STRING(GPS_FLAG_IS_OUTER_LOOP); // set during bb-split
-DEF_STRING(GPS_FLAG_IS_INNER_LOOP); // set during bb-split
+DEF_STRING(GPS_FLAG_IS_OUTER_LOOP);             // target: iterator or loop.
+DEF_STRING(GPS_FLAG_IS_INNER_LOOP);             // target: iterator or loop.
 DEF_STRING(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL);
 DEF_STRING(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
 DEF_STRING(GPS_LIST_INTRA_MERGED_CONDITIONAL);

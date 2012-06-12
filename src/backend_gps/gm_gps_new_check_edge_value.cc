@@ -7,11 +7,10 @@
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
 
-
 //------------------------------------------------------------------------------------
 // Check things related to the edge property
 //
-// [1] Define Conditions 
+// [1] Conditions 
 //   - Access to edge property is available only through edge variable that is defined
 //     inside the 2nd-level FE.
 //   - Edge variable, defined inside a 2nd-level FE, should be initialized as (2nd-level iterator).toEdge.
@@ -24,8 +23,8 @@
 //
 // [2] Writing to Edge property 
 //   - Write to edge-property should be 'simple' (i.e. not conditional)
-//   - RHSs in edge-prop writing are not mapped into communication
-//   -   Thus writing to edge-property should not 
+//   - RHSs of edge-prop writing are not mapped into communication
+//   - RHSs of edge prop writing cannot condtain inner-loop scoped symbol
 //       Foreach(n: G.Nodes)  {
 //          Foreach(s: n.Nbrs)  {
 //            Edge(G) e = s.ToEdge();
@@ -42,7 +41,7 @@
 //        - Send -> Write : okay
 //        - Write -> Send -> Write: okay
 //        - Send -> Write -> Send: Error
-//           ==> message cannot hold two versions of edge property 
+//           ==> because message cannot hold two versions of edge property 
 //
 //      Foreach(n: G.Nodes) {
 //         Foreach(s: n.Nbrs) {
@@ -51,7 +50,7 @@
 //            s.Z += e.A + e.B;         // okay   A: write-sent, B :sent
 //            e.B = n.Y+1;              // okay.  B: sent-write
 //            e.A = 0;                  // okay.  A: (write-)sent-write
-//            s.Z += e.B;               // Error, A: (Send-write-Send)
+//            s.Z += e.B;               // Error, B: (Send-write-Send)
 //         }
 //      }
 //------------------------------------------------------------------------------------
@@ -59,10 +58,19 @@
 //    - Inner loop maintains a map of edge-prop symbols
 //         <symbol, state>
 //    - Inner loop maintains a list of edge-prop writes
+//
+//
+// Additional Information creted
+//     GPS_MAP_EDGE_PROP_ACCESS :   <where:>foreach, <what:> int, one of GPS_ENUM_EDGE_VALUE_xxx
+//     GPS_FLAG_EDGE_DEFINED_INNER: <where:>var symbol(edge type),<what:>if the varaible is defined inside inner loop
+//     GPS_FLAG_EDGE_DEFINING_INNTER: <where:>foreach, <what:>if this inner loop defines an edge variable
+//     GPS_LIST_EDGE_PROP_WRITE: <where:>foreach, <what:> (list of) assigns whose target is edge variables
+//     GPS_FLAG_EDGE_DEFINING_WRITING:<where:>assign, <what:>if this assignment is defining en edge (as inner.ToEdge())
 //------------------------------------------------------------------------------------
-// return: is_error
+
 #define SENDING     1
 #define WRITING     2
+// return: is_error
 static bool manage_edge_prop_access_state(ast_foreach* fe, 
         gm_symtab_entry* e, int op)
 {
@@ -116,8 +124,6 @@ static bool manage_edge_prop_access_state(ast_foreach* fe,
 class gps_check_edge_value_t : public gm_apply {
 public:
     gps_check_edge_value_t()  {
-        foreach_depth = 0;
-
         set_separate_post_apply(true); 
         set_for_symtab(true);
         set_for_sent(true);
@@ -133,8 +139,7 @@ public:
 
     virtual bool apply(gm_symtab_entry *e, int type)
     {
-        // Mark, if an edge variable && current depth == 2
-        if (e->getType()->is_edge() && (foreach_depth == 2))
+        if (e->getType()->is_edge() && (inner_loop != NULL))
         {
             e->add_info_bool(GPS_FLAG_EDGE_DEFINED_INNER, true);
             inner_loop->add_info_bool(GPS_FLAG_EDGE_DEFINING_INNER, true);
@@ -145,9 +150,8 @@ public:
     virtual bool apply(ast_sent* s)  
     {
         if (s->get_nodetype() == AST_FOREACH) {
-            foreach_depth ++;
-            if (foreach_depth == 2) {
-                ast_foreach* fe = (ast_foreach*)s; 
+            ast_foreach* fe = (ast_foreach*)s; 
+            if (fe->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
                 inner_iter = fe->get_iterator()->getSymInfo();
                 inner_loop = fe;
             }
@@ -189,15 +193,12 @@ public:
                         assert(inner_loop!=NULL);
                         inner_loop->add_info_list_element(GPS_LIST_EDGE_PROP_WRITE,s);
 
-
                         gm_symtab_entry* target = a->get_lhs_field()->get_second()->getSymInfo();
                         bool b = manage_edge_prop_access_state(inner_loop, target, WRITING);
                         assert(b == false);
 
                         // [TODO]
                         // grouped assignment?
-                        //
-                        //
                         
                     } else {
                         gm_backend_error(GM_ERROR_GPS_EDGE_WRITE_RANDOM, 
@@ -284,7 +285,11 @@ public:
     virtual bool apply2(ast_sent* s)  
     {
         if (s->get_nodetype() == AST_FOREACH) {
-            foreach_depth --;
+            if (((ast_foreach*)s) == inner_loop)
+            {
+                inner_loop = NULL;
+                inner_iter = NULL;
+            }
         }
         else if (s->get_nodetype() == AST_ASSIGN) {
             target_is_edge = false;
@@ -294,7 +299,6 @@ public:
 private:
     gm_symtab_entry* inner_iter;
     ast_foreach* inner_loop;
-    int foreach_depth;
     bool target_is_edge;
     bool _error;
 };

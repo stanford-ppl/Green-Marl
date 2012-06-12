@@ -9,6 +9,12 @@
 //  Check if maximum two depth of Foreach
 //     - Each foreach is parallel
 //     - First foreach: graph-wide. Second foreach: in/out neighbor
+//
+//   scope analysis is invoked at the end of this analysis
+//------------------------------------------------------------------------
+// Information Created
+//    GPS_FLAG_IS_INNER_LOOP: <to:>foreach or symbol of iterator <what:>if inner loop
+//    GPS_FLAG_IS_OUTER_LOOP: <to:>foreach or symbol of iterator <what:>if inner loop
 //------------------------------------------------------------------------
 
 class gps_new_check_depth_two_t : public gm_apply {
@@ -44,6 +50,9 @@ public:
                          s->get_line(), s->get_col(), "");
                 _error = true;
             }
+
+            fe->add_info_bool(GPS_FLAG_IS_OUTER_LOOP, true);
+            fe->get_iterator()->getSymInfo()->add_info_bool(GPS_FLAG_IS_OUTER_LOOP, true);
         }
 
         else if (foreach_depth == 2) 
@@ -61,6 +70,9 @@ public:
                              s->get_line(), s->get_col(), "");
                     _error = true;
                 }
+
+                fe->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
+                fe->get_iterator()->getSymInfo()->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
         }
         else { // (depth > 3)
             _error = true;

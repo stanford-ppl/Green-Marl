@@ -11,7 +11,6 @@ typedef gm_gps_basic_block gps_bb;
 
 //------------------------------------------------------------------
 // Split Basic Blocks
-//   [Prepare Step]
 //     - Find BB that contains communication, and add into a list
 //     - Mark communication foreach statement (assign ID)
 //------------------------------------------------------------------
@@ -41,28 +40,29 @@ public:
         if (s->get_nodetype() == AST_FOREACH)
         {
             ast_foreach* fe = (ast_foreach*) s;
-
-            if (gm_is_all_graph_iter_type(fe->get_iter_type())) {
+            if (fe->find_info_bool(GPS_FLAG_IS_OUTER_LOOP)) {
                 current_outer_loop = fe;
-                fe->add_info_bool(GPS_FLAG_IS_OUTER_LOOP, true);
-                return true;
+
+            } else if (fe->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
+
+                gen->add_communication_unit_nested(fe); // adding inner loop
+
+                // add the foreach loop as 'receiver' of this state, temporariliy.
+                // (Receiver loop will be moved to the 'next' state, after split)
+                curr->add_nested_receiver(fe);
+
+                // list of bbs that should be splited
+                target_bb.insert(curr);
+
+                // mark current outer loop to have communication
+                assert(current_outer_loop != NULL);
+                current_outer_loop->add_info_bool(GPS_FLAG_HAS_COMMUNICATION, true);
+            } else {
+                assert(false);
             }
 
             //curr->set_has_sender(true);
-   
-            gen->add_communication_unit_nested(fe); // adding inner loop
-            fe->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
-
-            // add the foreach loop as 'receiver' of this state, temporariliy.
-            // (Receiver loop will be moved away later)
-            curr->add_nested_receiver(fe);
-
-            // list of bbs that should be splited
-            target_bb.insert(curr);
-
-            // mark current outer loop to have communication
-            assert(current_outer_loop != NULL);
-            current_outer_loop->add_info_bool(GPS_FLAG_HAS_COMMUNICATION, true);
+        
         }
         else if (s->get_nodetype() == AST_ASSIGN)
         {
