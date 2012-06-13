@@ -28,7 +28,7 @@ enum {
 };
 
 // symbol usage info
-#define TAG_BB_USAGE            "GPS_TAG_BB"
+#define GPS_TAG_BB_USAGE            "GPS_TAG_BB"
 
 class gps_syminfo : public ast_extra_info
 {
@@ -103,7 +103,7 @@ class gps_syminfo : public ast_extra_info
 };
 
 inline gps_syminfo* gps_get_global_syminfo(ast_id* i) {
-    return (gps_syminfo*) i->getSymInfo()->find_info(TAG_BB_USAGE);
+    return (gps_syminfo*) i->getSymInfo()->find_info(GPS_TAG_BB_USAGE);
 }
 
 

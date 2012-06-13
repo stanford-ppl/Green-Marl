@@ -56,7 +56,8 @@ static inline bool _gm_atomic_compare_and_swap(bool *dest, bool old_val, bool ne
 
 
 
-#ifdef __arch64__
+
+#if defined(__arch64__) || defined(__x86_64__)
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
 { return __sync_bool_compare_and_swap(dest, old_val, new_val);}
@@ -70,10 +71,11 @@ static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, dou
 #else
 
 #include "gm_lock.h"
-#warning "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
+
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
 { 
+#warning "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
 
     bool ret = false;
     if (*dest != old_val) return false;
