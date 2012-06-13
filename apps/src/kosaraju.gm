@@ -5,13 +5,13 @@ Proc kosaraju (G: Graph, mem: N_P<Int>(G)) : Int
     // Initialize membership
     G.mem = -1;
 
-    N_P<Bool>(G) Checked;
+    N_P<Bool> Checked;
     G.Checked = False;
 
     // [Phase 1]
     // Obtain reverse-post-DFS-order of node sequence.
     // Node_Order can be also used here but Node_Seq is faster
-    Node_Seq(G) Seq; 
+    Node_Seq Seq; 
     For(t:G.Nodes) (!t.Checked)
     {
         InDFS(n:G.Nodes From t)[!n.Checked] 

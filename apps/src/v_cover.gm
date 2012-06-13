@@ -1,7 +1,7 @@
 Proc v_cover(G: Graph, select: E_P<Bool>(G)) : Int
 {
-    N_P<Int>(G) Deg;
-    N_P<Bool>(G) Covered;
+    N_P<Int> Deg;
+    N_P<Bool> Covered;
 
     G.Deg = G.Degree() + G.InDegree();
     G.Covered = False;

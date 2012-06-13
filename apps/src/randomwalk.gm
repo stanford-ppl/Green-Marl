@@ -2,9 +2,9 @@ Procedure randomwalk(G : Graph, seed : Node(G), ratio : Double, nodes : Node_Set
 	   	
 	Int remaining = (Int)(G.NumNodes() * ratio);
 	Int switch = 0;
-	Node_Property<Bool>(G) visited;
+	Node_Property<Bool> visited;
 	G.visited = False;
-	Node(G) current = seed;
+	Node current = seed;
 
 	While(remaining > 0) {
 		If(switch == 0) {
@@ -27,7 +27,7 @@ Procedure randomwalk(G : Graph, seed : Node(G), ratio : Double, nodes : Node_Set
 				current = seed; //jump home
 			} Else {
 				Int select = Uniform() * Count(n : current.OutNbrs);
-				Node(G) tmp = current;
+				Node tmp = current;
 				For(n : current.OutNbrs) {
 					If(select == 0) tmp = n;
 					select = select - 1;		
