@@ -213,7 +213,6 @@ ast_id* gm_get_default_graph(gm_symtab* symTab)
 		gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
 		assert(false);
 	      }
-	      //TODO throw error to inform user that he made an error
 	      targetGraph = (*II)->getId();   
 	  }
 	}
