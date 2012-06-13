@@ -5,7 +5,7 @@ PARSE = ./parse
 INC = ./inc
 OBJ = ../obj
 BIN = ../bin
-CFLAGS += -g -O0 -I$(INC) -I. -W
+CFLAGS += -g -O1 -I$(INC) -I. -W
 # Mac OS does not have librt
 UNAME := $(shell uname -s)
 ifneq ($(UNAME),Darwin)

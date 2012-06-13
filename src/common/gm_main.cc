@@ -142,17 +142,9 @@ void do_compiler_action_at_stop()
         printf("\n");
     }
 
-    // TODO: cleaner solution for two statements below?
-    if (OPTIONS.get_arg_bool(GMARGFLAG_PRINTBB) && BACK_END == & GPS_BE) {
+    if (OPTIONS.get_arg_bool(GMARGFLAG_PRINTBB)) {
         printf("======================================================\n");
-        GPS_BE.print_basicblock();
-        printf("======================================================\n");
-        printf("\n");
-    }
-
-    if (OPTIONS.get_arg_bool(GMARGFLAG_PRINTBB) && BACK_END == & GIRAPH_BE) {
-        printf("======================================================\n");
-        GIRAPH_BE.print_basicblock();
+        PREGEL_BE->print_basicblock();
         printf("======================================================\n");
         printf("\n");
     }
