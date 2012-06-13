@@ -176,5 +176,5 @@ void gm_gps_gen::generate_proc(ast_procdef* proc)
 
 void gm_gps_gen_class::process(ast_procdef* proc)
 {
-    GPS_BE.generate_proc(proc);
+    PREGEL_BE->generate_proc(proc);
 }

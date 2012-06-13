@@ -18,7 +18,7 @@ vpath %.h  inc
 vpath %.c parse
 vpath %.l parse
 vpath %.y parse
-vpath %.cc common parse backend_cpp backend_gps frontend opt
+vpath %.cc common parse backend_cpp backend_gps backend_giraph frontend opt
 
 HEADERS =  \
     gm_frontend_api.h \
@@ -99,19 +99,23 @@ SRCS2 =\
        gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_synthesizable.cc\
-       gm_gps_bb_split.cc gm_gps_bb_merge.cc\
+       gm_gps_bb_split.cc\
+       gm_gps_bb_merge.cc\
        gm_gps_bb_merge_again.cc\
        gm_gps_bb_merge_intra_loop.cc\
        gm_gps_bb_rw_analysis.cc\
        gm_gps_beinfo.cc\
-       gm_gps_gen.cc gm_gps_opt.cc gm_gps_misc.cc\
+       gm_gps_gen.cc\
+       gm_gps_opt.cc\
+       gm_gps_misc.cc\
        gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
        gm_gps_sym_analyze_check_usage.cc\
        gm_gps_sym_analyze_create_summary.cc\
        gm_gps_find_congruent_message.cc\
        gps_syminfo.cc \
        gm_gps_bb_find_reachable.cc\
-       gm_gps_java.cc gm_gps_lib.cc\
+       gm_gps_java.cc\
+       gm_gps_lib.cc\
        gm_gps_lib_random_write.cc\
        gm_gps_new_analysis_scope_rhs_lhs.cc\
        gm_gps_new_analysis_scope_sent_var.cc\
@@ -120,6 +124,12 @@ SRCS2 =\
        gm_gps_new_check_edge_value.cc\
        gm_gps_new_check_random_write.cc\
        gm_gps_new_check_random_read.cc\
+       gm_giraph_gen.cc\
+       gm_giraph_gen_master.cc\
+       gm_giraph_gen_vertex.cc\
+       gm_giraph_lib.cc\
+       gm_giraph_lib_random_write.cc\
+       gm_giraph_java.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.

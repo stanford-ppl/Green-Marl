@@ -7,8 +7,6 @@
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
 
-#define GPS_KEY_FOR_STATE       "\"__gm_gps_state\""
-
 void gm_gpslib::generate_headers(gm_code_writer& Body)
 {
     Body.pushln("import gps.*;");
@@ -525,7 +523,6 @@ void gm_gpslib::generate_vertex_prop_class_details(
     }
 }
 
-#define STATE_SHORT_CUT "_this"
 void gm_gpslib::generate_vertex_prop_access_prepare(gm_code_writer& Body)
 {
     char temp[1024];

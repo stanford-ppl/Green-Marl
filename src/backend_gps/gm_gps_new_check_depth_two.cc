@@ -104,7 +104,7 @@ private:
 void gm_gps_new_check_depth_two::process(ast_procdef* proc)
 {
     // Check number of procedure name is same to the filename
-    const char *fname = GPS_BE.getFileName();
+    const char *fname = PREGEL_BE->getFileName();
     assert(fname!=NULL);
     if (strcmp(proc->get_procname()->get_genname(), fname) != 0) 
     {
