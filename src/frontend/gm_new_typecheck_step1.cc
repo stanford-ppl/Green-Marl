@@ -222,6 +222,21 @@ ast_id* gm_get_default_graph(gm_symtab* symTab)
     return targetGraph;
 }
 
+bool gm_check_graph_is_defined(ast_typedecl* type, gm_symtab* symTab)
+{
+    ast_id* graph = type->get_target_graph_id();
+    
+    if(graph == NULL) {
+        //no associated graph found - try to find default graph
+        graph = gm_get_default_graph(symTab);
+	assert(graph != NULL);
+
+	type->set_target_graph_id(graph);
+	graph->set_parent(type);
+    }
+    return gm_check_target_is_defined(graph, symTab, SHOULD_BE_A_GRAPH);
+}
+
 //------------------------------------------------
 // (a) For node/edge/collection/all-graph iterator
 //     - check graph_id is defined and a graph
@@ -248,31 +263,12 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
     }
     else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator())
     {
-        ast_id* graph = type->get_target_graph_id();
-
-	if(graph == NULL) {
-	    //no associated graph found - try to find default graph
-	    graph = gm_get_default_graph(SYM_V);
-	    assert(graph != NULL);
-	  
-	    type->set_target_graph_id(graph);
-	    graph->set_parent(type);
-	} 
-        bool is_okay = gm_check_target_is_defined(graph, SYM_V, SHOULD_BE_A_GRAPH);
+        bool is_okay = gm_check_graph_is_defined(type, SYM_V);
         if (!is_okay) return is_okay;
     }
     else if (type->is_property())
     {
-        ast_id* graph = type->get_target_graph_id();
-	if(graph == NULL) {
-	    //no associated graph found - try to find default graph
-	    graph = gm_get_default_graph(SYM_V);
-	    assert(graph != NULL);
-
-	    type->set_target_graph_id(graph);
-	    graph->set_parent(type);
-	}
-        bool is_okay = gm_check_target_is_defined(graph, SYM_V, SHOULD_BE_A_GRAPH);
+        bool is_okay = gm_check_graph_is_defined(type, SYM_V);
         if (!is_okay) return false;
 
         ast_typedecl* target_type = type->get_target_type();
