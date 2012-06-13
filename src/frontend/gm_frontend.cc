@@ -222,8 +222,10 @@ ast_node* GM_expr_ternary(ast_node* cond, ast_node* left, ast_node*right, int l,
 // type declarations
 ast_node* GM_graphtype_ref(int graph_type_id)
 { return ast_typedecl::new_graphtype( graph_type_id); }
+
 ast_node* GM_primtype_ref(int prim_type_id)
 { return ast_typedecl::new_primtype( prim_type_id); }
+
 ast_node* GM_settype_ref(int set_type_id, ast_node* id)
 {
     if(id == NULL)
@@ -235,20 +237,18 @@ ast_node* GM_settype_ref(int set_type_id, ast_node* id)
 ast_node* GM_nodeprop_ref(ast_node* typedecl, ast_node* id)
 { 
     assert(typedecl->get_nodetype() == AST_TYPEDECL);
+    if(id == NULL)
+        return ast_typedecl::new_nodeprop((ast_typedecl*) typedecl, NULL);
     assert(id->get_nodetype() == AST_ID);
-    return ast_typedecl::new_nodeprop( 
-            (ast_typedecl*) typedecl,
-            (ast_id*) id
-        ); 
+    return ast_typedecl::new_nodeprop((ast_typedecl*) typedecl, (ast_id*) id); 
 }
 ast_node* GM_edgeprop_ref(ast_node* typedecl, ast_node* id)
 { 
     assert(typedecl->get_nodetype() == AST_TYPEDECL);
+    if(id == NULL)
+        return ast_typedecl::new_edgeprop((ast_typedecl*) typedecl, NULL);
     assert(id->get_nodetype() == AST_ID);
-    return ast_typedecl::new_edgeprop( 
-            (ast_typedecl*) typedecl,
-            (ast_id*) id
-        ); 
+    return ast_typedecl::new_edgeprop((ast_typedecl*) typedecl, (ast_id*) id); 
 }
 
 ast_node* GM_nodetype_ref(ast_node* id)

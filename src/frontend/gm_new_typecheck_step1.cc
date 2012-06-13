@@ -199,7 +199,7 @@ bool gm_check_target_is_defined(ast_id* target, gm_symtab* vars,
 // If none is found, NULL is returned.
 // Else an assertion fails
 //------------------------------------------------
-ast_id* gm_get_single_graph(gm_symtab* symTab)
+ast_id* gm_get_default_graph(gm_symtab* symTab)
 {
     int foundCount = 0;
     ast_id* targetGraph = NULL;
@@ -252,7 +252,7 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
 
 	if(graph == NULL) {
 	    //no associated graph found - try to find default graph
-	    graph = gm_get_single_graph(SYM_V);
+	    graph = gm_get_default_graph(SYM_V);
 	    assert(graph != NULL);
 	  
 	    type->set_target_graph_id(graph);
@@ -264,7 +264,14 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
     else if (type->is_property())
     {
         ast_id* graph = type->get_target_graph_id();
-        assert(graph != NULL);
+	if(graph == NULL) {
+	    //no associated graph found - try to find default graph
+	    graph = gm_get_default_graph(SYM_V);
+	    assert(graph != NULL);
+
+	    type->set_target_graph_id(graph);
+	    graph->set_parent(type);
+	}
         bool is_okay = gm_check_target_is_defined(graph, SYM_V, SHOULD_BE_A_GRAPH);
         if (!is_okay) return false;
 
