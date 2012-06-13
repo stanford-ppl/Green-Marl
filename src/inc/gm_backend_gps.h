@@ -141,7 +141,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         virtual bool do_local_optimize() ;
         virtual bool do_generate(); 
 
-        gm_gpslib* get_lib() {return glib;}
+        virtual gm_gpslib* get_lib() {return glib;}
 
         void print_basicblock();
 
@@ -167,7 +167,7 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
         void close_output_files();
 
         //void do_generate_main();
-        bool do_merge_msg_information();
+        //bool do_merge_msg_information();
         void do_generate_master();
         void do_generate_master_states();
         void do_generate_master_class();
