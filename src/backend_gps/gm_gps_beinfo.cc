@@ -53,7 +53,7 @@ void gm_gps_beinfo::add_communication_symbol(gm_gps_comm_unit& C, gm_symtab_entr
     } else if (sym->getType()->is_primitive()) {
         target_type = sym->getType()->getTypeSummary();
     } else if (sym->getType()->is_node_compatible()) {
-        if (GPS_BE.get_lib()->is_node_type_int())
+        if (PREGEL_BE->get_lib()->is_node_type_int())
             target_type = GMTYPE_INT;
         else
             target_type = GMTYPE_LONG;
