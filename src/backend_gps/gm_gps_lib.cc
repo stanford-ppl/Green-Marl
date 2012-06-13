@@ -523,7 +523,6 @@ void gm_gpslib::generate_vertex_prop_class_details(
     }
 }
 
-#define STATE_SHORT_CUT "_this"
 void gm_gpslib::generate_vertex_prop_access_prepare(gm_code_writer& Body)
 {
     char temp[1024];

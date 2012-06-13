@@ -5,7 +5,7 @@ PARSE = ./parse
 INC = ./inc
 OBJ = ../obj
 BIN = ../bin
-CFLAGS += -g -O1 -I$(INC) -I. -W
+CFLAGS += -g -O0 -I$(INC) -I. -W
 # Mac OS does not have librt
 UNAME := $(shell uname -s)
 ifneq ($(UNAME),Darwin)
@@ -127,8 +127,6 @@ SRCS2 =\
        gm_giraph_gen_vertex.cc\
        gm_giraph_lib.cc\
        gm_giraph_lib_random_write.cc\
-       gm_giraph_java.cc\
-       gm_giraph_opt.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.

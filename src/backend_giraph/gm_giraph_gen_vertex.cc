@@ -206,74 +206,12 @@ void gm_giraph_gen::do_generate_vertex_class()
     Body.pushln(temp);
     Body.pop_indent();
 
-    /*REMOVE*/
-    //do_generate_vertex_constructor();
-    //do_generate_vertex_get_initial_state_method();
     do_generate_vertex_states();
 
     Body.pushln("} // end of vertex class");
     Body.NL();
 
-    /*REMOVE*/
-    /*Body.pushln("//----------------------------------------------");
-    Body.pushln("// Factory Class");
-    Body.pushln("//----------------------------------------------");
-    sprintf(temp,"public static class %sVertexFactory", proc_name);
-    Body.pushln(temp);
-    Body.push_indent();
-    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        sprintf(temp,
-            "extends VertexFactory< %s.VertexData, %s.EdgeData, %s.MessageData > {",
-            proc_name, proc_name, proc_name);
-    } else {
-        sprintf(temp,
-            "extends NullEdgeVertexFactory< %s.VertexData, %s.MessageData > {",
-            proc_name, proc_name);
-    }
-    Body.pushln(temp);
-    Body.pop_indent();
-    Body.pushln("@Override");
-    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        sprintf(temp,
-            "public Vertex< %s.VertexData, %s.EdgeData, %s.MessageData > newInstance(CommandLine line) {",
-            proc_name, proc_name, proc_name);
-    } else {
-        sprintf(temp,
-            "public NullEdgeVertex< %s.VertexData, %s.MessageData > newInstance(CommandLine line) {",
-            proc_name, proc_name);
-    }
-    Body.pushln(temp);
-    sprintf(temp,"return new %sVertex(line);", proc_name);
-    Body.pushln(temp);
-    Body.pushln("}");
-
-    Body.pushln("} // end of VertexFactory");
-    Body.NL();*/
-
 }
-
-/*REMOVE*/
-/*void gm_giraph_gen::do_generate_vertex_constructor()
-{
-    char temp[1024];
-    const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
-    Body.NL();
-    sprintf(temp,"public %sVertex(CommandLine line) {",proc_name);
-    Body.pushln(temp);
-    Body.pushln("// todo: how to tell if we should parse the command lines or not");
-    Body.pushln("// --> no need. master will parse the command line and sent it to the workers");
-    Body.pushln("}");
-}*/
-
-/*REMOVE*/
-/*void gm_giraph_gen::do_generate_vertex_get_initial_state_method()
-{
-    Body.NL();
-    Body.pushln("@Override");
-    Body.pushln("public VertexData getInitialValue(int id) {");
-    Body.pushln("return new VertexData();");
-    Body.pushln("}");
-}*/
 
 void gm_giraph_gen::do_generate_vertex_states()
 {
@@ -519,24 +457,5 @@ void gm_giraph_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
     }
 
     Body.pushln("}");
-}
-
-void gm_giraph_gen::generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent)
-{
-    if (sym->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
-        return; // skip edge iteration
-    
-    assert(sym->getType()->is_primitive() 
-           || sym->getType()->is_node_compatible());
-
-    char temp[1024];
-    sprintf(temp, "%s %s",
-            get_type_string(sym->getType(), is_master_generate()),
-            sym->getId()->get_genname()
-           );
-    Body.push(temp);
-
-    if (finish_sent)
-        Body.pushln(";");
 }
 

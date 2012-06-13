@@ -108,10 +108,10 @@ class gm_gpslib : public gm_graph_library {
     // true if node == int false, if node == long
     virtual bool is_node_type_int() {return true;}
     virtual bool is_edge_type_int() {return true;}
-    protected:
 
-    private:
+    protected:
         char str_buf[1024*8];
+    private:
         gm_gps_gen* main;
 };
 
@@ -197,11 +197,13 @@ class gm_gps_gen : public gm_backend , public gm_code_generator
     public:
         gm_code_writer& get_code() {return Body;}
 
-    private:
+    protected:
         char* dname;
         char* fname;
         gm_code_writer Body;
         FILE* f_body;
+
+    private:
         gm_gpslib* glib; // graph library
 
     public: // from code generator interface
@@ -274,6 +276,7 @@ static const char* GPS_DUMMY_ID = "_remoteNodeId";
 static const char* GPS_NAME_IN_DEGREE_PROP = "_in_degree";
 static const char* GPS_INTRA_MERGE_IS_FIRST = "_is_first_";
 static const char* GPS_KEY_FOR_STATE = "\"__gm_gps_state\"";
+static const char* STATE_SHORT_CUT = "_this";
 
 static enum {
   GPS_ENUM_EDGE_VALUE_WRITE,

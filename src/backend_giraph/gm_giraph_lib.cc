@@ -328,28 +328,6 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gi
     Body.pushln(";");
 }
 
-/*REMOVE*/
-/*static void genReadByte(const char* name, int gm_type, int offset, gm_code_writer& Body, gm_giraphlib* lib)
-{
-    if (gm_is_node_compatible_type(gm_type)) {
-        gm_type = (lib->is_node_type_int())?GMTYPE_INT:GMTYPE_LONG;
-    }
-    // assumption: "byte[] _BA, int _idx"
-    Body.push(name);
-    Body.push("= Utils.");
-    switch(gm_type) {
-        case GMTYPE_INT:    Body.push("byteArrayToIntBigEndian("); break;
-        case GMTYPE_LONG:   Body.push("byteArrayToLongBigEndian("); break;
-        case GMTYPE_FLOAT:  Body.push("byteArrayToFloatBigEndian("); break;
-        case GMTYPE_DOUBLE: Body.push("byteArrayToDoubleBigEndian("); break;
-        case GMTYPE_BOOL:   Body.push("byteArrayToBooleanBigEndian("); break;
-        default: assert(false); break;
-    }
-    char str_buf[1024];
-    sprintf(str_buf,"_BA, _idx + %d);", offset);
-    Body.pushln(str_buf);
-}*/
-
 static void get_java_parse_string(gm_giraphlib* L, int gm_type,const char*& name1, const char*& name2)
 {
     switch(gm_type) {
@@ -420,12 +398,6 @@ void gm_giraphlib::generate_vertex_prop_class_details(
         ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_edge_property_size():
         ((gm_gps_beinfo*)FE.get_current_backend_info())-> get_total_node_property_size();
 
-    /*REMOVE*/
-    /*Body.pushln("@Override");
-    Body.push("public int numBytes() {return ");
-    sprintf(temp, "%d;}", total);
-    Body.pushln(temp);*/
-
     std::set<gm_symtab_entry* >::iterator I;
 
     Body.pushln("@Override");
@@ -448,131 +420,8 @@ void gm_giraphlib::generate_vertex_prop_class_details(
     }
     Body.pushln("}");
 
-    /*REMOVE*/
-    /*Body.pushln("@Override");
-    Body.pushln("public int read(byte[] _BA, int _idx) {");
-    for(I=prop.begin(); I!=prop.end(); I++)
-    {
-        gm_symtab_entry * sym = *I; 
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
-        int base = syminfo->get_start_byte(); // 
-        genReadByte(sym->getId()->get_genname(), 
-                    sym->getType()->getTargetTypeSummary(),
-                    base, Body, this);
-    }
-    sprintf(temp, "return %d;", total);
-    Body.pushln(temp);
-    Body.pushln("}");*/
-
-    /*REMOVE*/
-    /*Body.pushln("@Override");
-    Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
-    sprintf(temp, "IOB.get(_BA, _idx, %d);", total);
-    Body.pushln(temp);
-    sprintf(temp, "return %d;", total);
-    Body.pushln(temp);
-    Body.pushln("}");*/
-
-    /*REMOVE*/
-    /*Body.pushln("@Override");
-    Body.pushln("public void combine(byte[] _MQ, byte [] _tA) {");
-    Body.pushln(" // do nothing");
-    Body.pushln("}");*/
-
-    /*REMOVE*/
-    /*Body.pushln("@Override");
-    Body.pushln("public String toString() {");
-    Body.push("return \"\"");
-    bool firstProperty = true;
-    for(I=prop.begin(); I!=prop.end(); I++)
-    {
-        gm_symtab_entry * sym = *I;
-        if (sym->find_info(GMUSAGE_PROPERTY) == NULL) // this property is set to procedure argument only
-        {
-            //printf("no argument property :%s\n", sym->getId()->get_genname());
-            continue;
-        }
-        if (sym->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_IN) // Used as input only
-        {
-            //printf("used as input only :%s\n", sym->getId()->get_genname());
-            continue;
-        }
-	    Body.push(" + \"");
-	    if (firstProperty) {
-	        firstProperty = false;
-	    } else {
-	        Body.push("\\t");
-	    }
-	    sprintf(temp, "%s: \" + %s", sym->getId()->get_genname(), sym->getId()->get_genname());
-	    Body.push(temp);
-    }
-    Body.pushln(";");
-    Body.pushln("}");*/
-
-    /*REMOVE*/
-    // Edge Property is read-only
-    //if (is_edge_prop && prop.size() > 0) {
-    /*ast_procdef* proc = FE.get_current_proc();
-    if ((is_edge_prop && prop.size() > 0) 
-        || (!is_edge_prop && proc->find_info_bool(GPS_FLAG_NODE_VALUE_INIT))) {
-        Body.pushln("//Input Data Parsing");
-        Body.pushln("@Override");
-        Body.pushln("public void read(String inputString) {");
-        int total_count=0;
-        if (is_edge_prop) total_count = prop.size();
-        else {
-            for(I=prop.begin(); I!=prop.end(); I++)
-            {
-                gm_symtab_entry *e = *I;
-                if  ((e->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_IN) 
-                    || (e->find_info_int(GMUSAGE_PROPERTY) == GMUSAGE_INOUT)) 
-                    total_count++;
-            }
-        }
-
-        if (total_count == 1) 
-        {
-            for(I=prop.begin(); I!=prop.end(); I++)
-            {
-                gm_symtab_entry * sym = *I;
-                if  (!is_edge_prop &&
-                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_IN) && 
-                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_INOUT)) continue;
-                const char* name1; 
-                const char* name2;
-                get_java_parse_string(this,sym->getType()->getTargetTypeSummary(), name1, name2); 
-                sprintf(temp, "this.%s = %s.%s(inputString);",
-                    sym->getId()->get_genname(),
-                    name1, name2);
-                Body.pushln(temp);
-             }
-        }
-        else {
-            Body.pushln("String[] split = inputString.split(\"###\");");
-            bool firstProperty = true;
-            int cnt = 0;
-            for(I=prop.begin(); I!=prop.end(); I++)
-            {
-                gm_symtab_entry * sym = *I;
-                const char* name1; 
-                const char* name2;
-                if  (!is_edge_prop &&
-                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_IN) && 
-                     (sym->find_info_int(GMUSAGE_PROPERTY) != GMUSAGE_INOUT)) continue;
-
-                get_java_parse_string(this,sym->getType()->getTargetTypeSummary(), name1, name2); 
-                sprintf(temp, "this.%s = %s.%s((split[%d]==null)?\"0\":split[%d]);",
-                     sym->getId()->get_genname(),
-                     name1, name2, cnt, cnt);
-                Body.pushln(temp);
-                cnt++;
-            }
-        }
-        Body.pushln("}");
-    }*/
 }
 
-#define STATE_SHORT_CUT "_this"
 void gm_giraphlib::generate_vertex_prop_access_prepare(gm_code_writer& Body)
 {
     char temp[1024];
@@ -693,43 +542,6 @@ static void generate_message_read1_each(gm_giraphlib* lib, int cnt, int gm_type,
         delete [] vname;
     }
 }
-/*REMOVE*/
-/*static void generate_message_read2_each(gm_giraphlib* lib, int cnt, int gm_type, gm_code_writer& Body, int& offset)
-{ 
-    for(int i=0;i<cnt; i++) {
-        const char* vname = 
-            lib->get_message_field_var_name(gm_type, i);
-        genReadByte(vname, gm_type, offset, Body, lib);
-        offset += get_java_type_size(gm_type);
-        delete [] vname;
-    }
-}*/
-
-
-/*REMOVE*/
-/*static void generate_message_class_get_size(gm_gps_beinfo* info, gm_code_writer& Body)
-{
-    Body.pushln("@Override");
-    Body.pushln("public int numBytes() {");
-    char str_buf[1024];
-
-    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf);
-        if (info->is_single_message()) {
-            if (get_total_size(SYMS) == 0)
-                sprintf(str_buf, "return 1; // empty message ");
-            else
-                sprintf(str_buf, "return %d; // data", get_total_size(SYMS));
-        }
-        else
-            sprintf(str_buf, "return (1+%d); // type + data", get_total_size(SYMS));
-        Body.pushln(str_buf);
-    MESSAGE_PER_TYPE_LOOP_END()
-    if (!info->is_single_message())
-        Body.pushln("return 1; ");
-    else if (info->is_empty_message())
-        Body.pushln("return 0; ");
-    Body.pushln("}");
-}*/
 
 static void generate_message_class_write(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
 {
@@ -773,93 +585,6 @@ static void generate_message_class_read1(gm_giraphlib* lib, gm_gps_beinfo* info,
     Body.pushln("}");
 }
 
-/*REMOVE*/
-/*static void generate_message_class_read2(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
-{
-    Body.pushln("@Override");
-    Body.pushln("public int read(byte[] _BA, int _idx) {");
-    if (!info->is_single_message())
-        Body.pushln("m_type = _BA[_idx];");
-    char str_buf[1024];
-    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
-        int offset;
-        if (info->is_single_message()) offset = 0;
-        else offset = 1;
-        if (!info->is_single_message()) Body.pushln("{");
-        if (info->is_single_message() && (get_total_size(SYMS) == 0))
-            Body.pushln("_idx++; // consume empty message byte");
-        generate_message_read2_each(lib, SYMS.num_int, GMTYPE_INT,Body, offset);
-        generate_message_read2_each(lib, SYMS.num_long, GMTYPE_LONG,Body, offset);
-        generate_message_read2_each(lib, SYMS.num_float, GMTYPE_FLOAT,Body, offset);
-        generate_message_read2_each(lib, SYMS.num_double, GMTYPE_DOUBLE,Body, offset);
-        generate_message_read2_each(lib, SYMS.num_bool, GMTYPE_BOOL,Body, offset);
-        if (info->is_single_message())
-        {
-            if (get_total_size(SYMS) == 0)
-                sprintf(str_buf,"return 1;");
-            else
-                sprintf(str_buf,"return %d;", get_total_size(SYMS));
-        }
-        else 
-            sprintf(str_buf,"return 1 + %d;", get_total_size(SYMS));
-        Body.pushln(str_buf);
-        if (!info->is_single_message()) Body.pushln("}");
-    MESSAGE_PER_TYPE_LOOP_END() 
-    if (!info->is_single_message())
-        Body.pushln("return 1;");
-    else if (info->is_empty_message())
-        Body.pushln("return 0;");
-    Body.pushln("}");
-}*/
-
-/*REMOVE*/
-/*static void generate_message_class_read3(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
-{
-    Body.pushln("@Override");
-    Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
-    if (!info->is_single_message())
-        Body.pushln("byte m_type = IOB.get(_BA, _idx, 1);");
-    char str_buf[1024];
-    MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
-        int offset;
-        if (!info->is_single_message()) offset = 1;
-        else offset = 0;
-        if (!info->is_single_message()) Body.pushln("{");
-        int sz2 = get_total_size(SYMS);
-        if (info->is_single_message() && (get_total_size(SYMS) == 0))
-        {
-            Body.pushln("//empty message(dummy byte)");
-            sz2 = 1;
-        }
-        sprintf(str_buf,"IOB.get(_BA, _idx+%d, %d);",offset, sz2); 
-        Body.pushln(str_buf);
-        if (info->is_single_message())
-            if (get_total_size(SYMS) == 0)
-                sprintf(str_buf,"return 1;");
-            else
-                sprintf(str_buf,"return %d;",sz2);
-        else
-            sprintf(str_buf,"return 1 + %d;",sz2);
-        Body.pushln(str_buf);
-        if (!info->is_single_message()) Body.pushln("}");
-    MESSAGE_PER_TYPE_LOOP_END() 
-    if (!info->is_single_message())
-        Body.pushln("return 1;");
-    else if (info->is_empty_message())
-        Body.pushln("return 0;");
-    Body.pushln("}");
-}*/
-
-/*REMOVE*/
-/*static void generate_message_class_combine(gm_giraphlib* lib, gm_gps_beinfo* info, gm_code_writer& Body)
-{
-    Body.pushln("@Override");
-    Body.pushln("public void combine(byte[] _MQ, byte [] _tA) {");
-    Body.pushln("//do nothing");
-
-    Body.pushln("}");
-}*/
-
 void gm_giraphlib::generate_message_class_details(gm_gps_beinfo* info, gm_code_writer& Body)
 {
 
@@ -874,14 +599,8 @@ void gm_giraphlib::generate_message_class_details(gm_gps_beinfo* info, gm_code_w
     generate_message_fields_define(GMTYPE_BOOL,   size_info.num_bool,   Body);
     Body.NL();
 
-    /*REMOVE*/
-    //generate_message_class_get_size(info, Body);
     generate_message_class_write(this, info, Body);
     generate_message_class_read1(this, info, Body);
-    /*REMOVE*/
-    //generate_message_class_read2(this, info, Body);
-    //generate_message_class_read3(this, info, Body);
-    //generate_message_class_combine(this, info, Body);
     Body.NL();
 }
 
@@ -1041,7 +760,7 @@ void gm_giraphlib::generate_message_receive_begin(gm_gps_comm_unit& U, gm_code_w
     gm_symtab_entry * e = SYM.symbol;
 
     // check it once again later
-    if (e->getType()->is_property() || e->getType()->is_node_compatible() || 
+    if (e->getType()->is_property() || e->getType()->is_node_compatible() ||
         e->getType()->is_edge_compatible() || !is_symbol_defined_in_bb(b, e))
     {
         const char* str = main->get_type_string(SYM.gm_type);
@@ -1052,7 +771,7 @@ void gm_giraphlib::generate_message_receive_begin(gm_gps_comm_unit& U, gm_code_w
     {
         generate_vertex_prop_access_remote_lhs(e->getId(), Body);
     }
-    else 
+    else
     {
         Body.push(e->getId()->get_genname());
     }
@@ -1070,11 +789,6 @@ void gm_giraphlib::generate_message_receive_end(gm_code_writer& Body, bool is_on
   if (!is_only_comm) {
       Body.pushln("}");
   }
-}
-
-void gm_giraphlib::generate_expr_nil(ast_expr* e, gm_code_writer& Body)
-{
-    Body.push("(-1)");
 }
 
 void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body, bool is_master)
@@ -1156,32 +870,3 @@ void gm_giraphlib::generate_prepare_bb(
     }
 
 }
-
-
-
-//-----------------------------------------------------------------------------
-
-bool gm_giraphlib::do_local_optimize()
-{
-    const char* NAMES[]= { "[(nothing)]"};
-    const int COUNT = sizeof(NAMES)/sizeof(const char*);
-
-    bool is_okay = true;
-
-    for(int i=0;i<COUNT;i++) {
-        gm_begin_minor_compiler_stage(i +1, NAMES[i]);
-        {
-            switch(i) {
-                case 0:
-                     break;
-                case COUNT:
-                default:
-                     assert(false); break;
-            }
-        }
-        gm_end_minor_compiler_stage();
-        if (!is_okay) break;
-    }
-    return is_okay;
-}
-
