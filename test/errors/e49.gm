@@ -1,0 +1,7 @@
+Procedure test_nested_sum(G:Graph)
+{
+    Graph G2;
+    //must not compile since default grah is not well-defined
+    Node_Property<Bool> np;
+    Edge_Property<Bool> ep;
+}
