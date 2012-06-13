@@ -40,9 +40,9 @@ void gm_giraph_gen::write_headers()
 	ast_procdef* proc = FE.get_current_proc();
 	char temp[1024];
 	sprintf(temp, "package giraph.examples.%s;", proc->get_procname()->get_genname());
-	Body.pushln(temp);       // hardcodede
-	gm_giraphlib* lib = get_lib();
-	lib->generate_headers(Body);
+	Body.pushln(temp);       // hardcoded
+	Body.NL();
+	get_lib()->generate_headers(Body);
 	Body.NL();
 }
 

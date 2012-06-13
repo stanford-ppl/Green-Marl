@@ -143,6 +143,11 @@ class gm_giraph_gen : public gm_gps_gen
     public: // from code generator interface
         virtual void generate_proc(ast_procdef* p);
 
+        virtual void generate_rhs_id(ast_id* i);
+        virtual void generate_expr_builtin(ast_expr* e);
+
+        virtual void generate_sent_reduce_assign(ast_assign *a);
+        virtual void generate_sent_foreach(ast_foreach *f);
 };
 
 #endif

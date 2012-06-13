@@ -127,6 +127,7 @@ SRCS2 =\
        gm_giraph_gen_vertex.cc\
        gm_giraph_lib.cc\
        gm_giraph_lib_random_write.cc\
+       gm_giraph_java.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.
