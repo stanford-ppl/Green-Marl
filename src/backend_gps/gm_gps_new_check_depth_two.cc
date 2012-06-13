@@ -101,7 +101,6 @@ private:
 
 
     
-extern void gm_gps_do_new_scope_analysis(ast_procdef* proc);
 void gm_gps_new_check_depth_two::process(ast_procdef* proc)
 {
     // Check number of procedure name is same to the filename
@@ -118,13 +117,6 @@ void gm_gps_new_check_depth_two::process(ast_procdef* proc)
     gps_new_check_depth_two_t T;
     proc->traverse_both(&T);
     set_okay(!T.is_error());
-    
-    //-----------------------------------------
-    // Now apply scope analysis 
-    //-----------------------------------------
-    if (!T.is_error())
-        gm_gps_do_new_scope_analysis(proc);
 
     return;
-
 }

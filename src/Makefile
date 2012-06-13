@@ -113,11 +113,13 @@ SRCS2 =\
        gm_gps_bb_find_reachable.cc\
        gm_gps_java.cc gm_gps_lib.cc\
        gm_gps_lib_random_write.cc\
-       gm_gps_new_analysis_scope.cc\
+       gm_gps_new_analysis_scope_rhs_lhs.cc\
+       gm_gps_new_analysis_scope_sent_var.cc\
        gm_gps_new_check_pull_data.cc\
        gm_gps_new_check_depth_two.cc\
        gm_gps_new_check_edge_value.cc\
-       gm_gps_new_check_random_access.cc\
+       gm_gps_new_check_random_write.cc\
+       gm_gps_new_check_random_read.cc\
 
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.

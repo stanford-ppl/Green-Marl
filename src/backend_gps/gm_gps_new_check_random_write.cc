@@ -165,7 +165,7 @@ private:
   std::set<gm_symtab_entry*> defined;
 };
 
-void gm_gps_new_check_random_access::process(ast_procdef* proc)
+void gm_gps_new_check_random_write::process(ast_procdef* proc)
 {
     gps_check_random_access_t2 T;
     proc->traverse_pre(&T);

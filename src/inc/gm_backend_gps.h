@@ -262,6 +262,7 @@ DEF_STRING(GPS_FLAG_HAS_COMMUNICATION);         // an outerloop that has communi
 DEF_STRING(GPS_FLAG_HAS_COMMUNICATION_RANDOM);  // an outerloop that random has communication
 DEF_STRING(GPS_FLAG_IS_OUTER_LOOP);             // target: iterator or loop.
 DEF_STRING(GPS_FLAG_IS_INNER_LOOP);             // target: iterator or loop.
+DEF_STRING(GPS_FLAG_IS_EDGE_ITERATOR);          // target: edge scalar variable
 DEF_STRING(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL);
 DEF_STRING(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
 DEF_STRING(GPS_LIST_INTRA_MERGED_CONDITIONAL);

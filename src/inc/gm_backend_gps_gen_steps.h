@@ -8,15 +8,14 @@
 // Add delaration here
 // declaration of optimization steps
 //-------------------------------------------
-//GM_COMPILE_STEP(gm_gps_opt_analyze_symbol_scope,  "Analyze Symbol Scope Information")
-GM_COMPILE_STEP(gm_gps_opt_check_reverse_edges,   "Check use of reverse edges")
-// New Steps for compiler code simplification
-GM_COMPILE_STEP(gm_gps_new_check_depth_two,      "Checking if has max two foreach depths")
+GM_COMPILE_STEP(gm_gps_opt_check_reverse_edges,     "Check use of reverse edges")
+GM_COMPILE_STEP(gm_gps_new_check_depth_two,         "Checking if has max two foreach depths")
+GM_COMPILE_STEP(gm_gps_new_analyze_scope_sent_var,  "Analyzing scope of symbols and sentences")
+GM_COMPILE_STEP(gm_gps_new_analyze_scope_rhs_lhs,   "Analyzing scope of rhs and lhs")
 GM_COMPILE_STEP(gm_gps_new_check_pull_data,      "Checking if there exist data pulling")
-GM_COMPILE_STEP(gm_gps_new_check_random_access,  "Checking if there exists random reading or writing")
-
+GM_COMPILE_STEP(gm_gps_new_check_random_read,    "Checking if there exists random reading ")
+GM_COMPILE_STEP(gm_gps_new_check_random_write,   "Checking if there exists random writing")
 GM_COMPILE_STEP(gm_gps_opt_check_edge_value,     "Check use of edge values")
-//GM_COMPILE_STEP(gm_gps_opt_check_canonical,       "Check GPS canonical")
 GM_COMPILE_STEP(gm_gps_opt_create_ebb,            "Create ExtendedBasicBlocks")
 GM_COMPILE_STEP(gm_gps_opt_split_comm_ebb,        "Split communicatining EBBs")
 GM_COMPILE_STEP(gm_gps_opt_merge_ebb_again,       "Merging EBBs")
