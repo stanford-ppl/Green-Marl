@@ -1,10 +1,10 @@
 
 // This routine is, in fact, BFS 
-Procedure hop_dist(G:Graph, dist:N_P<Int>(G), root: Node(G))
+Procedure hop_dist(G:Graph, dist:N_P<Int>, root: Node)
 {
-    N_P<Bool>(G) updated;
-    N_P<Bool>(G) updated_nxt;
-    N_P<Int> (G) dist_nxt;
+    N_P<Bool> updated;
+    N_P<Bool> updated_nxt;
+    N_P<Int>  dist_nxt;
     Bool fin = False;
 
     G.dist = (G == root) ? 0 : +INF;

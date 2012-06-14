@@ -1,0 +1,12 @@
+Procedure test_default_graph(G:Graph)
+{
+    //must compile since only one graph is present
+    Node n;
+    Edge e;
+    For(x : G.Nodes) {
+	n = x;
+    }
+
+    Node(G) n2 = n;
+    Edge(G) e2 = e;
+}

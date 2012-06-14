@@ -1,0 +1,5 @@
+Procedure test_default_graph(G:Graph, n : Node)
+{
+    //must not compile since default grah is not well-defined
+    Graph G2;
+}
