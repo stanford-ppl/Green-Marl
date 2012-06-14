@@ -90,7 +90,6 @@ public:
     bool gm_symbol_check_bfs_header(ast_id* it, ast_id* src, ast_id* root, int iter_type);
 
 private:
-
     // symbol tables
     std::list<gm_symtab*> var_syms;
     std::list<gm_symtab*> field_syms;
@@ -158,8 +157,7 @@ static bool gm_find_and_connect_symbol(ast_id* id, gm_symtab* begin, bool print_
 // check target-id is well defined as a graph/collection/node
 // (This funcition also connects target-id with symbol entry)
 //-------------------------------------------------
-bool gm_check_target_is_defined(ast_id* target, gm_symtab* vars, 
-                                int should_be_what = ANY_THING)
+bool gm_check_target_is_defined(ast_id* target, gm_symtab* vars, int should_be_what = ANY_THING)
 {
     // check graph is defined
     assert(target->get_orgname() != NULL);
@@ -205,18 +203,18 @@ ast_id* gm_get_default_graph(gm_symtab* symTab)
     ast_id* targetGraph = NULL;
     do {//search for a single graph instance in the symbol table
         std::set<gm_symtab_entry*> entries = symTab->get_entries();
-	for(std::set<gm_symtab_entry*>::iterator II = entries.begin(); II != entries.end(); II++) {
-	  ast_typedecl* entryType = (*II)->getType();
-	  if(entryType->is_graph()) {
-	      foundCount++;
-	      if(foundCount > 1) {
-		gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
-		assert(false);
-	      }
-	      targetGraph = (*II)->getId();   
-	  }
-	}
-	symTab = symTab->get_parent();
+        for(std::set<gm_symtab_entry*>::iterator II = entries.begin(); II != entries.end(); II++) {
+        	ast_typedecl* entryType = (*II)->getType();
+        	if(entryType->is_graph()) {
+        			foundCount++;
+        			if(foundCount > 1) {
+        				gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
+        				assert(false);
+        			}
+        			targetGraph = (*II)->getId();
+        	}
+        }
+        symTab = symTab->get_parent();
     } while(symTab != NULL); 
     return targetGraph;
 }
@@ -228,10 +226,12 @@ bool gm_check_graph_is_defined(ast_typedecl* type, gm_symtab* symTab)
     if(graph == NULL) {
         //no associated graph found - try to find default graph
         graph = gm_get_default_graph(symTab);
-	assert(graph != NULL);
+        assert(graph != NULL);
 
-	type->set_target_graph_id(graph);
-	graph->set_parent(type);
+        symTab->set_default_graph_used();
+
+        type->set_target_graph_id(graph);
+        graph->set_parent(type);
     }
     return gm_check_target_is_defined(graph, symTab, SHOULD_BE_A_GRAPH);
 }
@@ -258,7 +258,13 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
 {
     if (type->is_primitive() || type->is_graph() || type->is_void())
     {
-        // do nothing;
+    	//just count graph declarations
+    	if(type->is_graph()) {
+    		if(SYM_V->is_default_graph_used() &&  SYM_V->get_graph_declaration_count() > 0) {
+    			gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, (ast_id*)type, "", "");
+    			assert(false);
+    		}
+    	}
     }
     else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator())
     {
@@ -356,8 +362,7 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header( ast_id* it, ast_id* sr
     // GRAPH
     if (gm_is_iteration_on_all_graph(iter_type))
     {
-        is_okay = gm_check_target_is_defined(
-                src, curr_sym, SHOULD_BE_A_GRAPH);
+        is_okay = gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_GRAPH);
     }
     // items
     else if (gm_is_iteration_on_collection(iter_type))
@@ -485,8 +490,7 @@ bool gm_typechecker_stage_1::apply(ast_procdef* p)
             gm_symtab* S = type->is_property() ? curr_field : curr_sym;
             for(int i=0;i<idlist->get_length();i++) {
                 ast_id* id = idlist->get_item(i);
-                is_okay = gm_declare_symbol(S, id, type, 
-                        GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE) && is_okay;
+                is_okay = gm_declare_symbol(S, id, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE) && is_okay;
                 if (is_okay) {id->getSymInfo()->setArgument(true);}
             }
         }

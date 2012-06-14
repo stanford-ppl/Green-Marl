@@ -25,7 +25,7 @@ class gm_symtab_entry {
                 assert(id->name != NULL);
             } 
         virtual ~gm_symtab_entry() {
-            delete id;
+	    //delete id; //creates problem with the new syntactig sugar when used for procedure arguments o.O
             delete type;
             std::map<std::string, ast_extra_info*>::iterator i; 
             for(i=extra.begin();i!=extra.end();i++) {
@@ -188,6 +188,31 @@ class gm_symtab {
             entries.insert(e);
         }
 
+        inline void set_default_graph_used() { default_graph_used = true; }
+
+        bool is_default_graph_used() {
+        	if(default_graph_used)
+        		return true;
+        	else if(parent == NULL)
+        		return false;
+        	else
+        		return parent->is_default_graph_used();
+        }
+
+        int get_graph_declaration_count() {
+        	int count = 0;
+        	for(std::set<gm_symtab_entry*>::iterator II = entries.begin(); II != entries.end(); II++) {
+        		ast_typedecl* entryType = (*II)->getType();
+        	    if(entryType->is_graph()) {
+        	    	count++;
+        	    }
+        	}
+        	if(parent == NULL)
+        		return count;
+        	else
+        		return count + parent->get_graph_declaration_count();
+        }
+
     private:
         // copy of (id) and copy of (type) is added into a new symbol entry
         void add_entry(ast_id* id, ast_typedecl* type, bool isRA=true, bool isWA=true) { 
@@ -206,6 +231,7 @@ class gm_symtab {
         gm_symtab* parent;
         int symtab_type;
         ast_node* ast; // where this belongs to 
+        bool default_graph_used;
 
 };
 
