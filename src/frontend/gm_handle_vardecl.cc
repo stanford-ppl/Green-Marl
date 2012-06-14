@@ -49,7 +49,7 @@ public:
     void do_removal(ast_procdef* p) 
     {
         set_all(false); 
-	set_for_sent(true);
+        set_for_sent(true);
         gm_traverse_sents(p, this, GM_POST_APPLY);
     }
 };

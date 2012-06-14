@@ -31,13 +31,14 @@ void ast_procdef::traverse(gm_apply*a, bool is_post, bool is_pre)
         if (for_id)
             apply_id(a, POST_APPLY);
         if (for_proc)
-	  {  
+        {
             if (a->has_separate_post_apply())
                 a->apply2(this);
             else
                 a->apply(this);
         }
     }
+
     a->end_context(this);
 }
 
@@ -143,10 +144,10 @@ void ast_sent::traverse(gm_apply*a, bool is_post, bool is_pre )
             apply_symtabs(a, POST_APPLY);
         }
         if (for_sent) {
- 	    if (a->has_separate_post_apply())
-	      a->apply2(this); 
-	    else 
-	      a->apply(this);
+        	if (a->has_separate_post_apply())
+        		a->apply2(this);
+        	else
+        		a->apply(this);
         }
     }
 

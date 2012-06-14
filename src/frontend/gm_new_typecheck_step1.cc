@@ -258,8 +258,8 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
 {
     if (type->is_primitive() || type->is_graph() || type->is_void())
     {
-    	//just count graph declarations
     	if(type->is_graph()) {
+    		//if default graph is used, check if no other graph is defined
     		if(SYM_V->is_default_graph_used() &&  SYM_V->get_graph_declaration_count() > 0) {
     			gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, (ast_id*)type, "", "");
     			assert(false);
