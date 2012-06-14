@@ -233,7 +233,7 @@ void gm_giraphlib::generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& 
     char temp[1024];
     Body.push("((");
     generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
-    sprintf(temp, ") getAggregator(%s)).aggregate(", create_key_string(id), id->get_genname());
+    sprintf(temp, ") getAggregator(%s)).aggregate(", create_key_string(id));
     Body.push(temp);
 
     //---------------------------------------------------

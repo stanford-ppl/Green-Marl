@@ -1637,7 +1637,7 @@ class ast_foreign: public ast_sent
 
 
     private:
-        ast_foreign() : ast_sent(AST_FOREIGN), expr(false) {}
+        ast_foreign() : ast_sent(AST_FOREIGN), expr(NULL) {}
         ast_expr_foreign* expr;
         std::list<ast_node*> modified;
 };

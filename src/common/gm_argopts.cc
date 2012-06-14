@@ -35,7 +35,7 @@ static void print_help(char* bin_name)
         {
             t+=printf("=<int>");
         }
-        for(t;t<24;t++)
+        for(;t<24;t++)
             printf(" ");
         printf("%s", GM_compiler_options[i].help_string);
         if (GM_compiler_options[i].arg_type != GMARG_NULL) {
