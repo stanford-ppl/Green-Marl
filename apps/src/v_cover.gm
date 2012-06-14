@@ -1,4 +1,4 @@
-Proc v_cover(G: Graph, select: E_P<Bool>(G)) : Int
+Proc v_cover(G: Graph, select: E_P<Bool>) : Int
 {
     N_P<Int> Deg;
     N_P<Bool> Covered;

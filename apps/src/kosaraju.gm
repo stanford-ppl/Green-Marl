@@ -1,6 +1,6 @@
 // Find stronglly connected components using Kosaraju's Algorithm
 // Returns number of SCC
-Proc kosaraju (G: Graph, mem: N_P<Int>(G)) : Int
+Proc kosaraju (G: Graph, mem: N_P<Int>) : Int
 {
     // Initialize membership
     G.mem = -1;

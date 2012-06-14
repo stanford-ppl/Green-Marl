@@ -1,4 +1,4 @@
-Procedure communities(G : Graph, com : Node_Property<Int>(G))
+Procedure communities(G : Graph, com : Node_Property<Int>)
 {
 	//as described in 'Near linear time algorithm to detect community structures in large-scale networks' by Raghavan et al
 	//initialize the community for all nodes in the network

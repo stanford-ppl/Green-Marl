@@ -1,4 +1,4 @@
-Procedure randomwalk(G : Graph, seed : Node(G), ratio : Double, nodes : Node_Set(G)) {
+Procedure randomwalk(G : Graph, seed : Node, ratio : Double, nodes : Node_Set) {
 	   	
 	Int remaining = (Int)(G.NumNodes() * ratio);
 	Int switch = 0;

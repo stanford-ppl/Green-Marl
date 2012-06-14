@@ -2,7 +2,7 @@
 //-------------------------------------------------------------
 // Computation of estimiated betweenness centrality
 //-------------------------------------------------------------
-Procedure comp_BC(G: Graph, BC: N_P<Float>(G), Seeds: Node_Sequence(G)) 
+Procedure comp_BC(G: Graph, BC: N_P<Float>, Seeds: Node_Sequence) 
 {
   G.BC = 0; // Initialize
 

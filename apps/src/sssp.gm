@@ -1,6 +1,6 @@
 
 // This routine is, in fact, BFS 
-Procedure sssp(G:Graph, dist:N_P<Int>(G), len:E_P<Int>(G), root: Node(G))
+Procedure sssp(G:Graph, dist:N_P<Int>, len:E_P<Int>, root: Node)
 {
     N_P<Bool> updated;
     N_P<Bool> updated_nxt;

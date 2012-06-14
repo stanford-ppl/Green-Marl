@@ -1,5 +1,5 @@
 
-Proc adamicAdar(G:Graph, aa: E_P<Double>(G))
+Proc adamicAdar(G:Graph, aa: E_P<Double>)
 {
     Foreach (e:G.Edges)
     {
@@ -11,7 +11,7 @@ Proc adamicAdar(G:Graph, aa: E_P<Double>(G))
 }
 
 
-Proc adamicAdar2(G:Graph, aa: E_P<Double>(G))
+Proc adamicAdar2(G:Graph, aa: E_P<Double>)
 {
     Foreach (e:G.Edges)
     {
