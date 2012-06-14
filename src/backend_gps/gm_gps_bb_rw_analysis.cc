@@ -231,7 +231,7 @@ public:
 
     virtual bool apply2(gm_symtab_entry* e, int symtab_type){ 
         // remove from S
-
+    	return true;
     }
 protected:
     gm_rwinfo_sets* S;
