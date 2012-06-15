@@ -139,7 +139,7 @@ public:
                 gm_symtab_entry* p = e->get_field()->get_second()->getSymInfo();
                 if (props_vars.find(p) == props_vars.end()) {
                     gm_symtab_entry* target = 
-                        define_temp(p->getType()->getTypeSummary(), sb, p->getType()->get_target_graph_sym());
+                        define_temp(p->getType()->getTargetTypeSummary(), sb, p->getType()->get_target_graph_sym());
 
                     props_vars[p] = target;
                     if (out_iter == NULL)
