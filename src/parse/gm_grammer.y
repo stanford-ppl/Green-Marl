@@ -169,13 +169,17 @@
 
   property : T_NODEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_NODEPROP '<' nodeedge_type '>' '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' set_type '>' 	  '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_NODEPROP '<' prim_type '>'                 { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_NODEPROP '<' nodeedge_type '>'             { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' set_type '>'				  { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
            | T_EDGEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' nodeedge_type '>' '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' set_type '>' 	  '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' prim_type '>'                 { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' nodeedge_type '>'             { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' set_type '>'             	  { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   id_comma_list   : id                            { GM_add_id_comma_list($1);}
                   | id_comma_list ',' id          { GM_add_id_comma_list($3);}
