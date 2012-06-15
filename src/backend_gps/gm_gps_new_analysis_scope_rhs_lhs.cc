@@ -72,6 +72,7 @@ public:
             
             case GMEXPR_FIELD:
                 scope = get_scope_from_driver(e->get_field()->get_first()->getSymInfo());
+                e->add_info_int(GPS_INT_EXPR_SCOPE,scope);
                 break;
 
             case GMEXPR_UOP:

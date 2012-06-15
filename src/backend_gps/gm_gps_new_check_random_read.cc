@@ -8,80 +8,6 @@
 //-----------------------------------------------------------------
 // Check random access
 //-----------------------------------------------------------------
-// Rules:
-//    - Reading of node properties via random node varaible is not allowed.
-//    - Writing of node properties via random node variable is allowed if
-//         - The node variable is out-scoped (temporary)
-//         - The node variable is assigned only once
-//         - The random write is out-scoped
-//         - The random write is not conditioned 
-//
-// Example>
-//
-// Node(G) root;
-// root.X = 3;      // not okay (for now)
-//
-// Foreach(n: G.Nodes) {
-//   Node(G) y = root;
-//   root.X = n.A;  // not okay
-//   y.X = n.A;     // okay
-// }
-//
-// Foreach(n:G.Nodes) {
-//   Foreach(t:n.Nbrs) {
-//      Node(G) z = root;
-//      root.X = t.A;      // not okay 
-//      z.X = t.A;         // not okay (for now)
-//   }
-// }
-//
-// Foreach(n: G.Nodes) {
-//   Node(G) y = root;
-//   y.X = t.A;
-//   y = root2;            // not okay
-// }
-//
-// Foreach(n:G.Nodes) {
-//   Node(G) y = root;
-//   y.B = 0;
-//   if (n.A > 0) {
-//       Node(G) z = y;
-//       y.C = 1;       // not okay 
-//       z.C = 1;       // okay
-//   }
-// }
-//
-// [Todo: Multiple definitions? ]
-// {
-//   Node(G) y1= root1;
-//   Node(G) y2= root2;
-//   y1.X = 0;
-//   y2.X = 1;
-// }
-//
-// Constructed Information
-//    FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN: 
-//       (to => assign_sttement, what: the sentblock that contains random write for this assign statement)
-//    FLAG_RANDWM_WRITE_SYMBOL_FOR_SB
-//       (to => sent_block, what: set of symbols that are used as ramdom-write driver in the sent-block) 
-//-----------------------------------------------------------------
-static bool check_if_met_conditional_before(ast_node *s, gm_symtab_entry *symbol)
-{
-    while (true) {
-        assert(s!=NULL);
-        if ((s->get_nodetype() == AST_WHILE) || (s->get_nodetype() == AST_IF))
-        {
-            return true;
-        }
-        if (s->has_symtab()) {
-            if (s->get_symtab_var()->is_entry_in_the_tab(symbol))
-                return false;
-        }
-
-        s = (ast_node*) s->get_parent();
-    }
-}
-
 
 class gps_check_random_read_t : public gm_apply 
 {
@@ -100,15 +26,30 @@ public:
       {
           if (f->find_info_int(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_RANDOM)
           {
+              gm_symtab_entry *driver =
+                (f->get_opclass() == GMEXPR_FIELD)? 
+                          f->get_field()->get_first()->getSymInfo() :
+                          ((ast_expr_builtin*)f)->get_driver()->getSymInfo();
+
+              if (driver->getType()->is_graph())
+                  return true;
+
               // Random Read
+              if ((f->get_opclass() == GMEXPR_FIELD))
+                  printf("%s.%s\n", 
+                          f->get_field()->get_first()->get_genname(),
+                          f->get_field()->get_second()->get_genname());
+              else
+                  printf("%s->..()\n", ((ast_expr_builtin*)f)->get_driver()->get_genname());
               gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_READ, f->get_line(), f->get_col(), "");
               _error = true;
           }
       }
     return true;
   }
-
+private:
   bool _error;
+
 };
 
 void gm_gps_new_check_random_read::process(ast_procdef* proc)

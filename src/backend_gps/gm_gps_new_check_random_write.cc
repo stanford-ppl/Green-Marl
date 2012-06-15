@@ -13,13 +13,13 @@
 //    - Writing of node properties via random node variable is allowed if
 //         - The node variable is out-scoped (temporary)
 //         - The node variable is assigned only once
-//         - The random write is out-scoped
+//         - The random write is out-scoped (temporary)
 //         - The random write is not conditioned 
 //
 // Example>
 //
 // Node(G) root;
-// root.X = 3;      // not okay (for now)
+// root.X = 3;      // not okay 
 //
 // Foreach(n: G.Nodes) {
 //   Node(G) y = root;
@@ -31,7 +31,7 @@
 //   Foreach(t:n.Nbrs) {
 //      Node(G) z = root;
 //      root.X = t.A;      // not okay 
-//      z.X = t.A;         // not okay (for now)
+//      z.X = t.A;         // not okay 
 //   }
 // }
 //
@@ -53,10 +53,10 @@
 //
 // [Todo: Multiple definitions? ]
 // {
-//   Node(G) y1= root1;
-//   Node(G) y2= root2;
+//   Node(G) y1= root;
+//   Node(G) y2= root;
 //   y1.X = 0;
-//   y2.X = 1;
+//   y2.X = 1;  // what would be the value of root.X after word?
 // }
 //
 // Constructed Information
@@ -121,7 +121,7 @@ public:
         if (sym->find_info_bool(GPS_FLAG_IS_INNER_LOOP) ||
             sym->find_info_bool(GPS_FLAG_IS_OUTER_LOOP)) 
         { 
-            //okay
+            // non random write
         }
         else if (sym->find_info_int(GPS_INT_SYMBOL_SCOPE) == GPS_NEW_SCOPE_OUT)
         {

@@ -16,6 +16,7 @@ GM_COMPILE_STEP(gm_gps_new_check_pull_data,      "Checking if there exist data p
 GM_COMPILE_STEP(gm_gps_new_check_random_read,    "Checking if there exists random reading ")
 GM_COMPILE_STEP(gm_gps_new_check_random_write,   "Checking if there exists random writing")
 GM_COMPILE_STEP(gm_gps_opt_check_edge_value,     "Check use of edge values")
+GM_COMPILE_STEP(gm_gps_new_rewrite_rhs,          "Rewriting rhs for messages")
 GM_COMPILE_STEP(gm_gps_opt_create_ebb,            "Create ExtendedBasicBlocks")
 GM_COMPILE_STEP(gm_gps_opt_split_comm_ebb,        "Split communicatining EBBs")
 GM_COMPILE_STEP(gm_gps_opt_merge_ebb_again,       "Merging EBBs")
