@@ -1,22 +1,22 @@
 
-Proc adamicAdar(G:Graph, aa: E_P<Double>(G))
+Proc adamicAdar(G:Graph, aa: E_P<Double>)
 {
     Foreach (e:G.Edges)
     {
-        Node(G) from = e.FromNode();
-        Node(G) to = e.ToNode();
+        Node from = e.FromNode();
+        Node to = e.ToNode();
        
         e.aa = Sum(n: from.CommonNbrs(to)) {1 / Log(n.NumNbrs())};
     }
 }
 
 
-Proc adamicAdar2(G:Graph, aa: E_P<Double>(G))
+Proc adamicAdar2(G:Graph, aa: E_P<Double>)
 {
     Foreach (e:G.Edges)
     {
-        Node(G) from = e.FromNode();
-        Node(G) to = e.ToNode();
+        Node from = e.FromNode();
+        Node to = e.ToNode();
        
         e.aa = Sum(n: from.Nbrs)(n.IsNbrFrom(to)) {1 / Log(n.NumNbrs())};
     }

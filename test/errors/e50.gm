@@ -1,0 +1,6 @@
+Procedure test_default_graph(G:Graph, G2 : Graph)
+{
+    //must not compile since default grah is not well-defined
+    Node_Property<Bool> np;
+    Edge_Property<Bool> ep;
+}

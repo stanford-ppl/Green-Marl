@@ -1,0 +1,11 @@
+Procedure test_default_graph(G : Graph, n : Node)
+{
+    //must compile since only one graph is present
+    Edge e;
+
+    Node_Property<Bool> np;
+    Edge_Property<Bool> ep;
+
+    n.np = True;
+    e.ep = False;
+}

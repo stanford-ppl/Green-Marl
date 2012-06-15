@@ -123,7 +123,7 @@ static void gm_traverse_ids(ast_procdef* top, gm_apply* a, bool is_post_apply=fa
 // traverse all the sentences in the procedure and apply operation
 //--------------------------------------------------------------------
 static void gm_traverse_sents(ast_procdef* top, gm_apply *a, bool is_post_apply=false)
-{ 
+{
     a->set_all(false);
     a->set_for_sent(true);
     top->traverse( a, is_post_apply, !is_post_apply);

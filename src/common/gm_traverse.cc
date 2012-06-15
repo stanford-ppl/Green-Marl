@@ -12,7 +12,7 @@ void ast_procdef::traverse(gm_apply*a, bool is_post, bool is_pre)
     bool for_proc = a->is_for_proc();
     
     a->begin_context(this);
-
+ 
     if (is_pre) {
         if (for_symtab)
             apply_symtabs(a, PRE_APPLY);
@@ -21,7 +21,6 @@ void ast_procdef::traverse(gm_apply*a, bool is_post, bool is_pre)
         if (for_proc)
             a->apply(this);
     }
-
 
     // traverse body
     ((ast_sent*)get_body())->traverse(a, is_post, is_pre);
@@ -123,11 +122,11 @@ void ast_node::apply_symtabs(gm_apply* a, bool is_post)
 void ast_sent::traverse(gm_apply*a, bool is_post, bool is_pre )
 {
     a->set_current_sent(this);
-
+  
     if (has_symtab()) a->begin_context(this);
     bool for_symtab = a->is_for_symtab();
     bool for_sent = a->is_for_sent();
-
+  
 
     if (is_pre) {
         if (for_sent)
@@ -135,9 +134,9 @@ void ast_sent::traverse(gm_apply*a, bool is_post, bool is_pre )
         if (has_symtab() && for_symtab)
             apply_symtabs(a, PRE_APPLY);
     }
-
+  
     traverse_sent(a,is_post, is_pre);
-
+  
     a->set_current_sent(this);
 
     if (is_post) {
@@ -145,13 +144,12 @@ void ast_sent::traverse(gm_apply*a, bool is_post, bool is_pre )
             apply_symtabs(a, POST_APPLY);
         }
         if (for_sent) {
-            if (a->has_separate_post_apply())
-                a->apply2(this);
-            else
-                a->apply(this);
+        	if (a->has_separate_post_apply())
+        		a->apply2(this);
+        	else
+        		a->apply(this);
         }
     }
-
 
     if (has_symtab()) a->end_context(this);
 }
