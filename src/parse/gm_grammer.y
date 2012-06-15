@@ -153,30 +153,29 @@
   nodeedge_type : node_type          { $$ = $1;}
                 | edge_type          { $$ = $1;}
 
-  node_type : T_NODE '(' id  ')'      { $$ = GM_nodetype_ref($3); 
-                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-  edge_type : T_EDGE '(' id  ')'      { $$ = GM_edgetype_ref($3); 
-                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+  node_type : T_NODE '(' id  ')'      { $$ = GM_nodetype_ref($3);   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_NODE                  { $$ = GM_nodetype_ref(NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
+  edge_type : T_EDGE '(' id  ')'      { $$ = GM_edgetype_ref($3);   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+            | T_EDGE                  { $$ = GM_edgetype_ref(NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
-  set_type :  T_NSET   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);
-                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-           |  T_NSEQ   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSEQ, $3);
-                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-           |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);
-                   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+  set_type :  T_NSET   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSET, $3);     GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NSET                  { $$ = GM_settype_ref(GMTYPE_NSET, NULL);   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
-  property : T_NODEPROP '<' prim_type '>' '(' id ')'  {
-                       $$ = GM_nodeprop_ref($3, $6 );
-                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-           | T_NODEPROP '<' nodeedge_type '>' '(' id ')'  {
-                       $$ = GM_nodeprop_ref($3, $6 );
-                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-           | T_EDGEPROP '<' prim_type '>' '(' id ')'  {
-                       $$ = GM_edgeprop_ref($3, $6);
-                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-           | T_EDGEPROP '<' nodeedge_type '>' '(' id ')'  {
-                       $$ = GM_edgeprop_ref($3, $6);
-                       GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NSEQ   '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NSEQ, $3);     GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NSEQ                  { $$ = GM_settype_ref(GMTYPE_NSEQ, NULL);   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+
+           |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_NORDER                { $$ = GM_settype_ref(GMTYPE_NORDER, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+
+  property : T_NODEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' nodeedge_type '>' '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' prim_type '>'                 { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' nodeedge_type '>'             { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+
+           | T_EDGEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' nodeedge_type '>' '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' prim_type '>'                 { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' nodeedge_type '>'             { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   id_comma_list   : id                            { GM_add_id_comma_list($1);}
                   | id_comma_list ',' id          { GM_add_id_comma_list($3);}

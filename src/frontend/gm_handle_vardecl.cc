@@ -40,7 +40,7 @@ public:
             // now delete
             ast_sent* z = *i;
             gm_ripoff_sent(z,false);
-            delete z;
+	    //       delete z;  //Causes problem with single-graph syntactic sugar.....why?????? o.O
         }
         return true;
     }
@@ -48,7 +48,8 @@ public:
 public:
     void do_removal(ast_procdef* p) 
     {
-        set_all(false); set_for_sent(true);
+        set_all(false); 
+        set_for_sent(true);
         gm_traverse_sents(p, this, GM_POST_APPLY);
     }
 };

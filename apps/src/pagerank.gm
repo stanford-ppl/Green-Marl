@@ -1,5 +1,5 @@
 Procedure pagerank(G: Graph, e: Double, d: Double, max: Int,
-                   pg_rank: N_P<Double>(G))
+                   pg_rank: N_P<Double>)
 {
     Double diff;
     Int cnt = 0;

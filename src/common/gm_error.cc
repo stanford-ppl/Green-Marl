@@ -56,6 +56,9 @@ void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2)
         case GM_ERROR_NEED_ITERATOR:
             printf("%s is not an iterator name\n", id->get_orgname()); break;
 
+        case GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS:
+	    printf("More than one graph present. Explicit binding of nodes, edges, properties and collections is required!\n"); break;
+
         case GM_ERROR_UNKNOWN:
         default:
             assert(false);
@@ -167,6 +170,10 @@ void gm_type_error(int errno, ast_id* id1, ast_id* id2)
             break;
         case GM_ERROR_TARGET_MISMATCH:
             printf("Target Graphs mismatches %s, %s.\n", id1->get_orgname(), id2->get_orgname());break;
+
+        case GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS:
+	    printf("More than one graph present. Explicit binding of nodes, edges, properties and collections is required!\n"); break;
+
         case GM_ERROR_UNKNOWN:
         default:
             printf("Unknown error 3\n"); break;
