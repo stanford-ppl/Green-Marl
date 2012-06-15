@@ -268,6 +268,7 @@ DEF_STRING(GPS_FLAG_IS_EDGE_ITERATOR);          // target: edge scalar variable
 DEF_STRING(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL);
 DEF_STRING(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
 DEF_STRING(GPS_LIST_INTRA_MERGED_CONDITIONAL);
+DEF_STRING(GPS_FLAG_COMM_DEF_ASSIGN);           // target: assign statement, rewrite_rhs.cc
 
 static const int   GPS_PREPARE_STEP1         = 100000;
 static const int   GPS_PREPARE_STEP2         = 100001;

@@ -307,14 +307,22 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
         return;
     }
 
+    // edge defining write
     if (a->find_info_bool(GPS_FLAG_EDGE_DEFINING_WRITE)) {
-        return;  // skip edge-defining writes
+        return;  
     } 
 
-    if (!a->is_target_scalar() && 
-        a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
+    if (is_receiver_generate()) 
     {
-        if (is_receiver_generate()) return;
+        if (!a->is_target_scalar() && 
+            a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
+        {
+            return;
+        }
+
+        if (a->find_info_bool(GPS_FLAG_COMM_DEF_ASSIGN)) { // defined in re-write rhs
+            return ;
+        }
     }
 
     // vertex or receiver generate
@@ -327,6 +335,7 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a)
             return ;
         }
     }
+
 
     if (a->is_target_scalar())
     {
