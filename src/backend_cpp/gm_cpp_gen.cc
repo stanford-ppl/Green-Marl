@@ -407,8 +407,21 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
         case GMTYPE_FLOAT:  Body.push(ALLOCATE_FLOAT); break;
         case GMTYPE_NODE:   Body.push(ALLOCATE_NODE); break;
         case GMTYPE_EDGE:   Body.push(ALLOCATE_EDGE); break;
+        case GMTYPE_NSET:	Body.push(ALLOCATE_NODE_SET); break;
+        case GMTYPE_ESET:	Body.push(ALLOCATE_EDGE_SET); break;
+        case GMTYPE_NSEQ:	Body.push(ALLOCATE_NODE_SEQUENCE); break;
+        case GMTYPE_ESEQ:	Body.push(ALLOCATE_EDGE_SEQUENCE); break;
+        case GMTYPE_NORDER:	Body.push(ALLOCATE_NODE_ORDER); break;
+        case GMTYPE_EORDER:	Body.push(ALLOCATE_EDGE_ORDER); break;
         default: assert(false);
     }
+    if (t2->is_collection()) {
+    	//if (get some optimization information) TODO
+    	//Body.push("true>");
+    	//else
+    	Body.push("false>");
+    }
+
     Body.push('(');
     if (t->is_node_property()) {
         Body.push(get_lib()->max_node_index(t->get_target_graph_id()));
