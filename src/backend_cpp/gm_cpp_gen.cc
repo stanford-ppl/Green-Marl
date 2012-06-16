@@ -321,17 +321,7 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
             char temp[128];
             sprintf(temp, "%s<%s>*", PROP_OF_COL, get_lib()->get_type_string(t2));
             return gm_strdup(temp);
-/*
-        	switch(t2->get_typeid()) { //TODO more elegant
-        		case GMTYPE_NSET:	return "gm_property_of_collection<gm_node_set>*";
-        		case GMTYPE_ESET:	return "gm_property_of_collection<gm_edge_set>*";
-        		case GMTYPE_NSEQ:	return "gm_property_of_collection<gm_node_seq>*";
-        		case GMTYPE_ESEQ:	return "gm_property_of_collection<gm_edge_seq>*";
-        		case GMTYPE_NORDER:	return "gm_property_of_collection<gm_node_order>*";
-        		case GMTYPE_EORDER:	return "gm_property_of_collection<gm_edge_order>*";
-        		default: assert(false);
-        	}
-  */      }
+        }
         else {
            assert(false);
         }
@@ -415,19 +405,19 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
         case GMTYPE_FLOAT:  Body.push(ALLOCATE_FLOAT); break;
         case GMTYPE_NODE:   Body.push(ALLOCATE_NODE); break;
         case GMTYPE_EDGE:   Body.push(ALLOCATE_EDGE); break;
-        case GMTYPE_NSET:	Body.push(ALLOCATE_NODE_SET); break;
-        case GMTYPE_ESET:	Body.push(ALLOCATE_EDGE_SET); break;
-        case GMTYPE_NSEQ:	Body.push(ALLOCATE_NODE_SEQUENCE); break;
-        case GMTYPE_ESEQ:	Body.push(ALLOCATE_EDGE_SEQUENCE); break;
-        case GMTYPE_NORDER:	Body.push(ALLOCATE_NODE_ORDER); break;
-        case GMTYPE_EORDER:	Body.push(ALLOCATE_EDGE_ORDER); break;
+        case GMTYPE_NSET:
+        case GMTYPE_ESET:
+        case GMTYPE_NSEQ:
+        case GMTYPE_ESEQ:
+        case GMTYPE_NORDER:
+        case GMTYPE_EORDER: {
+        	char temp[128];
+        	bool lazyInitialization = false; //TODO: get some information here to check if lazy init is better
+        	sprintf(temp, "%s<%s, %s>", ALLOCATE_COLLECTION, get_lib()->get_type_string(t2), (lazyInitialization ? "true" : "false"));
+        	Body.push(temp);
+        	break;
+        }
         default: assert(false);
-    }
-    if (t2->is_collection()) {
-    	//if (get some optimization information) TODO
-    	//Body.push("true>"); //use lazy initialization
-    	//else
-    	Body.push("false>"); //use eager initilization
     }
 
     Body.push('(');
