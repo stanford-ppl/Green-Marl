@@ -119,6 +119,14 @@ static inline node_t*  gm_rt_allocate_node_t(size_t sz, int thread_id=0)
     return ptr;
 }
 
+#include "TestSet.h"
+
+template<class collectionType, bool lazy>
+static inline TestSet<collectionType, lazy>* gm_rt_allocate_collection(size_t size, int thread_id = 0) {
+	return new TestSet<collectionType, lazy>(size);
+}
+
+
 static inline void gm_rt_deallocate(void* ptr, int thread_id=0) 
 { 
     _GM_MEM.clear(ptr, 0, thread_id); 

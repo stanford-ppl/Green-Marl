@@ -316,6 +316,13 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
             sprintf(temp, "%s*", get_lib()->get_type_string(t2));
             return gm_strdup(temp);
         }
+        else if (t2->is_collection()) {
+        	//consider merging this with above
+        	char temp[128];
+        	sprintf(temp, "%s*", get_lib()->get_type_string(t2));
+        	printf("Debug gm_cpp_gen.cc: is prop of coll: %s\n", temp);
+        	return gm_strdup(temp);
+        }
         else {
            assert(false);
         }

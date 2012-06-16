@@ -281,6 +281,12 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
             is_okay &= gm_check_type_is_well_defined(target_type, SYM_V);
             if (!is_okay) return false;
         }
+        else if (target_type->is_collection()) {
+        	printf("Debug - typecheck1: Is Collection\n");
+        	//consider merging with above
+        	is_okay &= gm_check_type_is_well_defined(target_type, SYM_V);
+        	if (!is_okay) return false;
+        }
         else if (!target_type->is_primitive()) {
             gm_type_error(GM_ERROR_NEED_PRIMITIVE, type->get_line(), type->get_col());
             return false;
