@@ -109,7 +109,7 @@ SRCS2 =\
        gm_gps_opt.cc\
        gm_gps_misc.cc\
        gm_gps_gen_master.cc gm_gps_gen_vertex.cc\
-       gm_gps_sym_analyze_check_usage.cc\
+       gm_gps_new_analysis_sym_usage.cc\
        gm_gps_sym_analyze_create_summary.cc\
        gm_gps_find_congruent_message.cc\
        gps_syminfo.cc \
@@ -117,11 +117,14 @@ SRCS2 =\
        gm_gps_java.cc\
        gm_gps_lib.cc\
        gm_gps_lib_random_write.cc\
-       gm_gps_new_analysis_scope.cc\
+       gm_gps_new_analysis_scope_rhs_lhs.cc\
+       gm_gps_new_analysis_scope_sent_var.cc\
        gm_gps_new_check_pull_data.cc\
        gm_gps_new_check_depth_two.cc\
        gm_gps_new_check_edge_value.cc\
-       gm_gps_new_check_random_access.cc\
+       gm_gps_new_check_random_write.cc\
+       gm_gps_new_check_random_read.cc\
+	   gm_gps_new_rewrite_rhs.cc\
        gm_giraph_gen.cc\
        gm_giraph_gen_master.cc\
        gm_giraph_gen_vertex.cc\

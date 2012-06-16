@@ -832,6 +832,8 @@ void gm_gpslib::generate_message_class_details(gm_gps_beinfo* info, gm_code_writ
 
 void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
 {
+  char temp[1024];
+
   gm_gps_beinfo * info =  
         (gm_gps_beinfo *) FE.get_current_backend_info();
 
@@ -846,9 +848,16 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
       = *(info->find_communication_size_info(U));
 
   bool need_separate_message = (fe==NULL) ? false : fe->find_info_bool(GPS_FLAG_EDGE_DEFINING_INNER);
+  bool is_in_neighbors = (fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_IN_NBRS);
 
   if (!need_separate_message) {
-    Body.pushln("// Sending messages to all neighbors");
+    Body.pushln("// Sending messages to all neighbors (if there is a neighbor)");
+    if (is_in_neighbors) {
+        sprintf(temp, "if (%s.%s.length > 0) {", STATE_SHORT_CUT,GPS_REV_NODE_ID);
+        Body.pushln(temp);
+    } else {
+        Body.pushln("if (getNeighborsSize() > 0) {");
+    }
   }
   else {
     assert ((fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)); 
@@ -881,12 +890,28 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
         }
     }
 
+
     Body.push("MessageData _msg = new MessageData(");
 
     // todo: should this always be a byte?
     sprintf(str_buf,"(byte) %d",SINFO.msg_class->id);
     Body.push(str_buf);
     Body.pushln(");");
+
+    //------------------------------------------------------------
+    // create message variables 
+    //------------------------------------------------------------
+    if (fe != NULL) {
+        assert(fe->get_body()->get_nodetype() == AST_SENTBLOCK);
+        std::list<ast_sent*>::iterator J;
+        ast_sentblock* sb = (ast_sentblock*) fe->get_body();
+        for (J = sb->get_sents().begin(); J!=sb->get_sents().end(); J++) {
+            ast_sent* s = *J;
+            if (s->find_info_bool(GPS_FLAG_COMM_DEF_ASSIGN)) {
+                get_main()->generate_sent(s);
+            }
+        }
+    }
 
   std::list<gm_gps_communication_symbol_info>::iterator I;
   for(I=LIST.begin(); I!=LIST.end(); I++)
@@ -912,17 +937,15 @@ void gm_gpslib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     Body.pushln(";");
   }
 
+
   if (!need_separate_message) {
-    if ((fe == NULL) || (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)) {
+    if (is_in_neighbors) {
+        sprintf(temp, "sendMessages(%s.%s, _msg);", STATE_SHORT_CUT, GPS_REV_NODE_ID);
+        Body.pushln(temp);
+    } else {
         Body.pushln("sendMessages(getNeighborIds(), _msg);");
     }
-    else {
-        char temp[1024];
-        sprintf(temp, "sendMessages(%s.%s, _msg);",
-            STATE_SHORT_CUT,
-            GPS_REV_NODE_ID);
-        Body.pushln(temp);
-    }
+    Body.pushln("}");
   } else {
       Body.pushln("sendMessage(_outEdge.getNeighborId(), _msg);");
       if (sents_after_message.size() > 0)

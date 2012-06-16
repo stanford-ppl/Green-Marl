@@ -61,7 +61,6 @@ class gps_syminfo : public ast_extra_info
 
         bool is_used_in_vertex() {return used_in_vertex;}
         bool is_used_in_master() {return used_in_master;}
-        //bool is_used_in_sender()   {return used_in_sender;}
         bool is_used_in_receiver() {return used_in_receiver;}
 
         int  get_reduce_type() {return reduce_op_type;}

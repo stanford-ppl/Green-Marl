@@ -9,6 +9,10 @@
 #include "gm_typecheck.h"
 #include "gps_syminfo.h"
 
+//-----------------------------------------------------------------------------------
+// Create a flat table, for the generation of fields in master/vertex class
+//-----------------------------------------------------------------------------------
+
 class gps_flat_symbol_t : public gm_apply
 {
 public:

@@ -686,6 +686,7 @@ class ast_sent : public ast_node {
 };
 
 
+extern const char* gm_get_nodetype_string(int t);
 
 class ast_sentblock : public ast_sent {
     public:
@@ -699,7 +700,8 @@ class ast_sentblock : public ast_sent {
         }
     public:
         static ast_sentblock* new_sentblock() {return new ast_sentblock();}
-        void add_sent(ast_sent* s) {sents.push_back(s); s->set_parent(this);}
+        void add_sent(ast_sent* s) {
+            sents.push_back(s); s->set_parent(this);}
 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 

@@ -20,7 +20,7 @@
 //
 //  4. There must be not 'Return' in non-master context
 //
-//  5. Somebuilt-in functions are not supported
+//  5. Some built-in functions are not supported
 //------------------------------------------------
 
 // check condition 1-4
