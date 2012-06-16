@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <omp.h>
 #include <pthread.h>
+#include "gm_set.h"
 
 #define Spinlock 	pthread_spinlock_t
 #define lock(X) 	pthread_spin_lock(&X)
@@ -11,13 +12,28 @@
 #define init(X)		pthread_spin_init(&X, 0)
 #define destroy(X)	pthread_spin_destroy(&X)
 
+template<class T>
+class gm_property_of_collection {
+
+public:
+	virtual T& operator[](int index) = 0;
+
+};
+
 template<class T, bool lazy>
-class TestSet {
+class TestSet : public  gm_property_of_collection<T> {
 
 private:
 	T** data;
 	Spinlock* locks;
 	int size;
+
+	inline void lazyInit(int index) {
+		lock(locks[index]);
+		if (data[index] == NULL)
+			data[index] = new T(size);
+		unlock(locks[index]);
+	}
 
 public:
 
@@ -52,14 +68,6 @@ public:
 				lazyInit(index);
 		return *data[index];
 	}
-
-	inline void lazyInit(int index) {
-		lock(locks[index]);
-		if (data[index] == NULL)
-			data[index] = new T(size);
-		unlock(locks[index]);
-	}
-
 };
 
 #undef Spinlock

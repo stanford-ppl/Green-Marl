@@ -5,6 +5,7 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
+#include "gm_cpplib_words.h"
 
 
 void gm_cpp_gen::setTargetDir(const char* d)
@@ -317,16 +318,20 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
             return gm_strdup(temp);
         }
         else if (t2->is_collection()) {
-        	switch(t2->get_typeid()) {
-        		case GMTYPE_NSET:	return "TestSet<gm_node_set, false>*";
-        		//case GMTYPE_ESET: TODO
-        		//case GMTPYE_NSEQ:
-        		//case GMTYPE_ESEQ:
-        		//case GMTYPE_NORDER:
-        		//case GMTYPE_EORDER:
+            char temp[128];
+            sprintf(temp, "%s<%s>*", PROP_OF_COL, get_lib()->get_type_string(t2));
+            return gm_strdup(temp);
+/*
+        	switch(t2->get_typeid()) { //TODO more elegant
+        		case GMTYPE_NSET:	return "gm_property_of_collection<gm_node_set>*";
+        		case GMTYPE_ESET:	return "gm_property_of_collection<gm_edge_set>*";
+        		case GMTYPE_NSEQ:	return "gm_property_of_collection<gm_node_seq>*";
+        		case GMTYPE_ESEQ:	return "gm_property_of_collection<gm_edge_seq>*";
+        		case GMTYPE_NORDER:	return "gm_property_of_collection<gm_node_order>*";
+        		case GMTYPE_EORDER:	return "gm_property_of_collection<gm_edge_order>*";
         		default: assert(false);
         	}
-        }
+  */      }
         else {
            assert(false);
         }

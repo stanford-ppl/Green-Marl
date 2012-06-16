@@ -17,6 +17,7 @@
 #define SET_T        "gm_node_set"
 #define ORDER_T      "gm_node_order"
 #define SEQ_T        "gm_node_seq"
+#define PROP_OF_COL	 "gm_property_of_collection"
 #define IS_IN        "is_in"
 #define MAX_SET_CNT  "max_size"
 #define GET_LIST     "get_list"
