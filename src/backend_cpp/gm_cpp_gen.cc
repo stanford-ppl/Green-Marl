@@ -317,11 +317,15 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
             return gm_strdup(temp);
         }
         else if (t2->is_collection()) {
-        	//consider merging this with above
-        	char temp[128];
-        	sprintf(temp, "%s*", get_lib()->get_type_string(t2));
-        	printf("Debug gm_cpp_gen.cc: is prop of coll: %s\n", temp);
-        	return gm_strdup(temp);
+        	switch(t2->get_typeid()) {
+        		case GMTYPE_NSET:	return "TestSet<gm_node_set, false>*";
+        		//case GMTYPE_ESET: TODO
+        		//case GMTPYE_NSEQ:
+        		//case GMTYPE_ESEQ:
+        		//case GMTYPE_NORDER:
+        		//case GMTYPE_EORDER:
+        		default: assert(false);
+        	}
         }
         else {
            assert(false);
@@ -395,8 +399,7 @@ void gm_cpp_gen::generate_sent_call(ast_call* c)
 void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
 {
     ast_typedecl* t2  = t->get_target_type();
-    assert(t2!=NULL);
-    //assert(t2->is_primitive());
+    assert(t2 != NULL);
 
     Body.push(" = ");
     switch(t2->getTypeSummary()) {
@@ -417,9 +420,9 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id)
     }
     if (t2->is_collection()) {
     	//if (get some optimization information) TODO
-    	//Body.push("true>");
+    	//Body.push("true>"); //use lazy initialization
     	//else
-    	Body.push("false>");
+    	Body.push("false>"); //use eager initilization
     }
 
     Body.push('(');
@@ -442,13 +445,13 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v)
 {
     ast_typedecl* t = v->get_type();
     Body.push_spc(get_type_string(t));
+    printf("Type String: %s\n", get_type_string(t));
 
     if (t->is_property()) {
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);
         generate_lhs_id(idl->get_item(0));
         declare_prop_def(t, idl->get_item(0));
-
     } else if (t->is_collection()) {
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);

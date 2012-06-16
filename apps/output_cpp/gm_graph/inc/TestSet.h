@@ -33,7 +33,7 @@ public:
 		} else {
 			#pragma omp parallel for
 			for (int i = 0; i < size; i++)
-				data[i] = new T; //(size);
+				data[i] = new T(size);
 		}
 	}
 
@@ -56,7 +56,7 @@ public:
 	inline void lazyInit(int index) {
 		lock(locks[index]);
 		if (data[index] == NULL)
-			data[index] = new T; //(size);
+			data[index] = new T(size);
 		unlock(locks[index]);
 	}
 

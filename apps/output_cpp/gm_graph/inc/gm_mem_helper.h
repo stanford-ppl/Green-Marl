@@ -123,7 +123,7 @@ static inline node_t*  gm_rt_allocate_node_t(size_t sz, int thread_id=0)
 
 template<class collectionType, bool lazy>
 static inline TestSet<collectionType, lazy>* gm_rt_allocate_collection(size_t size, int thread_id = 0) {
-	TestSet<collectionType, lazy> pointer = new TestSet<collectionType, lazy>(size);
+	TestSet<collectionType, lazy>* pointer = new TestSet<collectionType, lazy>(size);
 	_GM_MEM.save(pointer, 0, thread_id);
 	return pointer;
 }
