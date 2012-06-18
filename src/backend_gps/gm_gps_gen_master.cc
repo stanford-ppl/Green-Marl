@@ -11,7 +11,7 @@ void gm_gps_gen::write_headers()
 {
     ast_procdef* proc = FE.get_current_proc();
     char temp[1024];
-    sprintf(temp, "package gps.examples.%s;", proc->get_procname()->get_genname());
+    sprintf(temp, "package gps.examples.gm.%s;", proc->get_procname()->get_genname());
     Body.pushln(temp);       // hardcodede
     get_lib()->generate_headers(Body);
     Body.NL();
@@ -349,7 +349,7 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         {
             gm_symtab_entry* sym = I->first;
             gps_syminfo* local_info = I->second;
-            if (!local_info->is_scalar()) continue;
+            if (!local_info->is_scalar() || sym->isArgument()) continue; //TODO: why is sym->isArgument() != local_info->is_argument() ?
             gps_syminfo* global_info = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
 
             if (!global_info->is_used_in_multiple_BB())

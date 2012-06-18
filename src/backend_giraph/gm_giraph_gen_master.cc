@@ -41,10 +41,52 @@ void gm_giraph_gen::do_generate_master_class()
     Body.pushln("private boolean _master_should_finish        = false;");
     Body.NL();
 
+    //--------------------------------------------------------------------
+    // constructor
+    // (with command-line argument parsing)
+    //--------------------------------------------------------------------
+    sprintf(temp, "public %sMaster() {", proc->get_procname()->get_genname());
+    Body.pushln(temp);
+
     // Iterate symbol table
     gm_symtab* args = proc->get_symtab_var(); assert(args != NULL);
     std::set<gm_symtab_entry*>& syms = args->get_entries();
     std::set<gm_symtab_entry*>::iterator I;
+    for (I=syms.begin(); I!=syms.end(); I++)
+    {
+        gm_symtab_entry* s = *I;
+
+        // check if used in master
+        gps_syminfo* syminfo = (gps_syminfo*) s->find_info(GPS_TAG_BB_USAGE);
+        if (!syminfo->is_used_in_master()) continue;
+
+        // input argument
+        if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;
+
+        if (s->isReadable()) {
+        	char* argname = s->getId()->get_genname();
+            sprintf(temp, "%s = getContext().getConfiguration().", argname);
+            Body.push(temp);
+            switch(s->getType()->getTypeSummary())
+            {
+                case GMTYPE_BOOL:   sprintf(temp, "getBoolean(\"%s\", false);", argname); break;
+                case GMTYPE_INT:    sprintf(temp, "getInt(\"%s\", -1);", argname); break;
+                case GMTYPE_LONG:   sprintf(temp, "getLong(\"%s\", -1L);", argname); break;
+                case GMTYPE_FLOAT:  sprintf(temp, "getFloat(\"%s\", -1.0f);", argname); break;
+                //TODO Waiting for https://issues.apache.org/jira/browse/HADOOP-8415 to be accepted
+                //case GMTYPE_DOUBLE: sprintf(temp, "getDouble(\"%s\", -1.0);", argname); break;
+                case GMTYPE_DOUBLE: sprintf(temp, "getFloat(\"%s\", -1.0f);", argname); break;
+                case GMTYPE_NODE:   get_lib()->is_node_type_int() ?
+                		            sprintf(temp, "getInteger(\"%s\", -1);", argname) :
+                                    sprintf(temp, "getLong(\"%s\", -1L);", argname);
+                                    break;
+                default: assert(false);
+            }
+            Body.pushln(temp);
+        }
+    }
+    Body.pushln("}");
+    Body.NL();
 
     //--------------------------------------------------------------------
     // A method that saves final output values
@@ -276,7 +318,7 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         {
             gm_symtab_entry* sym = I->first;
             gps_syminfo* local_info = I->second;
-            if (!local_info->is_scalar()) continue;
+            if (!local_info->is_scalar() || sym->isArgument()) continue; //TODO: why is sym->isArgument() != local_info->is_argument() ?
             gps_syminfo* global_info = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
 
             if (!global_info->is_used_in_multiple_BB())

@@ -50,7 +50,7 @@ void gm_giraphlib::generate_receive_state_vertex(
 {
     char temp[1024];
     sprintf(temp, "int %s = ((IntOverwriteAggregator) getAggregator(%s)).getAggregatedValue().get();", state_var, GPS_KEY_FOR_STATE);
-    Body.push(temp);
+    Body.pushln(temp);
 }
 void gm_giraphlib::generate_broadcast_isFirst_master(
     const char* is_first_var, gm_code_writer& Body)
@@ -656,6 +656,7 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
     assert ((fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)); 
     sprintf(temp, "for (%s _neighborId : this) {",
         PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
+    Body.pushln(temp);
     Body.pushln("// Sending messages to each neighbor");
     Body.pushln("EdgeData _outEdgeData = this.getEdgeValue(_neighborId);");
   }
