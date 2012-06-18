@@ -25,7 +25,7 @@ class gm_symtab_entry {
                 assert(id->name != NULL);
             } 
         virtual ~gm_symtab_entry() {
-	    //delete id; //creates problem with the new syntactig sugar when used for procedure arguments o.O
+	        delete id; //creates problem with the new syntactig sugar when used for procedure arguments o.O
             delete type;
             std::map<std::string, ast_extra_info*>::iterator i; 
             for(i=extra.begin();i!=extra.end();i++) {

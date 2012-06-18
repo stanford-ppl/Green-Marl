@@ -225,7 +225,7 @@ bool gm_check_graph_is_defined(ast_typedecl* type, gm_symtab* symTab)
     
     if(graph == NULL) {
         //no associated graph found - try to find default graph
-        graph = gm_get_default_graph(symTab);
+        graph = gm_get_default_graph(symTab)->copy(true);
         assert(graph != NULL);
 
         symTab->set_default_graph_used();
