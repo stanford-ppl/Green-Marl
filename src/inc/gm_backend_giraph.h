@@ -24,8 +24,8 @@ class gm_giraphlib : public gm_gpslib {
     public:
     gm_giraphlib() {main = NULL;}
     gm_giraphlib(gm_giraph_gen* gen) {set_main(gen);}
-    void set_main(gm_giraph_gen* gen) {main = gen;}
-    gm_giraph_gen* get_main() {return main;}
+    void set_main(gm_giraph_gen* gen) {main = (gm_gps_gen*) gen;}
+    gm_giraph_gen* get_main() {return (gm_giraph_gen*) main;}
 
     virtual void generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block* b);
 
@@ -81,10 +81,7 @@ class gm_giraphlib : public gm_gpslib {
         ast_sentblock* sb, gm_symtab_entry* sym, 
         gm_code_writer& Body);
 
-    virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master); 
-
-    private:
-        gm_giraph_gen* main;
+    virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master);
 };
 
 
@@ -100,7 +97,7 @@ class gm_giraph_gen : public gm_gps_gen
         gm_giraph_gen() : gm_gps_gen() {
         	glib = new gm_giraphlib(this);
         }
-        gm_giraphlib* get_lib() {return glib;}
+        virtual gm_giraphlib* get_lib() {return glib;}
 
     protected:
         void init_gen_steps();
@@ -143,11 +140,6 @@ class gm_giraph_gen : public gm_gps_gen
     public: // from code generator interface
         virtual void generate_proc(ast_procdef* p);
 
-        virtual void generate_rhs_id(ast_id* i);
-        virtual void generate_expr_builtin(ast_expr* e);
-
-        virtual void generate_sent_reduce_assign(ast_assign *a);
-        virtual void generate_sent_foreach(ast_foreach *f);
 };
 
 #endif

@@ -27,6 +27,10 @@ ifeq ($(TARGET), gps)
     ODIR = ../output_gps/generated
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java))
 endif
+ifeq ($(TARGET), giraph)
+    ODIR = ../output_giraph/generated
+    OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java))
+endif
 
 FLAGS = -o=$(ODIR) -t=$(TARGET) $(GM_ARGS)
 SRCS = $(addsuffix .gm, $(PROGS))

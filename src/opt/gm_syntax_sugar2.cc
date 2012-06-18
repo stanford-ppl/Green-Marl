@@ -277,7 +277,7 @@ void ss2_reduce_op::post_process_body(
             ast_sentblock* sb = (ast_sentblock*) holder->get_parent();
 
             cnt_symbol = insert_def_and_init_before(
-                temp_cnt, GMTYPE_INT, holder, ast_expr::new_ival_expr(0));
+                temp_cnt, GMTYPE_LONG, holder, ast_expr::new_ival_expr(0));
 
             avg_val_symbol = gm_add_new_symbol_primtype(sb, 
                 (   expr_type==GMTYPE_FLOAT) ? GMTYPE_FLOAT: GMTYPE_DOUBLE,

@@ -26,9 +26,15 @@ void gm_giraph_gen::do_generate_worker_context_class()
 {
 	char temp[1024];
 	const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
-    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
+    gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_current_backend_info();
+
+    // Basic blocks iterator
+    std::list<gm_gps_basic_block*>& bb_blocks = info->get_basic_blocks();
+    std::list<gm_gps_basic_block*>::iterator I_bb;
+
+    // Symbol iterator
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
-    std::set<gm_symtab_entry* >::iterator I;
+    std::set<gm_symtab_entry*>::iterator I_sym;
 
     Body.pushln("//----------------------------------------------");
     Body.pushln("// Worker Context Class");
@@ -41,9 +47,21 @@ void gm_giraph_gen::do_generate_worker_context_class()
     sprintf(temp, "registerAggregator(%s, IntOverwriteAggregator.class);", GPS_KEY_FOR_STATE);
     Body.pushln(temp);
 
-    for(I=scalar.begin(); I!=scalar.end(); I++)
+    for(I_bb = bb_blocks.begin(); I_bb!= bb_blocks.end(); I_bb++)
     {
-        gm_symtab_entry* sym = *I;
+        gm_gps_basic_block* b = *I_bb;
+        if ((!b->is_prepare()) && (!b->is_vertex())) continue;
+
+        if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+             int cond_bb_no= b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+             sprintf(temp, "registerAggregator(\"%s%d\", BooleanOverwriteAggregator.class);", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
+             Body.pushln(temp);
+        }
+    }
+
+    for(I_sym=scalar.begin(); I_sym!=scalar.end(); I_sym++)
+    {
+        gm_symtab_entry* sym = *I_sym;
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         assert(syminfo!=NULL);
 
@@ -69,9 +87,21 @@ void gm_giraph_gen::do_generate_worker_context_class()
     sprintf(temp, "useAggregator(%s);", GPS_KEY_FOR_STATE);
     Body.pushln(temp);
 
-    for(I=scalar.begin(); I!=scalar.end(); I++)
+    for(I_bb = bb_blocks.begin(); I_bb!= bb_blocks.end(); I_bb++)
     {
-        gm_symtab_entry* sym = *I;
+        gm_gps_basic_block* b = *I_bb;
+        if ((!b->is_prepare()) && (!b->is_vertex())) continue;
+
+        if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+             int cond_bb_no= b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+             sprintf(temp, "useAggregator(\"%s%d\");", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
+             Body.pushln(temp);
+        }
+    }
+
+    for(I_sym=scalar.begin(); I_sym!=scalar.end(); I_sym++)
+    {
+        gm_symtab_entry* sym = *I_sym;
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         assert(syminfo!=NULL);
 
@@ -131,7 +161,8 @@ void gm_giraph_gen::do_generate_vertex_property_class(bool is_edge_prop)
   }
 
   if (FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE)) {
-    sprintf(temp, "int [] %s; //reverse edges (node IDs) {should this to be marshalled?}", GPS_REV_NODE_ID);
+    sprintf(temp, "%s[] %s; //reverse edges (node IDs) {should this to be marshalled?}",
+        PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", GPS_REV_NODE_ID);
     Body.pushln(temp);
   }
 
@@ -345,9 +376,8 @@ void gm_giraph_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
         }
 
         Body.pushln("// Begin msg receive");
-        Body.pushln("MessageData _msg;");
         Body.pushln("while (_msgs.hasNext()) {");
-        Body.pushln("_msg = _msgs.next();");
+        Body.pushln("MessageData _msg = _msgs.next();");
 
         std::list<gm_gps_comm_unit>& R = b->get_receivers();
         std::list<gm_gps_comm_unit>::iterator I;
