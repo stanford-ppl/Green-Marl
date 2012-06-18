@@ -60,7 +60,8 @@ void gm_gps_gen::do_generate_vertex_property_class(bool is_edge_prop)
   }
 
   if (FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE)) {
-    sprintf(temp, "int [] %s; //reverse edges (node IDs) {should this to be marshalled?}", GPS_REV_NODE_ID);
+    sprintf(temp, "%s [] %s; //reverse edges (node IDs) {should this to be marshalled?}",
+    	PREGEL_BE->get_lib()->is_node_type_int() ? "int" : "long", GPS_REV_NODE_ID);
     Body.pushln(temp);
   }
 
