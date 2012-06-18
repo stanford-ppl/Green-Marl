@@ -376,9 +376,8 @@ void gm_giraph_gen::do_generate_vertex_state_body(gm_gps_basic_block *b)
         }
 
         Body.pushln("// Begin msg receive");
-        Body.pushln("MessageData _msg;");
         Body.pushln("while (_msgs.hasNext()) {");
-        Body.pushln("_msg = _msgs.next();");
+        Body.pushln("MessageData _msg = _msgs.next();");
 
         std::list<gm_gps_comm_unit>& R = b->get_receivers();
         std::list<gm_gps_comm_unit>::iterator I;

@@ -654,7 +654,8 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
   }
   else {
     assert ((fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_NBRS)); 
-    Body.pushln("for (IntWritable _neighborId : this) {");
+    sprintf(temp, "for (%s _neighborId : this) {",
+        PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
     Body.pushln("// Sending messages to each neighbor");
     Body.pushln("EdgeData _outEdgeData = this.getEdgeValue(_neighborId);");
   }
@@ -732,10 +733,10 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body)
 
   if (!need_separate_message) {
     if (is_in_neighbors) {
-        sprintf(temp, "for (%s neighbor : %s.%s) {",
+        sprintf(temp, "for (%s node : %s.%s) {",
             PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", STATE_SHORT_CUT, GPS_REV_NODE_ID);
         Body.pushln(temp);
-        Body.pushln("sendMsg(neighbor, _msg);");
+        Body.pushln("sendMsg(node, _msg);");
         Body.pushln("}");
     } else {
         Body.pushln("sendMsgToAllEdges(_msg);");

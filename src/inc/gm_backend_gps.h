@@ -111,7 +111,7 @@ class gm_gpslib : public gm_graph_library {
 
     protected:
         char str_buf[1024*8];
-    private:
+    protected:
         gm_gps_gen* main;
 };
 

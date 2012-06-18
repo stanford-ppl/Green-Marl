@@ -24,8 +24,8 @@ class gm_giraphlib : public gm_gpslib {
     public:
     gm_giraphlib() {main = NULL;}
     gm_giraphlib(gm_giraph_gen* gen) {set_main(gen);}
-    void set_main(gm_giraph_gen* gen) {main = gen;}
-    gm_giraph_gen* get_main() {return main;}
+    void set_main(gm_giraph_gen* gen) {main = (gm_gps_gen*) gen;}
+    gm_giraph_gen* get_main() {return (gm_giraph_gen*) main;}
 
     virtual void generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block* b);
 
@@ -81,10 +81,7 @@ class gm_giraphlib : public gm_gpslib {
         ast_sentblock* sb, gm_symtab_entry* sym, 
         gm_code_writer& Body);
 
-    virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master); 
-
-    private:
-        gm_giraph_gen* main;
+    virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master);
 };
 
 

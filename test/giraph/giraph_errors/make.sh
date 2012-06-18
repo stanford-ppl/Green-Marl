@@ -1,5 +1,5 @@
 #!/bin/bash
-FILES=*.gm
+FILES=../../gps/gps_errors/*.gm
 for f in $FILES
 do
    echo "doing $f"
