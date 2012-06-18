@@ -445,9 +445,9 @@ class ast_typedecl : public ast_node {  // property or type
             return p;
         }
 
-        virtual ~ast_typedecl() { 
+        virtual ~ast_typedecl() {
             delete target_type;
-            delete target_graph;
+            //delete target_graph; //gets deleted twice (sometimes) why??? o.O
             delete target_collection;
             delete target_nbr;
         }
@@ -461,17 +461,19 @@ class ast_typedecl : public ast_node {  // property or type
             t->type_id = gtype_id;
             return t;
         }
-        static ast_typedecl* new_nodetype(
-                ast_id* tg) {
+        static ast_typedecl* new_nodetype(ast_id* tg) {
             ast_typedecl* t = new ast_typedecl();
             t->type_id = GMTYPE_NODE;
+            if(tg == NULL) //no graph defined for this node - we will handle this later (typecheck step 1)
+            	return t;
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
-        static ast_typedecl* new_edgetype(
-                ast_id* tg) {
+        static ast_typedecl* new_edgetype(ast_id* tg) {
             ast_typedecl* t = new ast_typedecl();
             t->type_id = GMTYPE_EDGE;
+            if(tg == NULL)  //no graph defined for this edge - we will handle this later (typecheck step 1)
+            	return t;
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
@@ -506,9 +508,11 @@ class ast_typedecl : public ast_node {  // property or type
             return t;
         }
         static ast_typedecl* new_set(ast_id* tg, int set_type)
-        {
+        {	        
             ast_typedecl* t = new ast_typedecl();
             t->type_id = set_type;
+            if(tg == NULL) //no graph defined for this set - we will handle this later (typecheck step 1)
+            	return t;
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
@@ -533,6 +537,8 @@ class ast_typedecl : public ast_node {  // property or type
             ast_typedecl* t = new ast_typedecl();
             t->type_id = GMTYPE_NODEPROP;
             t->target_type = type; type->set_parent(t);
+            if(tg == NULL) //no graph defined for this property - we will handle this later (typecheck step 1)
+            	return t;
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
@@ -540,6 +546,8 @@ class ast_typedecl : public ast_node {  // property or type
             ast_typedecl* t = new ast_typedecl();
             t->type_id = GMTYPE_EDGEPROP;
             t->target_type = type; type->set_parent(t);
+            if(tg == NULL) //no graph defined for this property - we will handle this later (typecheck step 1)
+            	return t;
             t->target_graph = tg; tg->set_parent(t);
             return t;
         }
@@ -678,6 +686,7 @@ class ast_sent : public ast_node {
 };
 
 
+extern const char* gm_get_nodetype_string(int t);
 
 class ast_sentblock : public ast_sent {
     public:
@@ -691,7 +700,8 @@ class ast_sentblock : public ast_sent {
         }
     public:
         static ast_sentblock* new_sentblock() {return new ast_sentblock();}
-        void add_sent(ast_sent* s) {sents.push_back(s); s->set_parent(this);}
+        void add_sent(ast_sent* s) {
+            sents.push_back(s); s->set_parent(this);}
 
         virtual void reproduce(int id_level);
         virtual void dump_tree(int id_level); 

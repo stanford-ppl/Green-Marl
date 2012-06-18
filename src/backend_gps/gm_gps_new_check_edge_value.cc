@@ -61,7 +61,7 @@
 //
 //
 // Additional Information creted
-//     GPS_MAP_EDGE_PROP_ACCESS :   <where:>foreach, <what:> int, one of GPS_ENUM_EDGE_VALUE_xxx
+//     GPS_MAP_EDGE_PROP_ACCESS :   <where:>foreach, <what:> map(symbol,int(state)), one of GPS_ENUM_EDGE_VALUE_xxx
 //     GPS_FLAG_EDGE_DEFINED_INNER: <where:>var symbol(edge type),<what:>if the varaible is defined inside inner loop
 //     GPS_FLAG_EDGE_DEFINING_INNTER: <where:>foreach, <what:>if this inner loop defines an edge variable
 //     GPS_LIST_EDGE_PROP_WRITE: <where:>foreach, <what:> (list of) assigns whose target is edge variables
@@ -131,7 +131,7 @@ public:
         inner_iter = NULL;
         inner_loop = NULL;
         _error = false;
-        target_is_edge = false;
+        target_is_edge_prop = false;
     }
 
     bool is_error() {return _error;}
@@ -187,7 +187,7 @@ public:
                             set_error(true);
                         }
 
-                        target_is_edge = true;
+                        target_is_edge_prop = true;
 
                         // add write symbol
                         assert(inner_loop!=NULL);
@@ -201,10 +201,12 @@ public:
                         // grouped assignment?
                         
                     } else {
+                        /*
                         gm_backend_error(GM_ERROR_GPS_EDGE_WRITE_RANDOM, 
                             a->get_lhs_field()->get_line(),
                             a->get_lhs_field()->get_col());
                         set_error(true);
+                        */
                     }
                 }
             }
@@ -213,25 +215,26 @@ public:
                 if (sym->getType()->is_edge()) {
                     if (sym->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) {
                         // check rhs is to - edge
-                        bool error = true;
-
                         ast_expr* rhs = a->get_rhs();
                         if (rhs->is_builtin()) {
                             ast_expr_builtin* b_rhs = (ast_expr_builtin*) rhs;
                             gm_symtab_entry *drv = b_rhs->get_driver()->getSymInfo();
                             int f_id = b_rhs->get_builtin_def()->get_method_id();
+                            if (f_id == GM_BLTIN_NODE_TO_EDGE)
                             {
-                                error = false;
                                 a->add_info_bool(GPS_FLAG_EDGE_DEFINING_WRITE, true);
                             }
                         }
 
+                        /*
                         if (error) {
                             set_error(error);
                             gm_backend_error(GM_ERROR_GPS_EDGE_WRITE_RANDOM, 
                                 a->get_lhs_scala()->get_line(),
                                 a->get_lhs_scala()->get_col());
                         }
+                        */
+
                     }
                 }
             }
@@ -243,38 +246,63 @@ public:
     // random edge read is not allowed.
     virtual bool apply(ast_expr* e)
     {
-        if (!e->is_field()) return false;
-        ast_field* f = e->get_field(); 
-
-        if (f->getSourceTypeInfo()->is_edge_compatible()) {
-            // check if random reading
-            if (!f->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) {
-                gm_backend_error(GM_ERROR_GPS_EDGE_READ_RANDOM, 
-                    f->get_line(), f->get_col());
-                set_error(true);
-            }
-        }
-
-        if (target_is_edge) { 
-            if (f->getSourceTypeInfo()->is_node_compatible()) {
-                if (f->get_first()->getSymInfo() == inner_iter) {
+        //-----------------------------------------------
+        // Edge f = ...
+        // Foreach (t: G.Nodes) {
+        //    Foreach (n: t.Nbrs) { 
+        //       Edge e = n.ToEdge();
+        //       Int x = f.A;    // (case 1) random reading 
+        //       e.A = n.X;      // (case 2) inner scoped rhs
+        //
+        //       ... = e.A;
+        //       e.A = ...;      // (case 3) sending two versions
+        //       ... = e.A;
+        //      
+        //    }
+        // }
+        //-----------------------------------------------
+        
+        // checking of (case 2)
+        if (target_is_edge_prop) { 
+            if ((e->find_info_bool(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_IN) || 
+                (e->find_info_bool(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_RANDOM))
+            {
+                if (e->is_field()) {
+                    ast_field* f = e->get_field(); 
                     gm_backend_error(GM_ERROR_GPS_EDGE_WRITE_RHS, 
-                            f->get_line(), f->get_col(), 
-                        f->get_first()->get_orgname());
+                        f->get_line(), f->get_col(), f->get_first()->get_orgname());
+                    set_error(true);
+                }
+                else if (e->is_id()) {
+                    ast_id* f = e->get_id();
+                    gm_backend_error(GM_ERROR_GPS_EDGE_WRITE_RHS, 
+                        f->get_line(), f->get_col(), f->get_orgname());
                     set_error(true);
                 }
             }
         }
-        else { // communicating
-            if (f->getSourceTypeInfo()->is_edge_compatible()) {
-                bool b = manage_edge_prop_access_state(inner_loop, 
-                        f->get_second()->getSymInfo(), SENDING);
 
-                if (b) {
-                    gm_backend_error(GM_ERROR_GPS_EDGE_SEND_VERSIONS, 
-                            f->get_line(), f->get_col(), 
-                            f->get_first()->get_orgname());
+
+        if (e->is_field()) {
+            ast_field* f = e->get_field(); 
+            if (f->getSourceTypeInfo()->is_edge_compatible()) {
+                // check if random reading (case 1)
+                if (!f->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) {
+                    gm_backend_error(GM_ERROR_GPS_EDGE_READ_RANDOM, 
+                        f->get_line(), f->get_col());
                     set_error(true);
+                }
+                else {
+                    // (case 3)
+                    bool b = manage_edge_prop_access_state(inner_loop, 
+                            f->get_second()->getSymInfo(), SENDING);
+
+                    if (b) {
+                        gm_backend_error(GM_ERROR_GPS_EDGE_SEND_VERSIONS, 
+                                f->get_line(), f->get_col(), 
+                                f->get_first()->get_orgname());
+                        set_error(true);
+                    }
                 }
             }
         }
@@ -292,23 +320,22 @@ public:
             }
         }
         else if (s->get_nodetype() == AST_ASSIGN) {
-            target_is_edge = false;
+            target_is_edge_prop = false;
         }
         return true;
     }
 private:
     gm_symtab_entry* inner_iter;
     ast_foreach* inner_loop;
-    bool target_is_edge;
+    bool target_is_edge_prop;
     bool _error;
 };
 
+
 void gm_gps_opt_check_edge_value::process(ast_procdef* proc)
 {
-    gps_check_edge_value_t T;
-
-    proc->traverse_both(&T);
-
-    set_okay (!T.is_error());
+    gps_check_edge_value_t T2;
+    proc->traverse_both(&T2);
+    set_okay (!T2.is_error());
     return;
 }

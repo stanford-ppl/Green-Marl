@@ -25,76 +25,80 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
             set_for_sent(true);
             set_for_expr(true);
             set_separate_post_apply(true); 
-            foreach_depth = 0;
             beinfo = i;
             is_random_write_target = false;
+            is_message_write_target = false;
+            is_edge_prop_write_target = false;
             random_write_target = NULL;
-            target_is_edge = false;
         }
     
     virtual bool apply(ast_sent* s) 
     {
         is_random_write_target = false;
-
-        // only need to look at assign statement (for LHS)
-        // (RHS usages will be gathered in apply(expr)
+        is_message_write_target = false;
+       
         if (s->get_nodetype() == AST_ASSIGN)
         {
+            int context = get_current_context();  // GPS_CONTEXT_ (MASTER, VERTEX, RECEIVER)
+            int scope = s->find_info_bool(GPS_INT_SYNTAX_CONTEXT);  // GPS_NEW_SCOPE_GLOBAL/OUT/IN
+
             ast_assign * a = (ast_assign*) s;
 
-            int context = get_current_context();
             random_write_target_sb = (ast_sentblock*) 
                 s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
 
             // check if random write
             is_random_write_target = (random_write_target_sb != NULL);
-            if (is_random_write_target) {
-
+            if (is_random_write_target) 
+            {
                 assert(!a->is_target_scalar());
                 random_write_target = a->get_lhs_field()->get_first()->getSymInfo();
             }
 
+            is_message_write_target = s->find_info_bool(GPS_FLAG_COMM_DEF_ASSIGN);
+
+            /* what?
             if (foreach_depth > 1) {
                 if (context == GPS_CONTEXT_MASTER) // inner loop
                     return true;
             }
-
-            // save lhs usage
+            */
             ast_id* target =  (a->is_target_scalar()) ? a->get_lhs_scala() : a->get_lhs_field()->get_second();
             int is_scalar = (a->is_target_scalar()) ? IS_SCALAR : IS_FIELD;
             int lhs_reduce = a->is_reduce_assign() ? GPS_SYM_USED_AS_REDUCE : GPS_SYM_USED_AS_LHS;
             int r_type = a->is_reduce_assign() ? a->get_reduce_type() : GMREDUCE_NULL;
-            update_access_information(target, is_scalar, lhs_reduce, context, r_type);
 
             if (!is_scalar && 
                 a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER))
-                target_is_edge = true;
+                is_edge_prop_write_target = true;
+
+            if (context == GPS_CONTEXT_RECEIVER)  {
+                if (is_message_write_target ||  is_edge_prop_write_target || is_random_write_target) return true;
+            }
+
+            // save lhs usage
+            if (is_message_write_target) {
+                // lhs is communication symbol
+                beinfo->add_communication_symbol_nested(in_loop, target->getSymInfo());
+                target->getSymInfo()->add_info_bool(GPS_FLAG_COMM_SYMBOL, true);
+            } 
+
+            update_access_information(target, is_scalar, lhs_reduce, context, r_type);
         }
 
-        if (s->get_nodetype() == AST_FOREACH) 
+        else if (s->get_nodetype() == AST_FOREACH) 
         {
             ast_foreach* fe = (ast_foreach*) s;
-            foreach_depth++;
-            if (foreach_depth == 2) {
+            if (fe->find_info_bool(GPS_FLAG_IS_INNER_LOOP))
                 in_loop = fe;
-            }
-            else if (foreach_depth == 1) {
-                out_loop = fe;
-                out_iterator = fe->get_iterator()->getSymInfo();
-            }
-            else {
-                assert(false);
-            }
         }
         return true;
     }
 
     virtual bool apply2(ast_sent * s) {
-        if (s->get_nodetype() == AST_FOREACH) 
-        {
-            foreach_depth--;
-        }
-        target_is_edge = false;
+        is_edge_prop_write_target = false;
+        is_random_write_target = false;
+        is_message_write_target = false;
         return true;
     }
 
@@ -103,16 +107,8 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         if (!e->is_id() && !e->is_field())
             return true;
 
-        //----------------------------------------------------------
-        // following symbols have to be sent over network
-        //----------------------------------------------------------
-        // Foreach(s: G.Nodes) {
-        //   Int x = ... ;
-        //   Foreach(t: s.OutNbrs) {
-        //       y = s.A + t.B;   // A;   // accessed through s
-        //       t.Y += x + y;    // x;   // scoped in s
-        // } }
-        //----------------------------------------------------------
+        //int syntax_scope = get_current_sent()->find_info_int(GPS_INT_SYNTAX_CONTEXT);
+        int expr_scope = e->find_info_int(GPS_INT_EXPR_SCOPE);
         int context = get_current_context();
         int used_type = GPS_SYM_USED_AS_RHS;
         bool is_id = e->is_id();
@@ -120,17 +116,22 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
         ast_id* tg = is_id ? e->get_id() : e->get_field()->get_second();
         gm_symtab_entry* drv = is_id ? NULL : e->get_field()->get_first()->getSymInfo();
 
-        //--------------------------------------------------------
-        // 
-        //--------------------------------------------------------
         bool comm_symbol = false;       // is this symbol used in communication?
-        bool ignored_symbol = false;    // is this symbol is local to receiver state only?
+
+        if (context == GPS_CONTEXT_RECEIVER)  {
+            // sender context only
+            if (is_message_write_target || is_edge_prop_write_target || is_random_write_target) return true;
+        }
+
         if (is_random_write_target) {
+            if ((expr_scope != GPS_NEW_SCOPE_RANDOM) && (expr_scope !=GPS_NEW_SCOPE_GLOBAL))
+                comm_symbol = true;
+            /*
             if (is_id) {
                 gps_syminfo* syminfo = gps_get_global_syminfo(tg);
                 if ((syminfo!=NULL) && (syminfo->is_scoped_global()))
                     comm_symbol = false;
-                else if (tg->getSymInfo() == random_write_target)
+                else if (tg->getSymInfo() == random_write_target) // need this?
                     comm_symbol = false;
                 else
                     comm_symbol = true;
@@ -140,45 +141,15 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
                     comm_symbol = true;
                 }
             }
-        }
-        else if (context == GPS_CONTEXT_VERTEX) {
-            if (target_is_edge) { 
-                comm_symbol = false; 
-                ignored_symbol = false; 
-            }
-            else if (foreach_depth > 1) {  // Inner loop
-                if (is_id) { 
-                    assert(tg!=NULL);
-                    gps_syminfo* syminfo = gps_get_global_syminfo(tg);
-                    if (((syminfo!=NULL) && syminfo->is_scoped_outer()) || tg->getSymInfo() == out_iterator)
-                        comm_symbol = true;
-                    else
-                        ignored_symbol = true; // local to the receiver
-                }
-                else {
-                    if ((drv == out_iterator) || (drv->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)))
-                        comm_symbol = true;
-                    else
-                        ignored_symbol = true; // local to the receiver
-                }
-
-            }
-        }
-        else { // RECEIVER context
-            // do nothing. 
+            */
         }
 
-
-        if (!ignored_symbol) {
-            update_access_information(tg, sc_type, used_type, context);  
-        }
+        update_access_information(tg, sc_type, used_type, context);  
 
         if (comm_symbol) {
             if (is_random_write_target) {
-                //printf("adding random write comm symbol :%s\n", tg->get_genname());
                 beinfo->add_communication_symbol_random_write(
-                        random_write_target_sb, random_write_target, 
-                        tg->getSymInfo());
+                        random_write_target_sb, random_write_target, tg->getSymInfo());
             }
             else {
                 beinfo->add_communication_symbol_nested(in_loop, tg->getSymInfo());
@@ -273,15 +244,15 @@ class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 
         int foreach_depth;
 
-        gm_symtab_entry* out_iterator;
+        //gm_symtab_entry* out_iterator;
         ast_foreach*     in_loop;
-        ast_foreach*     out_loop;
         gm_gps_beinfo*   beinfo;
 
         bool is_random_write_target;
+        bool is_edge_prop_write_target ;
+        bool is_message_write_target;
         gm_symtab_entry* random_write_target;
         ast_sentblock* random_write_target_sb;
-        bool target_is_edge ;
 };
 
 const bool gps_merge_symbol_usage_t::IS_SCALAR = true;

@@ -3,7 +3,7 @@
 //--------------------------------------
 Procedure avg_teen_cnt(
         G: Graph, 
-        age, teen_cnt: N_P<Int>(G),
+        age, teen_cnt: N_P<Int>,
         K: Int) : Float
 {
     Foreach(n: G.Nodes) {

@@ -57,9 +57,15 @@ void gm_gps_gen::init_gen_steps()
     // no more change of AST at this point
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_reverse_edges));       // check if reverse edges are used
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_depth_two));           // check if max two-depth and apply scope analysis 
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_analyze_scope_sent_var));  // check scope of variable 
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_analyze_scope_rhs_lhs));  // check scope of variable 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_pull_data));           // check if it contains data pulling
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_access));       // check if it contains random access
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));          // 
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_read));       // check if it contains random access
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_write));       // check if it contains random access
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));         // 
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_rewrite_rhs));              // 
+
+
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));                // create (Extended) basic block
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));            // split communicating every BB into two
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_again));           // Merging Ebbs

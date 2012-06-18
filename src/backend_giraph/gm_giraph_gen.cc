@@ -17,7 +17,8 @@ void gm_giraph_gen::init_gen_steps()
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_reverse_edges));       // check if reverse edges are used
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_depth_two));           // check if max two-depth and apply scope analysis
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_pull_data));           // check if it contains data pulling
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_access));       // check if it contains random access
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_read));       // check if it contains random access
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_write));       // check if it contains random access
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));          //
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));                // create (Extended) basic block
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));            // split communicating every BB into two

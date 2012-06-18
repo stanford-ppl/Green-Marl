@@ -1,0 +1,14 @@
+Procedure test_default_graph(G:Graph)
+{
+    //must compile since only one graph is present
+    Node n;
+
+    Node_Set set;
+    set.Add(n);
+
+    Node_Order order;
+    order.PushBack(n);
+
+    Node_Seq seq;
+    seq.PushBack(n);
+}
