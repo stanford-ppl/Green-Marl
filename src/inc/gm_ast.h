@@ -447,7 +447,7 @@ class ast_typedecl : public ast_node {  // property or type
 
         virtual ~ast_typedecl() {
             delete target_type;
-            //delete target_graph; //gets deleted twice (sometimes) why??? o.O
+            delete target_graph; //gets deleted twice (sometimes) why??? o.O
             delete target_collection;
             delete target_nbr;
         }

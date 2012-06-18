@@ -40,7 +40,7 @@ public:
             // now delete
             ast_sent* z = *i;
             gm_ripoff_sent(z,false);
-	    //       delete z;  //Causes problem with single-graph syntactic sugar.....why?????? o.O
+	        delete z;  //Causes problem with single-graph syntactic sugar.....why?????? o.O
         }
         return true;
     }
