@@ -236,7 +236,7 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b)
     int type = b->get_type();
 
     char temp[1024];
-    sprintf(temp,"private void _master_state_%d() {", id, id);
+    sprintf(temp,"private void _master_state_%d() {", id);
     Body.pushln(temp);
     Body.pushln("/*------");
     Body.flush();

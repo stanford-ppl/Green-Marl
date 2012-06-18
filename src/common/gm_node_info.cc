@@ -102,7 +102,7 @@ void* ast_node::find_info_ptr(const char* id)
 {
     ast_extra_info* info = find_info(id);
     if (info == NULL) 
-        return false; 
+        return NULL;
     else 
         return info->ptr1;
 }
@@ -110,7 +110,7 @@ void* ast_node::find_info_ptr2(const char* id)
 {
     ast_extra_info* info = find_info(id);
     if (info == NULL) 
-        return false; 
+        return NULL;
     else 
         return info->ptr2;
 }

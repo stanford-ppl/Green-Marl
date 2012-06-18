@@ -20,6 +20,8 @@ void gm_giraph_gen::init_gen_steps()
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_read));       // check if it contains random access
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_write));       // check if it contains random access
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));          //
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_rewrite_rhs));               //
+
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));                // create (Extended) basic block
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));            // split communicating every BB into two
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_merge_ebb_again));           // Merging Ebbs
@@ -144,7 +146,7 @@ void gm_giraph_gen::do_generate_job_configuration()
 	Body.NL();
 	Body.pushln("GiraphJob job = new GiraphJob(getConf(), getClass().getName());");
 	Body.pushln("job.getConfiguration().setInt(GiraphJob.CHECKPOINT_FREQUENCY, 0);");
-	sprintf(temp, "job.setMasterClass(%sMaster.class);", proc->get_procname()->get_genname());
+	sprintf(temp, "job.setMasterComputeClass(%sMaster.class);", proc->get_procname()->get_genname());
 	Body.pushln(temp);
 	sprintf(temp, "job.setVertexClass(%sVertex.class);", proc->get_procname()->get_genname());
     Body.pushln(temp);

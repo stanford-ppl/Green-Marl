@@ -17,7 +17,7 @@
 class gm_check_property_usage_t : public gm_apply {
 public:
     gm_check_property_usage_t() {
-       topmost_iterator = false;
+       topmost_iterator = NULL;
        set_separate_post_apply(true);
        set_for_sent(true);
        set_for_expr(true);
