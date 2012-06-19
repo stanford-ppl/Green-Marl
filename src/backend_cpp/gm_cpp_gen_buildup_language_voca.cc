@@ -1,8 +1,6 @@
-
 #include "gm_backend_cpp.h"
 
-void gm_cpp_gen::build_up_language_voca()
-{
+void gm_cpp_gen::build_up_language_voca() {
     gm_vocabulary& V = get_language_voca();
 
     // list of c++ reserved words

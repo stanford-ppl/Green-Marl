@@ -5,10 +5,11 @@
 // Traverse BB DAG
 // Push visited BB nodes into the list
 //------------------------------------------------
-class gps_get_reachable_bb_list_t : public gps_apply_bb {
-    public:
-    gps_get_reachable_bb_list_t(std::list<gm_gps_basic_block*>& bb_blocks):blist (bb_blocks) 
-    {
+class gps_get_reachable_bb_list_t : public gps_apply_bb
+{
+public:
+    gps_get_reachable_bb_list_t(std::list<gm_gps_basic_block*>& bb_blocks) :
+            blist(bb_blocks) {
         blist.clear();
     }
 
@@ -18,9 +19,7 @@ class gps_get_reachable_bb_list_t : public gps_apply_bb {
     std::list<gm_gps_basic_block*>& blist;
 };
 
-
-void gm_gps_opt_find_reachable::process(ast_procdef* p)
-{
+void gm_gps_opt_find_reachable::process(ast_procdef* p) {
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_backend_info(p);
 
     // set list of reachable BBs

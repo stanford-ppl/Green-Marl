@@ -9,8 +9,7 @@
 //--------------------------------------------
 #include "gm_ind_opt_steps.h"
 
-void gm_independent_optimize::init_steps()
-{
+void gm_independent_optimize::init_steps() {
     std::list<gm_compile_step*>& LIST = this->opt_steps;
 
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_flip_edge_bfs));
@@ -23,10 +22,9 @@ void gm_independent_optimize::init_steps()
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_nonconf_reduce));
 }
 
-bool gm_independent_optimize::do_local_optimize()
-{
+bool gm_independent_optimize::do_local_optimize() {
     return gm_apply_compiler_stage(opt_steps);
 }
 
 /*
-*/
+ */

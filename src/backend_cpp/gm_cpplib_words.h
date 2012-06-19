@@ -22,5 +22,4 @@
 #define GET_LIST     "get_list"
 #define FROM_IDX     "node_idx_src"
 
-
 #endif

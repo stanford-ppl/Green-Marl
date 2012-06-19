@@ -88,13 +88,10 @@ struct gps_intra_merge_candidate_t
     gps_bb* seqn;
 };
 
-
 static void find_linear_while_segments(gps_bb* entry, std::list<gps_intra_merge_candidate_t*>& L);
 static void apply_intra_merge(gps_intra_merge_candidate_t*);
-void gm_gps_opt_merge_ebb_intra_loop::process(ast_procdef* p)
-{
-    if (!OPTIONS.get_arg_bool(GMARGFLAG_MERGE_BB_INTRA))
-        return;
+void gm_gps_opt_merge_ebb_intra_loop::process(ast_procdef* p) {
+    if (!OPTIONS.get_arg_bool(GMARGFLAG_MERGE_BB_INTRA)) return;
 
     gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);
     gps_bb* entry = info->get_entry_basic_block();
@@ -105,34 +102,33 @@ void gm_gps_opt_merge_ebb_intra_loop::process(ast_procdef* p)
     // find linear (do-)whlie segments
     //-------------------------------------------
     std::list<gps_intra_merge_candidate_t*> L;
-    find_linear_while_segments(entry,L);
+    find_linear_while_segments(entry, L);
 
     std::list<gps_intra_merge_candidate_t*>::iterator I;
 
     /*
-    for(I=L.begin(); I!=L.end(); I++) {
-        gps_intra_merge_candidate_t* C = *I;
-        printf("Found cands: %d %d %d %d", 
-                C->par1->get_id(), C->seq1->get_id(),
-                C->parn->get_id(), C->seqn->get_id());
-        if (C->seq0 == NULL) printf("\n");
-        else printf(" (+%d) \n", C->seq0->get_id());
-    }
-    */
+     for(I=L.begin(); I!=L.end(); I++) {
+     gps_intra_merge_candidate_t* C = *I;
+     printf("Found cands: %d %d %d %d",
+     C->par1->get_id(), C->seq1->get_id(),
+     C->parn->get_id(), C->seqn->get_id());
+     if (C->seq0 == NULL) printf("\n");
+     else printf(" (+%d) \n", C->seq0->get_id());
+     }
+     */
 
     //-------------------------------------------
     // find merge them
     //-------------------------------------------
-    for(I=L.begin(); I!=L.end(); I++) {
+    for (I = L.begin(); I != L.end(); I++) {
         apply_intra_merge(*I);
     }
 }
 
-static bool check_if_argument_is_modified(gm_rwinfo_map& M)
-{
+static bool check_if_argument_is_modified(gm_rwinfo_map& M) {
 
     gm_rwinfo_map::iterator I;
-    for (I=M.begin(); I!=M.end(); I++) {
+    for (I = M.begin(); I != M.end(); I++) {
         gm_symtab_entry * e = I->first;
         if (e->isArgument()) return true;
     }
@@ -140,43 +136,40 @@ static bool check_if_argument_is_modified(gm_rwinfo_map& M)
     return false;
 }
 
-class gps_find_intra_merge_candidate_t : public gps_apply_bb {
- public:
-    gps_find_intra_merge_candidate_t(std::list<gps_intra_merge_candidate_t*>& L) : cands(L)
-    {
+class gps_find_intra_merge_candidate_t : public gps_apply_bb
+{
+public:
+    gps_find_intra_merge_candidate_t(std::list<gps_intra_merge_candidate_t*>& L) :
+            cands(L) {
         current_trace_head = -1;
         stack.clear();
     }
 
-    virtual void apply(gm_gps_basic_block* b) 
-    {
+    virtual void apply(gm_gps_basic_block* b) {
         //printf("visiting :%d\n", b->get_id());
-        if (b->has_info(GPS_FLAG_WHILE_HEAD))  {
+        if (b->has_info(GPS_FLAG_WHILE_HEAD)) {
             start_new_trace(b->get_id(), b);
-        }
-        else if (b->has_info(GPS_FLAG_WHILE_TAIL)) {
+        } else if (b->has_info(GPS_FLAG_WHILE_TAIL)) {
             int head_id = b->find_info_int(GPS_FLAG_WHILE_TAIL);
             check_and_finish_trace(head_id, b);
-        }
-        else if (current_trace_head != -1) {
-            if ((b->get_num_entries() == 1)  && (b->get_num_exits() == 1)) { // simple path
+        } else if (current_trace_head != -1) {
+            if ((b->get_num_entries() == 1) && (b->get_num_exits() == 1)) { // simple path
                 stack.push_back(b);
             }
         }
-    } 
+    }
 
- private:
-    void start_new_trace(int id, gps_bb* b) { 
+private:
+    void start_new_trace(int id, gps_bb* b) {
         stack.clear();
         current_trace_head = id;
         curr_head = b;
         //printf("start trace : %d\n", id);
     }
-    void check_and_finish_trace(int id, gps_bb* b) { 
+    void check_and_finish_trace(int id, gps_bb* b) {
         curr_tail = b;
         //printf("end trace : %d\n", id);
-        if ((b->get_num_entries() == 1) && (b->get_num_exits() == 1))
-            stack.push_back(b);
+        if ((b->get_num_entries() == 1) && (b->get_num_exits() == 1)) stack.push_back(b);
 
         if (id == current_trace_head) {
             // found simple lines in the task
@@ -189,28 +182,31 @@ class gps_find_intra_merge_candidate_t : public gps_apply_bb {
             if (stack.size() >= 4) {
 
                 std::list<gps_bb*>::iterator I;
-                I = stack.begin(); p1 = *I;
+                I = stack.begin();
+                p1 = *I;
                 if (!p1->is_vertex()) {
                     s0 = p1;
-                    I++; 
+                    I++;
                     p1 = *I;
                 }
 
-                I++; s1 = *I;
-                I = stack.end();  I--; s2 = *I;
-                I--; p2 = *I;
+                I++;
+                s1 = *I;
+                I = stack.end();
+                I--;
+                s2 = *I;
+                I--;
+                p2 = *I;
 
                 bool is_okay = false;
-                if (p1->is_vertex() && p2->is_vertex() && !s1->is_vertex() && !s2->is_vertex() && 
-                    ((s0 == NULL) || (!s0->is_vertex())))
-                {
+                if (p1->is_vertex() && p2->is_vertex() && !s1->is_vertex() && !s2->is_vertex() && ((s0 == NULL) || (!s0->is_vertex()))) {
                     is_okay = true;
                 }
 
                 // check PAR1 contains no receive
-                if (p1->has_receiver()) is_okay = false;
-                else if (p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION) ||
-                         p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION_RANDOM)) is_okay = false;
+                if (p1->has_receiver())
+                    is_okay = false;
+                else if (p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION) || p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION_RANDOM)) is_okay = false;
 
                 gm_rwinfo_sets* rwi = NULL;
                 if (is_okay) {
@@ -220,8 +216,7 @@ class gps_find_intra_merge_candidate_t : public gps_apply_bb {
                     gm_rwinfo_sets* rwi_n = new gm_rwinfo_sets();
                     gm_gps_get_rwinfo_from_bb(s2, rwi_n);
 
-                    if (gm_has_dependency(rwi, rwi_n)) 
-                        is_okay = false;
+                    if (gm_has_dependency(rwi, rwi_n)) is_okay = false;
 
                     delete rwi_n;
                 }
@@ -229,14 +224,14 @@ class gps_find_intra_merge_candidate_t : public gps_apply_bb {
                 if (is_okay) {
                     gm_gps_get_rwinfo_from_bb(s1, rwi);
                     /*
-                    printf("read set for BB:%d,%d\n", p1->get_id(), s1->get_id());
-                    gm_print_rwinfo_set(rwi->read_set);
-                    printf("write set for BB:%d,%d\n", p1->get_id(), s1->get_id());
-                    gm_print_rwinfo_set(rwi->write_set);
-                    */
+                     printf("read set for BB:%d,%d\n", p1->get_id(), s1->get_id());
+                     gm_print_rwinfo_set(rwi->read_set);
+                     printf("write set for BB:%d,%d\n", p1->get_id(), s1->get_id());
+                     gm_print_rwinfo_set(rwi->write_set);
+                     */
 
                     // check if argument is modified inside p1 or s1
-                    bool b = check_if_argument_is_modified(rwi->write_set); 
+                    bool b = check_if_argument_is_modified(rwi->write_set);
                     if (b) is_okay = false;
                 }
 
@@ -245,18 +240,18 @@ class gps_find_intra_merge_candidate_t : public gps_apply_bb {
                     gm_gps_basic_block* next;
                     if (curr_head->get_num_exits() > 1)  // WHILE
                         next = curr_head->get_nth_exit(1);
-                    else  
+                    else
                         next = curr_tail->get_nth_exit(1);
 
                     gm_rwinfo_sets* rwi2 = new gm_rwinfo_sets();
                     gm_gps_get_rwinfo_from_all_reachable_bb(next, rwi2);
 
                     /*
-                    printf("read set for reachable:\n");
-                    gm_print_rwinfo_set(rwi2->read_set);
-                    printf("write set for reeachable\n");
-                    gm_print_rwinfo_set(rwi2->write_set);
-                    */
+                     printf("read set for reachable:\n");
+                     gm_print_rwinfo_set(rwi2->read_set);
+                     printf("write set for reeachable\n");
+                     gm_print_rwinfo_set(rwi2->write_set);
+                     */
 
                     // check if future is modified
                     is_okay = !gm_does_intersect(rwi->write_set, rwi2->read_set);
@@ -267,13 +262,13 @@ class gps_find_intra_merge_candidate_t : public gps_apply_bb {
                 delete rwi;
 
                 if (is_okay) {
-                    gps_intra_merge_candidate_t* C = 
-                        new gps_intra_merge_candidate_t();
+                    gps_intra_merge_candidate_t* C = new gps_intra_merge_candidate_t();
                     if (curr_head->get_num_exits() > 1)  // WHILE
                         C->while_cond = curr_head;
-                    else  {
+                    else {
                         C->while_cond = curr_tail;
-                        assert(curr_tail->get_num_exits() > 1); // DO-WHILE
+                        assert(curr_tail->get_num_exits() > 1);
+                        // DO-WHILE
                     }
                     C->par1 = p1;
                     C->seq1 = s1;
@@ -296,15 +291,13 @@ class gps_find_intra_merge_candidate_t : public gps_apply_bb {
 
 };
 
-static void find_linear_while_segments(gps_bb* entry, std::list<gps_intra_merge_candidate_t*>& L)
-{
+static void find_linear_while_segments(gps_bb* entry, std::list<gps_intra_merge_candidate_t*>& L) {
     // apply this in DFS traversal of basic blocks
     gps_find_intra_merge_candidate_t T(L);
     gps_bb_apply_only_once(entry, &T);  // in DFS order
 }
 
-static void apply_intra_merge(gps_intra_merge_candidate_t* C)
-{
+static void apply_intra_merge(gps_intra_merge_candidate_t* C) {
     // appl
     gps_bb* p_1 = C->par1;
     gps_bb* s_1 = C->seq1;
@@ -318,34 +311,32 @@ static void apply_intra_merge(gps_intra_merge_candidate_t* C)
     //---------------------------------------------------
     //  mark p_n's sents/receivers as 'conditional'
     std::list<ast_sent*>::iterator I;
-    for(I = p_n->get_sents().begin(); I!= p_n->get_sents().end(); I++)  
+    for (I = p_n->get_sents().begin(); I != p_n->get_sents().end(); I++)
         (*I)->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
-    for(I = s_n->get_sents().begin(); I!= s_n->get_sents().end(); I++)  
+    for (I = s_n->get_sents().begin(); I != s_n->get_sents().end(); I++)
         (*I)->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
 
     /* // don't need this
-    std::list<gm_gps_comm_unit>::iterator J;
-    for(J = p_n->get_receivers().begin(); J!= p_n->get_receivers().end(); J++)  
-    {
-        gm_gps_comm_unit& U = *J;
-        if (U.fe != NULL) {
-            U.fe->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
-        }
-        else if (U.sb != NULL) {
-            U.sb->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
-        }
-    }
-    */
-
+     std::list<gm_gps_comm_unit>::iterator J;
+     for(J = p_n->get_receivers().begin(); J!= p_n->get_receivers().end(); J++)
+     {
+     gm_gps_comm_unit& U = *J;
+     if (U.fe != NULL) {
+     U.fe->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
+     }
+     else if (U.sb != NULL) {
+     U.sb->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
+     }
+     }
+     */
 
     //  move p_1's sents and information to p_n (p_1 has no receivers)
-    for(I = p_1->get_sents().begin(); I!= p_1->get_sents().end(); I++)  
+    for (I = p_1->get_sents().begin(); I != p_1->get_sents().end(); I++)
         p_n->add_sent(*I);
-    for(I = s_1->get_sents().begin(); I!= s_1->get_sents().end(); I++)  
+    for (I = s_1->get_sents().begin(); I != s_1->get_sents().end(); I++)
         s_n->add_sent(*I);
     p_n->copy_info_from(p_1);
     s_n->copy_info_from(s_1);
-
 
     // add tags 
     p_n->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
@@ -353,10 +344,9 @@ static void apply_intra_merge(gps_intra_merge_candidate_t* C)
     s_n->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
     s_n->add_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO, while_cond->get_id());
 
-
     // create new state
-    gm_gps_beinfo* BEINFO =  (gm_gps_beinfo*) FE.get_current_backend_info();
-    gps_bb* TAIL2 = new gps_bb (BEINFO->issue_basicblock_id(), GM_GPS_BBTYPE_MERGED_TAIL);
+    gm_gps_beinfo* BEINFO = (gm_gps_beinfo*) FE.get_current_backend_info();
+    gps_bb* TAIL2 = new gps_bb(BEINFO->issue_basicblock_id(), GM_GPS_BBTYPE_MERGED_TAIL);
 
     // add tag that this is merged conditional
     TAIL2->add_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO, while_cond->get_id());
@@ -395,7 +385,7 @@ static void apply_intra_merge(gps_intra_merge_candidate_t* C)
         // [exit 1] is to while cond
         TAIL2->add_exit(p_2, false);
         TAIL2->add_exit(org_exit, false);
-        
+
         p_2->update_entry_from(s_1, TAIL2);
     }
 

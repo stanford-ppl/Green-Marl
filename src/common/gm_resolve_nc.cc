@@ -1,12 +1,8 @@
-
 #include <list>
 #include "gm_frontend.h"
 #include "gm_traverse.h"
 #include "gm_typecheck.h"
 #include "gm_misc.h"
-
-
-
 
 #if 0
 //--------------------------------------------------------------------------------
@@ -16,8 +12,6 @@
 //--------------------------------------------------------------------------------
 bool gm_resolve_name_conflict(ast_sent *s, gm_symtab_entry *e, bool is_scalar);
 
-
-   
 // apply class for resolve nc
 class gm_resolve_nc_t : public gm_apply {
 public:
@@ -87,8 +81,6 @@ bool gm_resolve_name_conflict(ast_sent *s, gm_symtab_entry *e, bool is_scalar)
 }
 #endif
 
-
-
 #if 0
 //------------------------------------------------------------------------------------
 // For the subtree top,
@@ -97,7 +89,7 @@ bool gm_resolve_name_conflict(ast_sent *s, gm_symtab_entry *e, bool is_scalar)
 //bool gm_reflect_symbol_entry_name(gm_symtab_entry *e_modified, ast_node* top);
 class gm_reflect_symbol_entry_name_t : public gm_apply {
 public:
-    virtual bool apply(ast_id* i) 
+    virtual bool apply(ast_id* i)
     {
         assert(_curr != NULL);
         assert(i->getSymInfo() != NULL);
@@ -120,12 +112,11 @@ protected:
 };
 bool gm_reflect_symbol_entry_name(gm_symtab_entry *e_modified, ast_node* top)
 {
-  gm_reflect_symbol_entry_name_t T;
-  T.do_reflect(e_modified, top);
-  return T.is_changed();
+    gm_reflect_symbol_entry_name_t T;
+    T.do_reflect(e_modified, top);
+    return T.is_changed();
 }
 #endif
-
 
 //---------------------------------------------------------------------------------------
 // For the subtree(top), 
@@ -138,9 +129,9 @@ bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_
 class gm_replace_symbol_entry_t : public gm_apply
 {
 public:
-    virtual bool apply(ast_id* i) 
-    {
-        assert(_src != NULL); assert(_target !=NULL);
+    virtual bool apply(ast_id* i) {
+        assert(_src != NULL);
+        assert(_target !=NULL);
         assert(i->getSymInfo() != NULL);
         if (i->getSymInfo() == _src) {
             i->setSymInfo(_target);
@@ -148,10 +139,14 @@ public:
         }
         return true;
     }
-    bool is_changed() {return _changed;}
+    bool is_changed() {
+        return _changed;
+    }
     void do_replace(gm_symtab_entry *e_old, gm_symtab_entry* e_new, ast_node* top) {
-        set_all(false); set_for_id(true);
-        _src = e_old; _target = e_new;
+        set_all(false);
+        set_for_id(true);
+        _src = e_old;
+        _target = e_new;
         _changed = false;
         //_need_change_name = ! gm_is_same_string(e_old->getId()->get_orgname(), e_new->getId()->get_orgname());
         top->traverse_pre(this);
@@ -159,12 +154,11 @@ public:
 protected:
     bool _changed;
     //bool _need_change_name;
-    gm_symtab_entry* _src; 
+    gm_symtab_entry* _src;
     gm_symtab_entry*_target;
 };
-bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top)
-{
-  gm_replace_symbol_entry_t T;
-  T.do_replace(e_old, e_new, top);
-  return T.is_changed();
+bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top) {
+    gm_replace_symbol_entry_t T;
+    T.do_replace(e_old, e_new, top);
+    return T.is_changed();
 }

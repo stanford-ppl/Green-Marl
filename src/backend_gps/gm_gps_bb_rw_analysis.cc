@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include "gm_backend_gps.h"
 #include "gm_error.h"
@@ -10,17 +9,15 @@
 
 typedef gm_gps_basic_block gps_bb;
 
-
-
-
 //-------------------------------------------------------
 // simple RW info; believe every access is random
 //-------------------------------------------------------
-class gm_gps_find_rwinfo_simple : public gps_apply_bb_ast 
+class gm_gps_find_rwinfo_simple : public gps_apply_bb_ast
 {
 public:
     // find
-    gm_gps_find_rwinfo_simple( gm_rwinfo_sets* _SS) : S(_SS) {
+    gm_gps_find_rwinfo_simple(gm_rwinfo_sets* _SS) :
+            S(_SS) {
         set_for_rhs(true);
         set_for_lhs(true);
         set_for_sent(true);
@@ -30,14 +27,11 @@ public:
         inner_loop = NULL;
     }
 
-    virtual bool apply(ast_sent* s) 
-    {
-        if (s->get_nodetype() == AST_FOREACH)
-        {
+    virtual bool apply(ast_sent* s) {
+        if (s->get_nodetype() == AST_FOREACH) {
             if (s->find_info_bool(GPS_FLAG_IS_OUTER_LOOP)) {
                 outer_loop = (ast_foreach*) s;
-            }
-            else if (s->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
+            } else if (s->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
                 inner_loop = (ast_foreach*) s;
             }
         }
@@ -46,12 +40,10 @@ public:
     }
 
     virtual bool apply2(ast_sent* s) {
-        if (s->get_nodetype() == AST_FOREACH)
-        {
+        if (s->get_nodetype() == AST_FOREACH) {
             if (s->find_info_bool(GPS_FLAG_IS_OUTER_LOOP)) {
                 outer_loop = NULL;
-            }
-            else if (s->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
+            } else if (s->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
                 inner_loop = NULL;
             }
         }
@@ -79,10 +71,9 @@ public:
         }
         if (is_inner_loop()) {
             assert(!syminfo->is_scoped_outer());
-            if (!is_under_receiver_traverse())
-                return true;
+            if (!is_under_receiver_traverse()) return true;
         }
-        
+
         // add to write-set
         gm_rwinfo* entry = gm_rwinfo::new_scala_inst(id);
         gm_add_rwinfo_to_set(S->write_set, id->getSymInfo(), entry, false);
@@ -111,16 +102,11 @@ public:
             if (!is_under_receiver_traverse()) {
                 return true;
             }
-        }
-        else if (is_outer_loop_only()) {
-            if (drv == outer_loop->get_iterator()->getSymInfo())
-            {
+        } else if (is_outer_loop_only()) {
+            if (drv == outer_loop->get_iterator()->getSymInfo()) {
                 is_random = false;
-            }
-            else if (!is_under_receiver_traverse())
-                return true;
-        }
-        else { // global scope
+            } else if (!is_under_receiver_traverse()) return true;
+        } else { // global scope
             if (is_under_receiver_traverse()) { // random write receiving
 
             } else {
@@ -158,15 +144,10 @@ public:
             return true;
         }
         if (is_inner_loop()) {
-            if (syminfo->is_scoped_outer()) 
-            {
-                if (is_under_receiver_traverse())
-                    return true;
-            }
-            else 
-            {
-                if (!is_under_receiver_traverse())
-                    return true;
+            if (syminfo->is_scoped_outer()) {
+                if (is_under_receiver_traverse()) return true;
+            } else {
+                if (!is_under_receiver_traverse()) return true;
             }
             // [todo: random write rhs]
         }
@@ -202,16 +183,13 @@ public:
             } else if (drv == outer_loop->get_iterator()->getSymInfo()) {
                 if (is_under_receiver_traverse()) return true;
                 is_random = false;
-            }
-            else if (drv->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)){
+            } else if (drv->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) {
                 if (is_under_receiver_traverse()) return true;
-            }
-            else {
+            } else {
                 printf("driver = %s\n", drv->getId()->get_orgname());
                 assert(false);
             }
-        }
-        else if (is_outer_loop_only()) {
+        } else if (is_outer_loop_only()) {
             if (drv != outer_loop->get_iterator()->getSymInfo()) {
                 assert(false);
             }
@@ -229,26 +207,27 @@ public:
         return true;
     }
 
-    virtual bool apply2(gm_symtab_entry* e, int symtab_type){ 
+    virtual bool apply2(gm_symtab_entry* e, int symtab_type) {
         // remove from S
-    	return true;
+        return true;
     }
 protected:
     gm_rwinfo_sets* S;
     ast_foreach* outer_loop;
     ast_foreach* inner_loop;
-    bool is_inner_loop()          {return inner_loop != NULL;}
-    bool is_outer_loop_or_inner() {return outer_loop != NULL;}
-    bool is_outer_loop_only()     {return is_outer_loop_or_inner() && !is_inner_loop();}
+    bool is_inner_loop() {
+        return inner_loop != NULL;
+    }
+    bool is_outer_loop_or_inner() {
+        return outer_loop != NULL;
+    }
+    bool is_outer_loop_only() {
+        return is_outer_loop_or_inner() && !is_inner_loop();
+    }
 };
 
-
-
-gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gps_bb* BB, gm_rwinfo_sets* S)
-{
-    if (S == NULL)
-        S = new gm_rwinfo_sets();
-
+gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gps_bb* BB, gm_rwinfo_sets* S) {
+    if (S == NULL) S = new gm_rwinfo_sets();
 
     //-------------------------------------------
     // traverse AST inside BB
@@ -261,8 +240,7 @@ gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gps_bb* BB, gm_rwinfo_sets* S)
     return S;
 }
 
-gm_rwinfo_sets* gm_gps_get_rwinfo_from_all_reachable_bb(gps_bb* BB, gm_rwinfo_sets* S)
-{
+gm_rwinfo_sets* gm_gps_get_rwinfo_from_all_reachable_bb(gps_bb* BB, gm_rwinfo_sets* S) {
     if (S == NULL) S = new gm_rwinfo_sets();
 
     //-------------------------------------------

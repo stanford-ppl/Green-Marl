@@ -10,8 +10,7 @@
 #include "gm_backend_cpp_opt_steps.h"
 #include "gm_ind_opt_steps.h"
 
-void gm_cpp_gen::init_opt_steps()
-{
+void gm_cpp_gen::init_opt_steps() {
     std::list<gm_compile_step*>& LIST = this->opt_steps;
 
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_check_feasible));
@@ -24,15 +23,12 @@ void gm_cpp_gen::init_opt_steps()
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_reduce_scalar));
 }
 
-
-bool gm_cpp_gen::do_local_optimize()
-{
+bool gm_cpp_gen::do_local_optimize() {
     // apply all the optimize steps to all procedures
     return gm_apply_compiler_stage(opt_steps);
 }
 
-bool gm_cpp_gen::do_local_optimize_lib()
-{
+bool gm_cpp_gen::do_local_optimize_lib() {
     assert(get_lib() != NULL);
     return get_lib()->do_local_optimize();
 }

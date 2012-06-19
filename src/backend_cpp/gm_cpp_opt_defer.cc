@@ -6,9 +6,8 @@
 #include "gm_frontend.h"
 #include "gm_rw_analysis.h"
 
-
 static bool find_deferred_writes(ast_procdef* proc, std::list<gm_symtab_entry*>& target_syms, std::list<ast_foreach*>& target_foreach);
-static void post_process_deferred_writes( std::list<gm_symtab_entry*>& target_syms, std::list<ast_foreach*>& target_foreach);
+static void post_process_deferred_writes(std::list<gm_symtab_entry*>& target_syms, std::list<ast_foreach*>& target_foreach);
 
 //-----------------------------------------------------
 // (2-phase update)
@@ -18,30 +17,29 @@ static void post_process_deferred_writes( std::list<gm_symtab_entry*>& target_sy
 // 4. (apply loop merge?)
 //-----------------------------------------------------
 /*
-bool gm_cpp_gen::deferred_write(ast_procdef* proc)
-{
-    std::list<gm_symtab_entry*> S;
-    std::list<ast_foreach*> F;
-    bool b = find_deferred_writes(proc, S, F);
-    if (b) {
-        post_process_deferred_writes(S,F);
+ bool gm_cpp_gen::deferred_write(ast_procdef* proc)
+ {
+ std::list<gm_symtab_entry*> S;
+ std::list<ast_foreach*> F;
+ bool b = find_deferred_writes(proc, S, F);
+ if (b) {
+ post_process_deferred_writes(S,F);
 
-        gm_redo_rw_analysis(proc->get_body());
-    }
-    
-    return true;
-}
-*/
+ gm_redo_rw_analysis(proc->get_body());
+ }
+
+ return true;
+ }
+ */
 
 #include "gm_backend_cpp_opt_steps.h"
 
-void gm_cpp_opt_defer::process(ast_procdef* proc) 
-{
+void gm_cpp_opt_defer::process(ast_procdef* proc) {
     std::list<gm_symtab_entry*> S;
     std::list<ast_foreach*> F;
     bool b = find_deferred_writes(proc, S, F);  // return found defer
     if (b) {
-        post_process_deferred_writes(S,F);
+        post_process_deferred_writes(S, F);
 
         gm_redo_rw_analysis(proc->get_body());
     }
@@ -52,7 +50,7 @@ void gm_cpp_opt_defer::process(ast_procdef* proc)
 //---------------------------------------------
 // detect all deferred writes in the code
 //---------------------------------------------
-class gm_defer_write : public gm_apply 
+class gm_defer_write : public gm_apply
 {
 public:
     bool apply(ast_sent* s) { // do post-apply
@@ -60,16 +58,19 @@ public:
         ast_foreach* fe = (ast_foreach*) s;
 
         // check if it has any deferred assignments are bound to this FE.
-        gm_bound_set_info* B = gm_get_bound_set_info(fe); assert(B!=NULL);
-        gm_rwinfo_map& BSET= B->bound_set;
+        gm_bound_set_info* B = gm_get_bound_set_info(fe);
+        assert(B!=NULL);
+        gm_rwinfo_map& BSET = B->bound_set;
 
         gm_rwinfo_map::iterator i;
-        for(i=BSET.begin(); i!=BSET.end(); i++) {
-            gm_symtab_entry*e = i->first;  assert(e!=NULL);
-            gm_rwinfo_list* l = i->second; assert(l!=NULL);
+        for (i = BSET.begin(); i != BSET.end(); i++) {
+            gm_symtab_entry*e = i->first;
+            assert(e!=NULL);
+            gm_rwinfo_list* l = i->second;
+            assert(l!=NULL);
             gm_rwinfo_list::iterator j;
             bool is_deferred = false;
-            for(j=l->begin(); j!=l->end(); j++) {
+            for (j = l->begin(); j != l->end(); j++) {
                 gm_rwinfo* I = *j;
                 if (I->reduce_op == GMREDUCE_DEFER) {
                     is_deferred = true;
@@ -81,7 +82,7 @@ public:
                 target_syms->push_back(e);
                 target_foreach->push_back(fe);
             }
-        } 
+        }
         return true;
     }
 
@@ -91,18 +92,19 @@ public:
         return has_found;
     }
 
-    void set_targets(std::list<gm_symtab_entry*>* S,
-                     std::list<ast_foreach*>* F)  {target_syms = S; target_foreach = F;}
+    void set_targets(std::list<gm_symtab_entry*>* S, std::list<ast_foreach*>* F) {
+        target_syms = S;
+        target_foreach = F;
+    }
 
 protected:
     std::list<gm_symtab_entry*>* target_syms;
-    std::list<ast_foreach*>*     target_foreach;
+    std::list<ast_foreach*>* target_foreach;
     bool has_found;
 
 };
 
-static bool find_deferred_writes(ast_procdef* proc, std::list<gm_symtab_entry*>& target_syms, std::list<ast_foreach*>& target_foreach)
-{
+static bool find_deferred_writes(ast_procdef* proc, std::list<gm_symtab_entry*>& target_syms, std::list<ast_foreach*>& target_foreach) {
     gm_defer_write T;
     T.set_targets(&target_syms, &target_foreach);
     bool b = T.find_deferred_writes(proc);
@@ -112,9 +114,8 @@ static bool find_deferred_writes(ast_procdef* proc, std::list<gm_symtab_entry*>&
 static ast_foreach* create_initializer(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest);
 static ast_foreach* create_updater(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest);
 static void replace_deferred_assignment(ast_sent* s, gm_symtab_entry *target_old, gm_symtab_entry* target_new);
-static bool check_conditional_initialize(ast_foreach* target_fe, gm_symtab_entry* target_old, ast_sent*& seq_loop); 
-static void add_conditional_initialize( ast_sent* seq_loop, ast_foreach* target_fe, ast_foreach* init, 
-                                        gm_symtab_entry* target_old, gm_symtab_entry* target_new);
+static bool check_conditional_initialize(ast_foreach* target_fe, gm_symtab_entry* target_old, ast_sent*& seq_loop);
+static void add_conditional_initialize(ast_sent* seq_loop, ast_foreach* target_fe, ast_foreach* init, gm_symtab_entry* target_old, gm_symtab_entry* target_new);
 
 //-----------------------------------------------------------------------
 // process deferred writes in following ways.
@@ -123,20 +124,19 @@ static void add_conditional_initialize( ast_sent* seq_loop, ast_foreach* target_
 //     (apply optimization: conditional initializer)
 //   - add updater
 //-----------------------------------------------------------------------
-static void post_process_deferred_writes(
-    std::list<gm_symtab_entry*>& target_syms, std::list<ast_foreach*>& target_foreach) 
-{
+static void post_process_deferred_writes(std::list<gm_symtab_entry*>& target_syms, std::list<ast_foreach*>& target_foreach) {
     assert(target_syms.size() == target_foreach.size());
     std::list<gm_symtab_entry*>::iterator i = target_syms.begin();
     std::list<ast_foreach*>::iterator j = target_foreach.begin();
-    for(; i!=target_syms.end();i++, j++) {
+    for (; i != target_syms.end(); i++, j++) {
 
         gm_symtab_entry* old_dest = *i;
         ast_typedecl *type = (*i)->getType();
         ast_id* id = (*i)->getId();
         ast_foreach* fe = *j;
 
-        assert(type->is_property()); // [TODO] hack. Think about deferred-write to scalar, later.
+        assert(type->is_property());
+        // [TODO] hack. Think about deferred-write to scalar, later.
         gm_make_it_belong_to_sentblock(fe); // make sure fe belongs to a sentblock
 
         //---------------------------------------
@@ -144,14 +144,14 @@ static void post_process_deferred_writes(
         // [todo] check name conflict
         //---------------------------------------
         bool is_nodeprop = type->is_node_property();
-        int target_type = type->getTargetTypeSummary(); assert(gm_is_prim_type(target_type));
+        int target_type = type->getTargetTypeSummary();
+        assert(gm_is_prim_type(target_type));
         ast_sentblock* scope = gm_find_upscope(fe);
         gm_symtab_entry * target_graph = type->get_target_graph_sym();
-        
+
         char* fname = (char*) FE.voca_temp_name_and_add(id->get_orgname(), "_nxt");
-        gm_symtab_entry* new_dest
-            = gm_add_new_symbol_property(scope, target_type, is_nodeprop, target_graph, fname);
-        delete [] fname;
+        gm_symtab_entry* new_dest = gm_add_new_symbol_property(scope, target_type, is_nodeprop, target_graph, fname);
+        delete[] fname;
 
         //--------------------------------------
         // replace deferred assignment
@@ -166,15 +166,14 @@ static void post_process_deferred_writes(
 
         bool need_initializer = true;
         if (gm_is_all_graph_iter_type(fe->get_iter_type())) {
-            gm_rwinfo_sets *sets =  gm_get_rwinfo_sets(fe);
+            gm_rwinfo_sets *sets = gm_get_rwinfo_sets(fe);
             gm_rwinfo_map& W = sets->write_set;
             assert(W.find(old_dest) != W.end());
             gm_rwinfo_list* L = W[old_dest];
-            std::list<gm_rwinfo*>::iterator I ;
-            for(I=L->begin(); I!=L->end();I++)
-            {
+            std::list<gm_rwinfo*>::iterator I;
+            for (I = L->begin(); I != L->end(); I++) {
                 gm_rwinfo* info = *I;
-                if ((info->access_range == GM_RANGE_LINEAR) && (info->always)){
+                if ((info->access_range == GM_RANGE_LINEAR) && (info->always)) {
                     need_initializer = false;
                     break;
                 }
@@ -211,10 +210,8 @@ static void post_process_deferred_writes(
             //   Update X from X_new
             // }
             //---------------------------------------
-            if (need_initializer)
-                add_conditional_initialize(seq_loop,fe, init, old_dest, new_dest);
-        }
-        else {
+            if (need_initializer) add_conditional_initialize(seq_loop, fe, init, old_dest, new_dest);
+        } else {
             gm_add_sent_before(fe, init);
         }
 
@@ -226,7 +223,6 @@ static void post_process_deferred_writes(
     }
 }
 
-
 //---------------------------------------------------
 // replace  a.X <= <expr> 
 // with     a.X_new = <expr> 
@@ -235,7 +231,7 @@ class gm_replace_da_t : public gm_apply
 {
 public:
     bool apply(ast_sent* s) {
-        if (s->get_nodetype()!= AST_ASSIGN) return true;
+        if (s->get_nodetype() != AST_ASSIGN) return true;
         ast_assign* a = (ast_assign*) s;
         if (a->is_defer_assign()) {
             if (!a->is_target_scalar()) {
@@ -260,7 +256,8 @@ public:
         e_old = o;
         e_new = n;
         s = _s;
-        set_all(false); set_for_sent(true);
+        set_all(false);
+        set_for_sent(true);
         s->traverse_post(this);
     }
 
@@ -270,14 +267,12 @@ protected:
     ast_sent *s;
 
 };
-void replace_deferred_assignment(ast_sent* s, gm_symtab_entry *target_old, gm_symtab_entry* target_new) 
-{
-     gm_replace_da_t T;
-     T.replace_da(target_old, target_new, s);
+void replace_deferred_assignment(ast_sent* s, gm_symtab_entry *target_old, gm_symtab_entry* target_new) {
+    gm_replace_da_t T;
+    T.replace_da(target_old, target_new, s);
 }
 
-static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest, bool is_init)
-{
+static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest, bool is_init) {
     assert(src->getSymInfo()!=NULL);
 
     //-------------------------------
@@ -287,19 +282,19 @@ static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symt
     //-------------------------------
     ast_id* lhs_driver = ast_id::new_id(NULL, 0, 0);
     ast_id* rhs_driver = ast_id::new_id(NULL, 0, 0);
-    ast_field* lhs; 
+    ast_field* lhs;
     ast_field* rhs;
     if (is_init) {
         ast_id* lhs_prop = new_dest->getId()->copy(true);
         ast_id* rhs_prop = old_dest->getId()->copy(true);
         lhs = ast_field::new_field(lhs_driver, lhs_prop);
         rhs = ast_field::new_field(rhs_driver, rhs_prop);
-    } else{
+    } else {
         ast_id* lhs_prop = old_dest->getId()->copy(true);
         ast_id* rhs_prop = new_dest->getId()->copy(true);
         lhs = ast_field::new_field(lhs_driver, lhs_prop);
         rhs = ast_field::new_field(rhs_driver, rhs_prop);
-    } 
+    }
     ast_expr* rhs_expr = ast_expr::new_field_expr(rhs);
     ast_assign* a = ast_assign::new_assign_field(lhs, rhs_expr);
 
@@ -308,10 +303,10 @@ static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symt
     //------------------------------
     const char* iter_name = FE.voca_temp_name_and_add("i");
     ast_id* itor = ast_id::new_id(iter_name, 0, 0);
-    int iter_type = is_nodeprop ?  GMTYPE_NODEITER_ALL : GMTYPE_EDGEITER_ALL;
+    int iter_type = is_nodeprop ? GMTYPE_NODEITER_ALL : GMTYPE_EDGEITER_ALL;
     ast_foreach* fe = gm_new_foreach_after_tc(itor, src, a, iter_type);
     assert(itor->getSymInfo()!=NULL);
-    delete [] iter_name;
+    delete[] iter_name;
 
     //-------------------------------
     // set up symbol info of the body
@@ -322,18 +317,14 @@ static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symt
     return fe;
 }
 
-static ast_foreach* create_initializer(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest)
-{
+static ast_foreach* create_initializer(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest) {
     return create_init_or_update(src, is_nodeprop, old_dest, new_dest, true);
 }
-static ast_foreach* create_updater(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest)
-{
+static ast_foreach* create_updater(ast_id* src, bool is_nodeprop, gm_symtab_entry* old_dest, gm_symtab_entry* new_dest) {
     return create_init_or_update(src, is_nodeprop, old_dest, new_dest, false);
 }
 
-
-static bool check_if_modified_elsewhere(gm_symtab_entry* e, ast_sent* myself, ast_sent* seq_loop)
-{
+static bool check_if_modified_elsewhere(gm_symtab_entry* e, ast_sent* myself, ast_sent* seq_loop) {
     //printf("seq_loop = %p, myself = %p\n", seq_loop, myself);
 
     if (myself == seq_loop) return false;  // not modified elsewhere then my-self 
@@ -348,7 +339,7 @@ static bool check_if_modified_elsewhere(gm_symtab_entry* e, ast_sent* myself, as
         ast_sentblock* sb = (ast_sentblock*) up;
         std::list<ast_sent*>& sents = sb->get_sents();
         std::list<ast_sent*>::iterator I;
-        for(I=sents.begin(); I!=sents.end(); I++) {
+        for (I = sents.begin(); I != sents.end(); I++) {
             if (*I == myself) continue;
             if (gm_is_modified(*I, e)) return true;
         }
@@ -358,12 +349,10 @@ static bool check_if_modified_elsewhere(gm_symtab_entry* e, ast_sent* myself, as
 
 }
 
-static bool check_conditional_initialize(ast_foreach* target_fe, gm_symtab_entry* target_old, ast_sent*& seq_loop) 
-{
+static bool check_conditional_initialize(ast_foreach* target_fe, gm_symtab_entry* target_old, ast_sent*& seq_loop) {
     // 1. check if target modifies *old_target* linearly and unconditionally. 
     // (note: RW-analysis for target_fe has not updated.)
-    if (!gm_is_modified_always_linearly(target_fe, target_old))
-        return false;
+    if (!gm_is_modified_always_linearly(target_fe, target_old)) return false;
 
     // 2. check if target_fe is inside a seq_loop. (unconditionally)
     seq_loop = gm_find_enclosing_seq_loop(target_fe);
@@ -373,11 +362,8 @@ static bool check_conditional_initialize(ast_foreach* target_fe, gm_symtab_entry
     return !check_if_modified_elsewhere(target_old, target_fe, seq_loop); // temp
 }
 
-static void add_conditional_initialize(
-    ast_sent* seq_loop, 
-    ast_foreach* target_fe, ast_foreach* init, 
-    gm_symtab_entry* target_old, gm_symtab_entry* target_new)
-{
+static void add_conditional_initialize(ast_sent* seq_loop, ast_foreach* target_fe, ast_foreach* init, gm_symtab_entry* target_old,
+        gm_symtab_entry* target_new) {
 
     gm_make_it_belong_to_sentblock(seq_loop); // make sure fe belongs to a sentblock
 
@@ -403,7 +389,7 @@ static void add_conditional_initialize(
     gm_symtab* upup_symtab_v = upup->get_symtab_var();
     const char* flag_name = FE.voca_temp_name_and_add("is_first");
     gm_symtab_entry *flag_sym = gm_add_new_symbol_primtype(upup, GMTYPE_BOOL, (char*) flag_name); // symbol
-    ast_id* lhs   = flag_sym->getId()->copy(true);
+    ast_id* lhs = flag_sym->getId()->copy(true);
     ast_expr* rhs = ast_expr::new_bval_expr(true);
     ast_assign* a_init = ast_assign::new_assign_scala(lhs, rhs); // "is_first = true"
     gm_insert_sent_begin_of_sb(upup, a_init, false); // no need to fix symtab for assign.
@@ -416,12 +402,12 @@ static void add_conditional_initialize(
     //     }
     //     <target_fe>
     //-------------------------------------------
-    ast_expr* cond   = ast_expr::new_id_expr(flag_sym->getId()->copy(true));
+    ast_expr* cond = ast_expr::new_id_expr(flag_sym->getId()->copy(true));
     ast_sentblock* then_clause = ast_sentblock::new_sentblock();
     ast_if* cond_init = ast_if::new_if(cond, then_clause, NULL);
 
-    lhs   = flag_sym->getId()->copy(true);
-    rhs   = ast_expr::new_bval_expr(false);
+    lhs = flag_sym->getId()->copy(true);
+    rhs = ast_expr::new_bval_expr(false);
     ast_assign* a_set = ast_assign::new_assign_scala(lhs, rhs);
     then_clause->add_sent(a_set);
     then_clause->add_sent(init);
