@@ -14,7 +14,7 @@
 static bool is_linear_access_only(gm_rwinfo_list* L) {
     std::list<gm_rwinfo*>::iterator i;
     assert(L!=NULL);
-    for(i=L->begin(); i!=L->end();i++) {
+    for (i = L->begin(); i != L->end(); i++) {
         gm_rwinfo* rw = *i;
         assert(rw!=NULL);
         if (rw->access_range != GM_RANGE_LINEAR) return false;
@@ -22,31 +22,27 @@ static bool is_linear_access_only(gm_rwinfo_list* L) {
     return true;
 }
 
-static bool intersect_check_for_merge(
-        gm_rwinfo_map& S1, gm_rwinfo_map& S2, gm_rwinfo_map& S1_reduce, bool check_reduce)
-{
+static bool intersect_check_for_merge(gm_rwinfo_map& S1, gm_rwinfo_map& S2, gm_rwinfo_map& S1_reduce, bool check_reduce) {
     gm_rwinfo_map::iterator i;
     gm_rwinfo_map::iterator j;
-    for(i=S1.begin();i!=S1.end();i++) {
+    for (i = S1.begin(); i != S1.end(); i++) {
         gm_symtab_entry* e = i->first;
         j = S2.find(e);
         if (j != S2.end()) {
             // found entry
             if (!e->getType()->is_property()) { // scala
-	      if(e->getType()->is_collection()) {
-		bool isSeq1 = e->getType()->is_sequential_collection();
-		bool isSeq2 = j->first->getType()->is_sequential_collection();
-	      
-		if(!(isSeq1 || isSeq2))
-		  return false;
-		}
-	      return true;
-            }
-            else {
+                if (e->getType()->is_collection()) {
+                    bool isSeq1 = e->getType()->is_sequential_collection();
+                    bool isSeq2 = j->first->getType()->is_sequential_collection();
+
+                    if (!(isSeq1 || isSeq2)) return false;
+                }
+                return true;
+            } else {
                 // check S1, S2 is linearly accessed only.
                 if (!is_linear_access_only(i->second)) return true;
                 if (!is_linear_access_only(j->second)) return true;
-                if (check_reduce)  { // if e is in the reduce-set,
+                if (check_reduce) { // if e is in the reduce-set,
                     if (S1_reduce.find(e) != S1_reduce.end()) return true;
                 }
             }
@@ -76,19 +72,15 @@ static bool intersect_check_for_merge(
 //   }
 //   Foreach(q:G.Nodes) {Q.B = t.A +1;}  // cannot merge t-loop and q-loop because of A.
 //----------------------------------------------------
-bool gm_is_mergeable_loops(ast_foreach* P, ast_foreach* Q)
-{
+bool gm_is_mergeable_loops(ast_foreach* P, ast_foreach* Q) {
     // check same source
-    if (P->get_source()->getSymInfo() != Q->get_source()->getSymInfo())
-        return false;
+    if (P->get_source()->getSymInfo() != Q->get_source()->getSymInfo()) return false;
 
     // check same iteration type
-    if (P->get_iter_type() != Q->get_iter_type())
-        return false;
+    if (P->get_iter_type() != Q->get_iter_type()) return false;
 
     // check same parallel type
-    if (P->is_parallel() != Q->is_parallel())
-        return false;
+    if (P->is_parallel() != Q->is_parallel()) return false;
 
     // dependency check for loops.
     // linear access does not make dependency, unless being reduced.
@@ -146,8 +138,7 @@ bool gm_is_mergeable_loops(ast_foreach* P, ast_foreach* Q)
     return true;
 }
 
-static void replace_iterator_sym(ast_foreach* P, ast_foreach* Q)
-{
+static void replace_iterator_sym(ast_foreach* P, ast_foreach* Q) {
     // Q's iterator -> P's iterator
     ast_id* iter_p = P->get_iterator();
     ast_id* iter_q = Q->get_iterator();
@@ -162,8 +153,7 @@ static void replace_iterator_sym(ast_foreach* P, ast_foreach* Q)
 
 }
 
-
-class gm_merge_loop_t : public gm_apply 
+class gm_merge_loop_t : public gm_apply
 {
 public:
     virtual bool apply(ast_sent* s) {
@@ -173,13 +163,11 @@ public:
         std::list<ast_sent*> sents = sb->get_sents(); // work with a copyed list
         std::list<ast_sent*>::iterator i;
         ast_foreach* prev = NULL;
-        for(i=sents.begin(); i != sents.end(); i++) {
-            if (prev == NULL)  {
-                if ((*i)->get_nodetype() == AST_FOREACH) 
-                    prev = (ast_foreach*) (*i);
+        for (i = sents.begin(); i != sents.end(); i++) {
+            if (prev == NULL) {
+                if ((*i)->get_nodetype() == AST_FOREACH) prev = (ast_foreach*) (*i);
                 continue;
-            }
-            else {
+            } else {
                 // pick two consecutive foreach blocks.
                 // check they are mergeable.
                 // If so, merge. delete the second one.
@@ -191,57 +179,53 @@ public:
                         replace_iterator_sym(prev, curr);
 
                         // merge body and delete curr.
-                        if (prev->get_body()->get_nodetype() != AST_SENTBLOCK)
-                            gm_make_it_belong_to_sentblock(prev->get_body()); 
-                        if (curr->get_body()->get_nodetype() != AST_SENTBLOCK)
-                            gm_make_it_belong_to_sentblock(curr->get_body());
+                        if (prev->get_body()->get_nodetype() != AST_SENTBLOCK) gm_make_it_belong_to_sentblock(prev->get_body());
+                        if (curr->get_body()->get_nodetype() != AST_SENTBLOCK) gm_make_it_belong_to_sentblock(curr->get_body());
 
-                        gm_merge_sentblock((ast_sentblock*)prev->get_body(), (ast_sentblock*)curr->get_body());
+                        gm_merge_sentblock((ast_sentblock*) prev->get_body(), (ast_sentblock*) curr->get_body());
 
                         // redo-rw-analysis
                         gm_redo_rw_analysis(prev);
 
-                        gm_ripoff_sent( curr, GM_NOFIX_SYMTAB); // it will be deleted
+                        gm_ripoff_sent(curr, GM_NOFIX_SYMTAB); // it will be deleted
                         delete curr;
 
                         _changed = true;
-                    }
-                    else {
+                    } else {
                         prev = curr;
                     }
-                }
-                else {
+                } else {
                     prev = NULL;
                 }
             }
         }
         return true;
     }
-    bool is_changed() {return _changed;}
+    bool is_changed() {
+        return _changed;
+    }
     void do_loop_merge(ast_sentblock* top) {
-        set_all(false); set_for_sent(true);
+        set_all(false);
+        set_for_sent(true);
         _changed = false;
         top->traverse_post(this);
         std::list<ast_sent*>::iterator i;
-        for (i=to_be_deleted.begin(); i!=to_be_deleted.end(); i++)
+        for (i = to_be_deleted.begin(); i != to_be_deleted.end(); i++)
             delete *i;
-         
 
-         to_be_deleted.clear();
+        to_be_deleted.clear();
     }
-protected: 
+protected:
     bool _changed;
     std::list<ast_sent*> to_be_deleted;
 };
 
-
 //bool gm_independent_optimize::do_merge_foreach(ast_procdef* proc) 
-void gm_ind_opt_loop_merge::process(ast_procdef* proc)
-{
+void gm_ind_opt_loop_merge::process(ast_procdef* proc) {
     gm_merge_loop_t T;
     T.do_loop_merge(proc->get_body());
 
     // re-do rw-analysis (should be done already inside loop_merge. but to be sure...)
-    gm_redo_rw_analysis(proc->get_body()); 
+    gm_redo_rw_analysis(proc->get_body());
     //return true;
 }

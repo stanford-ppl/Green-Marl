@@ -1,4 +1,3 @@
-
 #include "gm_ind_opt.h"
 #include "gm_misc.h"
 #include "gm_traverse.h"
@@ -28,10 +27,10 @@ class gm_flip_backedge_t : public gm_apply
 public:
     gm_flip_backedge_t() {
         this->set_for_sent(true);
-    };
+    }
+    ;
 
-    virtual bool apply(ast_sent* sent) 
-    {
+    virtual bool apply(ast_sent* sent) {
         if (sent->get_nodetype() != AST_BFS) return true;
         ast_bfs* bfs = (ast_bfs*) sent;
 
@@ -52,8 +51,7 @@ public:
         // check if bodies are all assignments
         //--------------------------------------
         std::list<ast_sent*>::iterator I;
-        for(I=S.begin(); I!=S.end(); I++)
-        {
+        for (I = S.begin(); I != S.end(); I++) {
             ast_sent* s = *I;
             if (s->get_nodetype() != AST_ASSIGN) return true;
 
@@ -80,35 +78,33 @@ public:
         //--------------------------------------
         // check initializations are preceeding BFS
         //--------------------------------------
-        ast_node* up = bfs->get_parent(); assert(up!=NULL);
+        ast_node* up = bfs->get_parent();
+        assert(up!=NULL);
         if (up->get_nodetype() != AST_SENTBLOCK) return true;
         ast_sentblock* sb = (ast_sentblock*) up;
 
-        for(I= (sb->get_sents()).begin(); I != (sb->get_sents()).end(); I++)
-        {
+        for (I = (sb->get_sents()).begin(); I != (sb->get_sents()).end(); I++) {
             ast_sent* s = *I;
             gm_rwinfo_sets* RW = gm_get_rwinfo_sets(s);
             gm_rwinfo_map& W = RW->write_set;
 
             // check if this sentence initializes any target
             std::list<gm_symtab_entry*>::iterator T;
-            for(T=targets.begin(); T!=targets.end(); T++) {
+            for (T = targets.begin(); T != targets.end(); T++) {
                 gm_symtab_entry* t = *T;
                 if (W.find(t) == W.end()) continue;
                 gm_rwinfo_list* lst = W[t];
                 gm_rwinfo_list::iterator J;
-                for(J=lst->begin(); J!=lst->end(); J++) {
+                for (J = lst->begin(); J != lst->end(); J++) {
                     gm_rwinfo* info = *J;
                     if (info->driver != NULL) {
                         if (info->driver != root) { // other than thru root, init is being broken.
                             check_init[t] = false;
                         }
-                    }
-                    else {
+                    } else {
                         if (info->access_range != GM_RANGE_LINEAR) {
                             check_init[t] = false;
-                        }
-                        else {
+                        } else {
                             check_init[t] = true;
                         }
                     }
@@ -118,15 +114,14 @@ public:
 
         // check if every symbol has been initialized
         std::list<gm_symtab_entry*>::iterator T;
-        for(T=targets.begin(); T!=targets.end(); T++) {
+        for (T = targets.begin(); T != targets.end(); T++) {
             gm_symtab_entry* t = *T;
             if (check_init.find(t) == check_init.end()) return true;
             if (check_init[t] == false) return true;
         }
 
         // now put every assignment in the candiate statement
-        for(I=S.begin(); I!=S.end(); I++)
-        {
+        for (I = S.begin(); I != S.end(); I++) {
             ast_assign* a = (ast_assign*) (*I);
             // add to target
             _cands.push_back(a);
@@ -137,14 +132,13 @@ public:
     }
 
     bool post_process() { // return true if something changed
-        if (_cands.size() > 0) 
-        {
+        if (_cands.size() > 0) {
             bool b = false;
             std::list<ast_sentblock*>::iterator P;
             std::list<ast_assign*>::iterator A;
             A = _cands.begin();
             P = _tops.begin();
-            for(; A !=_cands.end(); A++, P++) {
+            for (; A != _cands.end(); A++, P++) {
                 flip_edges(*A, *P);
             }
             _cands.clear();
@@ -163,8 +157,7 @@ private:
     std::list<ast_assign*> _cands;
 };
 
-void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p)
-{
+void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p) {
     assert(p->get_parent()->get_nodetype() == AST_BFS);
 
     ast_bfs* bfs = (ast_bfs*) p->get_parent();
@@ -207,11 +200,10 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p)
 
     // RHS: repalce u -> t.
     ast_expr* new_rhs = old_rhs->get_body(); // reuse old expr structure.  
-    gm_replace_symbol_entry( old_iter->getSymInfo(), bfs->get_iterator()->getSymInfo(), new_rhs);
+    gm_replace_symbol_entry(old_iter->getSymInfo(), bfs->get_iterator()->getSymInfo(), new_rhs);
     old_rhs->set_body(NULL);  // prevent new_rhs being deleted with old assignment.
 
-    ast_assign* new_assign = ast_assign::new_assign_field(
-            new_lhs, new_rhs, GMASSIGN_REDUCE, bfs->get_iterator()->copy(true), old_rhs->get_reduce_type());
+    ast_assign* new_assign = ast_assign::new_assign_field(new_lhs, new_rhs, GMASSIGN_REDUCE, bfs->get_iterator()->copy(true), old_rhs->get_reduce_type());
 
     gm_insert_sent_begin_of_sb(foreach_body, new_assign);
 
@@ -224,16 +216,13 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p)
 
 //bool gm_independent_optimize::do_flip_edges(ast_procdef* p)
 
-void gm_ind_opt_flip_edge_bfs::process(ast_procdef* p)
-{
-    if (OPTIONS.get_arg_bool(GMARGFLAG_FLIP_BFSUP) == false)
-        return ;
+void gm_ind_opt_flip_edge_bfs::process(ast_procdef* p) {
+    if (OPTIONS.get_arg_bool(GMARGFLAG_FLIP_BFSUP) == false) return;
 
     gm_flip_backedge_t T;
     p->traverse_pre(&T);
     bool changed = T.post_process();
 
     // re-do rw_analysis
-    if (changed) 
-        gm_redo_rw_analysis(p->get_body()); 
+    if (changed) gm_redo_rw_analysis(p->get_body());
 }

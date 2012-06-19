@@ -14,31 +14,27 @@ typedef gm_gps_basic_block gps_bb;
 //     - Find BB that contains communication, and add into a list
 //     - Mark communication foreach statement (assign ID)
 //------------------------------------------------------------------
-class gps_find_comm_vertex_bb: public gps_apply_bb_ast
+class gps_find_comm_vertex_bb : public gps_apply_bb_ast
 {
 public:
 
-    gps_find_comm_vertex_bb(gm_gps_beinfo* g) 
-    {
+    gps_find_comm_vertex_bb(gm_gps_beinfo* g) {
         gen = g;
         set_for_sent(true);
         current_outer_loop = NULL;
     }
 
-    virtual bool apply(ast_sent* s) 
-    {
+    virtual bool apply(ast_sent* s) {
         // receiver should be empty.
         assert(is_under_receiver_traverse() == false);
 
         gps_bb* curr = get_curr_BB();
 
         // only look at vertex BB
-        if (!curr->is_vertex()) 
-            return true;
+        if (!curr->is_vertex()) return true;
 
         // neighborhood looking foreach statement is a communicating bb
-        if (s->get_nodetype() == AST_FOREACH)
-        {
+        if (s->get_nodetype() == AST_FOREACH) {
             ast_foreach* fe = (ast_foreach*) s;
             if (fe->find_info_bool(GPS_FLAG_IS_OUTER_LOOP)) {
                 current_outer_loop = fe;
@@ -62,17 +58,14 @@ public:
             }
 
             //curr->set_has_sender(true);
-        
-        }
-        else if (s->get_nodetype() == AST_ASSIGN)
-        {
-            if (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL)
-            {
+
+        } else if (s->get_nodetype() == AST_ASSIGN) {
+            if (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN) != NULL) {
                 ast_assign* a = (ast_assign*) s;
-                ast_sentblock* sb = (ast_sentblock*) (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN)); 
+                ast_sentblock* sb = (ast_sentblock*) (s->find_info_ptr(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN));
                 ast_field* f = a->get_lhs_field();
                 gm_symtab_entry* sym = f->get_first()->getSymInfo();
-                
+
                 gen->add_communication_unit_random_write(sb, sym);
                 gen->add_random_write_sent(sb, sym, s);
                 curr->add_random_write_receiver(sb, sym);
@@ -87,7 +80,9 @@ public:
         return true;
     }
 
-    std::set<gps_bb*>& get_target_basic_blocks()  {return target_bb;}
+    std::set<gps_bb*>& get_target_basic_blocks() {
+        return target_bb;
+    }
 
 private:
     gm_gps_beinfo* gen;
@@ -96,11 +91,9 @@ private:
 
 };
 
-
 static gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen);
 
-void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
-{
+void gm_gps_opt_split_comm_ebb::process(ast_procdef* p) {
     gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);
     gps_bb* entry = info->get_entry_basic_block();
 
@@ -110,7 +103,7 @@ void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
     gps_find_comm_vertex_bb T(info);
     gps_bb_apply_only_once(entry, &T);
 
-    std::set<gps_bb*>& BB_list = T.get_target_basic_blocks() ;
+    std::set<gps_bb*>& BB_list = T.get_target_basic_blocks();
 
     //-------------------------------------------
     // split BB into two
@@ -118,7 +111,7 @@ void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
     //   BB1 (send) -> seq -> BB2 (receive) 
     //-------------------------------------------
     std::set<gps_bb*>::iterator I;
-    for(I=BB_list.begin(); I!= BB_list.end(); I++) {
+    for (I = BB_list.begin(); I != BB_list.end(); I++) {
         gps_bb* BB = *I;
         gps_bb* BB2 = split_vertex_BB(BB, info);
 
@@ -127,8 +120,7 @@ void gm_gps_opt_split_comm_ebb::process(ast_procdef* p)
 
 //    [prev -> BB -> next] ==>
 //    [prev -> BB(S) -> new_seq -> BB(R) -> next]
-gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
-{
+gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen) {
     //printf("splitting BB id = %d\n", BB->get_id());
 
     assert(BB->is_vertex());
@@ -152,11 +144,10 @@ gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
     //--------------------------------------
     // migrate receiver list to new_BB
     //--------------------------------------
-    std::list<gm_gps_comm_unit>& L = BB->get_receivers(); 
+    std::list<gm_gps_comm_unit>& L = BB->get_receivers();
     std::list<gm_gps_comm_unit>::iterator I;
-    for(I=L.begin(); I!= L.end(); I++)
-    {
-        new_BB ->add_receiver(*I);
+    for (I = L.begin(); I != L.end(); I++) {
+        new_BB->add_receiver(*I);
     }
     BB->clear_receivers();
 
@@ -175,5 +166,4 @@ gps_bb* split_vertex_BB(gps_bb* BB, gm_gps_beinfo* gen)
     return new_BB;
 
 }
-
 

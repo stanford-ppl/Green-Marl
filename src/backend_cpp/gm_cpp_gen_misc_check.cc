@@ -23,13 +23,12 @@ public:
         set_for_sent(true);
         set_for_expr(true);
     }
-    bool apply(ast_expr* s)
-    {
+    bool apply(ast_expr* s) {
         if (s->is_builtin()) {
             ast_expr_builtin* b = (ast_expr_builtin*) s;
             gm_builtin_def* def = b->get_builtin_def();
 
-            if (def->find_info_bool(GM_BLTIN_INFO_USE_REVERSE)){
+            if (def->find_info_bool(GM_BLTIN_INFO_USE_REVERSE)) {
                 ast_id* driver = b->get_driver();
                 assert(driver!=NULL);
                 ast_id* G = driver->getTypeInfo()->get_target_graph_id();
@@ -38,7 +37,7 @@ public:
                 e->add_info_bool(CPPBE_INFO_USE_REVERSE_EDGE, true);
             }
 
-            if (def->find_info_bool(GM_BLTIN_INFO_CHECK_NBR)){
+            if (def->find_info_bool(GM_BLTIN_INFO_CHECK_NBR)) {
                 ast_id* driver = b->get_driver();
                 assert(driver!=NULL);
                 ast_id* G = driver->getTypeInfo()->get_target_graph_id();
@@ -47,7 +46,7 @@ public:
                 e->add_info_bool(CPPBE_INFO_NEED_SEMI_SORT, true);
             }
 
-            if (def->find_info_bool(GM_BLTIN_INFO_NEED_FROM)){
+            if (def->find_info_bool(GM_BLTIN_INFO_NEED_FROM)) {
                 ast_id* driver = b->get_driver();
                 assert(driver!=NULL);
                 ast_id* G = driver->getTypeInfo()->get_target_graph_id();
@@ -58,11 +57,9 @@ public:
         }
         return true;
     }
-                         
-    bool apply(ast_sent* s)
-    {
-        if (s->get_nodetype() == AST_BFS)
-        {
+
+    bool apply(ast_sent* s) {
+        if (s->get_nodetype() == AST_BFS) {
             ast_bfs* bfs = (ast_bfs*) s;
             if (bfs->is_transpose()) {
                 ast_id* G = bfs->get_source();
@@ -73,14 +70,12 @@ public:
             }
         }
 
-        if (s->get_nodetype() == AST_FOREACH)
-        {
-            ast_foreach* fe = (ast_foreach*)s;
+        if (s->get_nodetype() == AST_FOREACH) {
+            ast_foreach* fe = (ast_foreach*) s;
             int iter_type = fe->get_iter_type();
-            if (gm_is_iteration_use_reverse(iter_type))
-            {
+            if (gm_is_iteration_use_reverse(iter_type)) {
                 ast_id* G = fe->get_source()->getTypeInfo()->get_target_graph_id();
-                if (G!=NULL) {
+                if (G != NULL) {
                     gm_symtab_entry* e = G->getSymInfo();
                     if (e->find_info_bool(CPPBE_INFO_USE_REVERSE_EDGE) == false) {
                         e->add_info_bool(CPPBE_INFO_USE_REVERSE_EDGE, true);
@@ -90,7 +85,7 @@ public:
 
             if (gm_is_common_nbr_iter_type(iter_type)) {
                 ast_id* G = fe->get_source()->getTypeInfo()->get_target_graph_id();
-                if (G!=NULL) {
+                if (G != NULL) {
                     gm_symtab_entry* e = G->getSymInfo();
                     if (e->find_info_bool(CPPBE_INFO_NEED_SEMI_SORT) == false) {
                         e->add_info_bool(CPPBE_INFO_NEED_SEMI_SORT, true);
@@ -102,8 +97,7 @@ public:
     }
 };
 
-void gm_cpp_gen_misc_check::process(ast_procdef* d)
-{
+void gm_cpp_gen_misc_check::process(ast_procdef* d) {
     // re-do rw analysis
     cpp_check_reverse_edge_t T;
     d->traverse_pre(&T);
