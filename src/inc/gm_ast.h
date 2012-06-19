@@ -448,7 +448,7 @@ class ast_typedecl : public ast_node {  // property or type
 
         virtual ~ast_typedecl() {
             delete target_type;
-            //delete target_graph; //gets deleted twice (sometimes) why??? o.O
+            delete target_graph; //gets deleted twice (sometimes) why??? o.O
             delete target_collection;
             delete target_nbr;
         }
@@ -1691,7 +1691,7 @@ class ast_foreign: public ast_sent
 
 
     private:
-        ast_foreign() : ast_sent(AST_FOREIGN), expr(false) {}
+        ast_foreign() : ast_sent(AST_FOREIGN), expr(NULL) {}
         ast_expr_foreign* expr;
         std::list<ast_node*> modified;
 };
