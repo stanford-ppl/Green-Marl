@@ -1,8 +1,7 @@
 #include "gm_frontend.h"
 #include "gm_backend_cpp.h"
 
-void gm_cpp_gen::init_gen_steps()
-{
+void gm_cpp_gen::init_gen_steps() {
     std::list<gm_compile_step*> &LIST = this->gen_steps;
 
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_sanitize_name));
@@ -15,10 +14,8 @@ void gm_cpp_gen::init_gen_steps()
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_proc));
 }
 
-bool gm_cpp_gen::do_generate()
-{
-    if (!open_output_files())
-        return false;
+bool gm_cpp_gen::do_generate() {
+    if (!open_output_files()) return false;
 
     do_generate_begin();
 
@@ -29,10 +26,9 @@ bool gm_cpp_gen::do_generate()
 
     close_output_files();
 
-    return true; 
+    return true;
 }
 
-void gm_cpp_gen_proc::process(ast_procdef* proc)
-{
-   CPP_BE.generate_proc(proc);
+void gm_cpp_gen_proc::process(ast_procdef* proc) {
+    CPP_BE.generate_proc(proc);
 }

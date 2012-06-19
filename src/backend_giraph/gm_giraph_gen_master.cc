@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include "gm_backend_giraph.h"
 #include "gm_error.h"
@@ -6,9 +5,7 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 
-
-void gm_giraph_gen::do_generate_master()
-{
+void gm_giraph_gen::do_generate_master() {
     do_generate_shared_variables_keys();
     set_master_generate(true);
     do_generate_master_class();
@@ -20,11 +17,9 @@ void gm_giraph_gen::do_generate_master()
 
 }
 
-void gm_giraph_gen::do_generate_master_class()
-{
+void gm_giraph_gen::do_generate_master_class() {
     ast_procdef* proc = FE.get_current_proc();
-    gm_gps_beinfo * info =
-        (gm_gps_beinfo *) FE.get_current_backend_info();
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
 
     //--------------------------------------------------------------------
     // create master class
@@ -34,9 +29,9 @@ void gm_giraph_gen::do_generate_master_class()
     Body.pushln(temp);
     Body.pushln("// Control fields");
     bool prep = FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE);
-    sprintf(temp,"private int     _master_state                = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
+    sprintf(temp, "private int     _master_state                = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
     Body.pushln(temp);
-    sprintf(temp,"private int     _master_state_nxt            = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
+    sprintf(temp, "private int     _master_state_nxt            = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
     Body.pushln(temp);
     Body.pushln("private boolean _master_should_finish        = false;");
     Body.NL();
@@ -49,11 +44,11 @@ void gm_giraph_gen::do_generate_master_class()
     Body.pushln(temp);
 
     // Iterate symbol table
-    gm_symtab* args = proc->get_symtab_var(); assert(args != NULL);
+    gm_symtab* args = proc->get_symtab_var();
+    assert(args != NULL);
     std::set<gm_symtab_entry*>& syms = args->get_entries();
     std::set<gm_symtab_entry*>::iterator I;
-    for (I=syms.begin(); I!=syms.end(); I++)
-    {
+    for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
 
         // check if used in master
@@ -64,23 +59,32 @@ void gm_giraph_gen::do_generate_master_class()
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;
 
         if (s->isReadable()) {
-        	char* argname = s->getId()->get_genname();
+            char* argname = s->getId()->get_genname();
             sprintf(temp, "%s = getContext().getConfiguration().", argname);
             Body.push(temp);
-            switch(s->getType()->getTypeSummary())
-            {
-                case GMTYPE_BOOL:   sprintf(temp, "getBoolean(\"%s\", false);", argname); break;
-                case GMTYPE_INT:    sprintf(temp, "getInt(\"%s\", -1);", argname); break;
-                case GMTYPE_LONG:   sprintf(temp, "getLong(\"%s\", -1L);", argname); break;
-                case GMTYPE_FLOAT:  sprintf(temp, "getFloat(\"%s\", -1.0f);", argname); break;
-                //TODO Waiting for https://issues.apache.org/jira/browse/HADOOP-8415 to be accepted
-                //case GMTYPE_DOUBLE: sprintf(temp, "getDouble(\"%s\", -1.0);", argname); break;
-                case GMTYPE_DOUBLE: sprintf(temp, "getFloat(\"%s\", -1.0f);", argname); break;
-                case GMTYPE_NODE:   get_lib()->is_node_type_int() ?
-                		            sprintf(temp, "getInteger(\"%s\", -1);", argname) :
-                                    sprintf(temp, "getLong(\"%s\", -1L);", argname);
-                                    break;
-                default: assert(false);
+            switch (s->getType()->getTypeSummary()) {
+                case GMTYPE_BOOL:
+                    sprintf(temp, "getBoolean(\"%s\", false);", argname);
+                    break;
+                case GMTYPE_INT:
+                    sprintf(temp, "getInt(\"%s\", -1);", argname);
+                    break;
+                case GMTYPE_LONG:
+                    sprintf(temp, "getLong(\"%s\", -1L);", argname);
+                    break;
+                case GMTYPE_FLOAT:
+                    sprintf(temp, "getFloat(\"%s\", -1.0f);", argname);
+                    break;
+                    //TODO Waiting for https://issues.apache.org/jira/browse/HADOOP-8415 to be accepted
+                    //case GMTYPE_DOUBLE: sprintf(temp, "getDouble(\"%s\", -1.0);", argname); break;
+                case GMTYPE_DOUBLE:
+                    sprintf(temp, "getFloat(\"%s\", -1.0f);", argname);
+                    break;
+                case GMTYPE_NODE:
+                    get_lib()->is_node_type_int() ? sprintf(temp, "getInteger(\"%s\", -1);", argname) : sprintf(temp, "getLong(\"%s\", -1L);", argname);
+                    break;
+                default:
+                    assert(false);
             }
             Body.pushln(temp);
         }
@@ -94,22 +98,17 @@ void gm_giraph_gen::do_generate_master_class()
     Body.pushln("//save output");
     Body.pushln("public void writeOutput() {");
     ast_typedecl* t = proc->get_return_type();
-    if ((t!= NULL) && (!t->is_void())) {
-        sprintf(temp, "System.out.println(\"%s:\\t\" + %s + \"\\n\");",
-                GPS_RET_VALUE,
-                GPS_RET_VALUE);
+    if ((t != NULL) && (!t->is_void())) {
+        sprintf(temp, "System.out.println(\"%s:\\t\" + %s + \"\\n\");", GPS_RET_VALUE, GPS_RET_VALUE);
         Body.pushln(temp);
     }
-    for (I=syms.begin(); I!=syms.end(); I++)
-    {
+    for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
 
         // output arguments
         if (!s->getType()->is_primitive()) continue;
         if (s->isWriteable()) {
-            sprintf(temp, "System.out.println(\"%s:\\t\" + %s + \"\\n\");",
-                s->getId()->get_genname(),
-                s->getId()->get_genname());
+            sprintf(temp, "System.out.println(\"%s:\\t\" + %s + \"\\n\");", s->getId()->get_genname(), s->getId()->get_genname());
             Body.pushln(temp);
         }
     }
@@ -117,48 +116,36 @@ void gm_giraph_gen::do_generate_master_class()
     Body.NL();
 }
 
-
-void gm_giraph_gen::do_generate_master_scalar()
-{
+void gm_giraph_gen::do_generate_master_scalar() {
     Body.pushln("//----------------------------------------------------------");
     Body.pushln("// Scalar Variables ");
     Body.pushln("//----------------------------------------------------------");
     char temp[1024];
-    gm_gps_beinfo * info =
-        (gm_gps_beinfo *) FE.get_current_backend_info();
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
-    std::set<gm_symtab_entry* >::iterator I;
+    std::set<gm_symtab_entry*>::iterator I;
 
-    for (I = scalar.begin(); I!=scalar.end();I++)
-    {
+    for (I = scalar.begin(); I != scalar.end(); I++) {
         gm_symtab_entry *e = *I;
         gps_syminfo* syminfo = (gps_syminfo*) e->find_info(GPS_TAG_BB_USAGE);
         if (!syminfo->is_used_in_master()) continue;
 
-        sprintf(temp, "private %s %s;",
-                get_type_string(
-                    e->getType(), 
-                    true),
-                e->getId()->get_genname()
-               );
+        sprintf(temp, "private %s %s;", get_type_string(e->getType(), true), e->getId()->get_genname());
         Body.pushln(temp);
     }
 
     ast_procdef* proc = FE.get_current_proc();
     ast_typedecl* t = proc->get_return_type();
-    if ((t!= NULL) && (!t->is_void())) {
-        sprintf(temp, "private %s %s; // the final return value of the procedure",
-           get_type_string(t, true),
-           GPS_RET_VALUE);
+    if ((t != NULL) && (!t->is_void())) {
+        sprintf(temp, "private %s %s; // the final return value of the procedure", get_type_string(t, true), GPS_RET_VALUE);
         Body.pushln(temp);
     }
 
     // Intra-Loop Merging
-    if (proc->has_info(GPS_LIST_INTRA_MERGED_CONDITIONAL))
-    {
+    if (proc->has_info(GPS_LIST_INTRA_MERGED_CONDITIONAL)) {
         std::list<void*>& L = proc->get_info_list(GPS_LIST_INTRA_MERGED_CONDITIONAL);
-        std::list<void*>::iterator l; 
-        for(l = L.begin(); l!=L.end(); l++) {
+        std::list<void*>::iterator l;
+        for (l = L.begin(); l != L.end(); l++) {
             gm_gps_basic_block* bb = (gm_gps_basic_block*) (*l);
             sprintf(temp, "private boolean %s%d = true;", GPS_INTRA_MERGE_IS_FIRST, bb->get_id());
             Body.pushln(temp);
@@ -168,40 +155,34 @@ void gm_giraph_gen::do_generate_master_scalar()
     Body.NL();
 }
 
-void gm_giraph_gen::do_generate_master_serialization()
-{
+void gm_giraph_gen::do_generate_master_serialization() {
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
-	get_lib()->generate_master_class_details(scalar, Body);
+    get_lib()->generate_master_class_details(scalar, Body);
 }
 
-void gm_giraph_gen::do_generate_shared_variables_keys()
-{
+void gm_giraph_gen::do_generate_shared_variables_keys() {
     Body.pushln("// Keys for shared_variables ");
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
-    std::set<gm_symtab_entry* >::iterator I;
+    std::set<gm_symtab_entry*>::iterator I;
 
     char temp[256];
-    for(I=scalar.begin(); I!=scalar.end();I++)
-    {
+    for (I = scalar.begin(); I != scalar.end(); I++) {
         gm_symtab_entry* sym = *I;
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         assert(syminfo!=NULL);
 
         /*
-        printf("%s, used_in_vertex = %c, used_in_master =%c\n",
-                sym->getId()->get_orgname(), 
-                syminfo->is_used_in_vertex() ? 'Y' : 'N',
-                syminfo->is_used_in_master() ? 'Y' : 'N');
-                */
+         printf("%s, used_in_vertex = %c, used_in_master =%c\n",
+         sym->getId()->get_orgname(),
+         syminfo->is_used_in_vertex() ? 'Y' : 'N',
+         syminfo->is_used_in_master() ? 'Y' : 'N');
+         */
 
         // if the symbol is used in vertex and master
         // we need shared variable
-        if ((syminfo->is_used_in_vertex() ||
-             syminfo->is_used_in_receiver()) &&
-             syminfo->is_used_in_master())
-        {
+        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
             Body.push("private static final String ");
             Body.push(get_lib()->create_key_string(sym->getId()));
             Body.push(" = ");
@@ -213,11 +194,9 @@ void gm_giraph_gen::do_generate_shared_variables_keys()
     Body.NL();
 }
 
-
-extern void gm_redirect_reproduce(FILE *f); 
-extern void gm_baseindent_reproduce(int i); 
-void gm_giraph_gen::do_generate_master_states()
-{
+extern void gm_redirect_reproduce(FILE *f);
+extern void gm_baseindent_reproduce(int i);
+void gm_giraph_gen::do_generate_master_states() {
     char temp[1024];
 
     Body.pushln("//----------------------------------------------------------");
@@ -228,17 +207,15 @@ void gm_giraph_gen::do_generate_master_states()
     Body.pushln("do {");
     Body.pushln("_master_state = _master_state_nxt ;");
     Body.pushln("switch(_master_state) {");
-    gm_gps_beinfo * info =
-        (gm_gps_beinfo *) FE.get_current_backend_info();
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
 
     std::list<gm_gps_basic_block*>& bb_blocks = info->get_basic_blocks();
     std::list<gm_gps_basic_block*>::iterator I;
 
-    for(I = bb_blocks.begin(); I!= bb_blocks.end(); I++)
-    {
+    for (I = bb_blocks.begin(); I != bb_blocks.end(); I++) {
         gm_gps_basic_block* b = *I;
         int id = b->get_id();
-        sprintf(temp,"case %d: _master_state_%d(); break;", id, id);
+        sprintf(temp, "case %d: _master_state_%d(); break;", id, id);
         Body.pushln(temp);
     }
     Body.pushln("}");
@@ -263,8 +240,7 @@ void gm_giraph_gen::do_generate_master_states()
     gm_redirect_reproduce(f_body); // for temporary
     gm_baseindent_reproduce(3);
 
-    for(I = bb_blocks.begin(); I!= bb_blocks.end(); I++)
-    {
+    for (I = bb_blocks.begin(); I != bb_blocks.end(); I++) {
         gm_gps_basic_block* b = *I;
         do_generate_master_state_body(b);
     }
@@ -272,13 +248,12 @@ void gm_giraph_gen::do_generate_master_states()
     gm_baseindent_reproduce(0);
 }
 
-void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b)
-{
+void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b) {
     int id = b->get_id();
     int type = b->get_type();
 
     char temp[1024];
-    sprintf(temp,"private void _master_state_%d() {", id);
+    sprintf(temp, "private void _master_state_%d() {", id);
     Body.pushln(temp);
     Body.pushln("/*------");
     Body.flush();
@@ -292,44 +267,39 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         do_generate_scalar_broadcast_send(b);
         get_lib()->generate_broadcast_state_master("_master_state", Body);
         if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
-            int cond_bb_no= b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+            int cond_bb_no = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
             sprintf(temp, "%s%d", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
             get_lib()->generate_broadcast_isFirst_master(temp, Body);
         }
         Body.NL();
 
         // generate next statement
-        assert (b->get_num_exits() == 1); 
+        assert(b->get_num_exits() == 1);
         int n = b->get_nth_exit(0)->get_id();
-        sprintf(temp,"_master_state_nxt = %d;", n);
+        sprintf(temp, "_master_state_nxt = %d;", n);
         Body.pushln(temp);
-    }
-    else if (type == GM_GPS_BBTYPE_SEQ)
-    {
+    } else if (type == GM_GPS_BBTYPE_SEQ) {
         if (b->is_after_vertex()) {
             assert(b->get_num_entries() == 1);
             do_generate_scalar_broadcast_receive(b);
         }
-       
+
         // define local variables 
         std::map<gm_symtab_entry*, gps_syminfo*>& symbols = b->get_symbols();
         std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
-        for(I=symbols.begin(); I!=symbols.end(); I ++)
-        {
+        for (I = symbols.begin(); I != symbols.end(); I++) {
             gm_symtab_entry* sym = I->first;
             gps_syminfo* local_info = I->second;
             if (!local_info->is_scalar() || sym->isArgument()) continue; //TODO: why is sym->isArgument() != local_info->is_argument() ?
             gps_syminfo* global_info = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
 
-            if (!global_info->is_used_in_multiple_BB())
-            {
+            if (!global_info->is_used_in_multiple_BB()) {
                 generate_scalar_var_def(sym, true);
             }
         }
         Body.NL();
 
-
-        int cond_bb_no= b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+        int cond_bb_no = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
 
         // generate sequential sentences
         b->prepare_iter();
@@ -346,19 +316,17 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b)
                 Body.pushln("}");
             }
 
-             s = b->get_next();
+            s = b->get_next();
         }
 
         if (b->get_num_exits() == 0) {
             Body.pushln("_master_should_finish = true;");
-        }
-        else {
+        } else {
             int n = b->get_nth_exit(0)->get_id();
-            sprintf(temp,"_master_state_nxt = %d;", n);
+            sprintf(temp, "_master_state_nxt = %d;", n);
             Body.pushln(temp);
         }
-    }
-    else if (type == GM_GPS_BBTYPE_IF_COND) {
+    } else if (type == GM_GPS_BBTYPE_IF_COND) {
 
         Body.push("boolean _expression_result = ");
 
@@ -370,13 +338,10 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         generate_expr(i->get_cond());
         Body.pushln(";");
 
-
-        sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;",
-                b->get_nth_exit(0)->get_id(), 
+        sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;", b->get_nth_exit(0)->get_id(),
                 b->get_nth_exit(1)->get_id());
         Body.pushln(temp);
-    }
-    else if (type == GM_GPS_BBTYPE_WHILE_COND) {
+    } else if (type == GM_GPS_BBTYPE_WHILE_COND) {
         ast_sent* s = b->get_1st_sent();
         assert(s!= NULL);
         assert(s->get_nodetype() == AST_WHILE);
@@ -391,94 +356,100 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b)
         generate_expr(i->get_cond());
         Body.pushln(";");
 
-        sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;\n",
-                b->get_nth_exit(0)->get_id(),  // continue while
+        sprintf(temp, "if (_expression_result) _master_state_nxt = %d;\nelse _master_state_nxt = %d;\n", b->get_nth_exit(0)->get_id(),  // continue while
                 b->get_nth_exit(1)->get_id()); // exit
         Body.pushln(temp);
 
         if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
-            sprintf(temp, "if (!_expression_result) %s%d=true; // reset is_first\n\n",
-                    GPS_INTRA_MERGE_IS_FIRST, b->get_id());
+            sprintf(temp, "if (!_expression_result) %s%d=true; // reset is_first\n\n", GPS_INTRA_MERGE_IS_FIRST, b->get_id());
         }
 
         Body.pushln(temp);
 
-    }
-    else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2)) {
+    } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2)) {
 
         // generate Broadcast
         do_generate_scalar_broadcast_send(b);
         get_lib()->generate_broadcast_state_master("_master_state", Body);
 
         Body.pushln("// Preparation Step;");
-        assert (b->get_num_exits() == 1); 
+        assert(b->get_num_exits() == 1);
         int n = b->get_nth_exit(0)->get_id();
-        sprintf(temp,"_master_state_nxt = %d;", n);
+        sprintf(temp, "_master_state_nxt = %d;", n);
         Body.pushln(temp);
-    }
-    else if (type == GM_GPS_BBTYPE_MERGED_TAIL) {
+    } else if (type == GM_GPS_BBTYPE_MERGED_TAIL) {
         Body.pushln("// Intra-Loop Merged");
         int source_id = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
-        sprintf(temp, "if (%s%d) _master_state_nxt = %d;", GPS_INTRA_MERGE_IS_FIRST, source_id,
-                b->get_nth_exit(0)->get_id());
+        sprintf(temp, "if (%s%d) _master_state_nxt = %d;", GPS_INTRA_MERGE_IS_FIRST, source_id, b->get_nth_exit(0)->get_id());
         Body.pushln(temp);
         sprintf(temp, "else _master_state_nxt = %d;", b->get_nth_exit(1)->get_id());
         Body.pushln(temp);
         sprintf(temp, "%s%d = false;\n", GPS_INTRA_MERGE_IS_FIRST, source_id);
         Body.pushln(temp);
-    }
-    else {
+    } else {
         assert(false);
     }
 
     Body.pushln("}"); // end of state function
 }
-static const char* get_reduce_base_value(int reduce_type, int gm_type)
-{
-    switch(reduce_type)
-    {
-        case GMREDUCE_PLUS: return "0";
-        case GMREDUCE_MULT: return "1";
-        case GMREDUCE_AND:  return "true";
-        case GMREDUCE_OR:   return "false";
-        case GMREDUCE_MIN:  
-            switch(gm_type) {
-                case GMTYPE_INT: return "Integer.MAX_VALUE";
-                case GMTYPE_LONG: return "Long.MAX_VALUE";
-                case GMTYPE_FLOAT: return "Float.MAX_VALUE";
-                case GMTYPE_DOUBLE: return "Double.MAX_VALUE";
-                default: assert(false); return "0";
+static const char* get_reduce_base_value(int reduce_type, int gm_type) {
+    switch (reduce_type) {
+        case GMREDUCE_PLUS:
+            return "0";
+        case GMREDUCE_MULT:
+            return "1";
+        case GMREDUCE_AND:
+            return "true";
+        case GMREDUCE_OR:
+            return "false";
+        case GMREDUCE_MIN:
+            switch (gm_type) {
+                case GMTYPE_INT:
+                    return "Integer.MAX_VALUE";
+                case GMTYPE_LONG:
+                    return "Long.MAX_VALUE";
+                case GMTYPE_FLOAT:
+                    return "Float.MAX_VALUE";
+                case GMTYPE_DOUBLE:
+                    return "Double.MAX_VALUE";
+                default:
+                    assert(false);
+                    return "0";
             }
         case GMREDUCE_MAX:
-            switch(gm_type) {
-                case GMTYPE_INT: return "Integer.MIN_VALUE";
-                case GMTYPE_LONG: return "Long.MIN_VALUE";
-                case GMTYPE_FLOAT: return "Float.MIN_VALUE";
-                case GMTYPE_DOUBLE: return "Double.MIN_VALUE";
-                default: assert(false); return "0";
+            switch (gm_type) {
+                case GMTYPE_INT:
+                    return "Integer.MIN_VALUE";
+                case GMTYPE_LONG:
+                    return "Long.MIN_VALUE";
+                case GMTYPE_FLOAT:
+                    return "Float.MIN_VALUE";
+                case GMTYPE_DOUBLE:
+                    return "Double.MIN_VALUE";
+                default:
+                    assert(false);
+                    return "0";
             }
         default:
-            assert(false); break;
+            assert(false);
+            break;
     }
     return "0";
 }
 
-void gm_giraph_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b)
-{
+void gm_giraph_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b) {
     // check if scalar variable is used inside the block
     std::map<gm_symtab_entry*, gps_syminfo*>& syms = b->get_symbols();
     std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
-    for(I=syms.begin(); I!= syms.end(); I++)
-    {
+    for (I = syms.begin(); I != syms.end(); I++) {
         gps_syminfo* local_info = I->second;
         gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(GPS_TAG_BB_USAGE);
         if (!global_info->is_scalar()) continue;
         if (local_info->is_used_as_reduce()) {
-             int reduce_type = local_info->get_reduce_type();
+            int reduce_type = local_info->get_reduce_type();
 
             //printf("being used as reduce :%s\n", I->first->getId()->get_genname());
-            get_lib()->generate_broadcast_reduce_initialize_master(I->first->getId(), Body, 
-                    reduce_type,
+            get_lib()->generate_broadcast_reduce_initialize_master(I->first->getId(), Body, reduce_type,
                     get_reduce_base_value(reduce_type, I->first->getType()->getTypeSummary()));
             // [TODO] global argmax
             continue;
@@ -491,8 +462,7 @@ void gm_giraph_gen::do_generate_scalar_broadcast_send(gm_gps_basic_block* b)
     }
 }
 
-void gm_giraph_gen::do_generate_scalar_broadcast_receive(gm_gps_basic_block* b)
-{
+void gm_giraph_gen::do_generate_scalar_broadcast_receive(gm_gps_basic_block* b) {
     assert(b->get_num_entries() ==1);
     gm_gps_basic_block* pred = b->get_nth_entry(0);
     assert(pred->is_vertex());
@@ -500,17 +470,14 @@ void gm_giraph_gen::do_generate_scalar_broadcast_receive(gm_gps_basic_block* b)
     // check if scalar variable is modified inside the block
     std::map<gm_symtab_entry*, gps_syminfo*>& syms = pred->get_symbols();
     std::map<gm_symtab_entry*, gps_syminfo*>::iterator I;
-    for(I=syms.begin(); I!= syms.end(); I++)
-    {
+    for (I = syms.begin(); I != syms.end(); I++) {
         gps_syminfo* local_info = I->second;
         gps_syminfo* global_info = (gps_syminfo*) I->first->find_info(GPS_TAG_BB_USAGE);
         if (!global_info->is_scalar()) continue;
         if (!global_info->is_used_in_master()) continue;
         if (local_info->is_used_as_lhs() || local_info->is_used_as_reduce()) {
             // create a broad cast variable
-            get_lib()->generate_broadcast_receive_master(
-                    I->first->getId(), Body, 
-                    local_info->get_reduce_type());
+            get_lib()->generate_broadcast_receive_master(I->first->getId(), Body, local_info->get_reduce_type());
         }
     }
 }

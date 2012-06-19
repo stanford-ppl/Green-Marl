@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include "gm_backend_gps.h"
 #include "gm_error.h"
@@ -9,28 +8,22 @@
 //--------------------------------------------------------------
 // A Back-End for GPS generation
 //--------------------------------------------------------------
-void gm_gps_gen::setTargetDir(const char* d)
-{
-    if (dname!= NULL)
-        printf("%s = \n", dname);
+void gm_gps_gen::setTargetDir(const char* d) {
+    if (dname != NULL) printf("%s = \n", dname);
     assert(d!=NULL);
-    if (dname != NULL)
-        delete [] dname;
-    dname = new char[strlen(d)+1];
+    if (dname != NULL) delete[] dname;
+    dname = new char[strlen(d) + 1];
     strcpy(dname, d);
 }
 
-void gm_gps_gen::setFileName(const char* f)
-{
+void gm_gps_gen::setFileName(const char* f) {
     assert(f!=NULL);
-    if (fname != NULL)
-        delete [] fname;
-    fname = new char[strlen(f)+1];
+    if (fname != NULL) delete[] fname;
+    fname = new char[strlen(f) + 1];
     strcpy(fname, f);
 }
 
-bool gm_gps_gen::open_output_files()
-{
+bool gm_gps_gen::open_output_files() {
     char temp[1024];
     assert(dname!=NULL);
     assert(fname!=NULL);
@@ -46,13 +39,16 @@ bool gm_gps_gen::open_output_files()
     get_lib()->set_code_writer(&Body);
     return true;
 }
-void gm_gps_gen::close_output_files()
-{
-    if (f_body!=NULL) {Body.flush();fclose(f_body); f_body = NULL;}
+
+void gm_gps_gen::close_output_files() {
+    if (f_body != NULL) {
+        Body.flush();
+        fclose(f_body);
+        f_body = NULL;
+    }
 }
 
-void gm_gps_gen::init_gen_steps()
-{
+void gm_gps_gen::init_gen_steps() {
     std::list<gm_compile_step*>& L = get_gen_steps();
     // no more change of AST at this point
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_reverse_edges));       // check if reverse edges are used
@@ -64,7 +60,6 @@ void gm_gps_gen::init_gen_steps()
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_write));       // check if it contains random access
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));         // 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_rewrite_rhs));              // 
-
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));                // create (Extended) basic block
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_split_comm_ebb));            // split communicating every BB into two
@@ -81,11 +76,9 @@ void gm_gps_gen::init_gen_steps()
 //----------------------------------------------------
 // Main Generator
 //----------------------------------------------------
-bool gm_gps_gen::do_generate()
-{
+bool gm_gps_gen::do_generate() {
 
-    if (!open_output_files())
-        return false;
+    if (!open_output_files()) return false;
 
     bool b = gm_apply_compiler_stage(get_gen_steps());
 
@@ -94,8 +87,7 @@ bool gm_gps_gen::do_generate()
     return b;
 }
 
-void gm_gps_gen::do_generate_job_configuration() 
-{
+void gm_gps_gen::do_generate_job_configuration() {
 
     char temp[1024];
     ast_procdef* proc = FE.get_current_proc();
@@ -105,34 +97,34 @@ void gm_gps_gen::do_generate_job_configuration()
     Body.pushln("public static class JobConfiguration extends GPSJobConfiguration {");
     Body.pushln("@Override");
     Body.pushln("public Class<?> getMasterClass() {");
-    sprintf(temp,"return %sMaster.class;", proc->get_procname()->get_genname());
+    sprintf(temp, "return %sMaster.class;", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("}");
 
     Body.pushln("@Override");
     Body.pushln("public Class<?> getVertexClass() {");
-    sprintf(temp,"return %sVertex.class;", proc->get_procname()->get_genname());
+    sprintf(temp, "return %sVertex.class;", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("}");
 
     Body.pushln("@Override");
     Body.pushln("public Class<?> getVertexFactoryClass() {");
-    sprintf(temp,"return %sVertexFactory.class;", proc->get_procname()->get_genname());
+    sprintf(temp, "return %sVertexFactory.class;", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("}");
 
     Body.pushln("@Override");
     Body.pushln("public Class<?> getVertexValueClass() {");
-    sprintf(temp,"return VertexData.class;");
+    sprintf(temp, "return VertexData.class;");
     Body.pushln(temp);
     Body.pushln("}");
 
     Body.pushln("@Override");
     Body.pushln("public Class<?> getEdgeValueClass() {");
     if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        sprintf(temp,"return EdgeData.class;");
+        sprintf(temp, "return EdgeData.class;");
     } else {
-        sprintf(temp,"return NullWritable.class;");
+        sprintf(temp, "return NullWritable.class;");
     }
     Body.pushln(temp);
     Body.pushln("}");
@@ -140,7 +132,7 @@ void gm_gps_gen::do_generate_job_configuration()
     Body.pushln("@Override");
     Body.pushln("public Class<?> getMessageValueClass() {");
     // [XXX]
-    sprintf(temp,"return MessageData.class;");
+    sprintf(temp, "return MessageData.class;");
     Body.pushln(temp);
     Body.pushln("}");
 
@@ -153,22 +145,18 @@ void gm_gps_gen::do_generate_job_configuration()
         Body.pushln("}");
     }
 
-
     Body.pushln("}");
 
 }
 
-void gm_gps_gen::end_class()
-{
+void gm_gps_gen::end_class() {
     Body.pushln("}");
 }
 
-void gm_gps_gen::generate_proc(ast_procdef* proc)
-{
+void gm_gps_gen::generate_proc(ast_procdef* proc) {
     write_headers();
     begin_class();
     do_generate_master();
-
 
     do_generate_vertex();
 
@@ -177,7 +165,6 @@ void gm_gps_gen::generate_proc(ast_procdef* proc)
     end_class();
 }
 
-void gm_gps_gen_class::process(ast_procdef* proc)
-{
+void gm_gps_gen_class::process(ast_procdef* proc) {
     PREGEL_BE->generate_proc(proc);
 }

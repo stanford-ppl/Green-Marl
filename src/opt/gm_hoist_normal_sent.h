@@ -1,4 +1,3 @@
-
 #include "gm_ind_opt.h"
 #include "gm_misc.h"
 #include "gm_traverse.h"
@@ -10,25 +9,22 @@
 // (in the same sent block)
 // target-type should not be a var-decl
 //------------------------------------------------------
-class gm_hoist_normal_sent_t: public gm_apply
+class gm_hoist_normal_sent_t : public gm_apply
 {
 public:
     virtual bool apply(ast_sent* s) {
-        if (s->get_nodetype() != AST_SENTBLOCK)
-            return true;
+        if (s->get_nodetype() != AST_SENTBLOCK) return true;
 
         ast_sentblock* sb = (ast_sentblock*) s;
 
         std::list<ast_sent*> sents = sb->get_sents();  // make a copy of sentence list (right?)
         std::list<ast_sent*>::iterator i_out;
-        for(i_out = sents.begin(); i_out != sents.end(); i_out ++) 
-        {
+        for (i_out = sents.begin(); i_out != sents.end(); i_out++) {
             //--------------------------------------
             // find target assign sentence
             //--------------------------------------
             ast_sent* target = *i_out;
-            if (!check_target((ast_assign*)target))
-                continue;
+            if (!check_target((ast_assign*) target)) continue;
 
             std::list<ast_sent*>& sents2 = sb->get_sents(); // most up-to-date list
             std::list<ast_sent*> stack;
@@ -38,10 +34,9 @@ public:
             // now find the possible upmost position
             //--------------------------------------
             std::list<ast_sent*>::iterator i_in;
-            for(i_in = sents2.begin();i_in != sents2.end(); i_in++)
-            {
+            for (i_in = sents2.begin(); i_in != sents2.end(); i_in++) {
                 ast_sent* S = *i_in;
-                if (S == target) break; 
+                if (S == target) break;
                 if (stack.size() == 0) {
                     // does not need to add into the queue
                     if (check_trivial_pred(S)) {
@@ -58,7 +53,7 @@ public:
             //
             // Check dependency
             //------------------------------------------------------------------------
-            while(stack.size() > 0) {
+            while (stack.size() > 0) {
                 ast_sent *S = stack.front();
                 stack.pop_front();
                 if (gm_has_dependency(S, target)) {
@@ -67,11 +62,10 @@ public:
                 }
             }
 
-            gm_ripoff_sent( target, GM_NOFIX_SYMTAB);
-            if (top_position == NULL) {// move it to the beginning 
+            gm_ripoff_sent(target, GM_NOFIX_SYMTAB);
+            if (top_position == NULL) {            // move it to the beginning
                 gm_insert_sent_begin_of_sb(sb, target, GM_NOFIX_SYMTAB);
-            }
-            else {// move to the top
+            } else {            // move to the top
                 gm_add_sent_after(top_position, target, GM_NOFIX_SYMTAB);
             }
         }
