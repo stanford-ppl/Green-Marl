@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include "gm_graph_typedef.h"
+#include "gm_property_of_collection.h"
 
 //---------------------------------------------------------
 // A thin runtime for object deletion management
@@ -119,13 +120,11 @@ static inline node_t*  gm_rt_allocate_node_t(size_t sz, int thread_id=0)
     return ptr;
 }
 
-#include "TestSet.h"
-
 template<class collectionType, bool lazy>
-static inline TestSet<collectionType, lazy>* gm_rt_allocate_collection(size_t size, int thread_id = 0) {
-	TestSet<collectionType, lazy>* pointer = new TestSet<collectionType, lazy>(size);
+static inline gm_property_of_collection<collectionType>& gm_rt_allocate_collection(size_t size, int thread_id = 0) {
+	gm_property_of_collection<collectionType>* pointer = new gm_property_of_collection_impl<collectionType, lazy>(size);
 	_GM_MEM.save(pointer, 0, thread_id);
-	return pointer;
+	return *pointer;
 }
 
 

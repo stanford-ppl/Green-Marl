@@ -19,6 +19,7 @@ public:
         // [todo] should I decide it based on size of the graph?
         delete [] byte_map;
     }
+
     bool is_small_set() { return is_small;}
 
     //--------------------------------------------------
@@ -53,31 +54,25 @@ public:
         else return get_size_large();
     }
 
-//New Stuff
-    bool is_subset(gm_sized_set<T>& superset)
-    {
-	if(is_small || superset.is_small) return is_subset_small(superset);
-	else return is_subset_large(superset);
+    bool is_subset(gm_sized_set<T>& superset) {
+    	if(is_small || superset.is_small) return is_subset_small(superset);
+		else return is_subset_large(superset);
     }
 
-    void complement(gm_sized_set<T>& other)
-    {
-	if(is_small || other.is_small) complement_small(other);
-	else complement_large(other);
+    void complement(gm_sized_set<T>& other) {
+    	if(is_small || other.is_small) complement_small(other);
+		else complement_large(other);
     }
 
-    void union_(gm_sized_set<T>& other)
-    {
-	if(is_small || other.is_small) union_small(other);
-	else union_large(other);
+    void union_(gm_sized_set<T>& other) {
+    	if(is_small || other.is_small) union_small(other);
+		else union_large(other);
     }
 
-    void intersect(gm_sized_set<T>& other)
-    {
-	if(is_small || other.is_small) intersect_small(other);
-	else intersect_large(other);
+    void intersect(gm_sized_set<T>& other) {
+    	if(is_small || other.is_small) intersect_small(other);
+    	else intersect_large(other);
     }
-//End new Stuff
 
     bool is_in_small(T e)  { return (small_set.find(e) != small_set.end()); }
     void add_small(T e)    { small_set.insert(e); }
@@ -114,9 +109,7 @@ public:
 
     size_t get_size_large()      {return est_size;}
 
-//New Stuff
-    bool is_subset_small(gm_sized_set<T>& superset)
-    {
+    bool is_subset_small(gm_sized_set<T>& superset) {
 	    seq_iter II = prepare_seq_iteration();
 	    while(II.has_next())
 	        if(!superset.is_in(II.get_next()))
@@ -124,96 +117,78 @@ public:
 	    return true;
     }
 
-    bool is_subset_large(gm_sized_set<T>& superset)
-    {
-	bool result = true;
-	#pragma omp parallel for
-	for(size_t i = 0; i < max_sz; i++)
-	{
-	    if(byte_map[i] && !superset.byte_map[i])
-		result = false;
-	}
-	return result;
+    bool is_subset_large(gm_sized_set<T>& superset) {
+    	bool result = true;
+		#pragma omp parallel for
+    	for(size_t i = 0; i < max_sz; i++) {
+    		if(byte_map[i] && !superset.byte_map[i])
+    			result = false;
+    	}
+    	return result;
     }
 
-    void complement_small(gm_sized_set<T>& other)
-    {
-	seq_iter II = prepare_seq_iteration();
-	while(II.has_next())
-	{
-	    T item = II.get_next();
-	    if(other.is_in(item))
-	    {
-		remove(item);
-		est_size--;
-	    }    
-	}
+    void complement_small(gm_sized_set<T>& other) {
+    	seq_iter II = prepare_seq_iteration();
+    	while(II.has_next()) {
+    		T item = II.get_next();
+    		if(other.is_in(item)) {
+    			remove(item);
+    			est_size--;
+    		}
+    	}
     }
 
-    void complement_large(gm_sized_set<T>& other)
-    {
-	int newSize = 0;
+    void complement_large(gm_sized_set<T>& other) {
+    	int newSize = 0;
         #pragma omp parallel for reduction (+:newSize)
-        for(size_t i = 0; i < max_sz; i++)
-	{
-	    byte_map[i] = byte_map[i] && !other.byte_map[i];
-	    newSize += byte_map[i];
-	}
-	est_size = newSize;
+        for(size_t i = 0; i < max_sz; i++) {
+        	byte_map[i] = byte_map[i] && !other.byte_map[i];
+        	newSize += byte_map[i];
+        }
+        est_size = newSize;
     }
 
-    void union_small(gm_sized_set<T>& other)
-    {
-	seq_iter II = other.prepare_seq_iteration();
-	while(II.has_next())
-	{
-	    T item = II.get_next();
-	    if(!is_in(item))
-	    {
-		add(item);
-		est_size++;
-	    }
-	}
+    void union_small(gm_sized_set<T>& other) {
+    	seq_iter II = other.prepare_seq_iteration();
+    	while(II.has_next()) {
+    		T item = II.get_next();
+    		if(!is_in(item)) {
+    			add(item);
+    			est_size++;
+    		}
+    	}
     }
 
-   void union_large(gm_sized_set<T>& other)
-   {
-	int newSize = 0;
-	#pragma omp parallel for reduction (+:newSize)
-	for(int i = 0; i < max_sz; i++)
-	{
-	    byte_map[i] = byte_map[i] || other.byte_map[i];
-	    newSize += byte_map[i];
-	}
-	est_size = newSize;
+   void union_large(gm_sized_set<T>& other) {
+	   int newSize = 0;
+		#pragma omp parallel for reduction (+:newSize)
+	   for(int i = 0; i < max_sz; i++) {
+		   byte_map[i] = byte_map[i] || other.byte_map[i];
+		   newSize += byte_map[i];
+	   }
+	   est_size = newSize;
    }
 
-   void intersect_small(gm_sized_set<T>& other)
-   {
+   void intersect_small(gm_sized_set<T>& other) {
 	    seq_iter II = prepare_seq_iteration();
-	    while(II.has_next())
-	    {
+	    while(II.has_next()) {
 	        T item = II.get_next();
-	        if(!other.is_in(item))
-	        {
+	        if(!other.is_in(item)) {
 		        remove(item);
 		        est_size--;
 	        }
 	    }
    }
 
-   void intersect_large(gm_sized_set<T>& other)
-   {
+   void intersect_large(gm_sized_set<T>& other) {
 	    int newSize = 0;
 	    #pragma omp parallel for reduction (+:newSize)
-	    for(int i =  0; i < max_sz; i++)
-	    {
+	    for(int i =  0; i < max_sz; i++) {
 	        byte_map[i] = byte_map[i] && other.byte_map[i];
 	        newSize += byte_map[i];
 	    }
 	    est_size = newSize;
    }
-//End new Stuff
 
     //-------------------------------------------
     // should be called in seq mode

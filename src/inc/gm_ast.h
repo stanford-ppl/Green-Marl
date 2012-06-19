@@ -246,7 +246,7 @@ class ast_id : public ast_node {
 
         // make a copy of id reference
         // [NOTE] pointer to symbol table entry is *not* copied if cp_syminfo is false
-        ast_id* copy(bool cp_syminfo = false) { 
+        virtual ast_id* copy(bool cp_syminfo = false) {
             ast_id* cp;
             cp = new ast_id(get_orgname(), line, col); // name can be null here. [xxx] WHY?
             if (cp_syminfo) {
@@ -271,6 +271,7 @@ class ast_id : public ast_node {
 
     private:
         ast_id() : ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL) {}
+
         ast_id(const char* org, int l, int c) : ast_node(AST_ID),info(NULL),gen_name(NULL)  {
             if (org != NULL) {
                 name = new char[strlen(org)+1]; 
@@ -365,17 +366,17 @@ class ast_field : public ast_node { // access of node/edge property
 
     private: 
         ast_field() : ast_node(AST_FIELD), first(NULL), second(NULL), rarrow(false) {}
+
         ast_field(ast_id* l, ast_id* f) : ast_node(AST_FIELD), first(l), second(f), rarrow(false) {
-                 first->set_parent(this); 
-                 second->set_parent(this);
-                 this->line = first->get_line();
-                 this->col = first->get_col();
-             }
+        	first->set_parent(this);
+        	second->set_parent(this);
+        	this->line = first->get_line();
+        	this->col = first->get_col();
+        }
+
     public : 
-        static ast_field* new_field(ast_id* l, ast_id* f, bool is_r_arrow=false) {
+        static ast_field* new_field(ast_id* l, ast_id* f, bool is_r_arrow = false) {
             ast_field* af = new ast_field(l,f); 
-            l->set_parent(af);
-            f->set_parent(af);
             af->set_rarrow(is_r_arrow);
             return af;
         }
@@ -862,8 +863,12 @@ class ast_expr : public ast_node
             E->id1 = id; id->set_parent(E); return E;}
 
         static ast_expr* new_field_expr(ast_field* f) {
-            ast_expr* E = new ast_expr(); E->expr_class = GMEXPR_FIELD;
-            E->field = f; f->set_parent(E); return E; }
+            ast_expr* E = new ast_expr();
+            E->expr_class = GMEXPR_FIELD;
+            E->field = f;
+            f->set_parent(E);
+            return E;
+        }
 
         static ast_expr* new_ival_expr(long ival){
             ast_expr* E = new ast_expr(); E->expr_class = GMEXPR_IVAL;  
@@ -1058,8 +1063,8 @@ private:
 
 class ast_expr_builtin : public ast_expr
 {
-    public:
-    ~ast_expr_builtin() {
+public:
+    virtual ~ast_expr_builtin() {
         delete [] orgname;
         delete driver;
         std::list<ast_expr*>::iterator I;
@@ -1071,15 +1076,16 @@ class ast_expr_builtin : public ast_expr
     virtual void dump_tree(int id_level); 
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual ast_expr* copy(bool cp_syminfo = false);
+    virtual bool driver_is_field() {return false;}
 
 
-    static ast_expr_builtin* new_builtin_expr(ast_id* id, const char* orgname, expr_list* t) 
-    {
+    static ast_expr_builtin* new_builtin_expr(ast_id* id, const char* orgname, expr_list* t) {
         ast_expr_builtin* E = new ast_expr_builtin(); 
         E->expr_class = GMEXPR_BUILTIN;
-        E->driver = id; if (id != NULL) id->set_parent(E); // type unknown yet.
+        E->driver = id;
+        if (id != NULL) id->set_parent(E); // type unknown yet.
         E->orgname = gm_strdup(orgname);
-        if (t!= NULL) {
+        if (t != NULL) {
             E->args = t->LIST;  // shallow copy LIST
             // but not set 'up' pointer. 
             std::list<ast_expr*>::iterator I;
@@ -1099,17 +1105,55 @@ class ast_expr_builtin : public ast_expr
     void                  set_driver(ast_id* i)  {driver = i; i->set_parent(this);}
     std::list<ast_expr*>& get_args() {return args;}
     gm_builtin_def*       get_builtin_def()  {return def;}
-    void                  set_builtin_def(gm_builtin_def* d) 
-                                              {def = d;}
+    void                  set_builtin_def(gm_builtin_def* d) {def = d;}
 
-    protected:
-        ast_expr_builtin(): ast_expr(), driver(NULL), orgname(NULL), def(NULL) { set_nodetype(AST_EXPR_BUILTIN);}
+protected:
+        ast_expr_builtin() : ast_expr(), driver(NULL), orgname(NULL), def(NULL) { set_nodetype(AST_EXPR_BUILTIN);}
 
-    protected:
+protected:
         ast_id* driver;  // canbe null
         char* orgname;
         std::list<ast_expr*> args;
         gm_builtin_def* def;
+
+
+};
+
+class ast_expr_builtin_field : public ast_expr_builtin {
+
+public:
+
+	~ast_expr_builtin_field() {
+		delete field_driver;
+	}
+
+	virtual bool driver_is_field() {return true;}
+	ast_field* get_field_driver() {return field_driver;}
+
+	static ast_expr_builtin_field* new_builtin_field_expr(ast_field* field, const char* orgname, expr_list* exList) {
+
+		ast_expr_builtin_field* newExpression = new ast_expr_builtin_field();
+        newExpression->expr_class = GMEXPR_BUILTIN;
+        newExpression->field_driver = field;
+        newExpression->orgname = gm_strdup(orgname);
+
+        if (field != NULL) field->set_parent(newExpression); // type unknown yet.
+
+        if (exList != NULL) {
+        	newExpression->args = exList->LIST;  // shallow copy LIST
+            // but not set 'up' pointer.
+            std::list<ast_expr*>::iterator iter;
+            for(iter = newExpression->args.begin(); iter != newExpression->args.end(); iter++)
+               (*iter)->set_parent(newExpression);
+            delete exList; // t is only temporary, delete it.
+        }
+        return newExpression;
+	}
+
+private:
+	ast_expr_builtin_field() : ast_expr_builtin(), field_driver(NULL) {}
+
+	ast_field* field_driver;
 };
 
 // Reduction expression

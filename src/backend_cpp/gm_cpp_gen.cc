@@ -319,7 +319,7 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t)
         }
         else if (t2->is_collection()) {
             char temp[128];
-            sprintf(temp, "%s<%s>*", PROP_OF_COL, get_lib()->get_type_string(t2));
+            sprintf(temp, "%s<%s>&", PROP_OF_COL, get_lib()->get_type_string(t2));
             return gm_strdup(temp);
         }
         else {

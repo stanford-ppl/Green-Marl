@@ -99,7 +99,59 @@ private:
     bool _is_okay;
     int bfs_level;
     gm_symtab_entry* _group_sym;
+
+    bool apply_on_builtin(ast_expr_builtin* builtinExpr);
+    bool apply_on_builtin_field(ast_expr_builtin_field* builtinFieldExpr);
 };
+
+bool gm_typechecker_stage_2::apply_on_builtin_field(ast_expr_builtin_field* builtinFieldExpr) {
+
+
+
+	return false;
+}
+
+
+bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
+
+	if(builtinExpr->driver_is_field())
+		return apply_on_builtin_field((ast_expr_builtin_field*) builtinExpr);
+
+	ast_id* driver = builtinExpr->get_driver();
+	int source_type = (driver == NULL) ? GMTYPE_VOID : driver->getTypeSummary();
+	gm_builtin_def* def = BUILT_IN.find_builtin_def(source_type, builtinExpr->get_callname());
+
+	if (def == NULL) {
+		if (_is_group_assignment && (gm_is_graph_type(source_type) || gm_is_collection_type(source_type))) {
+			if (_is_group_assignment_node_prop)
+				source_type = GMTYPE_NODE;
+	        else
+	        	source_type = GMTYPE_EDGE;
+
+	        def = BUILT_IN.find_builtin_def(source_type, builtinExpr->get_callname());
+		}
+	}
+
+	bool is_okay = true;
+
+	if (def == NULL) {
+		gm_type_error(GM_ERROR_INVALID_BUILTIN, builtinExpr->get_line(), builtinExpr->get_col(), builtinExpr->get_callname());
+	    is_okay = false;
+	}
+
+	builtinExpr->set_builtin_def(def);
+
+	if (is_okay) {
+		std::list<ast_expr*>& arguments = builtinExpr->get_args();
+
+		int num_args = arguments.size();
+		if (num_args != def->get_num_args()) {
+			gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_COUNT, builtinExpr->get_line(), builtinExpr->get_col(), builtinExpr->get_callname());
+			is_okay = false;
+		}
+	}
+	return is_okay;
+}
 
 bool gm_typechecker_stage_2::apply(ast_expr* e)
 {
@@ -153,42 +205,8 @@ bool gm_typechecker_stage_2::apply(ast_expr* e)
     case GMEXPR_BUILTIN:
     {
         // find function definition:w
-        ast_expr_builtin* b = (ast_expr_builtin*) e ;
-        ast_id* i = b->get_driver();
-        int source_type = (i==NULL)? GMTYPE_VOID : i->getTypeSummary();
-        gm_builtin_def* def = BUILT_IN.find_builtin_def(source_type, b->get_callname());
-        if (def==NULL) 
-        {
-            if (_is_group_assignment && (gm_is_graph_type(source_type) || gm_is_collection_type(source_type)))
-            {
-                if (_is_group_assignment_node_prop)
-                    source_type = GMTYPE_NODE;
-                else
-                    source_type = GMTYPE_EDGE;
-
-                def = BUILT_IN.find_builtin_def(source_type, b->get_callname());
-            }
-        }
-
-        if (def == NULL) 
-        {
-            gm_type_error(GM_ERROR_INVALID_BUILTIN, b->get_line(), b->get_col(), b->get_callname());
-            is_okay = false;
-        }
-
-        b->set_builtin_def(def);
-
-        if (is_okay) {
-            std::list<ast_expr*>& args = b->get_args(); 
-
-            int num_args = args.size();
-            if (num_args != def->get_num_args()) {
-                gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_COUNT,
-                b->get_line(), b->get_col(), b->get_callname());
-                is_okay = false;
-            }
-        }
-
+        ast_expr_builtin* builtin = (ast_expr_builtin*) e ;
+        is_okay = apply_on_builtin(builtin);
         break;
     }
   }

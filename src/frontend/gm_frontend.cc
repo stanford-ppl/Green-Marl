@@ -84,7 +84,6 @@ ast_node* GM_expr_id_access(ast_node* id) {
     return n;
 }
 
-
 ast_node* GM_expr_field_access(ast_node* field) {
     assert(field->get_nodetype() == AST_FIELD);
     ast_field* f = (ast_field*)field;
@@ -92,55 +91,69 @@ ast_node* GM_expr_field_access(ast_node* field) {
     n->set_line(f->get_first()->get_line()); n->set_col(f->get_first()->get_col());
     return n;
 }
+
 ast_node* GM_expr_ival(long lval, int l, int c) {
     ast_node* n= ast_expr::new_ival_expr(lval);
     n->set_line(l); n->set_col(c);
-    return n; }
-ast_node* GM_expr_fval(double fval, int l, int c){
+    return n;
+}
+
+ast_node* GM_expr_fval(double fval, int l, int c) {
     ast_node* n = ast_expr::new_fval_expr(fval);
     n->set_line(l); n->set_col(c);
-    return n;}
-ast_node* GM_expr_bval(bool bval, int l, int c){
+    return n;
+}
+
+ast_node* GM_expr_bval(bool bval, int l, int c) {
     ast_node* n = ast_expr::new_bval_expr(bval);
     n->set_line(l); n->set_col(c);
-    return n;}
-ast_node* GM_expr_inf(bool is_plus, int l, int c){
+    return n;
+}
+
+ast_node* GM_expr_inf(bool is_plus, int l, int c) {
     ast_node* n = ast_expr::new_inf_expr(is_plus);
     n->set_line(l); n->set_col(c);
-    return n;}
-ast_node* GM_expr_nil(int l, int c){
+    return n;
+}
+
+ast_node* GM_expr_nil(int l, int c) {
     ast_node* n = ast_expr::new_nil_expr();
     n->set_line(l); n->set_col(c);
-    return n;}
-ast_node* GM_expr_biop(ast_node* left, ast_node* right, int op, int l, int c){
+    return n;
+}
+
+ast_node* GM_expr_biop(ast_node* left, ast_node* right, int op, int l, int c) {
    ast_node* n= ast_expr::new_biop_expr(op, (ast_expr*) left, (ast_expr*)right);
    n->set_line(l); n->set_col(c);
    return n;
 }
-ast_node* GM_expr_uop(ast_node* left, int op, int l, int c){
+
+ast_node* GM_expr_uop(ast_node* left, int op, int l, int c) {
     ast_node* n =  ast_expr::new_uop_expr(op, (ast_expr*)left);
     n->set_line(l); n->set_col(c);
     return n;
 }
-ast_node* GM_expr_lbiop(ast_node* left, ast_node* right, int op, int l, int c){
+
+ast_node* GM_expr_lbiop(ast_node* left, ast_node* right, int op, int l, int c) {
    ast_node* n= ast_expr::new_lbiop_expr(op, (ast_expr*) left, (ast_expr*)right);
    n->set_line(l); n->set_col(c);
    return n;
 }
-ast_node* GM_expr_luop(ast_node* left, int op, int l, int c){
+
+ast_node* GM_expr_luop(ast_node* left, int op, int l, int c) {
     ast_node* n =  ast_expr::new_luop_expr(op, (ast_expr*)left);
     n->set_line(l); n->set_col(c);
     return n;
 }
-ast_node* GM_expr_comp(ast_node* left, ast_node* right, int op, int l, int c){
+
+ast_node* GM_expr_comp(ast_node* left, ast_node* right, int op, int l, int c) {
    assert(gm_is_eq_or_less_op(op));
    ast_node* n= ast_expr::new_comp_expr(op, (ast_expr*) left, (ast_expr*)right);
    n->set_line(l); n->set_col(c);
    return n;
 }
-ast_node* GM_expr_conversion(ast_node* left, ast_node* type, int l, int c)
-{
 
+ast_node* GM_expr_conversion(ast_node* left, ast_node* type, int l, int c) {
     assert( ((ast_typedecl*)type)->is_primitive());
     int target_type =  ((ast_typedecl*)type)->get_typeid();
     ast_node* n = ast_expr::new_typeconv_expr(target_type, (ast_expr*)left);
@@ -177,8 +190,7 @@ ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, a
 
 ast_node* GM_expr_foreign(const char * text, int l, int c)
 {
-    ast_expr_foreign *expr =
-        ast_expr_foreign::new_expr_foreign((char*)text);
+	ast_expr_foreign *expr = ast_expr_foreign::new_expr_foreign((char*)text);
    expr->set_line(l);
    expr->set_col(c);
    expr->parse_foreign_syntax(); // parse again!
@@ -188,11 +200,10 @@ ast_node* GM_expr_foreign(const char * text, int l, int c)
 
 ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l)
 {
-    ast_id* i = (ast_id*) id; 
+	ast_id* i = (ast_id*) id;
     ast_id* i2 = (ast_id*) id2;
-    ast_expr* n = ast_expr_builtin::
-        new_builtin_expr(i, i2->get_orgname(), l);
-    if (i!=NULL) {
+    ast_expr* n = ast_expr_builtin::new_builtin_expr(i, i2->get_orgname(), l);
+    if (i != NULL) {
         n->set_line(i->get_line());
         n->set_col(i->get_col());
     } else {
@@ -202,6 +213,23 @@ ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l)
 
     delete id2; // this is only temporary
     return n;
+}
+
+ast_node* GM_expr_builtin_field_expr(ast_node* id, ast_node* id2, expr_list* list) {
+
+	ast_field* field = (ast_field*) id;
+	ast_id* builtin = (ast_id*) id2;
+	ast_expr* newExpression = ast_expr_builtin_field::new_builtin_field_expr(field, builtin->get_orgname(), list);
+
+	if(id == NULL) {
+		newExpression->set_line(field->get_line());
+		newExpression->set_col(field->get_col());
+	} else {
+		newExpression->set_line(builtin->get_line());
+		newExpression->set_col(builtin->get_col());
+	}
+	delete id2;	//this is only temporary
+	return newExpression;
 }
 
 ast_node* GM_expr_ternary(ast_node* cond, ast_node* left, ast_node*right, int l, int c) 

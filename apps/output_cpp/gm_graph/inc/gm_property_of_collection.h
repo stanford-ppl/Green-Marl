@@ -21,7 +21,7 @@ public:
 };
 
 template<class T, bool lazy>
-class TestSet : public  gm_property_of_collection<T> {
+class gm_property_of_collection_impl : public  gm_property_of_collection<T> {
 
 private:
 	T** data;
@@ -37,7 +37,7 @@ private:
 
 public:
 
-	TestSet(int size) : size(size) {
+	gm_property_of_collection_impl(int size) : size(size) {
 		data = new T*[size];
 		if (lazy) {
 			locks = new Spinlock[size];
@@ -53,7 +53,7 @@ public:
 		}
 	}
 
-	~TestSet() {
+	~gm_property_of_collection_impl() {
 		for(int i = 0; i < size; i++) {
 			destroy(locks[i]);
 			delete data[i];
@@ -62,10 +62,8 @@ public:
 		if(lazy) delete[] locks;
 	}
 
-	inline T& operator[](int index) {
-		if (lazy)
-			if (data[index] == NULL)
-				lazyInit(index);
+	T& operator[](int index) {
+		if (lazy && data[index] == NULL) lazyInit(index);
 		return *data[index];
 	}
 };

@@ -277,13 +277,7 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V)
         if (!is_okay) return false;
 
         ast_typedecl* target_type = type->get_target_type();
-        if (target_type->is_nodeedge()) {
-            is_okay &= gm_check_type_is_well_defined(target_type, SYM_V);
-            if (!is_okay) return false;
-        }
-        else if (target_type->is_collection()) {
-        	printf("Debug - typecheck1: Is Collection\n");
-        	//consider merging with above
+        if (target_type->is_nodeedge() || target_type->is_collection()) {
         	is_okay &= gm_check_type_is_well_defined(target_type, SYM_V);
         	if (!is_okay) return false;
         }

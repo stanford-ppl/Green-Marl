@@ -137,6 +137,7 @@ private:
     bool check_binary(ast_expr* e);
     bool check_ter(ast_expr* e);
     bool check_builtin(ast_expr_builtin* e);
+    bool check_arguments(ast_expr_builtin* b);
 
 public:
     // expression, dest-type
@@ -298,55 +299,57 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e)
     return true;
 }
 
-bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b)
-{
-    bool okay = true;
-    //-------------------------------------------------
-    // check arguments
-    //-------------------------------------------------
-    std::list<ast_expr*>& args = b->get_args();
-    std::list<ast_expr*>::iterator I;
-    gm_builtin_def*  def = b-> get_builtin_def(); 
+bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
 
-    int j = 0;
-    for(I=args.begin(); I!= args.end(); I++, j++) {
-        ast_expr* e = *I;
-        int curr_type = e->get_type_summary();
-        int def_type = def->get_arg_type(j);
-        if (gm_is_unknown_type(curr_type)) {okay = false; continue;}
-        
-        bool o;
-        bool warning;
-        int coerced_type;
-        o = gm_is_compatible_type_for_assign(def_type, curr_type,coerced_type, warning);
+	bool okay = true;
 
-        if (!o) {
-            char temp[20]; sprintf(temp, "%d", j+1);
-            gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_TYPE,
-                    b->get_line(), b->get_col(),
-                    b->get_callname(), temp);
-            okay = false;
-        }
+	std::list<ast_expr*>& args = b->get_args();
+	std::list<ast_expr*>::iterator iter;
+	gm_builtin_def* def = b->get_builtin_def();
 
-        if (warning) 
-        {
-            // [XXX] to be coerced
-            //assert(false);
+	int position = 0;
+	for (iter = args.begin(); iter != args.end(); iter++, position++) {
+		ast_expr* e = *iter;
+		int currentType = e->get_type_summary();
+		int def_type = def->get_arg_type(position);
+		if (gm_is_unknown_type(currentType)) {
+			okay = false;
+			continue;
+		}
 
-        }
-    }
+		bool warning;
+		int coerced_type;
+		bool isCompatible = gm_is_compatible_type_for_assign(def_type, currentType, coerced_type, warning);
 
-    int fun_ret_type = def->get_result_type_summary();
-    b->set_type_summary(fun_ret_type);
+		if (!isCompatible) {
+			char temp[20];
+			sprintf(temp, "%d", position + 1);
+			gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_TYPE, b->get_line(), b->get_col(), b->get_callname(), temp);
+			okay = false;
+		}
 
-    if (gm_has_target_graph_type(fun_ret_type))
-    {
-        b->set_bound_graph(b->get_driver()->getTypeInfo()->get_target_graph_sym());
-       //assert(false); // to be done
-    }
-    //assert(!gm_has_target_graph_type(fun_ret_type));
-    return okay;
+		if (warning) {
+			// [XXX] to be coerced
+			//assert(false);
+		}
+	}
+	return okay;
+}
 
+bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
+
+	bool okay = check_arguments(b);
+
+	gm_builtin_def* def = b->get_builtin_def();
+	int fun_ret_type = def->get_result_type_summary();
+	b->set_type_summary(fun_ret_type);
+
+	if (gm_has_target_graph_type(fun_ret_type)) {
+		b->set_bound_graph(b->get_driver()->getTypeInfo()->get_target_graph_sym());
+		//assert(false); // to be done
+	}
+	//assert(!gm_has_target_graph_type(fun_ret_type));
+	return okay;
 }
 
 // type resolve for u-op
