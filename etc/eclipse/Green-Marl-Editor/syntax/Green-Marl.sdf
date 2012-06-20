@@ -5,31 +5,31 @@ imports Common Keywords
 
 exports
 
-%%type <bval> opt_tp
-%%type <ptr> id lhs rhs expr bool_expr numeric_expr
-%%type <ptr> sent sent_block  sent_assignment sent_variable_decl sent_foreach sent_if 
-%%type <pair> foreach_header
-%%type <pair> rhs_list2 lhs_list2
-%%type <ptr> foreach_filter
-%%type <ptr> sent_do_while sent_while sent_return sent_call
-%%type <ptr> sent_reduce_assignment  sent_defer_assignment
-%%type <ptr> sent_bfs bfs_filter bfs_navigator sent_dfs
-%%type <pair> bfs_reverse bfs_filters dfs_post
-%%type <ival> from_or_semi
-%%type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
-%%type <ptr> edge_type node_type nodeedge_type set_type optional_bind
-%%type <ptr> scala field
-%%type <ptr> sent_argminmax_assignment
-%%type <pair>  iterator1
-%%type <ival> reduce_eq
-%%type <ival> reduce_op reduce_op2
-%%type <ival> minmax_eq
-%%type <bval> inf
-%%type <ptr>  built_in
-%%type <pair> bfs_header_format
-%%type <e_list>  arg_list expr_list 
-%%type <l_list>  lhs_list
-%%type <ptr>  expr_user sent_user
+	%%type <bval> opt_tp
+	%%type <ptr> id lhs rhs expr bool_expr numeric_expr
+	%%type <ptr> sent sent_block  sent_assignment sent_variable_decl sent_foreach sent_if 
+	%%type <pair> foreach_header
+	%%type <pair> rhs_list2 lhs_list2
+	%%type <ptr> foreach_filter
+	%%type <ptr> sent_do_while sent_while sent_return sent_call
+	%%type <ptr> sent_reduce_assignment  sent_defer_assignment
+	%%type <ptr> sent_bfs bfs_filter bfs_navigator sent_dfs
+	%%type <pair> bfs_reverse bfs_filters dfs_post
+	%%type <ival> from_or_semi
+	%%type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
+	%%type <ptr> edge_type node_type nodeedge_type set_type optional_bind
+	%%type <ptr> scala field
+	%%type <ptr> sent_argminmax_assignment
+	%%type <pair>  iterator1
+	%%type <ival> reduce_eq
+	%%type <ival> reduce_op reduce_op2
+	%%type <ival> minmax_eq
+	%%type <bval> inf
+	%%type <ptr>  built_in
+	%%type <pair> bfs_header_format
+	%%type <e_list>  arg_list expr_list 
+	%%type <l_list>  lhs_list
+	%%type <ptr>  expr_user sent_user
 
 	context-free priorities
 		{
