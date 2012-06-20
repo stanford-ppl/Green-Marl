@@ -5,7 +5,7 @@ exports
   lexical syntax
   
     [a-zA-Z][a-zA-Z0-9]* -> ID
-    "-"? [0-9]+          -> INT
+    "-"? [0-9]+          -> INT-NUM
     
     "\"" StringChar* "\"" -> STRING
     ~[\"\n]               -> StringChar
@@ -26,7 +26,7 @@ exports
     %% Ensure greedy matching for lexicals
   
     CommentChar   -/- [\/]
-    INT           -/- [0-9]
+    INT-NUM       -/- [0-9]
     ID            -/- [a-zA-Z0-9\_]
     
     %% EOF may not be followed by any char

@@ -59,12 +59,17 @@ exports
 		
 		"Node-Property" "<" Prim-type ">" "(" Id ")"		-> Property
 		"Node-Property" "<" NodeEdge-type ">" "(" Id ")"	-> Property
+		"Node-Property" "<" Set-type ">" "(" Id ")"			-> Property
 		"Node-Property" "<" Prim-type ">"					-> Property
 		"Node-Property" "<" NodeEdge-type ">"				-> Property
+		"Node-Property" "<" Set-type ">"					-> Property
+
 		"Edge-Property" "<" Prim-type ">" "(" Id ")"		-> Property
 		"Edge-Property" "<" NodeEdge-type ">" "(" Id ")"	-> Property
+		"Edge-Property" "<" Set-type ">" "(" Id ")"			-> Property
 		"Edge-Property" "<" Prim-type ">"					-> Property
 		"Edge-Property" "<" NodeEdge-type ">"				-> Property
+		"Edge-Property" "<" Set-type ">"					-> Property
 	
 		Id								-> Id-comma-list
 		Id-comma-list "," Id			-> Id-comma-list
@@ -241,6 +246,7 @@ exports
 	
 		Id "." Id Arg-list								-> Built-in
 		Id Arg-list										-> Built-in
+		Field "." Id Arg-list							-> Built-in
 	
 		"(" Expr-list ")"								-> Arg-list
 		"(" ")"											-> Arg-list
