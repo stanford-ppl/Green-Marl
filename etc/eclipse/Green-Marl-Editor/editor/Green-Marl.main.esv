@@ -13,4 +13,4 @@ language General properties
                   
   extensions    : gm
   table         : include/Green-Marl.tbl
-  start symbols : Start
+  start symbols : Prog

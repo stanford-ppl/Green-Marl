@@ -1,6 +1,3 @@
-/**
-* Example Green-Marl program.
-*/  
 Procedure pagerank(G: Graph, e: Double, d: Double, max: Int,
                    pg_rank: N_P<Double>)
 {
@@ -19,4 +16,5 @@ Procedure pagerank(G: Graph, e: Double, d: Double, max: Int,
         }
         cnt++;
     } While ((diff > e) && (cnt < max));
+    [printf("Finished after %d iterations\n", iterations)];
 }

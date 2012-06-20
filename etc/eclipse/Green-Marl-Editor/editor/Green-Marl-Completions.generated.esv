@@ -46,6 +46,8 @@ completions
   // All semantic services may make use of the dynamic rules created by the observer.     
 
 completions
-                                     
-  // Derived completions may follow  
-                                     
+                                      
+  // Derived completions may follow   
+                                      
+  completion keyword                : "+INF"
+  completion keyword                : "-INF"

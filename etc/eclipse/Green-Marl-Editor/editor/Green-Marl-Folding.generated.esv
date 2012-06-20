@@ -20,5 +20,31 @@ folding Default folding definitions
   //
   //   Definition._ (disabled)
   
-  Start.Module
-  Definition.Entity
+  Prog.Prog
+  Proc-def.Proc-def
+  Proc-head.Proc-head
+  Arg-declist1.Arg-declist1
+  Arg-decl.Arg-decl
+  Arg-target.Arg-target
+  Id-comma-list.Id-comma-list
+  Property.Property
+  OptId0
+  Property.Property
+  Node-type.Node-type
+  Edge-type.Edge-type
+  Property.Property
+  Set-type.Set-type
+  Set-type.Set-type
+  Set-type.Set-type
+  Property.Property
+  Property.Property
+  Property.Property
+  Proc-head.Proc-head
+  Arg-declist2.Arg-declist2
+  Proc-body.Proc-body
+  Sent-variable-decl.Sent-variable-decl
+  Var-target.Var-target
+  Sent-user.Sent-user
+  Lhs-list.Lhs-list
+  Lhs-list2.Lhs-list2
+  Rhs-list2.Rhs-list2

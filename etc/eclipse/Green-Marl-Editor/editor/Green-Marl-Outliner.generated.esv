@@ -12,5 +12,10 @@ outliner Default outliner
   //
   //   _.<constructor>
   
-  Start.Module
-  Definition.Entity
+  Proc-head.Proc-head
+  Arg-decl.Arg-decl
+  Proc-head.Proc-head
+  Sent-variable-decl.Sent-variable-decl
+  Sent-user.Sent-user
+  Lhs-list2.Lhs-list2
+  Rhs-list2.Rhs-list2
