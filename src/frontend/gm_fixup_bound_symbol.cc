@@ -1,4 +1,3 @@
-
 #include "gm_ast.h"
 #include "gm_frontend.h"
 #include "gm_backend.h"
@@ -19,7 +18,6 @@ void gm_make_normal_assign(ast_assign* a);
 //           => if no such thing, reduction can be optimized
 //
 //-----------------------------------------------------------------
-
 
 //-------------------------------------------------------------------------
 // Empty bound
@@ -48,7 +46,8 @@ void gm_make_normal_assign(ast_assign* a);
 //
 //-----------------------------------------------------------------
 
-struct find_bound_t {
+struct find_bound_t
+{
     gm_symtab* v_scope;
     gm_symtab* f_scope;
     bool is_par;
@@ -56,7 +55,8 @@ struct find_bound_t {
     gm_symtab_entry* iter;
 };
 
-class find_hpb_t : public gm_apply {
+class find_hpb_t: public gm_apply
+{
 private:
     std::list<find_bound_t> scope;
     bool opt_seq_bound;
@@ -78,7 +78,9 @@ public:
         opt_seq_bound = false;
     }
 
-    void set_opt_seq_bound(bool b) {opt_seq_bound = b;}
+    void set_opt_seq_bound(bool b) {
+        opt_seq_bound = b;
+    }
 
     void begin_context(ast_node* t) {
 
@@ -104,8 +106,7 @@ public:
             if (fe->is_parallel()) {
                 curr_T.is_par = true;
             }
-        }
-        else {
+        } else {
             // do nithing
         }
         scope.push_back(curr_T);
@@ -118,10 +119,9 @@ public:
 
     gm_symtab_entry* find_closest_any_boundary_iterator() { // can be a sequence
         std::list<find_bound_t>::reverse_iterator I;
-        for(I=scope.rbegin(); I!=scope.rend(); ++I)
-        {
+        for (I = scope.rbegin(); I != scope.rend(); ++I) {
             find_bound_t& T = *I;
-            if (T.is_boundary)  return T.iter;
+            if (T.is_boundary) return T.iter;
         }
         return NULL;
     }
@@ -129,28 +129,24 @@ public:
     //-----------------------------------------------------------
     // find highest parallel boundary after sym is defined
     //-----------------------------------------------------------
-    gm_symtab_entry* find_highest_parallel_boundary_iterator(gm_symtab_entry* entry, bool is_prop)
-    {
+    gm_symtab_entry* find_highest_parallel_boundary_iterator(gm_symtab_entry* entry, bool is_prop) {
         bool def_found = false;
         // first find symbol def
         std::list<find_bound_t>::iterator I;
-        for(I=scope.begin(); I!=scope.end(); I++) 
-        {
+        for (I = scope.begin(); I != scope.end(); I++) {
             if (!def_found) {
-                gm_symtab* scope_to_look = (is_prop)? I->f_scope : I->v_scope;
+                gm_symtab* scope_to_look = (is_prop) ? I->f_scope : I->v_scope;
                 if (scope_to_look == NULL) continue;
                 if (scope_to_look->is_entry_in_the_tab(entry)) {
                     def_found = true;
-                }
-                else {
+                } else {
                     continue;
                 }
             }
 
             assert(def_found);
             // find parallel boundary
-            if (I->is_par && I->is_boundary)
-                return I->iter;
+            if (I->is_par && I->is_boundary) return I->iter;
         }
 
         // no parallel boundary!
@@ -164,14 +160,12 @@ public:
     //-----------------------------------------------------------
     // find first parallel boundary after current bound
     //-----------------------------------------------------------
-    gm_symtab_entry* find_tighter_bound(gm_symtab_entry* curr_bound)
-    {
+    gm_symtab_entry* find_tighter_bound(gm_symtab_entry* curr_bound) {
         bool def_found = false;
 
         // first find current bound
         std::list<find_bound_t>::iterator I;
-        for(I=scope.begin(); I!=scope.end(); I++) 
-        {
+        for (I = scope.begin(); I != scope.end(); I++) {
             if (!def_found) {
                 if (I->iter == curr_bound) {
                     def_found = true;
@@ -179,15 +173,12 @@ public:
                         return I->iter;
                     else
                         continue;
-                }
-                else {
+                } else {
                     continue;
                 }
-            }
-            else {
+            } else {
                 // find parallel boundary
-                if (I->is_par && I->is_boundary)
-                    return I->iter;
+                if (I->is_par && I->is_boundary) return I->iter;
             }
         }
 
@@ -195,13 +186,11 @@ public:
         return NULL;
     }
 
-    virtual bool apply(ast_sent *s)
-    {
+    virtual bool apply(ast_sent *s) {
         if (s->get_nodetype() != AST_ASSIGN) return true;
-        ast_assign *a = (ast_assign*)s;
+        ast_assign *a = (ast_assign*) s;
 
-        if (a->is_defer_assign()) 
-        {
+        if (a->is_defer_assign()) {
             if (a->get_bound() == NULL) {
                 gm_symtab_entry* bound = find_closest_any_boundary_iterator();
                 if (bound == NULL) {
@@ -211,9 +200,7 @@ public:
 
                 a->set_bound(bound->getId()->copy(true));
             }
-        }
-        else if (a->is_reduce_assign()) 
-        {
+        } else if (a->is_reduce_assign()) {
             // null bound
             // find higest parallel region
             if (a->get_bound() == NULL) {
@@ -222,8 +209,7 @@ public:
                 if (a->is_target_scalar()) {
                     target = a->get_lhs_scala()->getSymInfo();
                     new_iter = find_highest_parallel_boundary_iterator(target, false);
-                }
-                else {
+                } else {
                     target = a->get_lhs_field()->get_second()->getSymInfo();
                     new_iter = find_highest_parallel_boundary_iterator(target, true);
                 }
@@ -232,22 +218,17 @@ public:
                 if (new_iter == NULL) {
                     //gm_make_normal_assign(a);
                     targets.push_back(a);
-                }
-                else {
+                } else {
                     a->set_bound(new_iter->getId()->copy(true));
                 }
-            }
-            else if (opt_seq_bound) 
-            {
+            } else if (opt_seq_bound) {
                 // check if bound is sequential
                 ast_id* old_bound = a->get_bound();
-                gm_symtab_entry* new_bound = 
-                    find_tighter_bound(old_bound->getSymInfo());
+                gm_symtab_entry* new_bound = find_tighter_bound(old_bound->getSymInfo());
                 if (new_bound == NULL) {
                     //gm_make_normal_assign(a);
                     targets.push_back(a);
-                }
-                else if (new_bound != old_bound->getSymInfo()) {
+                } else if (new_bound != old_bound->getSymInfo()) {
                     a->set_bound(new_bound->getId()->copy(true));
                     delete old_bound;
                 }
@@ -258,29 +239,24 @@ public:
     }
 
     void post_process() {
-       std::list<ast_assign*>::iterator I;
-       for(I= targets.begin(); I!= targets.end(); I++) 
-       {
-           ast_assign* a = *I;
-           gm_make_it_belong_to_sentblock(a);
-           gm_make_normal_assign(a);
-       }
+        std::list<ast_assign*>::iterator I;
+        for (I = targets.begin(); I != targets.end(); I++) {
+            ast_assign* a = *I;
+            gm_make_it_belong_to_sentblock(a);
+            gm_make_normal_assign(a);
+        }
     }
 private:
     std::list<ast_assign*> targets;
 };
 
-
-void gm_fe_fixup_bound_symbol::process(ast_procdef* p)
-{
+void gm_fe_fixup_bound_symbol::process(ast_procdef* p) {
     find_hpb_t T;
     T.set_opt_seq_bound(true);
 
     gm_traverse_sents(p, &T);
     T.post_process();
 }
-
-
 
 //-----------------------------------
 // make reduction into a normal assignment
@@ -289,8 +265,7 @@ void gm_fe_fixup_bound_symbol::process(ast_procdef* p)
 // -->
 // LHS = LHS + <expr>
 //-----------------------------------
-void gm_make_normal_assign(ast_assign* a)
-{
+void gm_make_normal_assign(ast_assign* a) {
     assert(a->is_reduce_assign());
 
     // assumption: a belongs to a sentence block
@@ -303,10 +278,10 @@ void gm_make_normal_assign(ast_assign* a)
         base = ast_expr::new_field_expr(a->get_lhs_field()->copy(true));
     }
 
-
-    ast_expr* org_rhs = a->get_rhs(); assert(org_rhs != NULL);
-    ast_expr* new_rhs=NULL;
-    switch(a->get_reduce_type()) {
+    ast_expr* org_rhs = a->get_rhs();
+    assert(org_rhs != NULL);
+    ast_expr* new_rhs = NULL;
+    switch (a->get_reduce_type()) {
         case GMREDUCE_PLUS:
             new_rhs = ast_expr::new_biop_expr(GMOP_ADD, base, org_rhs);
             break;
@@ -335,16 +310,12 @@ void gm_make_normal_assign(ast_assign* a)
             assert(false);
     }
 
-
-    if (!a->is_argminmax_assign())
-    {
+    if (!a->is_argminmax_assign()) {
         a->set_rhs(new_rhs);
-    }
-    else 
-    {   
+    } else {
 
         // <l; l1, l2> min= <r; r1, r2>
-        
+
         // ==> becomes
         // if (l_copy > r_copy) {
         //   l = r;
@@ -372,18 +343,19 @@ void gm_make_normal_assign(ast_assign* a)
         std::list<ast_expr*>::iterator J;
         std::list<ast_node*>& L = a->get_lhs_list();
         std::list<ast_expr*>& R = a->get_rhs_list();
-        I = L.begin(); 
+        I = L.begin();
         J = R.begin();
-        for(; I!=L.end(); I++, J++)
-        {
+        for (; I != L.end(); I++, J++) {
             ast_node* l = *I;
             ast_expr* r = *J;
-            ast_assign* aa; 
+            ast_assign* aa;
             if (l->get_nodetype() == AST_ID)
-                aa = ast_assign::new_assign_scala((ast_id*)l, r);
+                aa = ast_assign::new_assign_scala((ast_id*) l, r);
             else if (l->get_nodetype() == AST_FIELD)
-                aa = ast_assign::new_assign_field((ast_field*)l, r);
-            else {assert(false);}
+                aa = ast_assign::new_assign_field((ast_field*) l, r);
+            else {
+                assert(false);
+            }
             sb->add_sent(aa);
         }
     }
@@ -392,6 +364,6 @@ void gm_make_normal_assign(ast_assign* a)
     a->set_reduce_type(GMREDUCE_NULL);
     ast_id* old_iter = a->get_bound(); //assert(old_iter != NULL);
     a->set_bound(NULL);
-    if (old_iter!=NULL) delete old_iter; 
-}    
+    if (old_iter != NULL) delete old_iter;
+}
 

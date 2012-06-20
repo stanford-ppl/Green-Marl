@@ -1,4 +1,3 @@
-
 #ifndef GM_HELPER_FUNCTIONS
 #define GM_HELPER_FUNCTIONS
 #include <list>
@@ -28,17 +27,14 @@ extern void _gm_lock_addrs(void*p[], int cnt);
 extern void _gm_unlock_addr(void*p);
 extern void _gm_unlock_addrs(void*p[], int cnt);
 
-
-static inline unsigned _gm_get_bit(unsigned char* Bit, int n) 
-{
+static inline unsigned _gm_get_bit(unsigned char* Bit, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned val = (Bit[bit_pos] >> bit_loc) & 0x01;
     return val;
 }
 
-static inline void  _gm_set_bit(unsigned char* BitMap, int n) 
-{
+static inline void _gm_set_bit(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char or_val = 0x1 << bit_loc;
@@ -48,18 +44,16 @@ static inline void  _gm_set_bit(unsigned char* BitMap, int n)
 }
 
 // true if I'm the one who set the bit
-static inline bool _gm_set_bit_atomic(unsigned char* BitMap, int n) 
-{
+static inline bool _gm_set_bit_atomic(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char or_val = 0x1 << bit_loc;
     unsigned char old_val = __sync_fetch_and_or(&BitMap[bit_pos], or_val);
-    if ( ((old_val >> bit_loc) & 0x01) == 0) return true;
+    if (((old_val >> bit_loc) & 0x01) == 0) return true;
     return false;
 }
 
-static inline void _gm_clear_bit(unsigned char* BitMap, int n)
-{
+static inline void _gm_clear_bit(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char and_val = ~(0x1 << bit_loc);
@@ -68,55 +62,52 @@ static inline void _gm_clear_bit(unsigned char* BitMap, int n)
     BitMap[bit_pos] = new_val;
 }
 
-static inline bool _gm_clear_bit_atomic(unsigned char* BitMap, int n)  
-{
+static inline bool _gm_clear_bit_atomic(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char and_val = ~(0x1 << bit_loc);
     unsigned char old_val = __sync_fetch_and_and(&BitMap[bit_pos], and_val);
-    if ( ((old_val >> bit_loc) & 0x01) == 1) return true; // Am I the one who cleared the bit?
+    if (((old_val >> bit_loc) & 0x01) == 1) return true; // Am I the one who cleared the bit?
     return false;
 }
-
-
 
 //---------------------------------------------------------
 // A thin runtime for object deletion management
 //---------------------------------------------------------
-class _gm_mem_helper {
+class _gm_mem_helper
+{
 public:
     _gm_mem_helper(int max_threads) {
         //printf("max = %d\n", max_threads);
 
         max = max_threads;
-        memptrs = new std::list<void* >* [max_threads];
-        for(int i=0;i<max;i++) {
+        memptrs = new std::list<void*>*[max_threads];
+        for (int i = 0; i < max; i++) {
             memptrs[i] = new std::list<void*>();
         }
     }
     ~_gm_mem_helper() {
-        for(int i=0;i<max;i++)
-        {
+        for (int i = 0; i < max; i++) {
             delete memptrs[i];
         }
-        delete [] memptrs;
+        delete[] memptrs;
     }
 
-    void save(void* ptr, int typeinfo, int thread_id=0) {
+    void save(void* ptr, int typeinfo, int thread_id = 0) {
         assert(ptr != NULL);
-        assert(thread_id <=max);
+        assert(thread_id <= max);
         std::list<void*>* L = memptrs[thread_id];
         L->push_back(ptr);
     }
-    void clear(void* ptr, int typeinfo, int thread_id=0) {
-        assert(thread_id <=max);
+    void clear(void* ptr, int typeinfo, int thread_id = 0) {
+        assert(thread_id <= max);
         std::list<void*>* L = memptrs[thread_id];
         std::list<void*>::iterator i;
-        for(i=L->begin(); i!= L->end(); i++) {
+        for (i = L->begin(); i != L->end(); i++) {
             if (*i == ptr) {
                 //delete [] *i;  // should be type-cast first. but will work for primitive types.
                 float* P = (float*) *i;
-                delete [] P;
+                delete[] P;
 
                 L->erase(i);
                 return;
@@ -125,29 +116,28 @@ public:
     }
 
     void cleanup() {
-        for(int p=0;p<max;p++)  {
+        for (int p = 0; p < max; p++) {
             std::list<void*>* L = memptrs[p];
             std::list<void*>::iterator i;
-            for(i=L->begin(); i!= L->end(); i++) {
+            for (i = L->begin(); i != L->end(); i++) {
                 //delete [] *i;
                 float* P = (float*) *i;
-                delete [] P;
+                delete[] P;
             }
             L->clear();
         }
     }
 
 private:
-    std::list<void* >** memptrs;
+    std::list<void*>** memptrs;
     int max;
 };
-
-
 
 //---------------------------------------------------------
 // A thin runtime for breadth-first search
 //---------------------------------------------------------
-class _bfs_helper {
+class _bfs_helper
+{
 
 public:
     _bfs_helper() {
@@ -159,10 +149,10 @@ public:
         num_threads = 0;
         local_Q = NULL;
         num_edges = 0;
-        
+
         num_nodes_pre = 0;
-        num_threads_pre= 0;
-        
+        num_threads_pre = 0;
+
     }
 
     virtual ~_bfs_helper() {
@@ -171,25 +161,22 @@ public:
 
     // calling sequence
     //  set_num_threads -> set_graph_size -> set_root
-    inline void prepare() 
-    {
+    inline void prepare() {
         if (num_nodes_pre == 0) num_nodes_pre = 1;
         if (num_threads_pre == 0) num_threads_pre = 1;
 
-        if ((num_nodes ==  0) && (num_threads == 0)) { // nothing created yet
+        if ((num_nodes == 0) && (num_threads == 0)) { // nothing created yet
             num_nodes = num_nodes_pre;
             num_threads = num_threads_pre;
             num_edges = num_edges_pre;
             create_struct();
-        }
-        else if ((num_edges_pre > num_edges) || (num_nodes_pre > num_nodes) || (num_threads_pre > num_threads)) {
+        } else if ((num_edges_pre > num_edges) || (num_nodes_pre > num_nodes) || (num_threads_pre > num_threads)) {
             destroy_struct();
             num_nodes = num_nodes_pre;
             num_threads = num_threads_pre;
             num_edges = num_edges_pre;
             create_struct();
-        }
-        else { // reuse struct
+        } else { // reuse struct
             num_nodes = num_nodes_pre;
             num_threads = num_threads_pre;
             num_edges = num_edges_pre;
@@ -198,23 +185,20 @@ public:
         assert(num_threads > 0);
     }
 
-
-
-    inline void create_struct()
-    {
-        BIT_END  = (num_nodes + 7) / 8;
-        visited  = new unsigned char[BIT_END];
-        next_Q   = new node_t[num_nodes];
-        curr_Q   = new node_t[num_nodes];
-        level    = new unsigned short[num_nodes];
+    inline void create_struct() {
+        BIT_END = (num_nodes + 7) / 8;
+        visited = new unsigned char[BIT_END];
+        next_Q = new node_t[num_nodes];
+        curr_Q = new node_t[num_nodes];
+        level = new unsigned short[num_nodes];
         local_Q = new node_t*[num_threads];
-        for(int i=0;i<num_threads;i++) {
-            local_Q[i] = new node_t[(num_nodes +num_threads -1)/ num_threads];
+        for (int i = 0; i < num_threads; i++) {
+            local_Q[i] = new node_t[(num_nodes + num_threads - 1) / num_threads];
             assert(local_Q[i] != NULL);
         }
-        if (num_edges !=0) {
+        if (num_edges != 0) {
             marker = new unsigned char[num_edges];
-            assert(marker!=NULL);
+            assert(marker != NULL);
         }
 
         assert(visited != NULL);
@@ -224,33 +208,32 @@ public:
         assert(local_Q != NULL);
     }
 
-
-    inline void destroy_struct()
-    {
-        delete [] visited;
-        delete [] next_Q;
-        delete [] curr_Q;
-        delete [] level;
-        for(int i=0;i<num_threads;i++)
-            delete [] (local_Q[i]);
-        delete [] local_Q;
-        delete [] marker;
+    inline void destroy_struct() {
+        delete[] visited;
+        delete[] next_Q;
+        delete[] curr_Q;
+        delete[] level;
+        for (int i = 0; i < num_threads; i++)
+            delete[] (local_Q[i]);
+        delete[] local_Q;
+        delete[] marker;
     }
 
     // should be called before set_graph_size
     inline void set_num_threads(int p) {
         num_threads_pre = p;
     }
-    inline indlong_t get_num_nodes() {return num_nodes;}
+    inline indlong_t get_num_nodes() {
+        return num_nodes;
+    }
 
-    inline void set_num_nodes(indlong_t n, indlong_t m=0) {
+    inline void set_num_nodes(indlong_t n, indlong_t m = 0) {
         num_nodes_pre = n;
         num_edges_pre = m;
         prepare();
     }
 
-    inline void set_root(node_t r)
-    {
+    inline void set_root(node_t r) {
         cnt_curr = 0;
         cnt_next = 0;
         state = ST_SEQ;
@@ -263,10 +246,9 @@ public:
         choose_method();
     }
 
-
     inline bool add_next_seq(node_t n) {
         assert(n < num_nodes);
-        if (!_gm_get_bit(visited,n)) {
+        if (!_gm_get_bit(visited, n)) {
             _gm_set_bit(visited, n);
             next_Q[cnt_next++] = n;
             level[n] = curr_level + 1;
@@ -278,7 +260,7 @@ public:
     inline bool add_next_local_q(node_t n, int tid, indlong_t& cnt) {
         assert(n < num_nodes);
         assert(tid < num_threads);
-        if (!_gm_get_bit(visited,n)) {
+        if (!_gm_get_bit(visited, n)) {
             if (_gm_set_bit_atomic(visited, n)) {
                 local_Q[tid][cnt++] = n;
                 level[n] = curr_level + 1;
@@ -291,7 +273,7 @@ public:
     // under parallel execution
     inline bool add_next_level(node_t n, indlong_t& cnt) {
         assert(n < num_nodes);
-        if (!_gm_get_bit(visited,n)) {
+        if (!_gm_get_bit(visited, n)) {
             if (_gm_set_bit_atomic(visited, n)) {
                 level[n] = curr_level + 1;
                 cnt++;
@@ -300,38 +282,44 @@ public:
         }
         return false;
     }
-    inline void copy_local_q(int tid, indlong_t local_cnt)
-    {
+    inline void copy_local_q(int tid, indlong_t local_cnt) {
         assert(tid < num_threads);
         int idx = __sync_fetch_and_add(&cnt_next, local_cnt);
-        memcpy (&(next_Q[idx]), local_Q[tid], local_cnt * sizeof(node_t));
+        memcpy(&(next_Q[idx]), local_Q[tid], local_cnt * sizeof(node_t));
     }
 
     // under parallel execution
-    inline void increase_next_count(int tid, indlong_t local_cnt)
-    {
+    inline void increase_next_count(int tid, indlong_t local_cnt) {
         assert(tid < num_threads);
         __sync_fetch_and_add(&cnt_next, local_cnt);
     }
 
     inline void choose_method() {
-        if (cnt_next ==0) is_finished = true;
+        if (cnt_next == 0)
+            is_finished = true;
         else {
-            switch(state) {
-                case ST_SEQ: 
-                case ST_QUE: 
+            switch (state) {
+                case ST_SEQ:
+                case ST_QUE:
                 case ST_TO_QUE:
-                    if      (cnt_next <= THRESHOLD1) state = ST_SEQ;
-                    else if (cnt_next <= THRESHOLD2) state = ST_QUE;
-                    else state = ST_TO_RD;
+                    if (cnt_next <= THRESHOLD1)
+                        state = ST_SEQ;
+                    else if (cnt_next <= THRESHOLD2)
+                        state = ST_QUE;
+                    else
+                        state = ST_TO_RD;
                     break;
                 case ST_TO_RD:
-                    if (cnt_next <= THRESHOLD2) state = ST_TO_QUE;
-                    else state = ST_RD;
+                    if (cnt_next <= THRESHOLD2)
+                        state = ST_TO_QUE;
+                    else
+                        state = ST_RD;
                     break;
                 case ST_RD:
-                    if (cnt_next <= (2* cnt_curr)) state = ST_TO_QUE;
-                    else state = ST_RD;
+                    if (cnt_next <= (2 * cnt_curr))
+                        state = ST_TO_QUE;
+                    else
+                        state = ST_RD;
                     break;
             }
 
@@ -341,7 +329,7 @@ public:
             node_t* temp = curr_Q;
             curr_Q = next_Q;
             next_Q = temp;
-            curr_level ++;
+            curr_level++;
         }
     }
 
@@ -352,23 +340,23 @@ public:
     indlong_t num_edges;
     indlong_t BIT_END;
     int state;
-    unsigned char* visited  ;
-    node_t* next_Q          ; 
-    node_t* curr_Q          ; 
-    unsigned short* level   ;
-    indlong_t cnt_curr            ;
-    indlong_t cnt_next            ;
-    bool is_finished ;
-    int curr_level ;
-    static const int ST_SEQ    = 0    ;
-    static const int ST_QUE    = 1    ;
-    static const int ST_TO_RD  = 2    ;
-    static const int ST_RD     = 3    ;
-    static const int ST_TO_QUE = 4    ;
+    unsigned char* visited;
+    node_t* next_Q;
+    node_t* curr_Q;
+    unsigned short* level;
+    indlong_t cnt_curr;
+    indlong_t cnt_next;
+    bool is_finished;
+    int curr_level;
+    static const int ST_SEQ = 0;
+    static const int ST_QUE = 1;
+    static const int ST_TO_RD = 2;
+    static const int ST_RD = 3;
+    static const int ST_TO_QUE = 4;
 
     int num_threads;
-    node_t** local_Q          ; 
-    unsigned char* marker ;
+    node_t** local_Q;
+    unsigned char* marker;
 
     indlong_t num_nodes_pre;
     indlong_t num_edges_pre;
@@ -376,7 +364,8 @@ public:
 
 };
 
-class _temp_set {
+class _temp_set
+{
 public:
     _temp_set() {
         BIT_END = 0;
@@ -387,12 +376,14 @@ public:
         is_small = true;
         max_sz = 0;
     }
-    virtual ~ _temp_set()  { delete [] bitmap; }
+    virtual ~ _temp_set() {
+        delete[] bitmap;
+    }
 
     void set_size(indlong_t s) {
         if (s > max_sz) {
             BIT_END = (s + 7) / 8;
-            delete [] bitmap;
+            delete[] bitmap;
             bitmap = new unsigned char[BIT_END];
             is_small = true;
             max_sz = s;
@@ -401,8 +392,8 @@ public:
     }
     void clear() {
         if (!is_small) {
-            #pragma omp parallel for
-            for(int i=0;i<BIT_END;i++)
+#pragma omp parallel for
+            for (int i = 0; i < BIT_END; i++)
                 bitmap[i] = 0;
         }
         is_small = true;
@@ -412,37 +403,35 @@ public:
 
     bool is_in(indlong_t t) {
         if (is_small) {
-            for(int i=0;i<small_ptr; i++)
+            for (int i = 0; i < small_ptr; i++)
                 if (small_v[i] == t) return true;
             return false;
-        }
-        else {
+        } else {
             return (_gm_get_bit(bitmap, t) == 1);
         }
     }
-        
+
     void validate_bitmap() {
-        #pragma omp parallel for
-        for(int i=0;i<BIT_END;i++)
+#pragma omp parallel for
+        for (int i = 0; i < BIT_END; i++)
             bitmap[i] = 0;
-        for(int i=0;i<small_ptr;i++)
+        for (int i = 0; i < small_ptr; i++)
             _gm_set_bit(bitmap, small_v[i]);
     }
 
     void add(indlong_t t) {
-        if (is_in(t)) return ;
+        if (is_in(t)) return;
         if (!is_small) {
             _gm_set_bit(bitmap, t);
             curr_sz++;
-        }
-        else {
-           small_v[small_ptr++] = t;
-           curr_sz++;
-           if (small_ptr == SMALL_SZ) {
-               validate_bitmap();
-               is_small = false;
-               small_ptr = 0;
-           }
+        } else {
+            small_v[small_ptr++] = t;
+            curr_sz++;
+            if (small_ptr == SMALL_SZ) {
+                validate_bitmap();
+                is_small = false;
+                small_ptr = 0;
+            }
         }
         assert(is_in(t));
     }
@@ -459,13 +448,14 @@ public:
 };
 
 // for temporary?
-struct _dfs_pair {
+struct _dfs_pair
+{
     indlong_t node;
     indlong_t edge;
 };
-class _dfs_helper 
+class _dfs_helper
 {
- public:
+public:
     static const int SMALL_SZ = 128;
     _dfs_helper() {
         num_nodes = num_nodes_pre = 0;
@@ -486,11 +476,10 @@ class _dfs_helper
         num_nodes_pre = n;
         prepare();
     }
-    inline void prepare() 
-    {
+    inline void prepare() {
         if (num_nodes_pre == 0) num_nodes_pre = 1;
 
-        if (num_nodes ==  0) { // nothing created yet
+        if (num_nodes == 0) { // nothing created yet
             num_nodes = num_nodes_pre;
             create_struct();
         } else if (num_nodes_pre > num_nodes) {
@@ -502,53 +491,51 @@ class _dfs_helper
         }
         //context.clear();
         ptr = 0;
-        if ((num_nodes / 100) > context.capacity())
-            context.reserve(num_nodes/100);
+        if ((num_nodes / 100) > context.capacity()) context.reserve(num_nodes / 100);
         is_small = true;
         is_small = false;
         small_set_ptr = 0;
         initialize(true);
     }
- private:
-    inline void initialize(bool use_parallel = false)
-    {
+private:
+    inline void initialize(bool use_parallel = false) {
         if (use_parallel) {
-            #pragma omp parallel for
-            for(indlong_t i =0; i < BIT_END;i++)
+#pragma omp parallel for
+            for (indlong_t i = 0; i < BIT_END; i++)
                 visited[i] = 0;
         } else {
-            for(indlong_t i =0; i < BIT_END;i++)
+            for (indlong_t i = 0; i < BIT_END; i++)
                 visited[i] = 0;
         }
 
         /*
-        for(indlong_t i =0; i < SMALL_SZ; i++)
-            _gm_set_bit(visited, small_set[i])  ;
-            */
+         for(indlong_t i =0; i < SMALL_SZ; i++)
+         _gm_set_bit(visited, small_set[i])  ;
+         */
     }
 
-    inline void create_struct()
-    {
-        BIT_END  = (num_nodes + 7) / 8;
-        visited  = new unsigned char[BIT_END];
+    inline void create_struct() {
+        BIT_END = (num_nodes + 7) / 8;
+        visited = new unsigned char[BIT_END];
 
         assert(visited != NULL);
     }
-    inline void destroy_struct()
-    {
-        delete [] visited;
+    inline void destroy_struct() {
+        delete[] visited;
     }
- public:
+public:
     inline bool has_visited(indlong_t v) {
         if (is_small) {
-            for(int i = 0; i < small_set_ptr; i++) {
+            for (int i = 0; i < small_set_ptr; i++) {
                 if (small_set[i] == v) return true;
-            } 
+            }
             return false;
-        }
-        else return (_gm_get_bit(visited, v)==1);
+        } else
+            return (_gm_get_bit(visited, v) == 1);
     }
-    inline bool is_finished() {return  ptr == 0;}
+    inline bool is_finished() {
+        return ptr == 0;
+    }
 
     //------------------------------------
     // is visited?
@@ -559,8 +546,9 @@ class _dfs_helper
     //      -> end iterate ==> (post())  end_visiting POP
     //------------------------------------
     inline void start_visiting(indlong_t v) {
-        _dfs_pair P; 
-        P.node = v; P.edge = 0;
+        _dfs_pair P;
+        P.node = v;
+        P.edge = 0;
         assert(_gm_get_bit(visited, v) == 0);
 
         if (is_small) {
@@ -569,33 +557,31 @@ class _dfs_helper
                 initialize(true);
                 is_small = false;
             }
-        }
-        else _gm_set_bit(visited, v);
+        } else
+            _gm_set_bit(visited, v);
         curr_node = v;
         curr_idx = 0;
         context[ptr] = P;
         ptr++;
-        if (ptr > context.capacity())
-            context.resize(ptr*2);
+        if (ptr > context.capacity()) context.resize(ptr * 2);
     }
 
     inline void next_child() {
         assert(ptr != 0);
-        _dfs_pair &P = context[ptr-1];
+        _dfs_pair &P = context[ptr - 1];
         curr_node = P.node;
         curr_idx = P.edge;
-        P.edge++; 
+        P.edge++;
     }
 
     inline bool end_visiting(indlong_t v) {
-        ptr --;
+        ptr--;
         return is_finished();
     }
 
 public:
     indlong_t curr_node;
     indlong_t curr_idx;
-
 
 private:
 public:
@@ -614,56 +600,53 @@ public:
 // A thin wrapper to omp
 //---------------------------------------------------------
 /*
-class _gm_runtime {
-public:
-    _gm_runtime();
-    ~_gm_runtime();
+ class _gm_runtime {
+ public:
+ _gm_runtime();
+ ~_gm_runtime();
 
-    void set_max_threads(int n);
-    int get_max_threads();
-protected:
-};
+ void set_max_threads(int n);
+ int get_max_threads();
+ protected:
+ };
 
-// singletone object
-extern _gm_runtime _GM_RT;
-*/
-
-
+ // singletone object
+ extern _gm_runtime _GM_RT;
+ */
 
 //---------------------------------------------------------
 // CAS implementation
 //---------------------------------------------------------
-static inline bool _gm_CAS(int32_t *dest, int32_t old_val, int32_t new_val)
-{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
-static inline bool _gm_CAS(int64_t *dest, int64_t old_val, int64_t new_val)
-{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+static inline bool _gm_CAS(int32_t *dest, int32_t old_val, int32_t new_val) {
+    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+}
+static inline bool _gm_CAS(int64_t *dest, int64_t old_val, int64_t new_val) {
+    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+}
 
 /*
-static inline bool _gm_CAS(double  *dest, double* old_valp,  double* new_valp) 
-{   
-    uint64_t* D = reinterpret_cast<uint64_t*> (dest); // double is 64bit. right?
-    uint64_t* O = reinterpret_cast<uint64_t*> (old_valp); // double is 64bit. right?
-    uint64_t* P = reinterpret_cast<uint64_t*> (new_valp); // double is 64bit. right?
-    return __sync_bool_compare_and_swap(D, *O, *P);
-}
+ static inline bool _gm_CAS(double  *dest, double* old_valp,  double* new_valp)
+ {
+ uint64_t* D = reinterpret_cast<uint64_t*> (dest); // double is 64bit. right?
+ uint64_t* O = reinterpret_cast<uint64_t*> (old_valp); // double is 64bit. right?
+ uint64_t* P = reinterpret_cast<uint64_t*> (new_valp); // double is 64bit. right?
+ return __sync_bool_compare_and_swap(D, *O, *P);
+ }
 
-static inline bool _gm_CAS(float   *dest, float*  old_valp,  float* new_valp) 
-{
-    uint32_t* D = reinterpret_cast<uint32_t*> (dest); // double is 64bit. right?
-    uint32_t* O = reinterpret_cast<uint32_t*> (old_valp); // double is 64bit. right?
-    uint32_t* P = reinterpret_cast<uint32_t*> (new_valp); // double is 64bit. right?
-    return __sync_bool_compare_and_swap(D, *O, *P);
-}
-*/
-static inline bool _gm_CAS(double  *dest, double old_val,  double new_val) 
-{
+ static inline bool _gm_CAS(float   *dest, float*  old_valp,  float* new_valp)
+ {
+ uint32_t* D = reinterpret_cast<uint32_t*> (dest); // double is 64bit. right?
+ uint32_t* O = reinterpret_cast<uint32_t*> (old_valp); // double is 64bit. right?
+ uint32_t* P = reinterpret_cast<uint32_t*> (new_valp); // double is 64bit. right?
+ return __sync_bool_compare_and_swap(D, *O, *P);
+ }
+ */
+static inline bool _gm_CAS(double *dest, double old_val, double new_val) {
     return _gm_CAS_asm(dest, old_val, new_val);
 }
-static inline bool _gm_CAS(float  *dest, float old_val,  float new_val) 
-{
+static inline bool _gm_CAS(float *dest, float old_val, float new_val) {
     return _gm_CAS_asm(dest, old_val, new_val);
 }
-
 
 #define GM_NUM_NBR(G, n)           (G.begin[(n)+1] - G.begin[(n)])
 #define GM_NUM_R_NBR(G, n)         (G.r_begin[(n)+1] - G.r_begin[(n)])
