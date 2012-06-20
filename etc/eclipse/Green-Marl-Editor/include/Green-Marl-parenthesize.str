@@ -1,0 +1,10 @@
+module include/Green-Marl-parenthesize
+
+imports
+  libstratego-lib
+
+
+strategies
+  io-Green-Marl-parenthesize =
+    io-wrap(id)
+

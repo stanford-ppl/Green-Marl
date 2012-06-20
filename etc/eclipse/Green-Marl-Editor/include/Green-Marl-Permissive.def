@@ -1,0 +1,280 @@
+
+definition
+
+module Common
+exports
+  sorts WATER WATERTOKEN WATERTOKENSTART WATERTOKENSEPARATOR WATERTOKENSTAR
+
+  lexical syntax
+    ~[A-Za-z0-9\_]                 -> WATERTOKENSTART     {recover, avoid}
+    WATERTOKENSTART [A-Za-z0-9\_]* -> WATERTOKEN          
+    ~[A-Za-z0-9\_\ \t\12\r\n\*]    -> WATERTOKENSEPARATOR {recover, avoid}
+    "*"                            -> WATERTOKENSTAR      {recover, avoid}
+    WATERTOKEN                     -> WATER               
+    WATERTOKENSEPARATOR            -> WATER               
+    WATERTOKENSTAR                 -> WATER               
+                                   -> WATEREOF            
+
+  lexical restrictions
+    WATERTOKEN -/- [A-Za-z0-9\_]
+    WATERTOKENSTAR -/- [\/]
+
+  context-free syntax
+    WATER -> LAYOUT {cons("WATER")}
+
+  (
+
+  sorts WATEREOF
+
+  lexical restrictions
+    WATEREOF -/- ~[]
+
+  lexical syntax
+    %% Lexical insertion recovery rules                              
+    "\""                                          -> INSERTOPENQUOTE {recover}
+    INSERTOPENQUOTE StringChar* "\n"              -> STRING          {cons("INSERTEND")}
+    INSERTOPENQUOTE StringChar* WATEREOF          -> STRING          {cons("INSERTEND")}
+    "/*"                                          -> INSERTSTART     {recover}
+    INSERTSTART ( ~[\*] | CommentChar )* WATEREOF -> LAYOUT          {cons("INSERTEND")}
+                                                  -> "Procedure"     {recover, cons("INSERTION")}
+                                                  -> "Local"         {recover, cons("INSERTION")}
+                                                  -> ":"             {recover, cons("INSERTION")}
+                                                  -> "Node-Property" {recover, cons("INSERTION")}
+                                                  -> "Edge-Property" {recover, cons("INSERTION")}
+                                                  -> "CommonNbrs"    {recover, cons("INSERTION")}
+                                                  -> "@"             {recover, cons("INSERTION")}
+                                                  -> "|"             {recover, cons("INSERTION")}
+                                                  -> ")"             {recover, cons("INSERTION")}
+                                                  -> ">"             {recover, cons("INSERTION")}
+                                                  -> "<"             {recover, cons("INSERTION")}
+                                                  -> "]"             {recover, cons("INSERTION")}
+                                                  -> "["             {recover, cons("INSERTION")}
+
+  syntax
+    %% Kernel syntax insertion recovery rules   
+
+  )
+
+  (
+
+  lexical syntax
+    [a-zA-Z] [a-zA-Z0-9]*              -> ID            
+    "-"? [0-9]+                        -> INT           
+    "\"" StringChar* "\""              -> STRING        
+    ~[\"\n]                            -> StringChar    
+    "\\\""                             -> StringChar    
+    BackSlashChar                      -> StringChar    
+    "\\"                               -> BackSlashChar 
+    [\ \t\n\r]                         -> LAYOUT        
+    [\*]                               -> CommentChar   
+    "/*" ( ~[\*] | CommentChar )* "*/" -> LAYOUT        
+    "//" ~[\n\r]* [\n\r] | EOF         -> LAYOUT        
+                                       -> EOF           
+
+  lexical restrictions
+    CommentChar -/- [\/]
+    INT -/- [0-9]
+    ID -/- [a-zA-Z0-9\_]
+    EOF -/- ~[]
+    BackSlashChar -/- [\"]
+
+  context-free restrictions
+    LAYOUT? -/- [\ \t\n\r]
+    LAYOUT? -/- [\/] . [\/]
+    LAYOUT? -/- [\/] . [\*]
+
+  )
+
+module Green-Marl
+imports Common
+
+exports
+  context-free start-symbols
+    Prog
+
+  context-free syntax
+    Prog Proc-def                                                       -> Prog                      
+    Proc-head Proc-body                                                 -> Proc-def                  
+    Proc-name "(" Arg-declist1 ")" Proc-return-opt                      -> Proc-head                 
+    Proc-name "(" Arg-declist1 ";" Arg-declist2 ")" Proc-return-opt     -> Proc-head                 
+    "Procedure" Id                                                      -> Proc-name                 
+    "Local" Id                                                          -> Proc-name                 
+    Arg-declist                                                         -> Arg-declist1              
+    Arg-decl                                                            -> Arg-declist               
+    Arg-declist "," Arg-decl                                            -> Arg-declist               
+    Arg-decl                                                            -> Arg-declist2              
+    Arg-declist2 "," Arg-decl                                           -> Arg-declist2              
+    Proc-return                                                         -> Proc-return-opt           
+    ":" Prim-type                                                       -> Proc-return               
+    ":" Node-type                                                       -> Proc-return               
+    Arg-target ":" Typedecl                                             -> Arg-decl                  
+    Id-comma-list                                                       -> Arg-target                
+    Prim-type                                                           -> Typedecl                  
+    Graph-type                                                          -> Typedecl                  
+    Property                                                            -> Typedecl                  
+    NodeEdge-type                                                       -> Typedecl                  
+    Set-type                                                            -> Typedecl                  
+    "Graph"                                                             -> Graph-type                
+    "Int"                                                               -> Prim-type                 
+    "Long"                                                              -> Prim-type                 
+    "Float"                                                             -> Prim-type                 
+    "Double"                                                            -> Prim-type                 
+    "Bool"                                                              -> Prim-type                 
+    Node-type                                                           -> NodeEdge-type             
+    Edge-type                                                           -> NodeEdge-type             
+    "Node" "(" Id ")"                                                   -> Node-type                 
+    "Node"                                                              -> Node-type                 
+    "Edge" "(" Id ")"                                                   -> Edge-type                 
+    "Edge"                                                              -> Edge-type                 
+    "Node-Set" "(" Id ")"                                               -> Set-type                  
+    "Node-Set"                                                          -> Set-type                  
+    "Node-Sequence" "(" Id ")"                                          -> Set-type                  
+    "Node-Sequence"                                                     -> Set-type                  
+    "Node-Order" "(" Id ")"                                             -> Set-type                  
+    "Node-Order"                                                        -> Set-type                  
+    "Node-Property" "<" Prim-type ">" "(" Id ")"                        -> Property                  
+    "Node-Property" "<" NodeEdge-type ">" "(" Id ")"                    -> Property                  
+    "Node-Property" "<" Prim-type ">"                                   -> Property                  
+    "Node-Property" "<" NodeEdge-type ">"                               -> Property                  
+    "Edge-Property" "<" Prim-type ">" "(" Id ")"                        -> Property                  
+    "Edge-Property" "<" NodeEdge-type ">" "(" Id ")"                    -> Property                  
+    "Edge-Property" "<" Prim-type ">"                                   -> Property                  
+    "Edge-Property" "<" NodeEdge-type ">"                               -> Property                  
+    Id                                                                  -> Id-comma-list             
+    Id-comma-list "," Id                                                -> Id-comma-list             
+    Sent-block                                                          -> Proc-body                 
+    Sb-begin Sent-list Sb-end                                           -> Sent-block                
+    "{"                                                                 -> Sb-begin                  
+    "}"                                                                 -> Sb-end                    
+    Sent-list Sent                                                      -> Sent-list                 
+    Sent-assignment ";"                                                 -> Sent                      
+    Sent-variable-decl ";"                                              -> Sent                      
+    Sent-block                                                          -> Sent                      
+    Sent-foreach                                                        -> Sent                      
+    Sent-if                                                             -> Sent                      
+    Sent-Reduce-assignment ";"                                          -> Sent                      
+    Sent-defer-assignment ";"                                           -> Sent                      
+    Sent-do-while ";"                                                   -> Sent                      
+    Sent-while                                                          -> Sent                      
+    Sent-return ";"                                                     -> Sent                      
+    Sent-bfs                                                            -> Sent                      
+    Sent-dfs                                                            -> Sent                      
+    Sent-call ";"                                                       -> Sent                      
+    Sent-user ";"                                                       -> Sent                      
+    Sent-argMinmax-assignment ";"                                       -> Sent                      
+    ";"                                                                 -> Sent                      
+    Built-in                                                            -> Sent-call                 
+    "While" "(" Bool-expr ")" Sent-block                                -> Sent-while                
+    "Do" Sent-block "While" "(" Bool-expr ")"                           -> Sent-do-while             
+    "Foreach" Foreach-header Foreach-filter Sent                        -> Sent-foreach              
+    "For" Foreach-header Foreach-filter Sent                            -> Sent-foreach              
+    "(" Id ":" Id "." Iterator1 ")"                                     -> Foreach-header            
+    "(" Id ":" Id "+" "." Iterator1 ")"                                 -> Foreach-header            
+    "(" Id ":" Id "-" "." Iterator1 ")"                                 -> Foreach-header            
+    "(" Bool-expr ")"                                                   -> Foreach-filter            
+    "Nodes"                                                             -> Iterator1                 
+    "Edges"                                                             -> Iterator1                 
+    "OutNbrs"                                                           -> Iterator1                 
+    "InNbrs"                                                            -> Iterator1                 
+    "UpNbrs"                                                            -> Iterator1                 
+    "DownNbrs"                                                          -> Iterator1                 
+    "Items"                                                             -> Iterator1                 
+    "CommonNbrs" "(" Id ")"                                             -> Iterator1                 
+    "InDFS" Bfs-header-format Bfs-filters Sent-block Dfs-post           -> Sent-dfs                  
+    "InBFS" Bfs-header-format Bfs-filters Sent-block Bfs-reverse        -> Sent-bfs                  
+    "InPost" Bfs-filter Sent-block                                      -> Dfs-post                  
+    "InPost" Sent-block                                                 -> Dfs-post                  
+    "InReverse" Bfs-filter Sent-block                                   -> Bfs-reverse               
+    "InReverse" Sent-block                                              -> Bfs-reverse               
+    "(" Id ":" Id Opt-tp "." "Nodes" From-or-semi Id ")"                -> Bfs-header-format         
+    "^"                                                                 -> Opt-tp                    
+    "From"                                                              -> From-or-semi              
+    ";"                                                                 -> From-or-semi              
+    Bfs-navigator                                                       -> Bfs-filters               
+    Bfs-filter                                                          -> Bfs-filters               
+    Bfs-navigator Bfs-filter                                            -> Bfs-filters               
+    Bfs-filter Bfs-navigator                                            -> Bfs-filters               
+    "[" Expr "]"                                                        -> Bfs-navigator             
+    "(" Expr ")"                                                        -> Bfs-filter                
+    Typedecl Var-target                                                 -> Sent-variable-decl        
+    Typedecl Id "=" Rhs                                                 -> Sent-variable-decl        
+    Id-comma-list                                                       -> Var-target                
+    Lhs "=" Rhs                                                         -> Sent-assignment           
+    Lhs Reduce-eq Rhs Optional-bind                                     -> Sent-Reduce-assignment    
+    Lhs "++" Optional-bind                                              -> Sent-Reduce-assignment    
+    Lhs "<=" Rhs Optional-bind                                          -> Sent-defer-assignment     
+    Lhs-list2 Minmax-eq Rhs-list2 Optional-bind                         -> Sent-argMinmax-assignment 
+    "@" Id                                                              -> Optional-bind             
+    "+="                                                                -> Reduce-eq                 
+    "*="                                                                -> Reduce-eq                 
+    "min="                                                              -> Reduce-eq                 
+    "max="                                                              -> Reduce-eq                 
+    "&="                                                                -> Reduce-eq                 
+    "|="                                                                -> Reduce-eq                 
+    "min="                                                              -> Minmax-eq                 
+    "max="                                                              -> Minmax-eq                 
+    Expr                                                                -> Rhs                       
+    "Return" Expr                                                       -> Sent-return               
+    "Return"                                                            -> Sent-return               
+    "If" "(" Bool-expr ")" Sent                                         -> Sent-if                   
+    "If" "(" Bool-expr ")" Sent "Else" Sent                             -> Sent-if                   
+    Expr-user                                                           -> Sent-user                 
+    Expr-user "::" "[" Lhs-list "]"                                     -> Sent-user                 
+    "(" Expr ")"                                                        -> Expr                      
+    "|" Expr "|"                                                        -> Expr                      
+    Reduce-op "(" Id ":" Id "." Iterator1 ")" "(" Expr ")" "{" Expr "}" -> Expr                      
+    Reduce-op "(" Id ":" Id "." Iterator1 ")" "{" Expr "}"              -> Expr                      
+    Reduce-op2 "(" Id ":" Id "." Iterator1 ")" "(" Expr ")"             -> Expr                      
+    Reduce-op2 "(" Id ":" Id "." Iterator1 ")"                          -> Expr                      
+    Expr "%" Expr                                                       -> Expr                      
+    Expr "*" Expr                                                       -> Expr                      
+    Expr "/" Expr                                                       -> Expr                      
+    Expr "+" Expr                                                       -> Expr                      
+    Expr "-" Expr                                                       -> Expr                      
+    Expr "<=" Expr                                                      -> Expr                      
+    Expr ">=" Expr                                                      -> Expr                      
+    Expr "<" Expr                                                       -> Expr                      
+    Expr ">" Expr                                                       -> Expr                      
+    Expr "==" Expr                                                      -> Expr                      
+    Expr "!=" Expr                                                      -> Expr                      
+    Expr "And" Expr                                                     -> Expr                      
+    Expr "||" Expr                                                      -> Expr                      
+    Expr "?" Expr ":" Expr                                              -> Expr                      
+    BOOL-VAL                                                            -> Expr                      
+    INT-NUM                                                             -> Expr                      
+    FLOAT-NUM                                                           -> Expr                      
+    Inf                                                                 -> Expr                      
+    "NIL"                                                               -> Expr                      
+    Scala                                                               -> Expr                      
+    Field                                                               -> Expr                      
+    Built-in                                                            -> Expr                      
+    Expr-user                                                           -> Expr                      
+    Expr                                                                -> Bool-expr                 
+    Expr                                                                -> Numeric-expr              
+    "Sum"                                                               -> Reduce-op                 
+    "Product"                                                           -> Reduce-op                 
+    "Min"                                                               -> Reduce-op                 
+    "Max"                                                               -> Reduce-op                 
+    "Exist"                                                             -> Reduce-op                 
+    "All"                                                               -> Reduce-op                 
+    "Avg"                                                               -> Reduce-op                 
+    "Count"                                                             -> Reduce-op2                
+    "INF"                                                               -> Inf                       
+    "-INF"                                                              -> Inf                       
+    Scala                                                               -> Lhs                       
+    Field                                                               -> Lhs                       
+    Lhs                                                                 -> Lhs-list                  
+    Lhs "," Lhs-list                                                    -> Lhs-list                  
+    Id                                                                  -> Scala                     
+    Id "." Id                                                           -> Field                     
+    "Edge" "(" Id ")" "." Id                                            -> Field                     
+    Id "." Id Arg-list                                                  -> Built-in                  
+    Id Arg-list                                                         -> Built-in                  
+    "(" Expr-list ")"                                                   -> Arg-list                  
+    "(" ")"                                                             -> Arg-list                  
+    Expr                                                                -> Expr-list                 
+    Expr "," Expr-list                                                  -> Expr-list                 
+    "<" Lhs ";" Lhs-list ">"                                            -> Lhs-list2                 
+    "<" Expr ";" Expr-list ">"                                          -> Rhs-list2                 
+    "[" USER-TEXT "]"                                                   -> Expr-user                 
+    ID                                                                  -> Id                        
