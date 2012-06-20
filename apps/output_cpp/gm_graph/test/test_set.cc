@@ -6,12 +6,11 @@
 #define NODES   1000
 #define EDGES   1000
 
-void create_small_graph_and_freeze(gm_graph& G)
-{
+void create_small_graph_and_freeze(gm_graph& G) {
     //------------------------------
     // Node addtion
     //------------------------------
-    for(int i=0;i<NODES;i++)
+    for (int i = 0; i < NODES; i++)
         G.add_node();
 
     //------------------------------
@@ -19,10 +18,9 @@ void create_small_graph_and_freeze(gm_graph& G)
     //------------------------------
     node_t from[EDGES];
     node_t to[EDGES];
-    for(node_t i=0;i<EDGES;i++)
-    {
+    for (node_t i = 0; i < EDGES; i++) {
         from[i] = rand() % NODES;
-        to[i]   = rand() % NODES;
+        to[i] = rand() % NODES;
         G.add_edge(from[i], to[i]);
     }
 
@@ -33,8 +31,7 @@ void create_small_graph_and_freeze(gm_graph& G)
     G.freeze();
 }
 
-int main()
-{
+int main() {
     gm_rt_initialize();
 
     //------------------------------
@@ -49,8 +46,7 @@ int main()
     gm_node_set S(G.num_nodes());
 
     node_t rand_nodes[20];
-    for(int i=0;i<20;i++)
-    {
+    for (int i = 0; i < 20; i++) {
         rand_nodes[i] = rand() % NODES;
         S.add(rand_nodes[i]);
         S.add(rand_nodes[i]); // add it twice
@@ -59,8 +55,7 @@ int main()
     // iterate and print
     printf("[");
     gm_node_set::seq_iter I = S.prepare_seq_iteration();
-    while(I.has_next())
-    {
+    while (I.has_next()) {
         node_t n = I.get_next();
         printf(" %d", n);
     }

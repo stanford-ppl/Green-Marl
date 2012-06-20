@@ -14,21 +14,21 @@
 //               t.CommonNbr(s) => {b, b, b, c}
 //-------------------------------------------
 
-class gm_common_neighbor_iter {
+class gm_common_neighbor_iter
+{
 
 public:
     // graph, source, destination
-    gm_common_neighbor_iter(gm_graph& _G, node_t s, node_t d) : G(_G),src(s),dest(d) 
-    {
+    gm_common_neighbor_iter(gm_graph& _G, node_t s, node_t d) :
+            G(_G), src(s), dest(d) {
         src_begin = G.begin[src];
-        src_end   = G.begin[src+1];  // exclusive
+        src_end = G.begin[src + 1];  // exclusive
         dest_begin = G.begin[dest];
-        dest_end   = G.begin[dest+1]; // exclusive
+        dest_end = G.begin[dest + 1]; // exclusive
 
         reset();
     }
-    void reset()
-    {
+    void reset() {
         src_idx = src_begin;
         dest_idx = dest_begin;
         finished = false;
@@ -36,25 +36,24 @@ public:
         if (dest_idx == dest_end) finished = true;
     }
 
-    node_t get_next()
-    {
+    node_t get_next() {
         if (finished) return gm_graph::NIL_NODE;
         do {
             node_t t = G.node_idx[src_idx];
             src_idx++;
             if (src_idx == src_end) finished = true;
             if (check_common(t)) return t;
-        } while(!finished);
+        } while (!finished);
         return gm_graph::NIL_NODE;
     }
 
 private:
     bool check_common(node_t t) {
-        while(true) {
+        while (true) {
             node_t r = G.node_idx[dest_idx];
             if (r == t) return true;
             if (r > t) return false;
-            dest_idx ++;
+            dest_idx++;
             if (dest_idx == dest_end) {
                 finished = true;
                 return false;
@@ -76,6 +75,5 @@ private:
 
     bool finished;
 };
-
 
 #endif

@@ -4,12 +4,9 @@ bin/*
 obj/*
 .cproject
 .project
-*.gitignore*
 
 test.gm
 test_main.cc
-*randomwalk*
-*communities*
 
 test/gps/output
 test/gps/.classpath
