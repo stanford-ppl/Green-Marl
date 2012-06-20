@@ -440,7 +440,6 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
 void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
     ast_typedecl* t = v->get_type();
     Body.push_spc(get_type_string(t));
-    printf("Type String: %s\n", get_type_string(t));
 
     if (t->is_property()) {
         ast_idlist* idl = v->get_idlist();
