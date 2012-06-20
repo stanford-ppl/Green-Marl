@@ -14,10 +14,9 @@
 //   - (RW analysis is re-done here?)
 //---------------------------------------------------------
 /*
-*/
+ */
 
-void gm_merge_sentblock(ast_sentblock* P, ast_sentblock *Q, bool delete_Q_after)
-{
+void gm_merge_sentblock(ast_sentblock* P, ast_sentblock *Q, bool delete_Q_after) {
     //(assumption) type-checking is already done
     //(assumption) var-decl has been hoisted up.
 
@@ -42,14 +41,14 @@ void gm_merge_sentblock(ast_sentblock* P, ast_sentblock *Q, bool delete_Q_after)
     ast_sent* anchor = NULL;
     std::list<ast_sent*>& Ps = P->get_sents();
     std::list<ast_sent*>::iterator it;
-    for(it= Ps.begin(); it!=Ps.end();it++) {
+    for (it = Ps.begin(); it != Ps.end(); it++) {
         ast_sent*s = *it;
         if (s->get_nodetype() != AST_VARDECL) break;  // stop at the first non-decl sentence
         anchor = s;
     }
 
     std::list<ast_sent*> Qs = Q->get_sents(); // work on a copy
-    for(it = Qs.begin(); it!= Qs.end(); it++) {
+    for (it = Qs.begin(); it != Qs.end(); it++) {
         ast_sent*s = *it;
         gm_ripoff_sent(s);
         if (s->get_nodetype() == AST_VARDECL) {
@@ -64,6 +63,5 @@ void gm_merge_sentblock(ast_sentblock* P, ast_sentblock *Q, bool delete_Q_after)
         }
     }
 
-    if (delete_Q_after) 
-        delete Q;
+    if (delete_Q_after) delete Q;
 }

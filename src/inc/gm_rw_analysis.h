@@ -53,7 +53,8 @@
 // Note. Same variable may have multiple WSET/RSET entries
 //-----------------------------------------------------------------
 
-static enum {
+static enum
+{
     GM_RANGE_LINEAR,     // G.Nodes or G.Edges
     GM_RANGE_RANDOM,     // G.Nbrs, ...  (or access via non-iterator variable)
     GM_RANGE_SINGLE,     // t.X, t is a fixed iterator
@@ -64,37 +65,46 @@ static enum {
 } gm_range_type_t;
 
 static int gm_get_range_from_itertype(int itype) {
-    switch(itype) {
+    switch (itype) {
         case GMTYPE_NODEITER_ALL:
-        case GMTYPE_EDGEITER_ALL: return GM_RANGE_LINEAR;
+        case GMTYPE_EDGEITER_ALL:
+            return GM_RANGE_LINEAR;
         case GMTYPE_NODEITER_NBRS:
         case GMTYPE_NODEITER_IN_NBRS:
         case GMTYPE_EDGEITER_NBRS:
-        case GMTYPE_NODEITER_COMMON_NBRS: 
-        case GMTYPE_EDGEITER_IN_NBRS: return GM_RANGE_RANDOM;
+        case GMTYPE_NODEITER_COMMON_NBRS:
+        case GMTYPE_EDGEITER_IN_NBRS:
+            return GM_RANGE_RANDOM;
         case GMTYPE_NODEITER_BFS:
-        case GMTYPE_EDGEITER_BFS: return GM_RANGE_LEVEL;
+        case GMTYPE_EDGEITER_BFS:
+            return GM_RANGE_LEVEL;
         case GMTYPE_NODEITER_UP_NBRS:
-        case GMTYPE_EDGEITER_UP_NBRS: return GM_RANGE_LEVEL_UP;
+        case GMTYPE_EDGEITER_UP_NBRS:
+            return GM_RANGE_LEVEL_UP;
         case GMTYPE_NODEITER_DOWN_NBRS:
-        case GMTYPE_EDGEITER_DOWN_NBRS: return GM_RANGE_LEVEL_DOWN;
+        case GMTYPE_EDGEITER_DOWN_NBRS:
+            return GM_RANGE_LEVEL_DOWN;
         case GMTYPE_NODEITER_SET:
-        case GMTYPE_EDGEITER_SET: return GM_RANGE_LINEAR;
+        case GMTYPE_EDGEITER_SET:
+            return GM_RANGE_LINEAR;
         case GMTYPE_NODEITER_ORDER:
-        case GMTYPE_EDGEITER_ORDER: return GM_RANGE_LINEAR;
+        case GMTYPE_EDGEITER_ORDER:
+            return GM_RANGE_LINEAR;
         case GMTYPE_NODEITER_SEQ:
-        case GMTYPE_EDGEITER_SEQ: return GM_RANGE_RANDOM;
+        case GMTYPE_EDGEITER_SEQ:
+            return GM_RANGE_RANDOM;
         case GMTYPE_NODE:
         case GMTYPE_EDGE:
             return GM_RANGE_RANDOM;
-        default: 
-              printf("type = %d\n", itype);
-              assert(false);
+        default:
+            printf("type = %d\n", itype);
+            assert(false);
     }
     assert(false);
 }
 
-class gm_rwinfo {
+class gm_rwinfo
+{
 public:
     // RANGE_LINEAR, RANGE_RANDOM, RANGE_SINGLE
     int access_range;
@@ -115,8 +125,8 @@ public:
 
     // one exxample of  access instance 
     // i.e. location in the code (for error message generation)
-    ast_id* location; 
- 
+    ast_id* location;
+
     int mutate_direction;
 
     gm_rwinfo() {
@@ -126,13 +136,11 @@ public:
         always = true;
         reduce_op = GMREDUCE_NULL;
         access_range = GM_RANGE_SINGLE; // default is single access           
-	    mutate_direction = -1;
-    }  
+        mutate_direction = -1;
+    }
 
-    static gm_rwinfo* new_scala_inst(ast_id* loc, 
-            int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL,
-            bool supple = false, gm_symtab_entry* org=NULL
-            ) {
+    static gm_rwinfo* new_scala_inst(ast_id* loc, int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol = NULL, bool supple = false,
+            gm_symtab_entry* org = NULL) {
         gm_rwinfo *g = new gm_rwinfo();
         g->location = loc;
         g->reduce_op = reduce_op;
@@ -143,17 +151,14 @@ public:
     }
 
     static gm_rwinfo* new_builtin_inst(ast_id* loc, int mutate_dir) {
-	    gm_rwinfo *g = new gm_rwinfo();
-	    g->location = loc;
-	    g->mutate_direction = mutate_dir;
-	    return g;
+        gm_rwinfo *g = new gm_rwinfo();
+        g->location = loc;
+        g->mutate_direction = mutate_dir;
+        return g;
     }
 
-    static gm_rwinfo* new_field_inst(
-            gm_symtab_entry* driver, ast_id* loc,
-            int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol=NULL,
-            bool supple = false, gm_symtab_entry* org=NULL
-            ) {
+    static gm_rwinfo* new_field_inst(gm_symtab_entry* driver, ast_id* loc, int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol = NULL, bool supple =
+            false, gm_symtab_entry* org = NULL) {
         gm_rwinfo *g = new gm_rwinfo();
         g->location = loc;
         g->driver = driver;
@@ -163,8 +168,7 @@ public:
         g->org_lhs = org;
         return g;
     }
-    static gm_rwinfo* new_range_inst(
-            int range, bool always, ast_id* loc) {
+    static gm_rwinfo* new_range_inst(int range, bool always, ast_id* loc) {
         gm_rwinfo *g = new gm_rwinfo();
         g->always = always;
         g->location = loc;
@@ -181,7 +185,7 @@ public:
     }
 
     // for debugging
-    void print(); 
+    void print();
 };
 
 // list of rw-info
@@ -190,21 +194,16 @@ typedef std::list<gm_rwinfo*> gm_rwinfo_list;
 // (one field may have multiple access patterns)
 typedef std::map<gm_symtab_entry*, gm_rwinfo_list*> gm_rwinfo_map;
 
-bool gm_add_rwinfo_to_set(
-        gm_rwinfo_map& info_set, 
-        gm_symtab_entry* sym, 
-        gm_rwinfo* new_entry,
-        bool is_reduce_ops = false);
+bool gm_add_rwinfo_to_set(gm_rwinfo_map& info_set, gm_symtab_entry* sym, gm_rwinfo* new_entry, bool is_reduce_ops = false);
 
 // Actual information kept for sentence
 // Three maps. (readset, writeset, reduce-set)
-static void  gm_delete_rwinfo_map(gm_rwinfo_map& m)
-{
+static void gm_delete_rwinfo_map(gm_rwinfo_map& m) {
     gm_rwinfo_map::iterator i;
-    for(i=m.begin();i!=m.end();i++) {
+    for (i = m.begin(); i != m.end(); i++) {
         gm_rwinfo_list* l = i->second;
         gm_rwinfo_list::iterator ii;
-        for(ii=l->begin();ii!=l->end();ii++) {
+        for (ii = l->begin(); ii != l->end(); ii++) {
             gm_rwinfo* j = *ii;
             delete j;
         }
@@ -214,45 +213,43 @@ static void  gm_delete_rwinfo_map(gm_rwinfo_map& m)
     m.clear();
 }
 
-class gm_rwinfo_sets : public ast_extra_info 
+class gm_rwinfo_sets : public ast_extra_info
 {
-    public:
-    gm_rwinfo_map read_set;  
-    gm_rwinfo_map write_set;  
-    gm_rwinfo_map reduce_set; 
-    gm_rwinfo_map mutate_set; 
+public:
+    gm_rwinfo_map read_set;
+    gm_rwinfo_map write_set;
+    gm_rwinfo_map reduce_set;
+    gm_rwinfo_map mutate_set;
 
-    public:
-	~gm_rwinfo_sets() {
-            gm_delete_rwinfo_map(read_set);
-            gm_delete_rwinfo_map(write_set);
-            gm_delete_rwinfo_map(reduce_set);
-	    gm_delete_rwinfo_map(mutate_set);
-      }
+public:
+    ~gm_rwinfo_sets() {
+        gm_delete_rwinfo_map(read_set);
+        gm_delete_rwinfo_map(write_set);
+        gm_delete_rwinfo_map(reduce_set);
+        gm_delete_rwinfo_map(mutate_set);
+    }
 };
 
 #define GM_INFOKEY_RW  "GM_INFOKEY_RW"
-static gm_rwinfo_sets* get_rwinfo_sets(ast_node* n) 
-{
+static gm_rwinfo_sets* get_rwinfo_sets(ast_node* n) {
     // get rwinfo from a node. (create one if not there)
     gm_rwinfo_sets* rwi = (gm_rwinfo_sets*) n->find_info(GM_INFOKEY_RW);
-    if (rwi == NULL)
-    {
+    if (rwi == NULL) {
         rwi = new gm_rwinfo_sets();
         n->add_info(GM_INFOKEY_RW, rwi);
     }
     return rwi;
 }
-inline static gm_rwinfo_sets* gm_get_rwinfo_sets(ast_node* n)  {
+inline static gm_rwinfo_sets* gm_get_rwinfo_sets(ast_node* n) {
     return get_rwinfo_sets(n);
 }
-
 
 //-------------------------------------------------------
 // additional information for foreach statement
 //-------------------------------------------------------
 #define GM_INFOKEY_BOUND  "GM_INFOKEY_BOUND"
-class gm_bound_set_info : public ast_extra_info{ 
+class gm_bound_set_info : public ast_extra_info
+{
 public:
     ~gm_bound_set_info() {
         gm_delete_rwinfo_map(bound_set);
@@ -261,29 +258,24 @@ public:
     gm_rwinfo_map bound_set_back; // (for-bfs) all the reduce/defer ops that are bound to bfs-backward
 };
 
-static gm_bound_set_info* gm_get_bound_set_info(ast_foreach* n) 
-{
+static gm_bound_set_info* gm_get_bound_set_info(ast_foreach* n) {
     gm_bound_set_info* bi = (gm_bound_set_info*) n->find_info(GM_INFOKEY_BOUND);
-    if (bi == NULL)
-    {
+    if (bi == NULL) {
         bi = new gm_bound_set_info();
         n->add_info(GM_INFOKEY_BOUND, bi);
     }
     return bi;
 }
-static gm_bound_set_info* gm_get_bound_set_info(ast_bfs* n) 
-{
+static gm_bound_set_info* gm_get_bound_set_info(ast_bfs* n) {
     gm_bound_set_info* bi = (gm_bound_set_info*) n->find_info(GM_INFOKEY_BOUND);
-    if (bi == NULL)
-    {
+    if (bi == NULL) {
         bi = new gm_bound_set_info();
         n->add_info(GM_INFOKEY_BOUND, bi);
     }
     return bi;
 }
 // for debug
-extern void gm_print_rwinfo_set(gm_rwinfo_map& m); 
-
+extern void gm_print_rwinfo_set(gm_rwinfo_map& m);
 
 //----------------------------------------------
 // re-do rw analysis for IR tree s.
@@ -301,25 +293,38 @@ extern bool gm_redo_rw_analysis(ast_sent* s);
 //     P.writeset && Q.writeset ==> output dependency
 //     P.readset  && Q.writeset ==> anti dependency
 //--------------------------------------------------------
-extern bool gm_has_dependency(ast_sent* P , ast_sent* Q);
+extern bool gm_has_dependency(ast_sent* P, ast_sent* Q);
 
 extern bool gm_has_dependency(gm_rwinfo_sets* P1, gm_rwinfo_sets* Q1);
 
-extern bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool regard_mutate_direction=false); // return true, if any of they have same symbool table
+extern bool gm_does_intersect(gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool regard_mutate_direction = false); // return true, if any of they have same symbool table
 
 // returns true if the symbol is modified in ths sentence subtree S.
-class gm_rwinfo_query {
-    public:
-    gm_rwinfo_query() : 
-        _check_range(false), _check_driver(false), _check_always(false),
-        _check_reduceop(false), _check_bound(false),
-        range(GM_RANGE_INVALID), reduce_op(GMREDUCE_NULL),
-        driver(NULL), bound(NULL), always(true) {}
-    void check_range(int r) {_check_range = true, range = r;}
-    void check_driver(gm_symtab_entry* d) {_check_driver = true, driver = d;}
-    void check_always(bool a) {_check_always = true; always = a;}
-    void check_reduce_op(int o) {_check_reduceop = true; reduce_op = o;}
-    void check_bound(gm_symtab_entry* b) {_check_bound = true; bound = b;}
+class gm_rwinfo_query
+{
+public:
+    gm_rwinfo_query() :
+            _check_range(false), _check_driver(false), _check_always(false), _check_reduceop(false), _check_bound(false), range(GM_RANGE_INVALID), reduce_op(
+                    GMREDUCE_NULL), driver(NULL), bound(NULL), always(true) {
+    }
+    void check_range(int r) {
+        _check_range = true, range = r;
+    }
+    void check_driver(gm_symtab_entry* d) {
+        _check_driver = true, driver = d;
+    }
+    void check_always(bool a) {
+        _check_always = true;
+        always = a;
+    }
+    void check_reduce_op(int o) {
+        _check_reduceop = true;
+        reduce_op = o;
+    }
+    void check_bound(gm_symtab_entry* b) {
+        _check_bound = true;
+        bound = b;
+    }
     //bool is_any_set() {return _check_range || _check_driver || _check_always || _check_reduceop || _check_bound;}
 
     bool _check_range, _check_driver, _check_always;
@@ -328,12 +333,11 @@ class gm_rwinfo_query {
     gm_symtab_entry *driver, *bound;
     bool always;
 };
-    
+
 extern gm_rwinfo_map& gm_get_write_set(ast_sent *S);
 extern bool gm_is_modified(ast_sent* S, gm_symtab_entry * e);
 extern bool gm_is_modified_with_condition(ast_sent* S, gm_symtab_entry * e, gm_rwinfo_query* q);
-static bool gm_is_modified_always_linearly(ast_sent * S, gm_symtab_entry *e)
-{
+static bool gm_is_modified_always_linearly(ast_sent * S, gm_symtab_entry *e) {
     gm_rwinfo_query Q;
     Q.check_range(GM_RANGE_LINEAR);
     Q.check_always(true);

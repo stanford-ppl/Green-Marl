@@ -10,42 +10,31 @@
 
 class gm_prepare_genname_T : public gm_apply
 {
-    public:
-        gm_prepare_genname_T(
-            gm_procinfo* pi,
-            gm_vocabulary* v)
-        {
-            lang_voca = v;
-            proc_info = pi;
-            set_for_symtab(true);
-        }
+public:
+    gm_prepare_genname_T(gm_procinfo* pi, gm_vocabulary* v) {
+        lang_voca = v;
+        proc_info = pi;
+        set_for_symtab(true);
+    }
 
-        virtual bool apply(gm_symtab_entry* e, int symtab_type)
-        {
-            ast_id* ID = e->getId();
-            char* org_name = ID->get_orgname();
+    virtual bool apply(gm_symtab_entry* e, int symtab_type) {
+        ast_id* ID = e->getId();
+        char* org_name = ID->get_orgname();
 
-            const bool TRY_ORG_NAME_FIRST=true;
+        const bool TRY_ORG_NAME_FIRST = true;
 
-            char* gen_name = proc_info->
-                generate_temp_name(
-                    org_name, lang_voca, 
-                    TRY_ORG_NAME_FIRST);
+        char* gen_name = proc_info->generate_temp_name(org_name, lang_voca, TRY_ORG_NAME_FIRST);
 
+        // add gen_name into proc_voca
+        proc_info->add_voca(gen_name);
+        ID->set_genname(gen_name);
+        return true;
+    }
 
-            // add gen_name into proc_voca
-            proc_info->add_voca(gen_name);
-            ID->set_genname(gen_name);
-            return true;
-        }
-
-    private:
-        gm_vocabulary* lang_voca;
-        gm_procinfo* proc_info; 
+private:
+    gm_vocabulary* lang_voca;
+    gm_procinfo* proc_info;
 };
-
-
-
 
 //--------------------------------------------------------
 // Prepare Gen names
@@ -53,8 +42,7 @@ class gm_prepare_genname_T : public gm_apply
 //   (2) Each symbol is checked against language vocaburary
 //       and renamed if required  
 //--------------------------------------------------------
-void gm_prepare_genname(ast_procdef* p, gm_vocabulary* lang_voca)
-{
+void gm_prepare_genname(ast_procdef* p, gm_vocabulary* lang_voca) {
     assert(lang_voca != NULL);
     assert(p != NULL);
     gm_procinfo* info = FE.get_proc_info(p);

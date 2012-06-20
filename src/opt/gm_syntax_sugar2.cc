@@ -32,18 +32,17 @@ DEF_STRING(OPT_SB_NESTED_REDUCTION_SCOPE);
 //       _t += t.A + t.B @ t;
 //     X = Y + _t;
 //---------------------------------------------------
-class ss2_reduce_op : public gm_apply 
+class ss2_reduce_op : public gm_apply
 {
-    public: 
-    ss2_reduce_op() { 
+public:
+    ss2_reduce_op() {
         set_for_expr(true);
     }
 
     // Pre visit.  
     // Resolve nested 'reductions' from outside
     virtual bool apply(ast_expr *s) {
-        if (!s->is_reduction()) 
-            return true;
+        if (!s->is_reduction()) return true;
 
         ast_expr_reduce* r = (ast_expr_reduce*) s;
         targets.push_back(r);
@@ -51,13 +50,13 @@ class ss2_reduce_op : public gm_apply
     }
 
     void post_process() {
-        std::list<ast_expr_reduce*>::iterator i; 
-        for(i=targets.begin() ; i!=targets.end(); i++ ) {
+        std::list<ast_expr_reduce*>::iterator i;
+        for (i = targets.begin(); i != targets.end(); i++) {
             post_process_body(*i);
         }
     }
 
-    protected:
+protected:
     std::list<ast_expr_reduce*> targets; // ReduceOps that should be replaced
     void post_process_body(ast_expr_reduce* target);
 };
@@ -66,28 +65,21 @@ static int find_count_function(int source_type, int iter_type) {
     if (gm_is_graph_type(source_type)) {
         if (gm_is_all_graph_node_iter_type(iter_type)) {
             return GM_BLTIN_GRAPH_NUM_NODES;
-        }
-        else if (gm_is_all_graph_node_iter_type(iter_type)) {
+        } else if (gm_is_all_graph_node_iter_type(iter_type)) {
             return GM_BLTIN_GRAPH_NUM_EDGES;
         }
-    } 
-    else if (gm_is_node_compatible_type(source_type)) {
+    } else if (gm_is_node_compatible_type(source_type)) {
         if (iter_type == GMTYPE_NODEITER_IN_NBRS) {
             return GM_BLTIN_NODE_IN_DEGREE;
-        }
-        else if (iter_type == GMTYPE_NODEITER_NBRS) {
+        } else if (iter_type == GMTYPE_NODEITER_NBRS) {
             return GM_BLTIN_NODE_DEGREE;
         }
-    }
-    else if (gm_is_collection_type(source_type)) {
-        if (gm_is_collection_iter_type(iter_type))
-            return GM_BLTIN_SET_SIZE;
+    } else if (gm_is_collection_type(source_type)) {
+        if (gm_is_collection_iter_type(iter_type)) return GM_BLTIN_SET_SIZE;
     }
 
     return GM_BLTIN_END;
 }
-
-
 
 //------------------------------------------------------------------------------
 // Optimization for nested reduction 
@@ -129,19 +121,22 @@ static int find_count_function(int source_type, int iter_type) {
 //      _S0 += c;  @x
 //  }  
 
-static bool check_is_reduce_op(int rtype, int op)
-{
-    if      ((rtype == GMREDUCE_PLUS) && (op == GMOP_ADD)) return true;
-    else if ((rtype == GMREDUCE_MULT) && (op == GMOP_MULT)) return true;
-    else if ((rtype == GMREDUCE_MIN) && (op == GMOP_MIN)) return true;
-    else if ((rtype == GMREDUCE_MAX) && (op == GMOP_MAX)) return true;
-    else if ((rtype == GMREDUCE_OR) && (op == GMOP_OR)) return true;
+static bool check_is_reduce_op(int rtype, int op) {
+    if ((rtype == GMREDUCE_PLUS) && (op == GMOP_ADD))
+        return true;
+    else if ((rtype == GMREDUCE_MULT) && (op == GMOP_MULT))
+        return true;
+    else if ((rtype == GMREDUCE_MIN) && (op == GMOP_MIN))
+        return true;
+    else if ((rtype == GMREDUCE_MAX) && (op == GMOP_MAX))
+        return true;
+    else if ((rtype == GMREDUCE_OR) && (op == GMOP_OR))
+        return true;
     else if ((rtype == GMREDUCE_AND) && (op == GMOP_AND)) return true;
     return false;
 }
 
-static bool check_has_nested(ast_expr* body, int rtype, bool & has_other_rhs, ast_expr_reduce*& b1, ast_expr_reduce*& b2)
-{
+static bool check_has_nested(ast_expr* body, int rtype, bool & has_other_rhs, ast_expr_reduce*& b1, ast_expr_reduce*& b2) {
     if (rtype == GMREDUCE_AVG) return false;
 
     //---------------------------------
@@ -159,17 +154,20 @@ static bool check_has_nested(ast_expr* body, int rtype, bool & has_other_rhs, as
     if (CHECK_SAME_REDUCTION(body, rtype)) {
         b1 = (ast_expr_reduce*) body;
         return true;
-    }
-    else if (body->is_biop()) {
+    } else if (body->is_biop()) {
         int op = body->get_optype();
         if (check_is_reduce_op(rtype, op)) {
             // check each argument
-            if (CHECK_SAME_REDUCTION(body->get_left_op(),rtype)) { b1 = (ast_expr_reduce*) body->get_left_op();}
-            if (CHECK_SAME_REDUCTION(body->get_right_op(),rtype)) { b2 = (ast_expr_reduce*) body->get_right_op();}
+            if (CHECK_SAME_REDUCTION(body->get_left_op(),rtype)) {
+                b1 = (ast_expr_reduce*) body->get_left_op();
+            }
+            if (CHECK_SAME_REDUCTION(body->get_right_op(),rtype)) {
+                b2 = (ast_expr_reduce*) body->get_right_op();
+            }
 
-            bool is_nested = (b1 != NULL) || (b2!=NULL);
-            has_other_rhs = is_nested && ((b1==NULL) || (b2==NULL));
-            
+            bool is_nested = (b1 != NULL) || (b2 != NULL);
+            has_other_rhs = is_nested && ((b1 == NULL) || (b2 == NULL));
+
             return is_nested;
         }
 
@@ -180,8 +178,7 @@ static bool check_has_nested(ast_expr* body, int rtype, bool & has_other_rhs, as
 }
 
 // replace selected expressions.
-void ss2_reduce_op::post_process_body(
-        ast_expr_reduce* target) {
+void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
     int expr_type = target->get_body()->get_type_summary();
     bool is_nested = target->find_info_bool(OPT_FLAG_NESTED_REDUCTION); // true if nested
@@ -201,7 +198,7 @@ void ss2_reduce_op::post_process_body(
         assert(nested_up_sentblock!=NULL);
     } else {
         ast_node* up = target->get_parent();
-        while(true) {
+        while (true) {
             assert(up!=NULL);
             if (up->is_sentence()) break;
             up = up->get_parent();
@@ -218,7 +215,8 @@ void ss2_reduce_op::post_process_body(
     // 6. (for average) insert final computation
     //------------------------------------------------- 
 
-    gm_symtab_entry* lhs_symbol = NULL;; // target temp variable; 
+    gm_symtab_entry* lhs_symbol = NULL;
+    ; // target temp variable;
     gm_symtab_entry* bound_sym = NULL;
     gm_symtab_entry* cnt_symbol = NULL;
     gm_symtab_entry* avg_val_symbol = NULL;
@@ -228,7 +226,7 @@ void ss2_reduce_op::post_process_body(
         //------------------------------------------------
         // If nested, no need to create initializer or lhs symbol
         //------------------------------------------------
-        lhs_symbol =(gm_symtab_entry*) target->find_info_ptr(OPT_SYM_NESTED_REDUCTION_TARGET);
+        lhs_symbol = (gm_symtab_entry*) target->find_info_ptr(OPT_SYM_NESTED_REDUCTION_TARGET);
         assert(lhs_symbol != NULL);
     } else {
         //-------------------------------------------------
@@ -236,16 +234,29 @@ void ss2_reduce_op::post_process_body(
         //-------------------------------------------------
 
         // 1.1 variable name
-        const char* t_name_base = ""; 
-        switch(rtype) {
+        const char* t_name_base = "";
+        switch (rtype) {
             case GMREDUCE_AVG:  // go through
-            case GMREDUCE_PLUS: t_name_base= "_S"; break; // Sum
-            case GMREDUCE_MULT: t_name_base= "_P"; break; // Product
-            case GMREDUCE_MIN:  t_name_base= "_Mn"; break; // Min
-            case GMREDUCE_MAX:  t_name_base= "_Mx"; break; // Max
-            case GMREDUCE_AND:  t_name_base= "_A"; break;
-            case GMREDUCE_OR:   t_name_base= "_E"; break;
-            default: assert(false);
+            case GMREDUCE_PLUS:
+                t_name_base = "_S";
+                break; // Sum
+            case GMREDUCE_MULT:
+                t_name_base = "_P";
+                break; // Product
+            case GMREDUCE_MIN:
+                t_name_base = "_Mn";
+                break; // Min
+            case GMREDUCE_MAX:
+                t_name_base = "_Mx";
+                break; // Max
+            case GMREDUCE_AND:
+                t_name_base = "_A";
+                break;
+            case GMREDUCE_OR:
+                t_name_base = "_E";
+                break;
+            default:
+                assert(false);
         }
 
         bool need_count_for_avg = false;
@@ -253,13 +264,13 @@ void ss2_reduce_op::post_process_body(
             rtype = GMREDUCE_PLUS; // Need sum
 
             need_count_for_avg = true;
-            if (target->get_filter() == NULL) 
-            {
+            if (target->get_filter() == NULL) {
                 int iter_type = target->get_iter_type();
                 int src_type = target->get_source()->getTypeInfo()->getTypeSummary();
                 if (find_count_function(src_type, iter_type) == GM_BLTIN_END)
                     need_count_for_avg = true;
-                else need_count_for_avg = false;
+                else
+                    need_count_for_avg = false;
             }
         }
 
@@ -268,20 +279,18 @@ void ss2_reduce_op::post_process_body(
         ast_expr* init_val = gm_new_bottom_symbol(rtype, expr_type);
 
         // 1.3 add init
-        const char* temp_name = FE.voca_temp_name(t_name_base);  assert(holder != NULL);
-        lhs_symbol  = insert_def_and_init_before(temp_name, expr_type, holder, init_val); 
+        const char* temp_name = FE.voca_temp_name(t_name_base);
+        assert(holder != NULL);
+        lhs_symbol = insert_def_and_init_before(temp_name, expr_type, holder, init_val);
 
         if (is_avg) {
             const char* temp_cnt = FE.voca_temp_name("_cnt");
             const char* temp_avg = FE.voca_temp_name("_avg");
             ast_sentblock* sb = (ast_sentblock*) holder->get_parent();
 
-            cnt_symbol = insert_def_and_init_before(
-                temp_cnt, GMTYPE_LONG, holder, ast_expr::new_ival_expr(0));
+            cnt_symbol = insert_def_and_init_before(temp_cnt, GMTYPE_LONG, holder, ast_expr::new_ival_expr(0));
 
-            avg_val_symbol = gm_add_new_symbol_primtype(sb, 
-                (   expr_type==GMTYPE_FLOAT) ? GMTYPE_FLOAT: GMTYPE_DOUBLE,
-                    (char*) temp_avg);
+            avg_val_symbol = gm_add_new_symbol_primtype(sb, (expr_type == GMTYPE_FLOAT) ? GMTYPE_FLOAT : GMTYPE_DOUBLE, (char*) temp_avg);
         }
     }
 
@@ -299,30 +308,29 @@ void ss2_reduce_op::post_process_body(
     ast_sentblock* nested_sentblock = NULL;
 
     ast_id* old_iter = target->get_iterator();
-    ast_id* lhs_id=NULL;
-    ast_id* bound_id=NULL;
-    ast_id* bound_id2=NULL;
+    ast_id* lhs_id = NULL;
+    ast_id* bound_id = NULL;
+    ast_id* bound_id2 = NULL;
 
-    lhs_id = lhs_symbol->getId()->copy(true);  
+    lhs_id = lhs_symbol->getId()->copy(true);
     if (is_nested) {
         bound_sym = (gm_symtab_entry*) target->find_info_ptr(OPT_SYM_NESTED_REDUCTION_BOUND);
         assert(bound_sym!=NULL);
         bound_id = bound_sym->getId()->copy(true);
     } else {
         bound_sym = NULL; // will set later
-        bound_id = old_iter->copy(false);// dummy value;
+        bound_id = old_iter->copy(false); // dummy value;
     }
 
     if (!has_nested) {
-        r_assign = ast_assign::new_assign_scala(lhs_id, body, GMASSIGN_REDUCE,bound_id, rtype);
+        r_assign = ast_assign::new_assign_scala(lhs_id, body, GMASSIGN_REDUCE, bound_id, rtype);
         foreach_body = r_assign;
 
         if (need_count_for_avg) {
-            ast_sentblock* sb= ast_sentblock::new_sentblock();
+            ast_sentblock* sb = ast_sentblock::new_sentblock();
             ast_id* lhs_id = cnt_symbol->getId()->copy(true);  // symInfo is correct for LHS
             bound_id2 = old_iter->copy(false);              // symInfo not available yet
-            ast_assign* r_assign2 = ast_assign::new_assign_scala(
-                lhs_id, ast_expr::new_ival_expr(1), GMASSIGN_REDUCE, bound_id2, GMREDUCE_PLUS);
+            ast_assign* r_assign2 = ast_assign::new_assign_scala(lhs_id, ast_expr::new_ival_expr(1), GMASSIGN_REDUCE, bound_id2, GMREDUCE_PLUS);
 
             gm_insert_sent_end_of_sb(sb, r_assign);
             gm_insert_sent_end_of_sb(sb, r_assign2);
@@ -337,8 +345,8 @@ void ss2_reduce_op::post_process_body(
             ast_expr* right = body->get_right_op();
             ast_expr* r_assign_body = (left_nested == left) ? right : left;
             r_assign_body->set_up_op(NULL);
-            r_assign = ast_assign::new_assign_scala(lhs_id, r_assign_body, GMASSIGN_REDUCE,bound_id, rtype);
-            gm_insert_sent_end_of_sb(nested_sentblock,r_assign);
+            r_assign = ast_assign::new_assign_scala(lhs_id, r_assign_body, GMASSIGN_REDUCE, bound_id, rtype);
+            gm_insert_sent_end_of_sb(nested_sentblock, r_assign);
         }
     }
 
@@ -347,10 +355,10 @@ void ss2_reduce_op::post_process_body(
         target->set_filter(NULL);
         gm_ripoff_upper_scope(filter);
 
-        ast_if* iff = ast_if::new_if(filter, foreach_body , NULL);
+        ast_if* iff = ast_if::new_if(filter, foreach_body, NULL);
         foreach_body = iff;
         assert(filter->get_parent() != NULL);
-    } 
+    }
 
     //-------------------------------------------------
     // 3. Create foreach
@@ -359,8 +367,7 @@ void ss2_reduce_op::post_process_body(
     ast_id* foreach_it = old_iter->copy();
     ast_id* foreach_src = target->get_source()->copy(true); // copy SymInfo as well
     ast_id* foreach_src2 = target->get_source2();
-    if (foreach_src2 !=NULL)
-        foreach_src2 = foreach_src2->copy(true);
+    if (foreach_src2 != NULL) foreach_src2 = foreach_src2->copy(true);
 
     int iter_type = target->get_iter_type();
 
@@ -373,7 +380,7 @@ void ss2_reduce_op::post_process_body(
         gm_add_sent_before(holder, fe_new);
     } else {
         assert(nested_up_sentblock != NULL);
-        gm_insert_sent_end_of_sb(nested_up_sentblock,fe_new);
+        gm_insert_sent_end_of_sb(nested_up_sentblock, fe_new);
     }
 
     //-------------------------------------------------
@@ -383,15 +390,13 @@ void ss2_reduce_op::post_process_body(
     assert(foreach_it->getSymInfo() != NULL);
     if (!is_nested) {
         bound_id->setSymInfo(foreach_it->getSymInfo());
-        if (bound_id2!=NULL)
-            bound_id2->setSymInfo(foreach_it->getSymInfo()); // for average
+        if (bound_id2 != NULL) bound_id2->setSymInfo(foreach_it->getSymInfo()); // for average
         bound_sym = foreach_it->getSymInfo();
     }
 
     // 4.2 replace every iterator (symbol) in the body_expression with the new foreach iterator
     gm_replace_symbol_entry(old_iter->getSymInfo(), foreach_it->getSymInfo(), foreach_body);
-    if (has_nested) 
-        gm_replace_symbol_entry(old_iter->getSymInfo(), foreach_it->getSymInfo(), body);
+    if (has_nested) gm_replace_symbol_entry(old_iter->getSymInfo(), foreach_it->getSymInfo(), body);
 
     //----------------------------------------------
     // 5. replace <Sum(..){}> with <lhs_var>
@@ -400,28 +405,25 @@ void ss2_reduce_op::post_process_body(
         replace_avg_to_varaible(holder, target, (is_avg) ? avg_val_symbol : lhs_symbol);
     }
 
-
     //----------------------------------------------
     // 6. For average
     //----------------------------------------------
     if (is_avg) {
 
-        int result_type =  (expr_type==GMTYPE_FLOAT) ? GMTYPE_FLOAT: GMTYPE_DOUBLE;
+        int result_type = (expr_type == GMTYPE_FLOAT) ? GMTYPE_FLOAT : GMTYPE_DOUBLE;
         // (cnt_symbol == 0)? 0 : sum_val / (float) cnt_symbol
-        ast_expr* zero1 = ast_expr:: new_ival_expr(0); 
-        ast_expr* zero2 = ast_expr:: new_fval_expr(0);
-        ast_expr* cnt1  = ast_expr:: new_id_expr(cnt_symbol->getId()->copy(true));
-        ast_expr* cnt2  = ast_expr:: new_id_expr(cnt_symbol->getId()->copy(true));
-        ast_expr* sum   = ast_expr:: new_id_expr(lhs_symbol->getId()->copy(true));
-        ast_expr* comp   = ast_expr:: new_comp_expr(GMOP_EQ, zero1, cnt1);
-        ast_expr* t_conv = ast_expr:: new_typeconv_expr(result_type, cnt2);
-        ast_expr* div  = ast_expr::new_biop_expr(GMOP_DIV, sum, t_conv); 
-            div->set_type_summary(result_type);
-        ast_expr* ter  = ast_expr::new_ternary_expr(
-                comp, zero2, div);
+        ast_expr* zero1 = ast_expr::new_ival_expr(0);
+        ast_expr* zero2 = ast_expr::new_fval_expr(0);
+        ast_expr* cnt1 = ast_expr::new_id_expr(cnt_symbol->getId()->copy(true));
+        ast_expr* cnt2 = ast_expr::new_id_expr(cnt_symbol->getId()->copy(true));
+        ast_expr* sum = ast_expr::new_id_expr(lhs_symbol->getId()->copy(true));
+        ast_expr* comp = ast_expr::new_comp_expr(GMOP_EQ, zero1, cnt1);
+        ast_expr* t_conv = ast_expr::new_typeconv_expr(result_type, cnt2);
+        ast_expr* div = ast_expr::new_biop_expr(GMOP_DIV, sum, t_conv);
+        div->set_type_summary(result_type);
+        ast_expr* ter = ast_expr::new_ternary_expr(comp, zero2, div);
 
-        ast_assign* a = ast_assign::new_assign_scala(
-                avg_val_symbol->getId()->copy(true), ter);
+        ast_assign* a = ast_assign::new_assign_scala(avg_val_symbol->getId()->copy(true), ter);
 
         gm_add_sent_after(fe_new, a);
 
@@ -429,16 +431,14 @@ void ss2_reduce_op::post_process_body(
             int iter_type = target->get_iter_type();
             int src_type = target->get_source()->getTypeSummary();
             int method_id = find_count_function(src_type, iter_type);
-            assert (method_id != GM_BLTIN_END);
+            assert(method_id != GM_BLTIN_END);
 
             // make a call to built-in funciton
-            gm_builtin_def* def =  BUILT_IN.find_builtin_def(src_type, method_id);
+            gm_builtin_def* def = BUILT_IN.find_builtin_def(src_type, method_id);
             assert(def != NULL);
 
-            ast_expr_builtin* rhs = ast_expr_builtin::new_builtin_expr(target->get_source()->copy(true),def,NULL);
-            ast_assign* a = ast_assign::new_assign_scala(
-                cnt_symbol->getId()->copy(true),
-                rhs);
+            ast_expr_builtin* rhs = ast_expr_builtin::new_builtin_expr(target->get_source()->copy(true), def, NULL);
+            ast_assign* a = ast_assign::new_assign_scala(cnt_symbol->getId()->copy(true), rhs);
 
             gm_add_sent_after(fe_new, a);
         }
@@ -470,20 +470,17 @@ void ss2_reduce_op::post_process_body(
 
 }
 
-
-void gm_ind_opt_syntax_sugar2::process(ast_procdef* p)
-{
+void gm_ind_opt_syntax_sugar2::process(ast_procdef* p) {
     // 2. ReduceOP --> Reduce Assign
     ss2_reduce_op A;
     p->traverse_pre(&A);
     A.post_process();         // process
 
     // Should re-do rw-analysis
-/*    gm_redo_rw_analysis(p->get_body()); */
+    /*    gm_redo_rw_analysis(p->get_body()); */
 }
 
-static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_type, ast_sent* curr, ast_expr* default_val)
-{
+static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_type, ast_sent* curr, ast_expr* default_val) {
     //-------------------------------------------------------------
     //assumption: 
     //  A. vname does not conflict upward or downward
@@ -501,7 +498,7 @@ static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_t
     //-------------------------------------------------------------
     // 2. Add new symbol to the current bound
     //-------------------------------------------------------------
-    gm_symtab_entry* e = gm_add_new_symbol_primtype(sb, prim_type, (char*)vname);
+    gm_symtab_entry* e = gm_add_new_symbol_primtype(sb, prim_type, (char*) vname);
 
     //-------------------------------------------------------------
     // 3. add initialization sentence
@@ -516,9 +513,12 @@ static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_t
     return e;
 }
 
-class replace_avg_to_varaible_t : public gm_expr_replacement_t {
+class replace_avg_to_varaible_t : public gm_expr_replacement_t
+{
 public:
-    replace_avg_to_varaible_t (ast_expr* target, gm_symtab_entry* entry) : T(target), E(entry) {}
+    replace_avg_to_varaible_t(ast_expr* target, gm_symtab_entry* entry) :
+            T(target), E(entry) {
+    }
 
     virtual bool is_target(ast_expr* e) {
         return e == T;
@@ -534,8 +534,7 @@ private:
     gm_symtab_entry *E;
 };
 
-static void replace_avg_to_varaible(ast_sent* s, ast_expr * rhs, gm_symtab_entry * e)
-{
-   replace_avg_to_varaible_t T(rhs, e);
-   gm_replace_expr_general(s, &T);
+static void replace_avg_to_varaible(ast_sent* s, ast_expr * rhs, gm_symtab_entry * e) {
+    replace_avg_to_varaible_t T(rhs, e);
+    gm_replace_expr_general(s, &T);
 }

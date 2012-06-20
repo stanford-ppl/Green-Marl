@@ -43,53 +43,46 @@ std::list<char*> GM_input_lists;
 // For debug
 //  Stop at various points during compilation
 //-------------------------------------------------------------
-static int gm_stop_major=0;
-static int gm_stop_minor=0;
-static int gm_stage_major=0;
-static int gm_stage_minor=0;
+static int gm_stop_major = 0;
+static int gm_stop_minor = 0;
+static int gm_stage_major = 0;
+static int gm_stage_minor = 0;
 static const char* gm_major_desc;
 static const char* gm_minor_desc;
 static void do_compiler_action_at_stop();
-static void parse_stop_string()
-{
+static void parse_stop_string() {
     const char* c = OPTIONS.get_arg_string(GMARGFLAG_STOP_STRING);
     if (c == NULL) return;
 
     char* d = strdup(c);
     char* p = strtok(d, ".");
-    if (p==NULL) return;
+    if (p == NULL) return;
     gm_stop_major = atoi(p);
     p = strtok(NULL, ".");
-    if (p!= NULL)
-        gm_stop_minor = atoi(p);
+    if (p != NULL) gm_stop_minor = atoi(p);
 
     if (gm_stop_major == 0) return;
-    if (gm_stop_minor == 0) 
-    {
-        printf("stopping after stage %d\n",gm_stop_major);
+    if (gm_stop_minor == 0) {
+        printf("stopping after stage %d\n", gm_stop_major);
+    } else {
+        printf("stopping at stage %d.%d\n", gm_stop_major, gm_stop_minor);
     }
-    else {
-        printf("stopping at stage %d.%d\n",gm_stop_major, gm_stop_minor);
-    }
-    delete [] d;
+    delete[] d;
 }
 
-void gm_begin_major_compiler_stage(int major, const char* desc)
-{
+void gm_begin_major_compiler_stage(int major, const char* desc) {
     assert(major > 0);
     gm_stage_major = major;
     gm_major_desc = desc;
 }
-void gm_end_major_compiler_stage()
-{
+void gm_end_major_compiler_stage() {
     if (gm_stop_major == gm_stage_major) {
         printf("...Stopping compiler after Stage %d:%s\n", gm_stop_major, gm_major_desc);
         do_compiler_action_at_stop();
         exit(EXIT_SUCCESS);
     }
 }
-void gm_begin_minor_compiler_stage(int m, const char* desc)
-{
+void gm_begin_minor_compiler_stage(int m, const char* desc) {
     assert(m > 0);
     gm_stage_minor = m;
     gm_minor_desc = desc;
@@ -99,33 +92,28 @@ void gm_begin_minor_compiler_stage(int m, const char* desc)
     }
 
 }
-void gm_end_minor_compiler_stage()
-{
+void gm_end_minor_compiler_stage() {
     if (gm_stop_minor == 0) return;
 
     if ((gm_stop_major == gm_stage_major) && (gm_stop_minor == gm_stage_minor)) {
-        printf("...Stopping compiler after Stage %d.%d:%s.[%s]\n", 
-                gm_stage_major, gm_stage_minor,
-                gm_major_desc, gm_minor_desc);
+        printf("...Stopping compiler after Stage %d.%d:%s.[%s]\n", gm_stage_major, gm_stage_minor, gm_major_desc, gm_minor_desc);
         do_compiler_action_at_stop();
         exit(EXIT_SUCCESS);
     }
 }
-void do_compiler_action_at_stop()
-{
+void do_compiler_action_at_stop() {
     // okay, this is a hack for debug
     // reconstruct here?
-    if (FE.is_vardecl_removed())
-        FE.restore_vardecl_all();
+    if (FE.is_vardecl_removed()) FE.restore_vardecl_all();
 
     /*
-    if (OPTIONS.get_arg_bool(GMARGFLAG_DUMPIR)) {
-        printf("======================================================\n");
-        FE.dump_tree();
-        printf("======================================================\n");
-        printf("\n");
-    }
-    */
+     if (OPTIONS.get_arg_bool(GMARGFLAG_DUMPIR)) {
+     printf("======================================================\n");
+     FE.dump_tree();
+     printf("======================================================\n");
+     printf("\n");
+     }
+     */
 
     if (OPTIONS.get_arg_bool(GMARGFLAG_REPRODUCE)) {
         printf("======================================================\n");
@@ -152,8 +140,7 @@ void do_compiler_action_at_stop()
 // gm_argopts.cc
 extern void process_args(int argc, char** argv);
 
-int main (int argc, char** argv)
-{
+int main(int argc, char** argv) {
     bool ok = true;
 
     //-------------------------------------
@@ -166,29 +153,21 @@ int main (int argc, char** argv)
     Path.parsePath(fname);
 
     const char* name = OPTIONS.get_arg_string(GMARGFLAG_TARGET);
-    if (gm_is_same_string(name, "cpp_seq"))
-    {
+    if (gm_is_same_string(name, "cpp_seq")) {
         CPP_BE.set_target_omp(false);
-        BACK_END = & CPP_BE;
-    }
-    else if (gm_is_same_string(name, "cpp_omp"))
-    {
+        BACK_END = &CPP_BE;
+    } else if (gm_is_same_string(name, "cpp_omp")) {
         CPP_BE.set_target_omp(true);
-        BACK_END = & CPP_BE;
-    }
-    else if (gm_is_same_string(name, "gps"))
-    {
-        BACK_END = & GPS_BE;
-        PREGEL_BE = & GPS_BE;
+        BACK_END = &CPP_BE;
+    } else if (gm_is_same_string(name, "gps")) {
+        BACK_END = &GPS_BE;
+        PREGEL_BE = &GPS_BE;
         OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
-    }
-    else if (gm_is_same_string(name, "giraph"))
-    {
-        BACK_END = & GIRAPH_BE;
-        PREGEL_BE = & GIRAPH_BE;
+    } else if (gm_is_same_string(name, "giraph")) {
+        BACK_END = &GIRAPH_BE;
+        PREGEL_BE = &GIRAPH_BE;
         OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
-    }
-    else {
+    } else {
         printf("Unsupported target = %s\n", name);
         return 0;
     }
@@ -202,7 +181,6 @@ int main (int argc, char** argv)
     // Do additional initalization
     //--------------------------------------
     FE.init();
-
 
     //-------------------------------------
     // Parse phase
@@ -229,8 +207,8 @@ int main (int argc, char** argv)
     //--------------------------------------------------------------
     gm_begin_major_compiler_stage(GMSTAGE_FRONTEND, "Frontend");
     {
-       ok = FE.do_local_frontend_process();
-       if (!ok) exit(EXIT_FAILURE);
+        ok = FE.do_local_frontend_process();
+        if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
 
@@ -244,11 +222,10 @@ int main (int argc, char** argv)
     //----------------------------------------------------------------
     gm_begin_major_compiler_stage(GMSTAGE_INDEPENDENT_OPT, "Indep-Opt");
     {
-       ok = IND_OPT.do_local_optimize();
-       if (!ok) exit(EXIT_FAILURE);
+        ok = IND_OPT.do_local_optimize();
+        if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
-
 
     //-------------------------------------
     // Backend-Specific Code Modification
@@ -259,7 +236,6 @@ int main (int argc, char** argv)
         if (!ok) exit(EXIT_FAILURE);
     }
     gm_end_major_compiler_stage();
-
 
     //-------------------------------------
     // Library specific Backend-Specific Code Modification
@@ -274,7 +250,7 @@ int main (int argc, char** argv)
     //-------------------------------------------------
     // Final Code Generation
     //-------------------------------------------------
-    if (OPTIONS.get_arg_string(GMARGFLAG_OUTDIR) == NULL) 
+    if (OPTIONS.get_arg_string(GMARGFLAG_OUTDIR) == NULL)
         BACK_END->setTargetDir(".");
     else
         BACK_END->setTargetDir(OPTIONS.get_arg_string(GMARGFLAG_OUTDIR));
@@ -289,5 +265,4 @@ int main (int argc, char** argv)
 
     return EXIT_SUCCESS;
 }
-
 

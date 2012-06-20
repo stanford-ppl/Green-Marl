@@ -1,16 +1,14 @@
 #include "gm_frontend.h"
 
-bool gm_apply_compiler_stage(std::list<gm_compile_step*>& LIST)
-{
+bool gm_apply_compiler_stage(std::list<gm_compile_step*>& LIST) {
     bool is_okay = true;
     std::list<gm_compile_step*>::iterator I;
     int i = 0;
 
     // for each compilation step
-    for(I = LIST.begin(); I != LIST.end(); I++, i++)
-    {
+    for (I = LIST.begin(); I != LIST.end(); I++, i++) {
         gm_compile_step* step = (*I);
-        gm_begin_minor_compiler_stage(i +1, step->get_description());
+        gm_begin_minor_compiler_stage(i + 1, step->get_description());
 
         is_okay = gm_apply_all_proc(step) && is_okay;
 
@@ -20,15 +18,13 @@ bool gm_apply_compiler_stage(std::list<gm_compile_step*>& LIST)
     return is_okay;
 }
 
-bool gm_apply_all_proc(gm_compile_step* org)
-{
+bool gm_apply_all_proc(gm_compile_step* org) {
     bool is_okay = true;
 
     // apply to every procedure
-    FE.prepare_proc_iteration(); 
+    FE.prepare_proc_iteration();
     ast_procdef* p;
-    while ((p=FE.get_next_proc()) != NULL)
-    {
+    while ((p = FE.get_next_proc()) != NULL) {
         gm_compile_step* step = org->get_instance();
 
         step->process(p);

@@ -9,14 +9,14 @@
 //--------------------------------------------------------------------
 // hoist up initialization assignment as far as possible
 //--------------------------------------------------------------------
-class gm_hoist_assign_up_t: public gm_hoist_normal_sent_t {
+class gm_hoist_assign_up_t : public gm_hoist_normal_sent_t
+{
 public:
     // need post apply.
 protected:
-    virtual bool check_target(ast_sent* target)  {
+    virtual bool check_target(ast_sent* target) {
         // check if assign
-        if (target->get_nodetype() != AST_ASSIGN)
-            return false;
+        if (target->get_nodetype() != AST_ASSIGN) return false;
         ast_assign* a = (ast_assign*) target;
 
         if (a->is_reduce_assign() || a->is_defer_assign()) return false;
@@ -27,9 +27,8 @@ protected:
         return is_const_check.is_const();
     }
 
-    virtual bool check_trivial_pred(ast_sent* S)
-    {
-        if ((S->get_nodetype() == AST_VARDECL) || (S->get_nodetype()==AST_ASSIGN)) 
+    virtual bool check_trivial_pred(ast_sent* S) {
+        if ((S->get_nodetype() == AST_VARDECL) || (S->get_nodetype() == AST_ASSIGN))
             return true;
         else
             return false;
@@ -39,8 +38,7 @@ protected:
 };
 
 //bool gm_independent_optimize::do_hoist_assign(ast_procdef* p)
-void gm_ind_opt_hoist_assign::process(ast_procdef* p)
-{
+void gm_ind_opt_hoist_assign::process(ast_procdef* p) {
     gm_hoist_assign_up_t T1;
     gm_traverse_sents(p, &T1, GM_POST_APPLY);   // hoist const defs up
 

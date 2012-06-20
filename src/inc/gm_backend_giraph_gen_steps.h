@@ -8,7 +8,7 @@
 // Add delaration here
 // declaration of optimization steps
 //-------------------------------------------
-GM_COMPILE_STEP(gm_giraph_gen_class,  "Generate Code")
+GM_COMPILE_STEP(gm_giraph_gen_class, "Generate Code")
 
 //-------------------------------------------
 // [Step 2]

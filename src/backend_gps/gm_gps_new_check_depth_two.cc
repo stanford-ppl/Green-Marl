@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include "gm_backend_gps.h"
 #include "gm_error.h"
@@ -17,37 +16,35 @@
 //    GPS_FLAG_IS_OUTER_LOOP: <to:>foreach or symbol of iterator <what:>if inner loop
 //------------------------------------------------------------------------
 
-class gps_new_check_depth_two_t : public gm_apply {
+class gps_new_check_depth_two_t : public gm_apply
+{
 public:
-    gps_new_check_depth_two_t()
-    {
+    gps_new_check_depth_two_t() {
         _error = false;
         foreach_depth = 0;
 
-        set_separate_post_apply(true); 
+        set_separate_post_apply(true);
         set_for_sent(true);
     }
-    bool is_error() {return _error;}
+    bool is_error() {
+        return _error;
+    }
 
-    virtual bool apply(ast_sent* s)
-    {
+    virtual bool apply(ast_sent* s) {
         if (s->get_nodetype() != AST_FOREACH) return true;
 
-        foreach_depth ++;
+        foreach_depth++;
         ast_foreach* fe = (ast_foreach*) s;
 
         if (foreach_depth == 1) {
             // check if node-wide foreach
-            if (fe->get_iter_type() != GMTYPE_NODEITER_ALL)
-            {
-                gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_RANGE_MASTER,
-                         s->get_line(), s->get_col(), "");
+            if (fe->get_iter_type() != GMTYPE_NODEITER_ALL) {
+                gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_RANGE_MASTER, s->get_line(), s->get_col(), "");
                 _error = true;
             }
 
             if (fe->is_sequential()) {
-                gm_backend_error(GM_ERROR_GPS_NEED_PARALLEL,
-                         s->get_line(), s->get_col(), "");
+                gm_backend_error(GM_ERROR_GPS_NEED_PARALLEL, s->get_line(), s->get_col(), "");
                 _error = true;
             }
 
@@ -55,39 +52,30 @@ public:
             fe->get_iterator()->getSymInfo()->add_info_bool(GPS_FLAG_IS_OUTER_LOOP, true);
         }
 
-        else if (foreach_depth == 2) 
-        {
-                // check if out-nbr iteration
-                if ((fe->get_iter_type() != GMTYPE_NODEITER_NBRS) &&
-                    (fe->get_iter_type() != GMTYPE_NODEITER_IN_NBRS))
-                {
-                    gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX,
-                             s->get_line(), s->get_col(), "");
-                    _error = true;
-                }
-                if (fe->is_sequential()) {
-                    gm_backend_error(GM_ERROR_GPS_NEED_PARALLEL,
-                             s->get_line(), s->get_col(), "");
-                    _error = true;
-                }
+        else if (foreach_depth == 2) {
+            // check if out-nbr iteration
+            if ((fe->get_iter_type() != GMTYPE_NODEITER_NBRS) && (fe->get_iter_type() != GMTYPE_NODEITER_IN_NBRS)) {
+                gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX, s->get_line(), s->get_col(), "");
+                _error = true;
+            }
+            if (fe->is_sequential()) {
+                gm_backend_error(GM_ERROR_GPS_NEED_PARALLEL, s->get_line(), s->get_col(), "");
+                _error = true;
+            }
 
-                fe->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
-                fe->get_iterator()->getSymInfo()->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
-        }
-        else { // (depth > 3)
+            fe->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
+            fe->get_iterator()->getSymInfo()->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
+        } else { // (depth > 3)
             _error = true;
-            gm_backend_error(GM_ERROR_GPS_NBR_LOOP_TOO_DEEP,
-                         s->get_line(), s->get_col(), "");
+            gm_backend_error(GM_ERROR_GPS_NBR_LOOP_TOO_DEEP, s->get_line(), s->get_col(), "");
         }
 
         return true;
 
     }
 
-    virtual bool apply2(ast_sent* s)
-    {
-        if (s->get_nodetype() == AST_FOREACH)
-            foreach_depth --;
+    virtual bool apply2(ast_sent* s) {
+        if (s->get_nodetype() == AST_FOREACH) foreach_depth--;
 
         return true;
     }
@@ -99,16 +87,12 @@ private:
 
 };
 
-
-    
-void gm_gps_new_check_depth_two::process(ast_procdef* proc)
-{
+void gm_gps_new_check_depth_two::process(ast_procdef* proc) {
     // Check number of procedure name is same to the filename
     const char *fname = PREGEL_BE->getFileName();
     assert(fname!=NULL);
-    if (strcmp(proc->get_procname()->get_genname(), fname) != 0) 
-    {
-        gm_backend_error(GM_ERROR_GPS_PROC_NAME,proc->get_procname()->get_genname(), fname);
+    if (strcmp(proc->get_procname()->get_genname(), fname) != 0) {
+        gm_backend_error(GM_ERROR_GPS_PROC_NAME, proc->get_procname()->get_genname(), fname);
         set_okay(false);
         return;
     }

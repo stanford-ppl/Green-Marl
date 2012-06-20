@@ -29,20 +29,17 @@ extern bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bo
 //  *  Iterator ids in body still do not contain valid symtab entry, after this function.
 //  *  They should be adjusted after this function.
 //------------------------------------------------------------
-ast_foreach* gm_new_foreach_after_tc(
-        ast_id* it, ast_id* src, ast_sent* body, int iter_type)
-{
+ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, int iter_type) {
     assert(it->getSymInfo() == NULL);
     assert(src->getSymInfo() != NULL);
-    assert (gm_is_iteration_on_all_graph(iter_type) 
-            || gm_is_iteration_on_neighbors_compatible(iter_type)); 
+    assert(gm_is_iteration_on_all_graph(iter_type) || gm_is_iteration_on_neighbors_compatible(iter_type));
 
     //-----------------------------------------------------
     // create foreach node
     //-----------------------------------------------------
     if (body == NULL) body = ast_sentblock::new_sentblock();
     ast_foreach* fe = ast_foreach::new_foreach(it, src, body, iter_type);
-    
+
     //--------------------------------------------------
     // create iterator type
     //--------------------------------------------------
@@ -50,16 +47,14 @@ ast_foreach* gm_new_foreach_after_tc(
     if (gm_is_iteration_on_all_graph(iter_type)) {
         assert(gm_is_graph_type(src->getTypeSummary()));
         type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
-    }
-    else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
+    } else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
         assert(gm_is_node_compatible_type(src->getTypeSummary()));
         type = ast_typedecl::new_nbr_iterator(src->copy(true), iter_type);
-    }
-    else {
+    } else {
         assert(false);
     }
     type->enforce_well_defined();
-    
+
     //----------------------------------------------
     // Add iterator definition to the 'this' scope
     //----------------------------------------------
@@ -81,27 +76,20 @@ ast_foreach* gm_new_foreach_after_tc(
     fe->get_this_scope(&S);
     gm_put_new_upper_scope_on_null(body, &S);
 
-    return fe; 
+    return fe;
 }
 
 // almost identical to new_foreach_after_tc
-ast_expr_reduce* gm_new_expr_reduce_after_tc(
-        ast_id* it, ast_id* src, ast_expr* body, ast_expr* filter, 
-        int iter_type, int op_type)
-{
+ast_expr_reduce* gm_new_expr_reduce_after_tc(ast_id* it, ast_id* src, ast_expr* body, ast_expr* filter, int iter_type, int op_type) {
     assert(it->getSymInfo() == NULL);
     assert(src->getSymInfo() != NULL);
-    assert (gm_is_iteration_on_all_graph(iter_type) 
-            || gm_is_iteration_on_neighbors_compatible(iter_type)); 
+    assert(gm_is_iteration_on_all_graph(iter_type) || gm_is_iteration_on_neighbors_compatible(iter_type));
 
     //-----------------------------------------------------
     // create expression node
     //-----------------------------------------------------
-    ast_expr_reduce* R = 
-        ast_expr_reduce::new_reduce_expr(
-                op_type, 
-                it, src, iter_type, body, filter);
-    
+    ast_expr_reduce* R = ast_expr_reduce::new_reduce_expr(op_type, it, src, iter_type, body, filter);
+
     //--------------------------------------------------
     // create iterator type
     //--------------------------------------------------
@@ -109,12 +97,10 @@ ast_expr_reduce* gm_new_expr_reduce_after_tc(
     if (gm_is_iteration_on_all_graph(iter_type)) {
         assert(gm_is_graph_type(src->getTypeSummary()));
         type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
-    }
-    else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
+    } else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
         assert(gm_is_node_compatible_type(src->getTypeSummary()));
         type = ast_typedecl::new_nbr_iterator(src->copy(true), iter_type);
-    }
-    else {
+    } else {
         assert(false);
     }
     type->enforce_well_defined();
@@ -139,48 +125,45 @@ ast_expr_reduce* gm_new_expr_reduce_after_tc(
     R->get_this_scope(&S);
 
     gm_put_new_upper_scope_on_null(body, &S);
-    if (filter != NULL) 
-        gm_put_new_upper_scope_on_null(filter, &S);
+    if (filter != NULL) gm_put_new_upper_scope_on_null(filter, &S);
 
     return R;
 }
 
-
 //--------------------------------------------------------------
 // Create bottom symbol for reduction
 //--------------------------------------------------------------
-ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type)
-{
+ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type) {
     ast_expr* init_val;
-    switch(reduce_type) {
+    switch (reduce_type) {
         case GMREDUCE_PLUS: // Sum
             if (gm_is_integer_type(lhs_type))
-                 init_val = ast_expr::new_ival_expr(0);
+                init_val = ast_expr::new_ival_expr(0);
             else
-                 init_val = ast_expr::new_fval_expr(0.0);
+                init_val = ast_expr::new_fval_expr(0.0);
             break;
         case GMREDUCE_MULT:  // Product
             if (gm_is_integer_type(lhs_type))
-                 init_val = ast_expr::new_ival_expr(1);
+                init_val = ast_expr::new_ival_expr(1);
             else
-                 init_val = ast_expr::new_fval_expr(1.0);
+                init_val = ast_expr::new_fval_expr(1.0);
             break;
-        case GMREDUCE_MIN:  
+        case GMREDUCE_MIN:
             init_val = ast_expr::new_inf_expr(true);
             init_val->set_type_summary(gm_get_sized_inf_type(lhs_type));
             break;
-        case GMREDUCE_MAX:  
+        case GMREDUCE_MAX:
             init_val = ast_expr::new_inf_expr(false);
             init_val->set_type_summary(gm_get_sized_inf_type(lhs_type));
             break;
-        case GMREDUCE_AND:  
+        case GMREDUCE_AND:
             init_val = ast_expr::new_bval_expr(true);
             break;
-        case GMREDUCE_OR:  
+        case GMREDUCE_OR:
             init_val = ast_expr::new_bval_expr(false);
             break;
-        default: 
-            printf("%d %s \n", reduce_type, gm_get_reduce_string(reduce_type) );
+        default:
+            printf("%d %s \n", reduce_type, gm_get_reduce_string(reduce_type));
             assert(false);
     }
 
