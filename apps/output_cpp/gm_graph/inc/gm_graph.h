@@ -1,4 +1,3 @@
-
 #ifndef GM_GRAPH_H
 #define GM_GRAPH_H
 #include <assert.h>
@@ -7,7 +6,6 @@
 #include <map>
 #include <vector>
 #include "gm_graph_typedef.h"
-
 
 typedef node_t node_id;
 typedef edge_t edge_id;
@@ -58,7 +56,8 @@ struct edge_dest_t  // for flexible graph representation
     edge_id edge;
 };
 
-class gm_graph {
+class gm_graph
+{
 
 public:
     gm_graph();
@@ -68,35 +67,53 @@ public:
     // Direct access (only avaiable after frozen) 
     // GM compiler will use direct access only.
     //-----------------------------------------------------
-    edge_t*  begin;             // O(N) array of edge_t
-    node_t*  node_idx;          // O(M) array of node_t (destination of each edge)
-    node_t*  node_idx_src;     // O(M) array of node_t (source of each edge)
+    edge_t* begin;             // O(N) array of edge_t
+    node_t* node_idx;          // O(M) array of node_t (destination of each edge)
+    node_t* node_idx_src;     // O(M) array of node_t (source of each edge)
 
-    edge_t*  r_begin;           // O(N) array of edge_t
-    node_t*  r_node_idx;        // O(M) array of node_t (destination of each reverse edge)
-    node_t*  r_node_idx_src;   // O(M) array of node_t (source of each reverse edge)
+    edge_t* r_begin;           // O(N) array of edge_t
+    node_t* r_node_idx;        // O(M) array of node_t (destination of each reverse edge)
+    node_t* r_node_idx_src;   // O(M) array of node_t (source of each reverse edge)
 
     static const node_t NIL_NODE = (node_t) -1;
     static const edge_t NIL_EDGE = (edge_t) -1;
 
-    bool     is_neighbor(node_t src, node_t to); // need semi sorting
+    bool is_neighbor(node_t src, node_t to); // need semi sorting
 
 public:
-    node_t num_nodes()               {return _numNodes;}
-    edge_t num_edges()               {return _numEdges;}
-    bool has_reverse_edge()          {return _reverse_edge;}
-    bool is_frozen()                 {return _frozen;}
-    bool is_directed()               {return _directed;}  
-    bool is_semi_sorted()            {return _semi_sorted;}
-    bool has_separate_edge_idx()     {return (e_id2idx != NULL);}
-    bool is_edge_source_ready()      {return (node_idx_src != NULL);}
-    
+    node_t num_nodes() {
+        return _numNodes;
+    }
+    edge_t num_edges() {
+        return _numEdges;
+    }
+    bool has_reverse_edge() {
+        return _reverse_edge;
+    }
+    bool is_frozen() {
+        return _frozen;
+    }
+    bool is_directed() {
+        return _directed;
+    }
+    bool is_semi_sorted() {
+        return _semi_sorted;
+    }
+    bool has_separate_edge_idx() {
+        return (e_id2idx != NULL);
+    }
+    bool is_edge_source_ready() {
+        return (node_idx_src != NULL);
+    }
+
     //------------------------------------------------
     // Methods for graph manipulation
     //------------------------------------------------
     void thaw();                        // change the graph into flexible form (vector of vectors)
     void freeze();                      // change the graph into CSR form (fast & compact but unmodifiable)
-    void make_undirected()     {assert(false);} // [XXX] to be added
+    void make_undirected() {
+        assert(false);
+    } // [XXX] to be added
 
     //-------------------------------------------------
     // mathods to be called in frozen mode
@@ -110,42 +127,62 @@ public:
     //-------------------------------------------------------
     node_id add_node();                             // returns ID of a node
     edge_id add_edge(node_id n, node_id m);         // add an edge n->m
-    bool    is_node(node_id n)                     {return (n < _numNodes);} // what if after 
-    bool    is_edge(edge_id n)                     {return (n < _numEdges);}
-    bool    has_edge(node_id from, node_id to); 
-    edge_t  get_num_edges(node_id from, node_id to);   // how many edges between two nodes
-    edge_t  get_num_edges(node_id from);               // how many edges from this node
+    bool is_node(node_id n) {
+        return (n < _numNodes);
+    } // what if after
+    bool is_edge(edge_id n) {
+        return (n < _numEdges);
+    }
+    bool has_edge(node_id from, node_id to);
+    edge_t get_num_edges(node_id from, node_id to);   // how many edges between two nodes
+    edge_t get_num_edges(node_id from);               // how many edges from this node
 
     //------------------------------------------------------------
     // Methods to be implemented for deletion
     //------------------------------------------------------------
-    void detach_node(node_id n)                 {assert(false);} 
-    void remove_all_edges(node_id n, node_id m) {assert(false);}
-    void remove_edge(edge_id n)                 {assert(false);}
-    void compresss_graph()                      {assert(false);} // all the previous id become invalidated
+    void detach_node(node_id n) {
+        assert(false);
+    }
+    void remove_all_edges(node_id n, node_id m) {
+        assert(false);
+    }
+    void remove_edge(edge_id n) {
+        assert(false);
+    }
+    void compresss_graph() {
+        assert(false);
+    } // all the previous id become invalidated
 
     //--------------------------------------------------------------
     // Read and Write the graph from/to a file, using a custom binary format
     // The graph will be frozen automatically.
     //--------------------------------------------------------------
-	void prepare_external_creation(node_t n, edge_t m);
-	bool store_binary(char* filename);          // attributes not saved
-	bool load_binary(char* filename);           // call this to an empty graph object
+    void prepare_external_creation(node_t n, edge_t m);
+    bool store_binary(char* filename);          // attributes not saved
+    bool load_binary(char* filename);           // call this to an empty graph object
 
     //--------------------------------------------------------------
     // conversion between idx and id
     //--------------------------------------------------------------
-    edge_t  get_edge_idx(edge_id e)      {return e_id2idx == NULL ? e : e_id2idx[e];}
-    node_t  get_node_idx(node_id n)      {return n;}
-    edge_id get_edge_id(edge_t e)        {return e_idx2id == NULL ? e : e_idx2id[e];}
-    node_id get_node_id(node_t n)        {return n;}
+    edge_t get_edge_idx(edge_id e) {
+        return e_id2idx == NULL ? e : e_id2idx[e];
+    }
+    node_t get_node_idx(node_id n) {
+        return n;
+    }
+    edge_id get_edge_id(edge_t e) {
+        return e_idx2id == NULL ? e : e_idx2id[e];
+    }
+    node_id get_node_id(node_t n) {
+        return n;
+    }
 
     void clear_graph();                         // invalidate everything and make the graph empty
 
 private:
 
     void delete_frozen_graph();
-	void allocate_memory_for_frozen_graph(node_t n, edge_t m);
+    void allocate_memory_for_frozen_graph(node_t n, edge_t m);
 
     node_t _numNodes;
     edge_t _numEdges;
@@ -154,11 +191,10 @@ private:
     bool _directed;
     bool _semi_sorted;
 
-
-    void do_semi_sort_reverse(); 
+    void do_semi_sort_reverse();
     void prepare_edge_source_reverse();
 
-    std::map<node_t, std::vector< edge_dest_t> > flexible_graph;
+    std::map<node_t, std::vector<edge_dest_t> > flexible_graph;
 
     edge_t* e_id2idx;
     edge_t* e_idx2id;

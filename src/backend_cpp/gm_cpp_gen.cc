@@ -5,6 +5,7 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
+#include "gm_cpplib_words.h"
 
 void gm_cpp_gen::setTargetDir(const char* d) {
     assert(d!=NULL);
@@ -311,10 +312,15 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
             char temp[128];
             sprintf(temp, "%s*", get_lib()->get_type_string(t2));
             return gm_strdup(temp);
+        } else if (t2->is_collection()) {
+            char temp[128];
+            sprintf(temp, "%s<%s>&", PROP_OF_COL, get_lib()->get_type_string(t2));
+            return gm_strdup(temp);
         } else {
-            assert(false);
+           assert(false);
         }
-    } else
+    }
+    else 
         return get_lib()->get_type_string(t);
 
     return "ERROR";
@@ -399,9 +405,22 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
         case GMTYPE_EDGE:
             Body.push(ALLOCATE_EDGE);
             break;
+        case GMTYPE_NSET:
+        case GMTYPE_ESET:
+        case GMTYPE_NSEQ:
+        case GMTYPE_ESEQ:
+        case GMTYPE_NORDER:
+        case GMTYPE_EORDER: {
+        	char temp[128];
+        	bool lazyInitialization = false; //TODO: get some information here to check if lazy init is better
+        	sprintf(temp, "%s<%s, %s>", ALLOCATE_COLLECTION, get_lib()->get_type_string(t2), (lazyInitialization ? "true" : "false"));
+        	Body.push(temp);
+        	break;
+        }
         default:
             assert(false);
     }
+
     Body.push('(');
     if (t->is_node_property()) {
         Body.push(get_lib()->max_node_index(t->get_target_graph_id()));
@@ -427,7 +446,6 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
         assert(idl->get_length() == 1);
         generate_lhs_id(idl->get_item(0));
         declare_prop_def(t, idl->get_item(0));
-
     } else if (t->is_collection()) {
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);

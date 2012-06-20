@@ -1,4 +1,3 @@
-
 #ifndef GM_ATOMIC_WRAP_H
 #define GM_ATOMIC_WRAP_H
 #include <stdlib.h>
@@ -40,41 +39,37 @@
 #else
 #error "GM_Graph library requires gcc for now" 
 #endif // no GNUC
-
-static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val)
-{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val) {
+    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+}
 
 // It is not possible to use gcc's inherent CAS for double and float
 // (Reinterpret_cast does not work here)
-static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float new_val)
-{ unsigned char  c = _gm_CAS_asm(dest, old_val, new_val);
-  return (c==1);
+static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float new_val) {
+    unsigned char c = _gm_CAS_asm(dest, old_val, new_val);
+    return (c == 1);
 }
 
-static inline bool _gm_atomic_compare_and_swap(bool *dest, bool old_val, bool new_val)
-{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
-
-
-
+static inline bool _gm_atomic_compare_and_swap(bool *dest, bool old_val, bool new_val) {
+    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+}
 
 #if defined(__arch64__) || defined(__x86_64__)
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
-{ return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+{   return __sync_bool_compare_and_swap(dest, old_val, new_val);}
 
 static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
-{ 
-  unsigned char c =  _gm_CAS_asm(dest, old_val, new_val);
-  return (c==1);
+{
+    unsigned char c = _gm_CAS_asm(dest, old_val, new_val);
+    return (c==1);
 }
 
 #else
 
 #include "gm_lock.h"
 
-
-static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
-{ 
+static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val) {
 #warning "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
 
     bool ret = false;
@@ -91,8 +86,7 @@ static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, i
     return ret;
 }
 
-static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
-{ 
+static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val) {
 
     bool ret = false;
     if (*dest != old_val) return false;
@@ -109,7 +103,5 @@ static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, dou
 }
 
 #endif
-
-
 
 #endif // end of file

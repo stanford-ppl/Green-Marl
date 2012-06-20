@@ -169,13 +169,17 @@
 
   property : T_NODEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_NODEPROP '<' nodeedge_type '>' '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' set_type '>' 	  '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_NODEPROP '<' prim_type '>'                 { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_NODEPROP '<' nodeedge_type '>'             { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_NODEPROP '<' set_type '>'				  { $$ = GM_nodeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
            | T_EDGEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' nodeedge_type '>' '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' set_type '>' 	  '(' id ')'  { $$ = GM_edgeprop_ref($3, $6); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' prim_type '>'                 { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            | T_EDGEPROP '<' nodeedge_type '>'             { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           | T_EDGEPROP '<' set_type '>'             	  { $$ = GM_edgeprop_ref($3, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
   id_comma_list   : id                            { GM_add_id_comma_list($1);}
                   | id_comma_list ',' id          { GM_add_id_comma_list($3);}
@@ -394,6 +398,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
 
   built_in : id '.' id arg_list            { $$ = GM_expr_builtin_expr($1, $3, $4);}
            | id arg_list                   { $$ = GM_expr_builtin_expr(NULL, $1, $2);}
+           | field '.' id arg_list		   { $$ = GM_expr_builtin_field_expr($1, $3, $4);}
 
   arg_list : '(' expr_list ')'             { $$ = $2;}
            | '(' ')'                       { $$ = GM_empty_expr_list();}
