@@ -100,51 +100,83 @@ private:
 
     bool apply_on_builtin(ast_expr_builtin* builtinExpr);
     bool apply_on_builtin_field(ast_expr_builtin_field* builtinFieldExpr);
+    bool set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType);
+    bool apply_on_field(ast_field* f);
 };
 
-bool gm_typechecker_stage_2::apply_on_builtin_field(ast_expr_builtin_field* builtinFieldExpr) {
+bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType) {
 
-    return false;
-}
+    gm_builtin_def* builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname());
 
-bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
-
-    if (builtinExpr->driver_is_field()) return apply_on_builtin_field((ast_expr_builtin_field*) builtinExpr);
-
-    ast_id* driver = builtinExpr->get_driver();
-    int source_type = (driver == NULL) ? GMTYPE_VOID : driver->getTypeSummary();
-    gm_builtin_def* def = BUILT_IN.find_builtin_def(source_type, builtinExpr->get_callname());
-
-    if (def == NULL) {
-        if (_is_group_assignment && (gm_is_graph_type(source_type) || gm_is_collection_type(source_type))) {
+    if (builtinDef == NULL) {
+        if (_is_group_assignment && (gm_is_graph_type(sourceType) || gm_is_collection_type(sourceType))) {
             if (_is_group_assignment_node_prop)
-                source_type = GMTYPE_NODE;
+                sourceType = GMTYPE_NODE;
             else
-                source_type = GMTYPE_EDGE;
+                sourceType = GMTYPE_EDGE;
 
-            def = BUILT_IN.find_builtin_def(source_type, builtinExpr->get_callname());
+            builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname());
         }
     }
 
-    bool is_okay = true;
+    bool isOkay = true;
 
-    if (def == NULL) {
+    if (builtinDef == NULL) {
         gm_type_error(GM_ERROR_INVALID_BUILTIN, builtinExpr->get_line(), builtinExpr->get_col(), builtinExpr->get_callname());
-        is_okay = false;
+        isOkay = false;
     }
 
-    builtinExpr->set_builtin_def(def);
+    builtinExpr->set_builtin_def(builtinDef);
 
     if (is_okay) {
         std::list<ast_expr*>& arguments = builtinExpr->get_args();
 
-        int num_args = arguments.size();
-        if (num_args != def->get_num_args()) {
+        int argCount = arguments.size();
+        if (argCount != builtinDef->get_num_args()) {
             gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_COUNT, builtinExpr->get_line(), builtinExpr->get_col(), builtinExpr->get_callname());
-            is_okay = false;
+            isOkay = false;
         }
     }
-    return is_okay;
+    return isOkay;
+}
+
+bool gm_typechecker_stage_2::apply_on_builtin_field(ast_expr_builtin_field* builtinExpr) {
+    int sourceType = 6; //TODO get type information
+    return set_and_check_builtin_definition(builtinExpr, sourceType);
+}
+
+bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
+    if (builtinExpr->driver_is_field()) return apply_on_builtin_field((ast_expr_builtin_field*) builtinExpr);
+    ast_id* driver = builtinExpr->get_driver();
+    int sourceType = (driver == NULL) ? GMTYPE_VOID : driver->getTypeSummary();
+    return set_and_check_builtin_definition(builtinExpr, sourceType);
+}
+
+bool gm_typechecker_stage_2::apply_on_field(ast_field* f) {
+
+    ast_id* driver = f->get_first();
+    ast_typedecl* t = driver->getTypeInfo();
+
+    if (t->is_graph() || t->is_collection()) { // group assignment
+        if ((!_is_group_assignment) || (_group_sym != driver->getSymInfo())) {
+            gm_type_error(GM_ERROR_INVALID_GROUP_DRIVER, driver);
+            return false;
+        }
+        // check node property
+        ast_typedecl* prop_type = f->get_second()->getTypeInfo();
+        if (_is_group_assignment_node_prop) {
+            if (!prop_type->is_node_property()) {
+                gm_type_error(GM_ERROR_WRONG_PROPERTY, f->get_second(), "Node_Property");
+                return false;
+            }
+        } else {
+            if (!prop_type->is_edge_property()) {
+                gm_type_error(GM_ERROR_WRONG_PROPERTY, f->get_second(), "Edge_Property");
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 bool gm_typechecker_stage_2::apply(ast_expr* e) {
@@ -162,35 +194,11 @@ bool gm_typechecker_stage_2::apply(ast_expr* e) {
             }
             break;
         }
-
         case GMEXPR_FIELD: {
             ast_field* f = e->get_field();
-            ast_id* driver = f->get_first();
-            ast_typedecl* t = driver->getTypeInfo();
-            if (t->is_graph() || t->is_collection()) { // group assignment
-                if ((!_is_group_assignment) || (_group_sym != driver->getSymInfo())) {
-                    gm_type_error(GM_ERROR_INVALID_GROUP_DRIVER, driver);
-                    is_okay = false;
-                    break;
-                }
-
-                // check node property
-                ast_typedecl* prop_type = f->get_second()->getTypeInfo();
-                if (_is_group_assignment_node_prop) {
-                    if (!prop_type->is_node_property()) {
-                        gm_type_error(GM_ERROR_WRONG_PROPERTY, f->get_second(), "Node_Property");
-                        is_okay = false;
-                    }
-                } else {
-                    if (!prop_type->is_edge_property()) {
-                        gm_type_error(GM_ERROR_WRONG_PROPERTY, f->get_second(), "Edge_Property");
-                        is_okay = false;
-                    }
-                }
-            }
+            is_okay = apply_on_field(f);
             break;
         }
-
         case GMEXPR_BUILTIN: {
             // find function definition:w
             ast_expr_builtin* builtin = (ast_expr_builtin*) e;
@@ -198,7 +206,6 @@ bool gm_typechecker_stage_2::apply(ast_expr* e) {
             break;
         }
     }
-
     set_okay(is_okay);
     return is_okay;
 }
