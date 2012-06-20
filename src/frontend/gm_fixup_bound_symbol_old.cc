@@ -1,4 +1,3 @@
-
 #include "gm_ast.h"
 #include "gm_frontend.h"
 #include "gm_backend.h"
@@ -31,13 +30,16 @@ void gm_make_normal_assign(ast_assign* a);
 // } }
 //-----------------------------------------------------------------
 
-class find_hpb_t : public gm_apply {
+class find_hpb_t: public gm_apply
+{
 public:
     //------------------------
     // make a big table 
     // each symbol -> depth
     //------------------------
-    find_hpb_t() {current_depth = 0; }
+    find_hpb_t() {
+        current_depth = 0;
+    }
 
     void begin_context(ast_node* t) {
         if (t->get_nodetype() == AST_FOREACH) {
@@ -48,27 +50,23 @@ public:
             para_iter_map[fe->get_iterator()->getSymInfo()] = fe->is_parallel();
         } else if (t->get_nodetype() == AST_BFS) {
             ast_bfs* fe = (ast_bfs*) t;
-            if (fe->is_parallel())
-                current_depth++;
+            if (fe->is_parallel()) current_depth++;
             para_iter_map[fe->get_iterator()->getSymInfo()] = fe->is_parallel();
         }
     }
     void end_context(ast_node* t) {
         if (t->get_nodetype() == AST_FOREACH) {
             ast_foreach* fe = (ast_foreach*) t;
-            if (fe->is_parallel())
-                current_depth--;
+            if (fe->is_parallel()) current_depth--;
         } else if (t->get_nodetype() == AST_BFS) {
             ast_bfs* fe = (ast_bfs*) t;
-            if (fe->is_parallel())
-                current_depth--;
+            if (fe->is_parallel()) current_depth--;
         }
     }
 
     // phase 1: create depth_map
-    virtual bool apply(gm_symtab_entry* e, int symtab_type) 
-    {
-        depth_map[e]  = current_depth;
+    virtual bool apply(gm_symtab_entry* e, int symtab_type) {
+        depth_map[e] = current_depth;
         return true;
     }
 
@@ -80,12 +78,9 @@ public:
     //    If parallel -> leave it (can be an error or not)
     //    If sequential-> fix it silently (or leave it to be error). 
     //----------------------------------------------------------------
-    virtual bool apply(ast_sent *s)
-    {
+    virtual bool apply(ast_sent *s) {
         if (s->get_nodetype() != AST_ASSIGN) return true;
-        ast_assign *a = (ast_assign*)s;
-
-
+        ast_assign *a = (ast_assign*) s;
 
         if (!a->is_reduce_assign()) return true;
 
@@ -94,58 +89,52 @@ public:
 
         if (HPB == NULL) {
             gm_make_normal_assign(a);
-        }
-        else if (a->get_bound() == NULL) {
+        } else if (a->get_bound() == NULL) {
             assert(HPB->getId() != NULL);
             ast_id* new_bound = HPB->getId()->copy(true);
-            a->set_bound(new_bound); 
-        }
-        else if (a->get_bound()->getSymInfo() == HPB) {
+            a->set_bound(new_bound);
+        } else if (a->get_bound()->getSymInfo() == HPB) {
             return true;
         } else {
-            assert(a->get_bound()!=NULL);
+            assert(a->get_bound() != NULL);
             assert(a->get_bound()->getSymInfo() != NULL);
             assert(HPB->getId() != NULL);
 
-            int HPB_depth  = depth_map[HPB];
+            int HPB_depth = depth_map[HPB];
             int curr_bound_depth = depth_map[a->get_bound()->getSymInfo()];
             // smaller number means higher scope
             // curr bound level is lower
-            if (HPB_depth < curr_bound_depth) 
-            {
+            if (HPB_depth < curr_bound_depth) {
                 if (para_iter_map[a->get_bound()->getSymInfo()]) { // is parallel
                     // do nothing: there is a special case.
-                }
-                else {
+                } else {
                     // fixing error
-                    ast_id* old_bound = a->get_bound(); delete old_bound;
+                    ast_id* old_bound = a->get_bound();
+                    delete old_bound;
                     ast_id* new_bound = HPB->getId()->copy(true);
-                    a->set_bound(new_bound); 
+                    a->set_bound(new_bound);
                 }
-            }
-            else 
-            {
+            } else {
                 // fixing error
-                ast_id* old_bound = a->get_bound(); delete old_bound;
+                ast_id* old_bound = a->get_bound();
+                delete old_bound;
                 ast_id* new_bound = HPB->getId()->copy(true);
-                a->set_bound(new_bound); 
+                a->set_bound(new_bound);
             }
         }
         return true;
     }
 
-    gm_symtab_entry* find_highest_parallel_bound_from(ast_assign *a)
-    {
+    gm_symtab_entry* find_highest_parallel_bound_from(ast_assign *a) {
         gm_symtab_entry* dest;
         if (a->is_target_scalar()) {
             ast_id* i = a->get_lhs_scala();
             dest = i->getSymInfo();
-        }
-        else {
+        } else {
             ast_id* i = a->get_lhs_field()->get_second();
             dest = i->getSymInfo();
         }
-        assert(dest!=NULL);
+        assert(dest != NULL);
 
         // smaller number means higher scope
         int dest_depth = depth_map[dest];
@@ -153,25 +142,22 @@ public:
 
         gm_symtab_entry* HPB = NULL;
 
-        while (n!= NULL) {
+        while (n != NULL) {
             //printf("B3 %s\n", gm_get_nodetype_string(n->get_nodetype()));fflush(stdout);
-            if(n->get_nodetype() == AST_FOREACH) {
+            if (n->get_nodetype() == AST_FOREACH) {
                 ast_foreach* fe = (ast_foreach*) n;
-                assert(fe->get_iterator()->getSymInfo()!=NULL);
-                int iter_depth = depth_map[fe->get_iterator()->getSymInfo()];
-                
-                if (iter_depth <= dest_depth) break;
-                if (fe->is_parallel())
-                    HPB = fe->get_iterator()->getSymInfo();
-            }
-            else if(n->get_nodetype() == AST_BFS) {
-                ast_bfs* fe = (ast_bfs*) n;
-                assert(fe->get_iterator()->getSymInfo()!=NULL);
+                assert(fe->get_iterator()->getSymInfo() != NULL);
                 int iter_depth = depth_map[fe->get_iterator()->getSymInfo()];
 
                 if (iter_depth <= dest_depth) break;
-                if (fe->is_parallel())
-                    HPB = fe->get_iterator()->getSymInfo();
+                if (fe->is_parallel()) HPB = fe->get_iterator()->getSymInfo();
+            } else if (n->get_nodetype() == AST_BFS) {
+                ast_bfs* fe = (ast_bfs*) n;
+                assert(fe->get_iterator()->getSymInfo() != NULL);
+                int iter_depth = depth_map[fe->get_iterator()->getSymInfo()];
+
+                if (iter_depth <= dest_depth) break;
+                if (fe->is_parallel()) HPB = fe->get_iterator()->getSymInfo();
             }
 
             n = n->get_parent();
@@ -186,8 +172,7 @@ private:
     std::map<gm_symtab_entry*, bool> para_iter_map; // map of iterator symbol & is parallel
 };
 
-bool gm_frontend::fix_bound_symbols(ast_procdef* p)
-{
+bool gm_frontend::fix_bound_symbols(ast_procdef* p) {
     find_hpb_t T;
     gm_traverse_symtabs(p, &T);
 
@@ -196,12 +181,8 @@ bool gm_frontend::fix_bound_symbols(ast_procdef* p)
     return true;
 }
 
-
-
-
 // used in later optimizations
-void gm_make_normal_assign(ast_assign* a)
-{
+void gm_make_normal_assign(ast_assign* a) {
     //-----------------------------------
     // make it a normal assignment
     // LHS += <expr>
@@ -217,9 +198,10 @@ void gm_make_normal_assign(ast_assign* a)
         base = ast_expr::new_field_expr(a->get_lhs_field()->copy(true));
     }
 
-    ast_expr* org_rhs = a->get_rhs(); assert(org_rhs != NULL);
-    ast_expr* new_rhs=NULL;
-    switch(a->get_reduce_type()) {
+    ast_expr* org_rhs = a->get_rhs();
+    assert(org_rhs != NULL);
+    ast_expr* new_rhs = NULL;
+    switch (a->get_reduce_type()) {
         case GMREDUCE_PLUS:
             new_rhs = ast_expr::new_biop_expr(GMOP_ADD, base, org_rhs);
             break;
