@@ -17,7 +17,6 @@
 //      _t.A = _t.B + 1;
 //====================================================================
 
-
 static ast_foreach* create_surrounding_fe(ast_assign* a) {
     ast_field* lhs = a->get_lhs_field(); // G.A
     ast_id *first = lhs->get_first();
@@ -30,25 +29,26 @@ static ast_foreach* create_surrounding_fe(ast_assign* a) {
     //const char* temp_name = 
     //    TEMP_GEN.getTempName("t"); // should I use first->get_orgname())?
     const char* temp_name = FE.voca_temp_name("t");
-    ast_id *it = ast_id::new_id(temp_name,
-            first->get_line(), first->get_col());
+    ast_id *it = ast_id::new_id(temp_name, first->get_line(), first->get_col());
     ast_id *src = first->copy(true);
-        src->set_line(first->get_line()); 
-        src->set_col(first->get_col());
+    src->set_line(first->get_line());
+    src->set_col(first->get_col());
     int iter;
     if (gm_is_node_property_type(second->getTypeSummary()))
         iter = GMTYPE_NODEITER_ALL;
     else if (gm_is_edge_property_type(second->getTypeSummary()))
         iter = GMTYPE_EDGEITER_ALL;
-    else assert(false);
+    else
+        assert(false);
 
     ast_foreach* fe_new = gm_new_foreach_after_tc(it, src, a, iter);
 
     return fe_new;
 }
 
-class ss2_group_assign : public gm_apply {
-    public:
+class ss2_group_assign: public gm_apply
+{
+public:
     // traverse sentence
     virtual bool apply(ast_sent *s) {
         if (s->get_nodetype() != AST_ASSIGN) return true;
@@ -57,8 +57,7 @@ class ss2_group_assign : public gm_apply {
 
         ast_field* lhs = a->get_lhs_field();
         assert(lhs != NULL);
-        if (!gm_is_graph_type(lhs->getSourceTypeSummary()))
-            return true;
+        if (!gm_is_graph_type(lhs->getSourceTypeSummary())) return true;
 
         // append to a seperate list and process them later
         target_list.push_back(a);
@@ -67,16 +66,15 @@ class ss2_group_assign : public gm_apply {
 
     void post_process() {
         std::list<ast_assign*>::iterator i;
-        for(i=target_list.begin(); i!=target_list.end(); i++) {
+        for (i = target_list.begin(); i != target_list.end(); i++) {
             ast_assign* next = *i;
             post_process_item(next);
-        } 
+        }
         target_list.clear();
     }
 
-
-    protected:
-        std::list<ast_assign*> target_list;
+protected:
+    std::list<ast_assign*> target_list;
 
     bool post_process_item(ast_assign* a) {
         // temporary node
@@ -97,7 +95,6 @@ class ss2_group_assign : public gm_apply {
         gm_add_sent_after(NOP, fe);
         gm_ripoff_sent(NOP);
 
-
         delete NOP; // no need after this
 
         //--------------------------------------------------------------------
@@ -107,9 +104,10 @@ class ss2_group_assign : public gm_apply {
         ast_field* lhs = a->get_lhs_field();
         ast_id* old = lhs->get_first();
         ast_id* iter = fe->get_iterator()->copy(true);
-        iter->set_line(old->get_line()); iter->set_col(old->get_col());
+        iter->set_line(old->get_line());
+        iter->set_col(old->get_col());
         lhs->set_first(iter);
-        
+
         // 2.
         this->old_driver_sym = old->getSymInfo();
         this->new_driver = iter;
@@ -124,43 +122,37 @@ class ss2_group_assign : public gm_apply {
     }
 
     // traverse expr
-    public:
+public:
     virtual bool apply(ast_expr* e) {
-        if (e->is_id())
-        {
+        if (e->is_id()) {
             ast_id* old = e->get_id();
             // replace G.A -> iter.A
-            if ((old->getSymInfo() == this->old_driver_sym) &&
-                ((e->get_type_summary() == GMTYPE_NODE) ||
-                 (e->get_type_summary() == GMTYPE_EDGE)))
-            {
+            if ((old->getSymInfo() == this->old_driver_sym) && ((e->get_type_summary() == GMTYPE_NODE) || (e->get_type_summary() == GMTYPE_EDGE))) {
                 old->setSymInfo(this->new_driver->getSymInfo());
                 e->set_type_summary(new_driver->getTypeSummary());
             }
         }
-        if (e->is_field())
-        {
-            ast_field* f = e->get_field(); 
+        if (e->is_field()) {
+            ast_field* f = e->get_field();
             ast_id* old = f->get_first();
             // replace G.A -> iter.A
             if (old->getSymInfo() == this->old_driver_sym) {
                 ast_id* iter = new_driver->copy(true);
-                iter->set_line(old->get_line()); iter->set_col(old->get_col());
+                iter->set_line(old->get_line());
+                iter->set_col(old->get_col());
                 f->set_first(iter);
                 delete old;
             }
-        }
-        else if (e->is_builtin())
-        {
+        } else if (e->is_builtin()) {
             ast_expr_builtin* e2 = (ast_expr_builtin*) e;
             ast_id* old = e2->get_driver();
-            if ((old !=NULL) && (old->getSymInfo() == this->old_driver_sym)) {
+            if ((old != NULL) && (old->getSymInfo() == this->old_driver_sym)) {
 
                 // If the builtin-op is for graph do not replace!
-                if (old->getTypeSummary() != e2->get_builtin_def()->get_source_type_summary())
-                {
+                if (old->getTypeSummary() != e2->get_builtin_def()->get_source_type_summary()) {
                     ast_id* iter = new_driver->copy(true);
-                    iter->set_line(old->get_line()); iter->set_col(old->get_col());
+                    iter->set_line(old->get_line());
+                    iter->set_col(old->get_col());
                     delete old;
                     e2->set_driver(iter);
                 }
@@ -170,15 +162,13 @@ class ss2_group_assign : public gm_apply {
         return true;
     }
 
-    protected:
+protected:
     gm_symtab_entry* old_driver_sym;
     ast_id* new_driver;
 
 };
 
-
-void gm_fe_expand_group_assignment::process(ast_procdef* p)
-{
+void gm_fe_expand_group_assignment::process(ast_procdef* p) {
     //1. Group Assign -->  Foreach
     ss2_group_assign ga;
     gm_traverse_sents(p, &ga); // mark

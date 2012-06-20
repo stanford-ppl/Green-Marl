@@ -1126,6 +1126,7 @@ public:
     virtual ast_expr* copy(bool cp_syminfo = false);
 
     // factory methods
+
 public:
     static ast_expr* new_id_expr(ast_id* id) {
         ast_expr* E = new ast_expr();
@@ -1496,8 +1497,8 @@ private:
 class ast_expr_builtin : public ast_expr
 {
 public:
-    ~ast_expr_builtin() {
-        delete[] orgname;
+    virtual ~ast_expr_builtin() {
+        delete [] orgname;
         delete driver;
         std::list<ast_expr*>::iterator I;
         for (I = args.begin(); I != args.end(); I++)
@@ -1508,6 +1509,7 @@ public:
     virtual void dump_tree(int id_level);
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual ast_expr* copy(bool cp_syminfo = false);
+    virtual bool driver_is_field() {return false;}
 
     static ast_expr_builtin* new_builtin_expr(ast_id* id, const char* orgname, expr_list* t) {
         ast_expr_builtin* E = new ast_expr_builtin();
@@ -1563,6 +1565,44 @@ protected:
     char* orgname;
     std::list<ast_expr*> args;
     gm_builtin_def* def;
+
+};
+
+class ast_expr_builtin_field : public ast_expr_builtin {
+
+public:
+
+	~ast_expr_builtin_field() {
+		delete field_driver;
+	}
+
+	virtual bool driver_is_field() {return true;}
+	ast_field* get_field_driver() {return field_driver;}
+
+	static ast_expr_builtin_field* new_builtin_field_expr(ast_field* field, const char* orgname, expr_list* exList) {
+
+		ast_expr_builtin_field* newExpression = new ast_expr_builtin_field();
+        newExpression->expr_class = GMEXPR_BUILTIN;
+        newExpression->field_driver = field;
+        newExpression->orgname = gm_strdup(orgname);
+
+        if (field != NULL) field->set_parent(newExpression); // type unknown yet.
+
+        if (exList != NULL) {
+        	newExpression->args = exList->LIST;  // shallow copy LIST
+            // but not set 'up' pointer.
+            std::list<ast_expr*>::iterator iter;
+            for(iter = newExpression->args.begin(); iter != newExpression->args.end(); iter++)
+               (*iter)->set_parent(newExpression);
+            delete exList; // t is only temporary, delete it.
+        }
+        return newExpression;
+	}
+
+private:
+	ast_expr_builtin_field() : ast_expr_builtin(), field_driver(NULL) {}
+
+	ast_field* field_driver;
 };
 
 // Reduction expression

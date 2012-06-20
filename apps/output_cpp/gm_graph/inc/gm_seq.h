@@ -10,17 +10,16 @@ template<typename T>
 class gm_seq
 {
 public:
-    gm_seq() { 
+    gm_seq() {
         init(gm_rt_get_num_threads());
-    } 
-    gm_seq(int _max_thread) 
-    { 
+    }
+    gm_seq(int _max_thread) {
         init(_max_thread);
     }
 
-    virtual ~gm_seq()  {
-        delete [] local_Q_front;
-        delete [] local_Q_back;
+    virtual ~gm_seq() {
+        delete[] local_Q_front;
+        delete[] local_Q_back;
     }
 
     //------------------------------------------------------------
@@ -28,38 +27,30 @@ public:
     //   push_back/front, pop_back/front, clear, get_size
     //   push has separate parallel interface
     //------------------------------------------------------------
-    void push_back(T e) 
-    {
+    void push_back(T e) {
         Q.push_back(e);
     }
-    void push_front(T e)
-    {
+    void push_front(T e) {
         Q.push_front(e);
     }
-    void pop_back()
-    {
+    void pop_back() {
         Q.pop_back();
     }
-    void pop_front()
-    {
+    void pop_front() {
         Q.pop_front();
     }
-    void clear() 
-    {
+    void clear() {
         Q.clear();
     }
-    void get_size()
-    {
+    void get_size() {
         Q.size();
     }
 
     // for parallel execution
-    void push_back_par(T e, int tid)
-    {
+    void push_back_par(T e, int tid) {
         local_Q_back[tid].push_back(e);
     }
-    void push_front_par(T e, int tid)
-    {
+    void push_front_par(T e, int tid) {
         local_Q_front[tid].push_front(e);
     }
 
@@ -68,19 +59,17 @@ public:
     //-------------------------------------------
     // called when parallel addition is finished
     //-------------------------------------------
-    void merge()
-    {
-        for(int i=0;i<max_thread;i++) 
-        {
-            if (local_Q_front[i].size() > 0)
-                Q.splice(Q.begin(), local_Q_front[i]);
+    void merge() {
+        for (int i = 0; i < max_thread; i++) {
+            if (local_Q_front[i].size() > 0) Q.splice(Q.begin(), local_Q_front[i]);
 
-            if (local_Q_back[i].size() > 0)
-                Q.splice(Q.end(),   local_Q_back[i]);
+            if (local_Q_back[i].size() > 0) Q.splice(Q.end(), local_Q_back[i]);
         }
     }
 
-    typename std::list<T>& get_list() {return Q;}
+    typename std::list<T>& get_list() {
+        return Q;
+    }
 
     // [todo] fix as nested template 
 #define ITERATOR_CLASS(CLASS_NAME, LIST_ITER_TYPE) \
@@ -98,8 +87,9 @@ public:
         typename LIST_ITER_TYPE END_ITER;                        \
     };                                      
 
-    ITERATOR_CLASS(seq_iter, std::list<T>::iterator);
-    ITERATOR_CLASS(rev_iter, std::list<T>::reverse_iterator);
+    ITERATOR_CLASS(seq_iter, std::list<T>::iterator)
+    ;ITERATOR_CLASS(rev_iter, std::list<T>::reverse_iterator)
+    ;
 
 #undef ITERATOR_CLASS
     typedef seq_iter par_iter; // type-alias
@@ -125,23 +115,21 @@ private:
     typename std::list<T>* local_Q_back;
 
     int max_thread;
-    static const int THRESHOLD=1024;
+    static const int THRESHOLD = 1024;
 
-    void init(int _max_thread) 
-    {
+    void init(int _max_thread) {
         max_thread = _max_thread;
         if (_max_thread > THRESHOLD) {
-            printf("error, too many # threads:%d\n",_max_thread);
+            printf("error, too many # threads:%d\n", _max_thread);
             abort();
             max_thread = THRESHOLD;
         }
         local_Q_front = new std::list<T>[max_thread];
-        local_Q_back  = new std::list<T>[max_thread];
+        local_Q_back = new std::list<T>[max_thread];
     }
 };
 
 typedef gm_seq<node_t> gm_node_seq;
 typedef gm_seq<edge_t> gm_edge_seq;
-
 
 #endif

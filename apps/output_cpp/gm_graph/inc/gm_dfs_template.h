@@ -14,174 +14,159 @@
 
 #ifndef GM_DFS_TEMPLATE_H
 #define GM_DFS_TEMPLATE_H
-struct _dfs_state {
-    _dfs_state(node_t N, edge_t I, edge_t E) : 
-        node(N), idx(I), end(E) {}
+struct _dfs_state
+{
+    _dfs_state(node_t N, edge_t I, edge_t E) :
+            node(N), idx(I), end(E) {
+    }
     node_t node; // node 
     edge_t idx;  // edge idx
     edge_t end;    // 
 };
 
-template <
-    bool has_pre_visit, 
-    bool has_post_visit, 
-    bool has_navigator,
-    bool use_reverse_edge>
+template<bool has_pre_visit, bool has_post_visit, bool has_navigator, bool use_reverse_edge>
 class gm_dfs_template
 {
 
 protected:
     virtual void visit_pre(node_t t)=0;
     virtual void visit_post(node_t t)=0;
-    virtual bool check_navigator(node_t t,edge_t idx)=0;
+    virtual bool check_navigator(node_t t, edge_t idx)=0;
 
 public:
-gm_dfs_template(gm_graph& _G) : G(_G)
-{
-    visited_bitmap = NULL; // bitmap
-}
+    gm_dfs_template(gm_graph& _G) :
+            G(_G) {
+        visited_bitmap = NULL; // bitmap
+    }
 
-virtual ~gm_dfs_template() 
-{
-    delete visited_bitmap;
-}
+    virtual ~gm_dfs_template() {
+        delete visited_bitmap;
+    }
 
 public:
-void prepare(node_t root_node) 
-{
-    root = root_node;
-    cnt = 0;
-    visited_small.clear();
-    
-    is_small = true;
-    curr_node = INVALID_NODE;
-    curr_idx = 0;
-    curr_end = 0;
-}
+    void prepare(node_t root_node) {
+        root = root_node;
+        cnt = 0;
+        visited_small.clear();
 
-void do_dfs() 
-{
-    enter_node(root);
-    main_loop();
-}
+        is_small = true;
+        curr_node = INVALID_NODE;
+        curr_idx = 0;
+        curr_end = 0;
+    }
+
+    void do_dfs() {
+        enter_node(root);
+        main_loop();
+    }
 
 private:
-inline
-void prepare_large()
-{
-    delete [] visited_bitmap;
+    inline
+    void prepare_large() {
+        delete[] visited_bitmap;
 
-    visited_bitmap = new unsigned char[(G.num_nodes()+7)/8];
+        visited_bitmap = new unsigned char[(G.num_nodes() + 7) / 8];
 
-    #pragma omp parallel for
-    for(int i=0;i<(G.num_nodes()+7)/8;i++)
-        visited_bitmap[i] = 0;
+#pragma omp parallel for
+        for (int i = 0; i < (G.num_nodes() + 7) / 8; i++)
+            visited_bitmap[i] = 0;
 
-    std::set<node_t>::iterator I;
-    for(I=visited_small.begin(); I!=visited_small.end(); I++) 
-    {
-        node_t u = *I;
-        _gm_set_bit(visited_bitmap, u);
-    }
-    is_small = false;
-    stack.reserve(G.num_nodes());
-}
-
-inline
-void enter_node(node_t n)
-{
-    // push current node
-    _dfs_state S(curr_node, curr_idx, curr_end);
-    stack.push_back(S);
-
-    curr_node = n;
-    curr_idx = (use_reverse_edge) ? G.r_begin[n] :  G.begin[n];
-    curr_end   = (use_reverse_edge) ? G.r_begin[n+1] : G.begin[n+1];
-
-    // mark visited
-    add_visited(n);
-    cnt++;
-    if (cnt == THRESHOLD_LARGE)  // if go over threshold, it will probably visit all the nodes
-    {
-        prepare_large();
+        std::set<node_t>::iterator I;
+        for (I = visited_small.begin(); I != visited_small.end(); I++) {
+            node_t u = *I;
+            _gm_set_bit(visited_bitmap, u);
+        }
+        is_small = false;
+        stack.reserve(G.num_nodes());
     }
 
-    if (has_pre_visit) visit_pre(n);
-}
+    inline
+    void enter_node(node_t n) {
+        // push current node
+        _dfs_state S(curr_node, curr_idx, curr_end);
+        stack.push_back(S);
 
-inline
-void exit_node(node_t n)
-{
-    if (has_post_visit) visit_post(n);
-    _dfs_state S = stack.back();
-    stack.pop_back();
+        curr_node = n;
+        curr_idx = (use_reverse_edge) ? G.r_begin[n] : G.begin[n];
+        curr_end = (use_reverse_edge) ? G.r_begin[n + 1] : G.begin[n + 1];
 
-    curr_node = S.node;
-    curr_idx = S.idx;
-    curr_end = S.end;
-}
-
-
-inline 
-void main_loop()
-{
-    //----------------------------------
-    // Repeat until stack is empty
-    //----------------------------------
-    while(curr_node != INVALID_NODE)
-    {
-        //----------------------------------
-        // Every neighbor has been visited
-        //----------------------------------
-        if (curr_idx == curr_end) {
-            exit_node(curr_node);
-            continue;
+        // mark visited
+        add_visited(n);
+        cnt++;
+        if (cnt == THRESHOLD_LARGE)  // if go over threshold, it will probably visit all the nodes
+                {
+            prepare_large();
         }
 
-        else {
+        if (has_pre_visit) visit_pre(n);
+    }
+
+    inline
+    void exit_node(node_t n) {
+        if (has_post_visit) visit_post(n);
+        _dfs_state S = stack.back();
+        stack.pop_back();
+
+        curr_node = S.node;
+        curr_idx = S.idx;
+        curr_end = S.end;
+    }
+
+    inline
+    void main_loop() {
+        //----------------------------------
+        // Repeat until stack is empty
+        //----------------------------------
+        while (curr_node != INVALID_NODE) {
             //----------------------------------
-            // check every non-visited neighbor
+            // Every neighbor has been visited
             //----------------------------------
-            node_t z;
-            if (use_reverse_edge) {
-                z = G.r_node_idx[curr_idx];
-            } else {
-                z = G.node_idx[curr_idx];
+            if (curr_idx == curr_end) {
+                exit_node(curr_node);
+                continue;
             }
-            if (has_visited(z)) continue;
-            if (has_navigator) {
-                if (check_navigator(z, curr_idx) == false) continue;
+
+            else {
+                //----------------------------------
+                // check every non-visited neighbor
+                //----------------------------------
+                node_t z;
+                if (use_reverse_edge) {
+                    z = G.r_node_idx[curr_idx];
+                } else {
+                    z = G.node_idx[curr_idx];
+                }
+                if (has_visited(z)) continue;
+                if (has_navigator) {
+                    if (check_navigator(z, curr_idx) == false) continue;
+                }
+                curr_idx++;
+                enter_node(z);
+                continue;
             }
-            curr_idx++;
-            enter_node(z);
-            continue;
         }
     }
-}
 
-inline
-void add_visited(node_t n)
-{
-    if (is_small) visited_small.insert(n);
-    else _gm_set_bit(visited_bitmap, n);
-}
+    inline
+    void add_visited(node_t n) {
+        if (is_small)
+            visited_small.insert(n);
+        else
+            _gm_set_bit(visited_bitmap, n);
+    }
 
-inline
-bool has_visited(node_t n)
-{
-    if (is_small)
-    {
-        return (visited_small.find(n) != visited_small.end());
+    inline
+    bool has_visited(node_t n) {
+        if (is_small) {
+            return (visited_small.find(n) != visited_small.end());
+        } else {
+            return _gm_get_bit(visited_bitmap, n);
+        }
     }
-    else 
-    {
-        return _gm_get_bit(visited_bitmap, n);
-    }
-}
 
 protected:
     node_t root;
-    gm_graph& G; 
+    gm_graph& G;
 
     // stack implementation
     node_t stack_ptr;
