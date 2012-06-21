@@ -86,7 +86,7 @@ public:
     virtual void base_copy(ast_extra_info* from);
 };
 
-class ast_extra_info_string : public ast_extra_info
+class ast_extra_info_string: public ast_extra_info
 {
 public:
     char* str;
@@ -98,7 +98,7 @@ public:
     virtual ast_extra_info* copy();
 };
 
-class ast_extra_info_set : public ast_extra_info
+class ast_extra_info_set: public ast_extra_info
 {
 public:
     std::set<void*> set;
@@ -115,7 +115,7 @@ public:
     }
 };
 
-class ast_extra_info_list : public ast_extra_info
+class ast_extra_info_list: public ast_extra_info
 {
 public:
     std::list<void*> list;
@@ -132,7 +132,7 @@ public:
     }
 };
 
-class ast_extra_info_map : public ast_extra_info
+class ast_extra_info_map: public ast_extra_info
 {
 public:
     std::map<void*, void*> map;
@@ -315,7 +315,7 @@ protected:
 
 // access of identifier
 class ast_typedecl;
-class ast_id : public ast_node
+class ast_id: public ast_node
 {
     friend class gm_symtab_entry;
 public:
@@ -405,7 +405,7 @@ public:
 
 };
 
-class ast_idlist : public ast_node
+class ast_idlist: public ast_node
 {
 public:
     ast_idlist() :
@@ -443,11 +443,11 @@ public:
     }
 
     int get_line() {
-        assert(get_length()>0);
+        assert(get_length() > 0);
         return lst[0]->get_line();
     }
     int get_col() {
-        assert(get_length()>0);
+        assert(get_length() > 0);
         return lst[0]->get_col();
     }
 
@@ -455,7 +455,7 @@ private:
     std::vector<ast_id*> lst;
 };
 
-class ast_field : public ast_node
+class ast_field: public ast_node
 { // access of node/edge property
 public:
     virtual ~ast_field() {
@@ -479,21 +479,22 @@ private:
 public:
     static ast_field* new_field(ast_id* l, ast_id* f, bool is_r_arrow = false) {
         ast_field* af = new ast_field(l, f);
-        l->set_parent(af);
-        f->set_parent(af);
         af->set_rarrow(is_r_arrow);
         return af;
     }
     // FIRST.SECOND
-    ast_id* get_first() {
+    ast_id* get_first() { // Identifier
         return first;
-    }           // Identifier
-    ast_id* get_second() {
+    }
+
+    ast_id* get_second() { // Field
         return second;
-    }         // Field
-    bool is_rarrow() {
+    }
+
+    bool is_rarrow() { // Is it Edge(x).y?
         return rarrow;
-    }         // Is it Edge(x).y?
+    }
+
     void set_rarrow(bool b) {
         rarrow = b;
     }
@@ -502,6 +503,7 @@ public:
     int getSourceTypeSummary() {
         return first->getTypeSummary();
     }
+
     ast_typedecl* getSourceTypeInfo() {
         return first->getTypeInfo();
     }
@@ -518,6 +520,7 @@ public:
     int getTargetTypeSummary() {
         return second->getTargetTypeSummary();
     }
+
     ast_typedecl* getTargetTypeInfo() {
         return second->getTargetTypeInfo();
     }
@@ -526,6 +529,7 @@ public:
         first = f;
         f->set_parent(this);
     }
+
     inline void set_second(ast_id* s) {
         second = s;
         s->set_parent(this);
@@ -546,7 +550,7 @@ private:
 
 //==========================================================================
 
-class ast_typedecl : public ast_node
+class ast_typedecl: public ast_node
 {  // property or type
 private:
     ast_typedecl() :
@@ -576,16 +580,19 @@ public:
         delete target_collection;
         delete target_nbr;
     }
+
     static ast_typedecl* new_primtype(int ptype_id) {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = ptype_id;
         return t;
     }
+
     static ast_typedecl* new_graphtype(int gtype_id) {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = gtype_id;
         return t;
     }
+
     static ast_typedecl* new_nodetype(ast_id* tg) {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = GMTYPE_NODE;
@@ -595,6 +602,7 @@ public:
         tg->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_edgetype(ast_id* tg) {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = GMTYPE_EDGE;
@@ -613,6 +621,7 @@ public:
         tg->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_nbr_iterator(ast_id* tg, int iter_type) {
         assert(gm_is_any_nbr_iter_type(iter_type));
         ast_typedecl* t = new ast_typedecl();
@@ -621,6 +630,7 @@ public:
         tg->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_common_nbr_iterator(ast_id* tg, ast_id* tg2, int iter_type) {
         assert(gm_is_any_nbr_iter_type(iter_type));
         ast_typedecl* t = new ast_typedecl();
@@ -631,6 +641,7 @@ public:
         tg2->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_set(ast_id* tg, int set_type) {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = set_type;
@@ -640,6 +651,7 @@ public:
         tg->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_set_iterator(ast_id* set, int iter_type) {
         // deprecated
         ast_typedecl* t = new ast_typedecl();
@@ -648,6 +660,7 @@ public:
         set->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_collection_iterator(ast_id* set, int iter_type) {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = iter_type;
@@ -667,6 +680,7 @@ public:
         tg->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_edgeprop(ast_typedecl* type, ast_id* tg) {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = GMTYPE_EDGEPROP;
@@ -678,6 +692,7 @@ public:
         tg->set_parent(t);
         return t;
     }
+
     static ast_typedecl* new_void() {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = GMTYPE_VOID;
@@ -687,6 +702,7 @@ public:
     int get_typeid() {
         return type_id;
     }
+
     void set_typeid(int s) {
         type_id = s;
     }
@@ -695,93 +711,123 @@ public:
     bool is_primitive() {
         return gm_is_prim_type(type_id);
     }
+
     bool is_graph() {
         return gm_is_graph_type(type_id);
     }
+
     bool is_node_property() {
         return gm_is_node_property_type(type_id);
     }
+
     bool is_edge_property() {
         return gm_is_edge_property_type(type_id);
     }
+
     bool is_property() {
         return gm_is_property_type(type_id);
     }
+
     bool is_node() {
         return gm_is_node_type(type_id);
     }
+
     bool is_edge() {
         return gm_is_edge_type(type_id);
     }
+
     bool is_nodeedge() {
         return gm_is_nodeedge_type(type_id);
     }
+
     bool is_collection() {
         return gm_is_collection_type(type_id);
     }
+
     bool is_node_collection() {
         return gm_is_node_collection_type(type_id);
     }
+
     bool is_edge_collection() {
         return gm_is_edge_collection_type(type_id);
     }
+
     bool is_collection_iterator() {
         return gm_is_collection_iter_type(type_id);
     }
+
     bool is_unknown_collection_iterator() {
         return gm_is_unknown_collection_iter_type(type_id);
     }
+
     bool is_node_iterator() {
         return gm_is_node_iter_type(type_id);
     }
+
     bool is_edge_iterator() {
         return gm_is_edge_iter_type(type_id);
     }
+
     bool is_node_edge_iterator() {
         return is_node_iterator() || is_edge_iterator();
     }
+
     bool is_numeric() {
         return gm_is_numeric_type(type_id);
     }
+
     bool is_node_compatible() {
         return gm_is_node_compatible_type(type_id);
     }
+
     bool is_edge_compatible() {
         return gm_is_edge_compatible_type(type_id);
     }
+
     bool is_node_edge_compatible() {
         return gm_is_node_edge_compatible_type(type_id);
     }
+
     bool is_boolean() {
         return gm_is_boolean_type(type_id);
     }
+
     bool is_reverse_iterator() {
         return gm_is_iteration_use_reverse(type_id);
     }
+
     bool has_target_graph() {
         return gm_has_target_graph_type(type_id);
     }
+
     bool is_void() {
         return gm_is_void_type(type_id);
     }
+
     bool is_all_graph_iterator() {
         return gm_is_all_graph_iter_type(type_id);
     }
+
     bool is_any_nbr_iterator() {
         return gm_is_any_nbr_iter_type(type_id);
     }
+
     bool is_common_nbr_iterator() {
         return gm_is_common_nbr_iter_type(type_id);
     }
+
     bool is_sequence_collection() {
         return gm_is_sequence_collection_type(type_id);
     }
+
     bool is_order_collection() {
         return gm_is_order_collection_type(type_id);
     }
+
     bool is_set_collection() {
         return gm_is_set_collection_type(type_id);
     }
+
     bool is_sequential_collection() {
         return gm_is_sequential_collection_type(type_id);
     }
@@ -793,12 +839,12 @@ public:
 
     gm_symtab_entry* get_target_graph_sym() {
         if (is_collection_iterator()) {
-            assert(target_collection!=NULL);
+            assert(target_collection != NULL);
             assert(target_collection->getTypeInfo() != NULL);
             assert(target_collection->getTypeInfo()->get_target_graph_sym() != NULL);
             return target_collection->getTypeInfo()->get_target_graph_sym();
         } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator()) {
-            assert(target_graph!=NULL);
+            assert(target_graph != NULL);
             assert(target_graph->getSymInfo() != NULL);
             return target_graph->getSymInfo();
         } else {
@@ -806,31 +852,39 @@ public:
             return NULL;
         }
     }
+
     ast_id* get_target_graph_id() {
         return target_graph;
     }
+
     ast_id* get_target_collection_id() {
         return target_collection;
     }
+
     ast_id* get_target_nbr_id() {
         return target_nbr;
     }
+
     ast_id* get_target_nbr2_id() {
         return target_nbr2;
     }
+
     ast_typedecl* get_target_type() {
         return target_type;
     }
+
     int getTypeSummary() {  // same as get type id
         return type_id;
     }
+
     void setTypeSummary(int s) {
         // type id might be overriden during type-checking
         set_typeid(s);
     }
+
     int getTargetTypeSummary() {
         assert(is_property());
-        assert(target_type!=NULL);
+        assert(target_type != NULL);
         return target_type->getTypeSummary();
     }
 
@@ -845,6 +899,7 @@ public:
     bool is_well_defined() {
         return _well_defined;
     }
+
     void set_well_defined(bool b) {
         _well_defined = b;
     }
@@ -865,7 +920,7 @@ private:
 };
 
 //==========================================================================
-class ast_sent : public ast_node
+class ast_sent: public ast_node
 {
 protected:
     ast_sent(int y) :
@@ -908,7 +963,7 @@ private:
 
 extern const char* gm_get_nodetype_string(int t);
 
-class ast_sentblock : public ast_sent
+class ast_sentblock: public ast_sent
 {
 public:
     virtual ~ast_sentblock() {
@@ -949,7 +1004,7 @@ private:
 
 };
 
-class ast_argdecl : public ast_node
+class ast_argdecl: public ast_node
 {
 public:
     virtual ~ast_argdecl() {
@@ -992,7 +1047,7 @@ private:
 //-------------------------------------------------------
 // Procedure declaration
 //-------------------------------------------------------
-class ast_procdef : public ast_node
+class ast_procdef: public ast_node
 {
 public:
     virtual ~ast_procdef() {
@@ -1097,6 +1152,7 @@ static enum
     GMEXPR_COMP,     // comparision ops (==, !=, <, >, <=, >=)
     GMEXPR_REDUCE,   // reduction ops (Sum, Product, Min, Max)
     GMEXPR_BUILTIN,  // builtin ops (NumNodes, NumNbrs, ...)
+    GMEXPR_BUILTIN_FIELD, //builtin ops on property entries
     GMEXPR_TER,      // ternary operation
     GMEXPR_FOREIGN,
 // foreign expression
@@ -1106,7 +1162,7 @@ static enum
 class gm_builtin_def;
 // defined in gm_builtin.h
 
-class ast_expr : public ast_node
+class ast_expr: public ast_node
 {
 public:
     virtual ~ast_expr() {
@@ -1354,34 +1410,42 @@ public:
     long get_ival() {
         return ival;
     }
+
     double get_fval() {
         return fval;
     }
+
     bool get_bval() {
         return bval;
     }
+
     bool is_plus_inf() {
         return is_inf() && plus_inf;
     } // true o
     ast_id* get_id() {
         return id1;
     }
-    ast_field* get_field() {
+
+    virtual ast_field* get_field() {
         return field;
     }
 
     int get_opclass() {
         return expr_class;
     }
+
     int get_optype() {
         return op_type;
     }
+
     bool is_right_op() {
         return is_right;
     }
+
     bool is_cond_op() {
         return is_cond;
     }
+
     void set_id(ast_id* i) {
         id1 = i;
         if (i != NULL) {
@@ -1389,6 +1453,7 @@ public:
             expr_class = GMEXPR_ID;
         }
     }
+
     void set_field(ast_field* f) {
         field = f;
         if (f != NULL) {
@@ -1396,6 +1461,7 @@ public:
             expr_class = GMEXPR_FIELD;
         }
     }
+
     bool is_type_conv() {
         return op_type == GMOP_TYPEC;
     }
@@ -1403,15 +1469,18 @@ public:
     ast_expr* get_left_op() {
         return left;
     }
+
     ast_expr* get_right_op() {
         return right;
     }
+
     ast_expr* get_up_op() {
         return up;
     } // same to parent. but expr
     ast_expr* get_cond_op() {
         return cond;
     }
+
     void set_left_op(ast_expr* l) {
         left = l;
         if (l != NULL) {
@@ -1419,6 +1488,7 @@ public:
             l->set_up_op(this);
         }
     }
+
     void set_right_op(ast_expr* r) {
         right = r;
         if (r != NULL) {
@@ -1426,9 +1496,11 @@ public:
             r->set_up_op(this);
         }
     }
+
     void set_up_op(ast_expr* e) {
         up = e;
     }
+
     void set_cond_op(ast_expr* e) {
         cond = e;
         if (e != NULL) {
@@ -1440,6 +1512,7 @@ public:
     void set_alternative_type(int i) {
         alternative_type_of_expression = i;
     }
+
     int get_alternative_type() {
         return alternative_type_of_expression;
     }
@@ -1447,11 +1520,12 @@ public:
     void set_expr_class(int i) {
         expr_class = i;
     }
+
 protected:
     gm_symtab_entry* bound_graph_sym; // used only during typecheck
 };
 
-class ast_expr_foreign : public ast_expr
+class ast_expr_foreign: public ast_expr
 {
 public:
     ~ast_expr_foreign() {
@@ -1494,11 +1568,11 @@ private:
     void apply_rhs(gm_apply*a, bool apply2);
 };
 
-class ast_expr_builtin : public ast_expr
+class ast_expr_builtin: public ast_expr
 {
 public:
     virtual ~ast_expr_builtin() {
-        delete [] orgname;
+        delete[] orgname;
         delete driver;
         std::list<ast_expr*>::iterator I;
         for (I = args.begin(); I != args.end(); I++)
@@ -1509,7 +1583,9 @@ public:
     virtual void dump_tree(int id_level);
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual ast_expr* copy(bool cp_syminfo = false);
-    virtual bool driver_is_field() {return false;}
+    virtual bool driver_is_field() {
+        return false;
+    }
 
     static ast_expr_builtin* new_builtin_expr(ast_id* id, const char* orgname, expr_list* t) {
         ast_expr_builtin* E = new ast_expr_builtin();
@@ -1534,22 +1610,28 @@ public:
     char* get_orgname() {
         return orgname;
     }
+
     char* get_callname() {
         return orgname;
     }
-    ast_id* get_driver() {
+
+    virtual ast_id* get_driver() {
         return driver;
     }
+
     void set_driver(ast_id* i) {
         driver = i;
         i->set_parent(this);
     }
+
     std::list<ast_expr*>& get_args() {
         return args;
     }
+
     gm_builtin_def* get_builtin_def() {
         return def;
     }
+
     void set_builtin_def(gm_builtin_def* d) {
         def = d;
     }
@@ -1568,45 +1650,63 @@ protected:
 
 };
 
-class ast_expr_builtin_field : public ast_expr_builtin {
+class ast_expr_builtin_field: public ast_expr_builtin
+{
 
 public:
 
-	~ast_expr_builtin_field() {
-		delete field_driver;
-	}
+    ~ast_expr_builtin_field() {
+        delete field_driver;
+    }
 
-	virtual bool driver_is_field() {return true;}
-	ast_field* get_field_driver() {return field_driver;}
+    virtual ast_id* get_driver() {
+        assert(false);
+    }
 
-	static ast_expr_builtin_field* new_builtin_field_expr(ast_field* field, const char* orgname, expr_list* exList) {
+    virtual bool driver_is_field() {
+        return true;
+    }
 
-		ast_expr_builtin_field* newExpression = new ast_expr_builtin_field();
-        newExpression->expr_class = GMEXPR_BUILTIN;
+    ast_field* get_field_driver() {
+        return field_driver;
+    }
+
+    virtual ast_expr* copy(bool cp_syminfo = false);
+
+    virtual ast_field* get_field() { return field_driver; }
+
+    static ast_expr_builtin_field* new_builtin_field_expr(ast_field* field, const char* orgname, expr_list* exList) {
+
+        ast_expr_builtin_field* newExpression = new ast_expr_builtin_field();
+        newExpression->expr_class = GMEXPR_BUILTIN_FIELD;
         newExpression->field_driver = field;
         newExpression->orgname = gm_strdup(orgname);
 
-        if (field != NULL) field->set_parent(newExpression); // type unknown yet.
+        if (field != NULL) {
+            field->set_parent(newExpression); // type unknown yet.
+        }
 
         if (exList != NULL) {
-        	newExpression->args = exList->LIST;  // shallow copy LIST
+            newExpression->args = exList->LIST;  // shallow copy LIST
             // but not set 'up' pointer.
             std::list<ast_expr*>::iterator iter;
-            for(iter = newExpression->args.begin(); iter != newExpression->args.end(); iter++)
-               (*iter)->set_parent(newExpression);
+            for (iter = newExpression->args.begin(); iter != newExpression->args.end(); iter++)
+                (*iter)->set_parent(newExpression);
             delete exList; // t is only temporary, delete it.
         }
         return newExpression;
-	}
+    }
 
 private:
-	ast_expr_builtin_field() : ast_expr_builtin(), field_driver(NULL) {}
+    ast_expr_builtin_field() :
+            ast_expr_builtin(), field_driver(NULL) {
+    }
 
-	ast_field* field_driver;
+    ast_field* field_driver;
 };
 
 // Reduction expression
-class ast_expr_reduce : public ast_expr
+class ast_expr_reduce: public ast_expr
 {
 public:
     ~ast_expr_reduce() {
@@ -1713,7 +1813,7 @@ enum
     GMASSIGN_LHS_SCALA, GMASSIGN_LHS_FIELD, GMASSIGN_LHS_END
 };
 
-class ast_assign : public ast_sent
+class ast_assign: public ast_sent
 {
 public:
     virtual ~ast_assign() {
@@ -1859,7 +1959,7 @@ private:
 
 };
 
-class ast_vardecl : public ast_sent
+class ast_vardecl: public ast_sent
 {
 public:
     virtual ~ast_vardecl() {
@@ -1940,7 +2040,7 @@ private:
     bool tc_finished;
 };
 
-class ast_return : public ast_sent
+class ast_return: public ast_sent
 {
 protected:
     ast_return() :
@@ -1971,7 +2071,7 @@ public:
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 };
 
-class ast_foreach : public ast_sent
+class ast_foreach: public ast_sent
 {
 public:
     virtual ~ast_foreach() {
@@ -2040,7 +2140,7 @@ public:
     }
     void set_body(ast_sent* s) {
         body = s;
-        assert(body!=NULL);
+        assert(body != NULL);
         body->set_parent(this);
     }
     virtual bool has_scope() {
@@ -2079,7 +2179,7 @@ private:
 };
 
 // BFS or DFS
-class ast_bfs : public ast_sent
+class ast_bfs: public ast_sent
 {
 public:
     ~ast_bfs() {
@@ -2221,7 +2321,7 @@ private:
     bool _bfs;
 };
 
-class ast_call : public ast_sent
+class ast_call: public ast_sent
 {
 
 public:
@@ -2251,7 +2351,7 @@ public:
     }
     void set_builtin(ast_expr_builtin* b) {
         b_in = b;
-        assert(b_in!=NULL);
+        assert(b_in != NULL);
         b_in->set_parent(this);
     }
     bool is_builtin_call() {
@@ -2263,7 +2363,7 @@ private:
     bool is_blt_in;
 };
 
-class ast_if : public ast_sent
+class ast_if: public ast_sent
 {
 public:
     virtual ~ast_if() {
@@ -2317,7 +2417,7 @@ private:
     ast_expr* cond;
 };
 
-class ast_foreign : public ast_sent
+class ast_foreign: public ast_sent
 {
 public:
     virtual ~ast_foreign() {
@@ -2373,7 +2473,7 @@ private:
     std::list<ast_node*> modified;
 };
 
-class ast_while : public ast_sent
+class ast_while: public ast_sent
 {
 public:
     virtual ~ast_while() {
@@ -2441,7 +2541,7 @@ class gm_symtab_entry;
 //class gm_rwinfo;
 //typedef std::list<gm_rwinfo*> gm_rwinfo_list;
 //typedef std::map<gm_symtab_entry*, gm_rwinfo_list*> gm_rwinfo_map;
-class ast_nop : public ast_sent
+class ast_nop: public ast_sent
 {
 protected:
     ast_nop() :

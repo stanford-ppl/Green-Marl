@@ -329,6 +329,42 @@ void traverse_expr_for_readset_adding(ast_expr* e, gm_rwinfo_map& rset, temp_map
         }
             return;
 
+        case GMEXPR_BUILTIN_FIELD: {
+            ast_expr_builtin_field* builtinField = (ast_expr_builtin_field*) e;
+
+            // add every arguments in the readset
+            std::list<ast_expr*>& args = builtinField->get_args();
+            std::list<ast_expr*>::iterator I;
+            for (I = args.begin(); I != args.end(); I++) {
+                ast_expr* a = *I;
+                traverse_expr_for_readset_adding(a, rset, DrvMap);
+            }
+
+            gm_symtab_entry* iter_sym = e->get_field()->get_first()->getSymInfo();
+            gm_symtab_entry* field_sym = e->get_field()->get_second()->getSymInfo();
+            assert(iter_sym != NULL);
+
+            assert(iter_sym->getType() != NULL);
+
+            temp_map_t::iterator i = DrvMap.find(iter_sym);
+            if (i == DrvMap.end()) {
+                new_entry = gm_rwinfo::new_field_inst(iter_sym,  // iterator syminfo
+                        e->get_field()->get_first());
+
+                gm_symtab_entry* driver_sym = e->get_field()->get_first()->getSymInfo();
+                gm_rwinfo* driver_entry = gm_rwinfo::new_scala_inst(e->get_field()->get_first());
+                gm_add_rwinfo_to_set(rset, driver_sym, driver_entry);
+
+            } else {  // temporary driver or vector driver
+                int range_type = i->second.range_type;
+                bool always = i->second.is_always;
+                new_entry = gm_rwinfo::new_range_inst(range_type, always, e->get_field()->get_first());
+            }
+
+            gm_add_rwinfo_to_set(rset, field_sym, new_entry);
+            return;
+        }
+
         case GMEXPR_FOREIGN: { // read symbols in the foreign
             ast_expr_foreign* f = (ast_expr_foreign*) e;
 
@@ -391,17 +427,25 @@ bool gm_rw_analysis::apply_call(ast_call* c) {
     gm_rwinfo_map& M = sets->mutate_set;
 
     ast_expr* e = c->get_builtin();
-
     traverse_expr_for_readset_adding(e, R);
-
     ast_expr_builtin* builtin_expr = (ast_expr_builtin*) e;
     gm_builtin_def* def = builtin_expr->get_builtin_def();
 
     bool is_okay = true;
     int mutate_direction = def->find_info_int("GM_BLTIN_INFO_MUTATING");
+    gm_rwinfo* new_entry;
+    gm_symtab_entry* sym;
+
     if (mutate_direction == GM_BLTIN_MUTATE_GROW || mutate_direction == GM_BLTIN_MUTATE_SHRINK) {
-        gm_rwinfo* new_entry = gm_rwinfo::new_builtin_inst(builtin_expr->get_driver(), mutate_direction);
-        gm_symtab_entry* sym = builtin_expr->get_driver()->getSymInfo();
+        if (builtin_expr->driver_is_field()) {
+            ast_expr_builtin_field* builtinExprField = (ast_expr_builtin_field*) builtin_expr;
+            ast_id* driver = builtinExprField->get_field_driver()->get_second();
+            new_entry = gm_rwinfo::new_builtin_inst(driver, mutate_direction);
+            sym = driver->getSymInfo();
+        } else {
+            new_entry = gm_rwinfo::new_builtin_inst(builtin_expr->get_driver(), mutate_direction);
+            sym = builtin_expr->get_driver()->getSymInfo();
+        }
         is_okay = gm_add_rwinfo_to_set(M, sym, new_entry, false);
     }
     return is_okay;

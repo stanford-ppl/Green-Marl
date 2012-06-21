@@ -141,6 +141,9 @@ bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* 
 }
 
 bool gm_typechecker_stage_2::apply_on_builtin_field(ast_expr_builtin_field* builtinExpr) {
+    //ast_field* field = builtinExpr->get_field_driver();
+    //ast_typedecl* decl = field->getTargetTypeInfo();
+    //printf("Type: %d\n", decl->get_typeid());
     int sourceType = 6; //TODO get type information
     return set_and_check_builtin_definition(builtinExpr, sourceType);
 }
@@ -203,6 +206,14 @@ bool gm_typechecker_stage_2::apply(ast_expr* e) {
             // find function definition:w
             ast_expr_builtin* builtin = (ast_expr_builtin*) e;
             is_okay = apply_on_builtin(builtin);
+            break;
+        }
+        case GMEXPR_BUILTIN_FIELD: {
+            printf("hallo\n");
+            ast_expr_builtin_field* builtinField = (ast_expr_builtin_field*) e;
+            is_okay = apply_on_builtin(builtinField);
+            ast_field* field = builtinField->get_field_driver();
+            is_okay &= apply_on_field(field);
             break;
         }
     }

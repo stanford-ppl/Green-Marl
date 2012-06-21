@@ -84,3 +84,21 @@ ast_expr* ast_expr_builtin::copy(bool b) {
     e->set_type_summary(this->get_type_summary());
     return e;
 }
+
+ast_expr* ast_expr_builtin_field::copy(bool cp_syminfo) {
+
+    expr_list* T = new expr_list;
+    std::list<ast_expr*>::iterator I;
+    for (I = args.begin(); I != args.end(); I++) {
+        ast_expr* e = *I;
+        ast_expr* e2 = e->copy(cp_syminfo);
+        T->LIST.push_back(e2);
+    }
+
+    ast_expr_builtin_field* newExpr = ast_expr_builtin_field::new_builtin_field_expr(field_driver->copy(cp_syminfo), orgname, T);
+
+    delete T;
+
+    newExpr->set_type_summary(this->get_type_summary());
+    return newExpr;
+}

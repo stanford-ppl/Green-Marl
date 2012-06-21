@@ -43,7 +43,7 @@ void gm_cpp_gen_sanitize_name::process(ast_procdef* proc) {
     gm_vocabulary & V = CPP_BE.get_language_voca();
     gm_prepare_genname(proc, &V);
 
-    // (2) rename propety names  A --> G_A
+    // (2) rename property names  A --> G_A
     rename_prop_name_t T;
     proc->traverse_pre(&T);
 }
