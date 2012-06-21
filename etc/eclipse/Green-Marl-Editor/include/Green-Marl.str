@@ -2,7 +2,7 @@ module Green-Marl
 
 signature
   constructors
-                              : Id -> Id1
+                              : Id -> Id0
     Id                        : ID -> Id
     Expr-user                 : USER-TEXT -> Expr-user
     Rhs-list2                 : Expr * Expr-list -> Rhs-list2
@@ -136,17 +136,17 @@ signature
     Sent-block                : Option(Sent-list) -> Sent-block
     Proc-body                 : Sent-block -> Proc-body
     Id-comma-list             : List(Id) -> Id-comma-list
-    Property                  : T-EDGEPROP * Set-type * Option(Id1) -> Property
-    Property                  : T-EDGEPROP * NodeEdge-type * Option(Id1) -> Property
-    Property                  : T-EDGEPROP * Prim-type * Option(Id1) -> Property
-    Property                  : T-NODEPROP * Set-type * Option(Id1) -> Property
-    Property                  : T-NODEPROP * NodeEdge-type * Option(Id1) -> Property
-    Property                  : T-NODEPROP * Prim-type * Option(Id1) -> Property
-    Set-type                  : T-NORDER * Option(Id1) -> Set-type
-    Set-type                  : T-NSEQ * Option(Id1) -> Set-type
-    Set-type                  : T-NSET * Option(Id1) -> Set-type
-    Edge-type                 : T-EDGE * Option(Id1) -> Edge-type
-    Node-type                 : T-NODE * Option(Id1) -> Node-type
+    Property                  : T-EDGEPROP * Set-type * Option(Id0) -> Property
+    Property                  : T-EDGEPROP * NodeEdge-type * Option(Id0) -> Property
+    Property                  : T-EDGEPROP * Prim-type * Option(Id0) -> Property
+    Property                  : T-NODEPROP * Set-type * Option(Id0) -> Property
+    Property                  : T-NODEPROP * NodeEdge-type * Option(Id0) -> Property
+    Property                  : T-NODEPROP * Prim-type * Option(Id0) -> Property
+    Set-type                  : T-NORDER * Option(Id0) -> Set-type
+    Set-type                  : T-NSEQ * Option(Id0) -> Set-type
+    Set-type                  : T-NSET * Option(Id0) -> Set-type
+    Edge-type                 : T-EDGE * Option(Id0) -> Edge-type
+    Node-type                 : T-NODE * Option(Id0) -> Node-type
     NodeEdge-type             : Edge-type -> NodeEdge-type
     NodeEdge-type             : Node-type -> NodeEdge-type
     Prim-type                 : T-BOOL -> Prim-type

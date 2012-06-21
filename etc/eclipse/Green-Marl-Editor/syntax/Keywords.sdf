@@ -15,18 +15,18 @@ exports
 		"Graph" -> T-GRAPH
 		"Node" -> T-NODE
 		"Edge" -> T-EDGE
-		"Node-Property" -> T-NODEPROP
-		"Node-Prop" -> T-NODEPROP
+		"Node_Property" -> T-NODEPROP
+		"Node_Prop" -> T-NODEPROP
 		"N_P" -> T-NODEPROP
-		"Edge-Property" -> T-EDGEPROP
-		"Edge-Prop" -> T-EDGEPROP
+		"Edge_Property" -> T-EDGEPROP
+		"Edge_Prop" -> T-EDGEPROP
 		"E_P" -> T-EDGEPROP
-		"Node-Set" -> T-NSET
+		"Node_Set" -> T-NSET
 		"N_S" -> T-NSET
-		"Node-Order" -> T-NORDER
+		"Node_Order" -> T-NORDER
 		"N_O" -> T-NORDER
-		"Node-Seq" -> T-NSEQ
-		"Node-Sequence" -> T-NSEQ
+		"Node_Seq" -> T-NSEQ
+		"Node_Sequence" -> T-NSEQ
 		"N_Q" -> T-NSEQ
 		"Int" -> T-INT
 		"Long" -> T-LONG
