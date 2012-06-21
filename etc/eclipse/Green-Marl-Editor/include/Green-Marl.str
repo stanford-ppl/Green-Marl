@@ -1,0 +1,253 @@
+module Green-Marl
+
+signature
+  constructors
+                              : Id -> Id0
+    Id                        : ID -> Id
+    Expr-user                 : USER-TEXT -> Expr-user
+    Rhs-list2                 : Expr * Expr-list -> Rhs-list2
+    Lhs-list2                 : Lhs * Lhs-list -> Lhs-list2
+    Expr-list                 : List(Expr) -> Expr-list
+    Arg-list                  : Option(Expr-list) -> Arg-list
+    Built-in                  : Field * Id * Arg-list -> Built-in
+    Built-in                  : Id * Arg-list -> Built-in
+    Built-in                  : Id * Id * Arg-list -> Built-in
+    Field                     : T-EDGE * Id * Id -> Field
+    Field                     : Id * Id -> Field
+    Scala                     : Id -> Scala
+    Lhs-list                  : List(Lhs) -> Lhs-list
+    Lhs                       : Field -> Lhs
+    Lhs                       : Scala -> Lhs
+    Inf                       : T-M-INF -> Inf
+    Inf                       : T-P-INF -> Inf
+    Reduce-op2                : T-COUNT -> Reduce-op2
+    Reduce-op                 : T-AVG -> Reduce-op
+    Reduce-op                 : T-ALL -> Reduce-op
+    Reduce-op                 : T-EXIST -> Reduce-op
+    Reduce-op                 : T-MAX -> Reduce-op
+    Reduce-op                 : T-MIN -> Reduce-op
+    Reduce-op                 : T-PRODUCT -> Reduce-op
+    Reduce-op                 : T-SUM -> Reduce-op
+    Bool-expr                 : Expr -> Bool-expr
+    UserExpr                  : Expr-user -> Expr
+    BuiltinExpr               : Built-in -> Expr
+    FieldExpr                 : Field -> Expr
+    ScalaExpr                 : Scala -> Expr
+    NilExpr                   : T-NIL -> Expr
+    InfExpr                   : Inf -> Expr
+    FloatExpr                 : FLOAT-NUM -> Expr
+    IntExpr                   : INT-NUM -> Expr
+    BooleanExpr               : BOOL-VAL -> Expr
+    InlineIfExpr              : Expr * Expr * Expr -> Expr
+    OrExpr                    : Expr * T-OR * Expr -> Expr
+    AndExpr                   : Expr * T-AND * Expr -> Expr
+    NotEqualsExpr             : Expr * T-NEQ * Expr -> Expr
+    EqualsExpr                : Expr * T-EQ * Expr -> Expr
+    GreaterThanExpr           : Expr * Expr -> Expr
+    LessThanExpr              : Expr * Expr -> Expr
+    GreaterThanOrEqualExpr    : Expr * T-GE * Expr -> Expr
+    LessThanOrEqualExpr       : Expr * T-LE * Expr -> Expr
+    SubtractExpr              : Expr * Expr -> Expr
+    AddExpr                   : Expr * Expr -> Expr
+    DivideExpr                : Expr * Expr -> Expr
+    MultiplyExpr              : Expr * Expr -> Expr
+    ModuloExpr                : Expr * Expr -> Expr
+    Expr                      : Reduce-op2 * Id * Id * Iterator1 -> Expr
+    Expr                      : Reduce-op2 * Id * Id * Iterator1 * Expr -> Expr
+    Expr                      : Reduce-op * Id * Id * Iterator1 * Expr -> Expr
+    Expr                      : Reduce-op * Id * Id * Iterator1 * Expr * Expr -> Expr
+    Expr                      : Prim-type * Expr -> Expr
+    NotExpr                   : Expr -> Expr
+    NegativeExpr              : Expr -> Expr
+    AbsoluteExpr              : Expr -> Expr
+    ParenthesisExpr           : Expr -> Expr
+    Sent-user                 : Expr-user * T-DOUBLE-COLON * Lhs-list -> Sent-user
+    Sent-user                 : Expr-user -> Sent-user
+    Sent-if                   : T-IF * Bool-expr * Sent * T-ELSE * Sent -> Sent-if
+    Sent-if                   : T-IF * Bool-expr * Sent -> Sent-if
+    Sent-return               : T-RETURN -> Sent-return
+    Sent-return               : T-RETURN * Expr -> Sent-return
+    Rhs                       : Expr -> Rhs
+    Minmax-eq                 : T-MAXEQ -> Minmax-eq
+    Minmax-eq                 : T-MINEQ -> Minmax-eq
+    Reduce-eq                 : T-OREQ -> Reduce-eq
+    Reduce-eq                 : T-ANDEQ -> Reduce-eq
+    Reduce-eq                 : T-MAXEQ -> Reduce-eq
+    Reduce-eq                 : T-MINEQ -> Reduce-eq
+    Reduce-eq                 : T-MULTEQ -> Reduce-eq
+    Reduce-eq                 : T-PLUSEQ -> Reduce-eq
+    Optional-bind             : Id -> Optional-bind
+    Sent-argMinmax-assignment : Lhs-list2 * Minmax-eq * Rhs-list2 * Option(Optional-bind) -> Sent-argMinmax-assignment
+    Sent-defer-assignment     : Lhs * T-LE * Rhs * Option(Optional-bind) -> Sent-defer-assignment
+    Sent-Reduce-assignment    : Lhs * T-PLUSPLUS * Option(Optional-bind) -> Sent-Reduce-assignment
+    Sent-Reduce-assignment    : Lhs * Reduce-eq * Rhs * Option(Optional-bind) -> Sent-Reduce-assignment
+    Sent-assignment           : Lhs * Rhs -> Sent-assignment
+    Var-target                : Id-comma-list -> Var-target
+    Sent-variable-decl        : Typedecl * Id * Rhs -> Sent-variable-decl
+    Sent-variable-decl        : Typedecl * Var-target -> Sent-variable-decl
+    Bfs-filter                : Expr -> Bfs-filter
+    Bfs-navigator             : Expr -> Bfs-navigator
+    Bfs-filters               : Bfs-filter * Bfs-navigator -> Bfs-filters
+    Bfs-filters               : Bfs-navigator * Bfs-filter -> Bfs-filters
+    Bfs-filters               : Bfs-filter -> Bfs-filters
+    Bfs-filters               : Bfs-navigator -> Bfs-filters
+    From-or-semi              : From-or-semi
+    From-or-semi              : T-FROM -> From-or-semi
+    Opt-tp                    : Opt-tp
+    Bfs-header-format         : Id * Id * Option(Opt-tp) * T-NODES * From-or-semi * Id -> Bfs-header-format
+    Bfs-reverse               : T-BACK * Sent-block -> Bfs-reverse
+    Bfs-reverse               : T-BACK * Bfs-filter * Sent-block -> Bfs-reverse
+    Dfs-post                  : T-POST * Sent-block -> Dfs-post
+    Dfs-post                  : T-POST * Bfs-filter * Sent-block -> Dfs-post
+    Sent-bfs                  : T-BFS * Bfs-header-format * Option(Bfs-filters) * Sent-block * Option(Bfs-reverse) -> Sent-bfs
+    Sent-dfs                  : T-DFS * Bfs-header-format * Option(Bfs-filters) * Sent-block * Option(Dfs-post) -> Sent-dfs
+    Iterator1                 : T-COMMON-NBRS * Id -> Iterator1
+    Iterator1                 : T-ITEMS -> Iterator1
+    Iterator1                 : T-DOWN-NBRS -> Iterator1
+    Iterator1                 : T-UP-NBRS -> Iterator1
+    Iterator1                 : T-IN-NBRS -> Iterator1
+    Iterator1                 : T-NBRS -> Iterator1
+    Iterator1                 : T-EDGES -> Iterator1
+    Iterator1                 : T-NODES -> Iterator1
+    Foreach-filter            : Bool-expr -> Foreach-filter
+    Foreach-header            : Id * Id * Iterator1 -> Foreach-header
+    Sent-foreach              : T-FOR * Foreach-header * Option(Foreach-filter) * Sent -> Sent-foreach
+    Sent-foreach              : T-FOREACH * Foreach-header * Option(Foreach-filter) * Sent -> Sent-foreach
+    Sent-do-while             : T-DO * Sent-block * T-WHILE * Bool-expr -> Sent-do-while
+    Sent-while                : T-WHILE * Bool-expr * Sent-block -> Sent-while
+    Sent-call                 : Built-in -> Sent-call
+    Sent                      : Sent
+    Sent                      : Sent-argMinmax-assignment -> Sent
+    Sent                      : Sent-user -> Sent
+    Sent                      : Sent-call -> Sent
+    Sent                      : Sent-dfs -> Sent
+    Sent                      : Sent-bfs -> Sent
+    Sent                      : Sent-return -> Sent
+    Sent                      : Sent-while -> Sent
+    Sent                      : Sent-do-while -> Sent
+    Sent                      : Sent-defer-assignment -> Sent
+    Sent                      : Sent-Reduce-assignment -> Sent
+    Sent                      : Sent-if -> Sent
+    Sent                      : Sent-foreach -> Sent
+    Sent                      : Sent-block -> Sent
+    Sent                      : Sent-variable-decl -> Sent
+    Sent                      : Sent-assignment -> Sent
+    Sent-list                 : List(Sent) -> Sent-list
+    Sent-block                : Option(Sent-list) -> Sent-block
+    Proc-body                 : Sent-block -> Proc-body
+    Id-comma-list             : List(Id) -> Id-comma-list
+    Property                  : T-EDGEPROP * Set-type * Option(Id0) -> Property
+    Property                  : T-EDGEPROP * NodeEdge-type * Option(Id0) -> Property
+    Property                  : T-EDGEPROP * Prim-type * Option(Id0) -> Property
+    Property                  : T-NODEPROP * Set-type * Option(Id0) -> Property
+    Property                  : T-NODEPROP * NodeEdge-type * Option(Id0) -> Property
+    Property                  : T-NODEPROP * Prim-type * Option(Id0) -> Property
+    Set-type                  : T-NORDER * Option(Id0) -> Set-type
+    Set-type                  : T-NSEQ * Option(Id0) -> Set-type
+    Set-type                  : T-NSET * Option(Id0) -> Set-type
+    Edge-type                 : T-EDGE * Option(Id0) -> Edge-type
+    Node-type                 : T-NODE * Option(Id0) -> Node-type
+    NodeEdge-type             : Edge-type -> NodeEdge-type
+    NodeEdge-type             : Node-type -> NodeEdge-type
+    Prim-type                 : T-BOOL -> Prim-type
+    Prim-type                 : T-DOUBLE -> Prim-type
+    Prim-type                 : T-FLOAT -> Prim-type
+    Prim-type                 : T-LONG -> Prim-type
+    Prim-type                 : T-INT -> Prim-type
+    Graph-type                : T-GRAPH -> Graph-type
+    Typedecl                  : Set-type -> Typedecl
+    Typedecl                  : NodeEdge-type -> Typedecl
+    Typedecl                  : Property -> Typedecl
+    Typedecl                  : Graph-type -> Typedecl
+    Typedecl                  : Prim-type -> Typedecl
+    Arg-target                : Id-comma-list -> Arg-target
+    Arg-decl                  : Arg-target * Typedecl -> Arg-decl
+    Proc-return               : Node-type -> Proc-return
+    Proc-return               : Prim-type -> Proc-return
+    Proc-return-opt           : Proc-return -> Proc-return-opt
+    Arg-declist2              : List(Arg-decl) -> Arg-declist2
+    Arg-declist1              : List(Arg-decl) -> Arg-declist1
+    Proc-name                 : T-LOCAL * Id -> Proc-name
+    Proc-name                 : T-PROC * Id -> Proc-name
+    Proc-head                 : Proc-name * Arg-declist1 * Arg-declist2 * Option(Proc-return-opt) -> Proc-head
+    Proc-head                 : Proc-name * Arg-declist1 * Option(Proc-return-opt) -> Proc-head
+    Proc-def                  : Proc-head * Proc-body -> Proc-def
+    Prog                      : List(Proc-def) -> Prog
+                              : String -> T-NIL
+                              : String -> T-EXIST
+                              : String -> T-ALL
+                              : String -> T-DOUBLE-COLON
+                              : String -> T-M-INF
+                              : String -> T-P-INF
+                              : String -> T-MIN
+                              : String -> T-MAX
+                              : String -> T-PRODUCT
+                              : String -> T-COUNT
+                              : String -> T-AVG
+                              : String -> T-SUM
+                              : String -> T-MAXEQ
+                              : String -> T-MINEQ
+                              : String -> T-OREQ
+                              : String -> T-ANDEQ
+                              : String -> T-MULTEQ
+                              : String -> T-PLUSPLUS
+                              : String -> T-PLUSEQ
+                              : String -> T-DO
+                              : String -> T-RETURN
+                              : String -> T-WHILE
+                              : String -> T-ELSE
+                              : String -> T-IF
+                              : String -> BOOL-VAL
+                              : String -> T-GE
+                              : String -> T-LE
+                              : String -> T-NEQ
+                              : String -> T-EQ
+                              : String -> T-OR
+                              : String -> T-AND
+                              : String -> T-FOR
+                              : String -> T-FOREACH
+                              : String -> T-COMMON-NBRS
+                              : String -> T-ITEMS
+                              : String -> T-DOWN-NBRS
+                              : String -> T-UP-NBRS
+                              : String -> T-IN-NBRS
+                              : String -> T-NBRS
+                              : String -> T-EDGES
+                              : String -> T-NODES
+                              : String -> T-BOOL
+                              : String -> T-DOUBLE
+                              : String -> T-FLOAT
+                              : String -> T-LONG
+                              : String -> T-INT
+                              : String -> T-NSEQ
+                              : String -> T-NORDER
+                              : String -> T-NSET
+                              : String -> T-EDGEPROP
+                              : String -> T-NODEPROP
+                              : String -> T-EDGE
+                              : String -> T-NODE
+                              : String -> T-GRAPH
+                              : String -> T-BACK
+                              : String -> T-FROM
+                              : String -> T-POST
+                              : String -> T-DFS
+                              : String -> T-BFS
+                              : String -> T-PROC
+                              : String -> T-LOCAL
+                              : String -> USER-TEXT
+                              : String -> FLOAT-NUM
+                              : String -> INT-NUM
+                              : String -> ID
+
+
+signature
+  constructors
+    Some : a -> Option(a)
+    None : Option(a)
+
+
+signature
+  constructors
+    Cons : a * List(a) -> List(a)
+    Nil  : List(a)
+    Conc : List(a) * List(a) -> List(a)

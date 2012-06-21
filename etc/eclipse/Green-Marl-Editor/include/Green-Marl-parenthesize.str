@@ -1,0 +1,362 @@
+module include/Green-Marl-parenthesize
+
+imports
+  libstratego-lib
+  include/Green-Marl
+
+
+strategies
+  io-Green-Marl-parenthesize =
+    io-wrap(parenthesize-Green-Marl)
+
+  parenthesize-Green-Marl =
+    innermost(Green-MarlParenthesize)
+
+
+rules
+
+  Green-MarlParenthesize :
+    SubtractExpr(t_0, t_1) -> SubtractExpr(Parenthetical(t_0), t_1)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    SubtractExpr(t_0, t_1) -> SubtractExpr(t_0, Parenthetical(t_1))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    AddExpr(t_0, t_1) -> AddExpr(Parenthetical(t_0), t_1)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    AddExpr(t_0, t_1) -> AddExpr(t_0, Parenthetical(t_1))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    ModuloExpr(t_0, t_1) -> ModuloExpr(Parenthetical(t_0), t_1)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    ModuloExpr(t_0, t_1) -> ModuloExpr(t_0, Parenthetical(t_1))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    DivideExpr(t_0, t_1) -> DivideExpr(Parenthetical(t_0), t_1)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    DivideExpr(t_0, t_1) -> DivideExpr(t_0, Parenthetical(t_1))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    MultiplyExpr(t_0, t_1) -> MultiplyExpr(Parenthetical(t_0), t_1)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    MultiplyExpr(t_0, t_1) -> MultiplyExpr(t_0, Parenthetical(t_1))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    NotExpr(t_0) -> NotExpr(Parenthetical(t_0))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + ?ModuloExpr(_, _)
+            + ?DivideExpr(_, _)
+            + ?MultiplyExpr(_, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    NegativeExpr(t_0) -> NegativeExpr(Parenthetical(t_0))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + ?GreaterThanOrEqualExpr(_, _, _)
+            + ?LessThanOrEqualExpr(_, _, _)
+            + ?GreaterThanExpr(_, _)
+            + ?LessThanExpr(_, _)
+            + ?SubtractExpr(_, _)
+            + ?AddExpr(_, _)
+            + ?ModuloExpr(_, _)
+            + ?DivideExpr(_, _)
+            + ?MultiplyExpr(_, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    NotEqualsExpr(t_0, t_1, t_2) -> NotEqualsExpr(Parenthetical(t_0), t_1, t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    NotEqualsExpr(t_0, t_1, t_2) -> NotEqualsExpr(t_0, Parenthetical(t_1), t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    NotEqualsExpr(t_0, t_1, t_2) -> NotEqualsExpr(t_0, t_1, Parenthetical(t_2))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + fail)> t_2
+
+  Green-MarlParenthesize :
+    EqualsExpr(t_0, t_1, t_2) -> EqualsExpr(Parenthetical(t_0), t_1, t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    EqualsExpr(t_0, t_1, t_2) -> EqualsExpr(t_0, Parenthetical(t_1), t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    EqualsExpr(t_0, t_1, t_2) -> EqualsExpr(t_0, t_1, Parenthetical(t_2))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + fail)> t_2
+
+  Green-MarlParenthesize :
+    GreaterThanOrEqualExpr(t_0, t_1, t_2) -> GreaterThanOrEqualExpr(Parenthetical(t_0), t_1, t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    GreaterThanOrEqualExpr(t_0, t_1, t_2) -> GreaterThanOrEqualExpr(t_0, Parenthetical(t_1), t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    GreaterThanOrEqualExpr(t_0, t_1, t_2) -> GreaterThanOrEqualExpr(t_0, t_1, Parenthetical(t_2))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_2
+
+  Green-MarlParenthesize :
+    LessThanOrEqualExpr(t_0, t_1, t_2) -> LessThanOrEqualExpr(Parenthetical(t_0), t_1, t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    LessThanOrEqualExpr(t_0, t_1, t_2) -> LessThanOrEqualExpr(t_0, Parenthetical(t_1), t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    LessThanOrEqualExpr(t_0, t_1, t_2) -> LessThanOrEqualExpr(t_0, t_1, Parenthetical(t_2))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_2
+
+  Green-MarlParenthesize :
+    GreaterThanExpr(t_0, t_1) -> GreaterThanExpr(Parenthetical(t_0), t_1)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    GreaterThanExpr(t_0, t_1) -> GreaterThanExpr(t_0, Parenthetical(t_1))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    LessThanExpr(t_0, t_1) -> LessThanExpr(Parenthetical(t_0), t_1)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    LessThanExpr(t_0, t_1) -> LessThanExpr(t_0, Parenthetical(t_1))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + ?AndExpr(_, _, _)
+            + ?NotEqualsExpr(_, _, _)
+            + ?EqualsExpr(_, _, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    AndExpr(t_0, t_1, t_2) -> AndExpr(Parenthetical(t_0), t_1, t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + fail)> t_0
+
+  Green-MarlParenthesize :
+    AndExpr(t_0, t_1, t_2) -> AndExpr(t_0, Parenthetical(t_1), t_2)
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + fail)> t_1
+
+  Green-MarlParenthesize :
+    AndExpr(t_0, t_1, t_2) -> AndExpr(t_0, t_1, Parenthetical(t_2))
+    where <(?InlineIfExpr(_, _, _)
+            + ?OrExpr(_, _, _)
+            + fail)> t_2
+
+  Green-MarlParenthesize :
+    OrExpr(t_0, t_1, t_2) -> OrExpr(Parenthetical(t_0), t_1, t_2)
+    where <(?InlineIfExpr(_, _, _) + fail)> t_0
+
+  Green-MarlParenthesize :
+    OrExpr(t_0, t_1, t_2) -> OrExpr(t_0, Parenthetical(t_1), t_2)
+    where <(?InlineIfExpr(_, _, _) + fail)> t_1
+
+  Green-MarlParenthesize :
+    OrExpr(t_0, t_1, t_2) -> OrExpr(t_0, t_1, Parenthetical(t_2))
+    where <(?InlineIfExpr(_, _, _) + fail)> t_2
+
+
+signature
+  constructors
+    Parenthetical : Unknown -> Unknown
+

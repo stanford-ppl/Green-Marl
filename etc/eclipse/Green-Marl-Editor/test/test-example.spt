@@ -1,0 +1,23 @@
+/**
+* Unit tests for the Green-Marl language.
+*/
+module test-example
+
+language Green-Marl
+
+/*setup Common [[
+  module example
+]]
+
+test Simple entity [[
+  entity User {
+    name : String
+  }
+]] 0 errors
+
+test Entity with reference to non-existing entity [[
+  entity User {
+    name : Strin
+  }
+]] 1 error
+*/

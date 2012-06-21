@@ -4,6 +4,7 @@ bin/*
 obj/*
 .cproject
 .project
+*.aterm
 
 test.gm
 test_main.cc
