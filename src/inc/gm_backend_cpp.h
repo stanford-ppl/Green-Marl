@@ -212,6 +212,9 @@ protected:
 
     const char* i_temp;  // temporary variable name
     char temp[2048];
+
+private:
+    const char* get_function_name(int methodId, bool& addThreadId);
 };
 
 extern gm_cpp_gen CPP_BE;
