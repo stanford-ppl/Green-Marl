@@ -1671,8 +1671,6 @@ public:
         return field_driver;
     }
 
-    virtual ast_expr* copy(bool cp_syminfo = false);
-
     virtual ast_field* get_field() { return field_driver; }
 
     static ast_expr_builtin_field* new_builtin_field_expr(ast_field* field, const char* orgname, expr_list* exList) {

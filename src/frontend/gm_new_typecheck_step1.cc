@@ -682,7 +682,6 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
             ast_field* field = builtinField->get_field_driver();
             is_okay = find_symbol_field(field);
             is_okay &= find_symbol_id(field->get_first());
-           // is_okay &= find_symbol_id(field->get_second());
         }
             break;
         case GMEXPR_FOREIGN: {
