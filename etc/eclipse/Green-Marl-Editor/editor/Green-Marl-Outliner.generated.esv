@@ -1,0 +1,21 @@
+module Green-Marl-Outliner.generated
+
+outliner Default outliner        
+  
+  
+  // Outliner rules indicate which syntactic constructs should be shown in the outline
+  // and quick outline views, and take one of the following forms:
+  //
+  //   <sort>.<constructor>
+  //
+  //   <sort>._
+  //
+  //   _.<constructor>
+  
+  Proc-head.Proc-head
+  Arg-decl.Arg-decl
+  Proc-head.Proc-head
+  Sent-variable-decl.Sent-variable-decl
+  Sent-user.Sent-user
+  Lhs-list2.Lhs-list2
+  Rhs-list2.Rhs-list2

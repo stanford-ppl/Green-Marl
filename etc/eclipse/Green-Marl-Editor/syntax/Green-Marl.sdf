@@ -1,0 +1,293 @@
+%% Grammar for the Green-Marl language
+module Green-Marl
+
+imports Common Keywords
+
+exports
+
+	%%type <bval> opt_tp
+	%%type <ptr> id lhs rhs expr bool_expr numeric_expr
+	%%type <ptr> sent sent_block  sent_assignment sent_variable_decl sent_foreach sent_if 
+	%%type <pair> foreach_header
+	%%type <pair> rhs_list2 lhs_list2
+	%%type <ptr> foreach_filter
+	%%type <ptr> sent_do_while sent_while sent_return sent_call
+	%%type <ptr> sent_reduce_assignment  sent_defer_assignment
+	%%type <ptr> sent_bfs bfs_filter bfs_navigator sent_dfs
+	%%type <pair> bfs_reverse bfs_filters dfs_post
+	%%type <ival> from_or_semi
+	%%type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
+	%%type <ptr> edge_type node_type nodeedge_type set_type optional_bind
+	%%type <ptr> scala field
+	%%type <ptr> sent_argminmax_assignment
+	%%type <pair>  iterator1
+	%%type <ival> reduce_eq
+	%%type <ival> reduce_op reduce_op2
+	%%type <ival> minmax_eq
+	%%type <bval> inf
+	%%type <ptr>  built_in
+	%%type <pair> bfs_header_format
+	%%type <e_list>  arg_list expr_list 
+	%%type <l_list>  lhs_list
+	%%type <ptr>  expr_user sent_user
+
+	context-free priorities
+		{
+			"-" Expr -> Expr
+			"!" Expr -> Expr
+		} > {
+			Expr "*" Expr -> Expr
+			Expr "/" Expr -> Expr
+			Expr "%" Expr -> Expr
+		} > {
+			Expr "+" Expr -> Expr
+			Expr "-" Expr -> Expr
+		} > {
+			Expr "<" Expr -> Expr
+			Expr ">" Expr -> Expr
+			Expr T-LE Expr -> Expr
+			Expr T-GE Expr -> Expr
+		} > {
+			Expr T-EQ Expr -> Expr
+			Expr T-NEQ Expr -> Expr
+		} > {
+			Expr T-AND Expr -> Expr
+		} > {
+			Expr T-OR Expr -> Expr
+		} > {
+			Expr "?" Expr ":" Expr -> Expr
+		}
+
+	context-free start-symbols
+		Prog
+
+	context-free syntax
+		Proc-def*															-> Prog {cons("Prog")}
+		Proc-head Proc-body													-> Proc-def {cons("Proc-def")}
+		Proc-name "(" Arg-declist1 ")" Proc-return-opt?						-> Proc-head {cons("Proc-head")}
+		Proc-name "(" Arg-declist1 ";" Arg-declist2 ")" Proc-return-opt?	-> Proc-head {cons("Proc-head")}
+		T-PROC Id															-> Proc-name {cons("Proc-name")}
+		T-LOCAL Id															-> Proc-name {cons("Proc-name")}
+
+		{Arg-decl ","}*					-> Arg-declist1 {cons("Arg-declist1")}
+		{Arg-decl ","}+					-> Arg-declist2 {cons("Arg-declist2")}
+			
+		Proc-return						-> Proc-return-opt {cons("Proc-return-opt")}
+		":" Prim-type					-> Proc-return {cons("Proc-return")}
+		":" Node-type					-> Proc-return {cons("Proc-return")}
+			
+		Arg-target ":" Typedecl			-> Arg-decl {cons("Arg-decl")}
+		Id-comma-list					-> Arg-target {cons("Arg-target")}
+			
+		Prim-type						-> Typedecl {cons("Typedecl")}
+		Graph-type						-> Typedecl {cons("Typedecl")}
+		Property						-> Typedecl {cons("Typedecl")}
+		NodeEdge-type					-> Typedecl {cons("Typedecl")}
+		Set-type						-> Typedecl {cons("Typedecl")}
+			
+		T-GRAPH							-> Graph-type {cons("Graph-type")}
+			
+		T-INT							-> Prim-type {cons("Prim-type")}
+		T-LONG							-> Prim-type {cons("Prim-type")}
+		T-FLOAT							-> Prim-type {cons("Prim-type")}
+		T-DOUBLE						-> Prim-type {cons("Prim-type")}
+		T-BOOL							-> Prim-type {cons("Prim-type")}
+		
+		Node-type						-> NodeEdge-type {cons("NodeEdge-type")}
+		Edge-type						-> NodeEdge-type {cons("NodeEdge-type")}
+		T-NODE ("(" Id ")")?			-> Node-type {cons("Node-type")}
+		T-EDGE ("(" Id ")")?			-> Edge-type {cons("Edge-type")}
+
+		T-NSET ("(" Id ")")?			-> Set-type {cons("Set-type")}
+		T-NSEQ ("(" Id ")")?			-> Set-type {cons("Set-type")}
+		T-NORDER ("(" Id ")")?			-> Set-type {cons("Set-type")}
+
+		T-NODEPROP "<" Prim-type ">" ("(" Id ")")?		-> Property {cons("Property")}
+		T-NODEPROP "<" NodeEdge-type ">" ("(" Id ")")?	-> Property {cons("Property")}
+		T-NODEPROP "<" Set-type ">" ("(" Id ")")?		-> Property {cons("Property")}
+
+		T-EDGEPROP "<" Prim-type ">" ("(" Id ")")?		-> Property {cons("Property")}
+		T-EDGEPROP "<" NodeEdge-type ">" ("(" Id ")")?	-> Property {cons("Property")}
+		T-EDGEPROP "<" Set-type ">" ("(" Id ")")?		-> Property {cons("Property")}
+	
+		{Id ","}*						-> Id-comma-list {cons("Id-comma-list")}
+	
+		Sent-block						-> Proc-body {cons("Proc-body")}
+		"{" Sent-list? "}"				-> Sent-block {cons("Sent-block")}
+		
+		Sent+							-> Sent-list {cons("Sent-list")}
+		Sent-assignment ";"				-> Sent {cons("Sent")}
+		Sent-variable-decl ";"			-> Sent {cons("Sent")}
+		Sent-block						-> Sent {cons("Sent")}
+		Sent-foreach					-> Sent {cons("Sent")}
+		Sent-if							-> Sent {cons("Sent")}
+		Sent-Reduce-assignment ";"		-> Sent {cons("Sent")}
+		Sent-defer-assignment ";"		-> Sent {cons("Sent")}
+		Sent-do-while ";"				-> Sent {cons("Sent")}
+		Sent-while						-> Sent {cons("Sent")}
+		Sent-return ";"					-> Sent {cons("Sent")}
+		Sent-bfs						-> Sent {cons("Sent")}
+		Sent-dfs						-> Sent {cons("Sent")}
+		Sent-call ";"					-> Sent {cons("Sent")}
+		Sent-user ";"					-> Sent {cons("Sent")}
+		Sent-argMinmax-assignment ";"	-> Sent {cons("Sent")}
+		";"								-> Sent {cons("Sent")}
+
+		Built-in						-> Sent-call {cons("Sent-call")}
+		
+		T-WHILE "(" Bool-expr ")" Sent-block			-> Sent-while {cons("Sent-while")}
+
+		T-DO Sent-block T-WHILE "(" Bool-expr ")"		-> Sent-do-while {cons("Sent-do-while")}
+
+		T-FOREACH Foreach-header Foreach-filter? Sent	-> Sent-foreach {cons("Sent-foreach")}
+		T-FOR Foreach-header Foreach-filter? Sent		-> Sent-foreach {cons("Sent-foreach")}
+		"(" Id ":" Id "." Iterator1 ")"					-> Foreach-header {cons("Foreach-header")}
+		"(" Id ":" Id "+" "." Iterator1 ")"				-> Foreach-header {cons("Foreach-header")}
+		"(" Id ":" Id "-" "." Iterator1 ")"				-> Foreach-header {cons("Foreach-header")}
+		"(" Bool-expr ")"								-> Foreach-filter {cons("Foreach-filter")}
+
+		T-NODES											-> Iterator1 {cons("Iterator1")}
+		T-EDGES											-> Iterator1 {cons("Iterator1")}
+		T-NBRS											-> Iterator1 {cons("Iterator1")}
+		T-IN-NBRS										-> Iterator1 {cons("Iterator1")}
+		T-UP-NBRS										-> Iterator1 {cons("Iterator1")}
+		T-DOWN-NBRS										-> Iterator1 {cons("Iterator1")}
+		T-ITEMS											-> Iterator1 {cons("Iterator1")}
+		T-COMMON-NBRS "(" Id ")"						-> Iterator1 {cons("Iterator1")}
+
+		T-DFS Bfs-header-format Bfs-filters? Sent-block Dfs-post?		-> Sent-dfs {cons("Sent-dfs")}
+		T-BFS Bfs-header-format Bfs-filters? Sent-block Bfs-reverse?	-> Sent-bfs {cons("Sent-bfs")}
+
+		T-POST Bfs-filter Sent-block					-> Dfs-post {cons("Dfs-post")}
+		T-POST Sent-block								-> Dfs-post {cons("Dfs-post")}
+
+		T-BACK Bfs-filter Sent-block					-> Bfs-reverse {cons("Bfs-reverse")}
+		T-BACK Sent-block								-> Bfs-reverse {cons("Bfs-reverse")}
+
+		"(" Id ":" Id Opt-tp? "." T-NODES From-or-semi Id ")"	-> Bfs-header-format {cons("Bfs-header-format")}
+
+		"^"												-> Opt-tp {cons("Opt-tp")}
+
+		T-FROM											-> From-or-semi {cons("From-or-semi")}
+		";"												-> From-or-semi {cons("From-or-semi")}
+
+		 Bfs-navigator									-> Bfs-filters {cons("Bfs-filters")}
+		 Bfs-filter										-> Bfs-filters {cons("Bfs-filters")}
+		 Bfs-navigator Bfs-filter						-> Bfs-filters {cons("Bfs-filters")}
+		 Bfs-filter Bfs-navigator						-> Bfs-filters {cons("Bfs-filters")}
+
+	 	"[" Expr "]"									-> Bfs-navigator {cons("Bfs-navigator")}
+
+	 	"(" Expr ")"									-> Bfs-filter {cons("Bfs-filter")}
+
+		Typedecl Var-target								-> Sent-variable-decl {cons("Sent-variable-decl")}
+		Typedecl Id "=" Rhs								-> Sent-variable-decl {cons("Sent-variable-decl")}
+
+		Id-comma-list									-> Var-target {cons("Var-target")}
+
+		Lhs "=" Rhs										-> Sent-assignment {cons("Sent-assignment")}
+		Lhs Reduce-eq Rhs Optional-bind?				-> Sent-Reduce-assignment {cons("Sent-Reduce-assignment")}
+		Lhs T-PLUSPLUS Optional-bind?					-> Sent-Reduce-assignment {cons("Sent-Reduce-assignment")}
+
+		Lhs T-LE Rhs Optional-bind?						-> Sent-defer-assignment {cons("Sent-defer-assignment")}
+
+		Lhs-list2 Minmax-eq Rhs-list2 Optional-bind?	-> Sent-argMinmax-assignment {cons("Sent-argMinmax-assignment")}
+
+		"@" Id											-> Optional-bind {cons("Optional-bind")}
+
+		T-PLUSEQ										-> Reduce-eq {cons("Reduce-eq")}
+		T-MULTEQ										-> Reduce-eq {cons("Reduce-eq")}
+		T-MINEQ											-> Reduce-eq {cons("Reduce-eq")}
+		T-MAXEQ											-> Reduce-eq {cons("Reduce-eq")}
+		T-ANDEQ											-> Reduce-eq {cons("Reduce-eq")}
+		T-OREQ											-> Reduce-eq {cons("Reduce-eq")}
+
+		T-MINEQ											-> Minmax-eq {cons("Minmax-eq")}
+		T-MAXEQ											-> Minmax-eq {cons("Minmax-eq")}
+
+		Expr											-> Rhs {cons("Rhs")}
+
+		T-RETURN Expr									-> Sent-return {cons("Sent-return")}
+		T-RETURN										-> Sent-return {cons("Sent-return")}
+
+		T-IF "(" Bool-expr ")" Sent						-> Sent-if {cons("Sent-if")}
+		T-IF "(" Bool-expr ")" Sent T-ELSE Sent			-> Sent-if {cons("Sent-if")}
+
+		Expr-user										-> Sent-user {cons("Sent-user")}
+		Expr-user T-DOUBLE-COLON "[" Lhs-list "]"		-> Sent-user {cons("Sent-user")}
+
+		"(" Expr ")"									-> Expr {cons("ParenthesisExpr")}
+		"|" Expr "|"									-> Expr {cons("AbsoluteExpr")}
+		"-" Expr										-> Expr {cons("NegativeExpr")}
+		"!" Expr										-> Expr {cons("NotExpr")}
+		"(" Prim-type ")" Expr							-> Expr {cons("Expr")}
+
+		Reduce-op "(" Id ":" Id "." Iterator1 ")" "(" Expr ")" "{" Expr "}"		-> Expr {cons("Expr")}
+		Reduce-op "(" Id ":" Id "." Iterator1 ")" "{" Expr "}"					-> Expr {cons("Expr")}
+		Reduce-op2 "(" Id ":" Id "." Iterator1 ")" "(" Expr ")"					-> Expr {cons("Expr")}
+		Reduce-op2 "(" Id ":" Id "." Iterator1 ")"								-> Expr {cons("Expr")}
+
+		Expr "%" Expr									-> Expr {cons("ModuloExpr")}
+		Expr "*" Expr									-> Expr {cons("MultiplyExpr")}
+		Expr "/" Expr									-> Expr {cons("DivideExpr")}
+		Expr "+" Expr									-> Expr {cons("AddExpr")}
+		Expr "-" Expr									-> Expr {cons("SubtractExpr")}
+		Expr T-LE Expr									-> Expr {cons("LessThanOrEqualExpr")}
+		Expr T-GE Expr									-> Expr {cons("GreaterThanOrEqualExpr")}
+		Expr "<" Expr									-> Expr {cons("LessThanExpr")}
+		Expr ">" Expr									-> Expr {cons("GreaterThanExpr")}
+		Expr T-EQ Expr									-> Expr {cons("EqualsExpr")}
+		Expr T-NEQ Expr									-> Expr {cons("NotEqualsExpr")}
+		Expr T-AND Expr									-> Expr {cons("AndExpr")}
+		Expr T-OR Expr									-> Expr {cons("OrExpr")}
+
+		Expr "?" Expr ":" Expr							-> Expr {cons("InlineIfExpr")}
+
+		BOOL-VAL										-> Expr {cons("BooleanExpr")}
+		INT-NUM											-> Expr {cons("IntExpr")}
+		FLOAT-NUM										-> Expr {cons("FloatExpr")}
+		Inf												-> Expr {cons("InfExpr")}
+		T-NIL											-> Expr {cons("NilExpr")}
+		Scala											-> Expr {cons("ScalaExpr")}
+		Field											-> Expr {cons("FieldExpr")}
+		Built-in										-> Expr {cons("BuiltinExpr")}
+		Expr-user										-> Expr {cons("UserExpr")}
+
+		Expr											-> Bool-expr {cons("Bool-expr")}
+		Expr											-> Numeric-expr {cons("Numeric-expr")}
+
+		T-SUM											-> Reduce-op {cons("Reduce-op")}
+		T-PRODUCT										-> Reduce-op {cons("Reduce-op")}
+		T-MIN											-> Reduce-op {cons("Reduce-op")}
+		T-MAX											-> Reduce-op {cons("Reduce-op")}
+		T-EXIST											-> Reduce-op {cons("Reduce-op")}
+		T-ALL											-> Reduce-op {cons("Reduce-op")}
+		T-AVG											-> Reduce-op {cons("Reduce-op")}
+
+		T-COUNT											-> Reduce-op2 {cons("Reduce-op2")}
+
+		T-P-INF											-> Inf {cons("Inf")}
+		T-M-INF											-> Inf {cons("Inf")}
+
+		Scala											-> Lhs {cons("Lhs")}
+		Field											-> Lhs {cons("Lhs")}
+
+		{Lhs ","}*										-> Lhs-list {cons("Lhs-list")}
+
+		Id												-> Scala {cons("Scala")}
+		Id "." Id										-> Field {cons("Field")}
+		T-EDGE "(" Id ")" "." Id						-> Field {cons("Field")}
+
+		Id "." Id Arg-list								-> Built-in {cons("Built-in")}
+		Id Arg-list										-> Built-in {cons("Built-in")}
+		Field "." Id Arg-list							-> Built-in {cons("Built-in")}
+
+		"(" Expr-list? ")"								-> Arg-list {cons("Arg-list")}
+
+		{Expr ","}+										-> Expr-list {cons("Expr-list")}
+
+		"<" Lhs ";" Lhs-list ">"						-> Lhs-list2 {cons("Lhs-list2")}
+		"<" Expr ";" Expr-list ">"						-> Rhs-list2 {cons("Rhs-list2")}
+
+		"[" USER-TEXT "]"								-> Expr-user {cons("Expr-user")}
+		ID												-> Id {cons("Id")}

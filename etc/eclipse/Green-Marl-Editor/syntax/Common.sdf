@@ -1,0 +1,47 @@
+module Common
+
+exports
+
+	lexical syntax
+  		[0-9]					-> DIGIT
+		[a-zA-Z][a-zA-Z0-9\_]*	-> ALPHANUM
+	
+		ALPHANUM				-> ID
+		DIGIT+					-> INT-NUM
+		DIGIT+"."DIGIT*			-> FLOAT-NUM
+		~[\[\]]*				-> USER-TEXT
+		
+		"\"" StringChar* "\""	-> STRING
+		~[\"\n]					-> StringChar
+		"\\\""					-> StringChar
+		BackSlashChar			-> StringChar
+		"\\"					-> BackSlashChar
+		
+		[\ \t\n\r] -> LAYOUT
+		
+		[\*]								-> CommentChar
+		"/*" (~[\*] | CommentChar)* "*/"	-> LAYOUT
+		"//" ~[\n\r]* ([\n\r] | EOF)		-> LAYOUT
+		
+		-> EOF
+  
+	lexical restrictions
+		%% Ensure greedy matching for lexicals
+		CommentChar		-/- [\/]
+		INT-NUM			-/- [0-9]
+		FLOAT-NUM		-/- [0-9\.]
+		ID				-/- [a-zA-Z0-9\_]
+		USER-TEXT		-/- ~[\]]
+		
+		%% EOF may not be followed by any char
+		EOF				-/- ~[]
+	
+		%% Backslash chars in strings may not be followed by " 
+		BackSlashChar	-/- [\"]
+
+	context-free restrictions
+  
+		%% Ensure greedy matching for comments
+		LAYOUT?			-/- [\ \t\n\r]
+		LAYOUT?			-/- [\/].[\/]
+		LAYOUT?			-/- [\/].[\*]
