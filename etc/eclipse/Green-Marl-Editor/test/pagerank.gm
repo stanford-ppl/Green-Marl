@@ -1,0 +1,20 @@
+Procedure pagerank(G: Graph, e: Double, d: Double, max: Int,
+                   pg_rank: N_P<Double>)
+{
+    Double diff;
+    Int cnt = 0;
+    Double N = G.NumNodes();
+    G.pg_rank = 1 / N;
+    Do {
+        diff = 0.0;
+        Foreach (t: G.Nodes) {
+            Double val = (1-d) / N + d* 
+                Sum(w: t.InNbrs) {w.pg_rank / w.OutDegree()} ;
+
+            diff += | val - t.pg_rank |;
+            t.pg_rank <= val @ t;
+        }
+        cnt++;
+    } While ((diff > e) && (cnt < max));
+    [printf("Finished after %d iterations\n", iterations)];
+}

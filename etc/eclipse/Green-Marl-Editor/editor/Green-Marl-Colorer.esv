@@ -1,0 +1,16 @@
+module Green-Marl-Colorer
+
+imports Green-Marl-Colorer.generated
+
+colorer
+	// Types
+	Prim-type		: darkgreen
+	Graph-type		: darkgreen
+	Property		: darkgreen
+	NodeEdge-type	: darkgreen
+	Set-type		: darkgreen
+	
+	// Literals
+	INT-NUM			: darkred
+	FLOAT-NUM		: darkred
+	BOOL-VAL		: darkred
