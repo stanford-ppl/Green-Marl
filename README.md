@@ -89,6 +89,7 @@ top directory where you put your source package
     $(top)/apps/output_cpp/gm_graph/inc  : header  files (.h)  for gm_graph
     $(top)/apps/output_cpp/gm_graph/lib  : gm_graph library (.a) (to be generated)
     $(top)/apps/output_gps           : Directory for Green-Marl to GPS
+    $(top)/apps/output_giraph        : Directory for Green-Marl to Giraph
 
 
 3 The compiler
