@@ -99,7 +99,6 @@ private:
     gm_symtab_entry* _group_sym;
 
     bool apply_on_builtin(ast_expr_builtin* builtinExpr);
-    bool apply_on_builtin_field(ast_expr_builtin_field* builtinFieldExpr);
     bool set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType);
     bool apply_on_field(ast_field* f);
 };
@@ -140,16 +139,8 @@ bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* 
     return isOkay;
 }
 
-bool gm_typechecker_stage_2::apply_on_builtin_field(ast_expr_builtin_field* builtinExpr) {
-    ast_id* driver = builtinExpr->get_field_driver()->get_second();
-    int sourceType = driver->getTargetTypeInfo()->getTypeSummary();
-    return set_and_check_builtin_definition(builtinExpr, sourceType);
-}
-
 bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
-    if (builtinExpr->driver_is_field()) return apply_on_builtin_field((ast_expr_builtin_field*) builtinExpr);
-    ast_id* driver = builtinExpr->get_driver();
-    int sourceType = (driver == NULL) ? GMTYPE_VOID : driver->getTypeSummary();
+    int sourceType = builtinExpr->get_source_type();
     return set_and_check_builtin_definition(builtinExpr, sourceType);
 }
 

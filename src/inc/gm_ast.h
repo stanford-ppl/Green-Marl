@@ -358,6 +358,7 @@ private:
     ast_id() :
             ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL) {
     }
+
     ast_id(const char* org, int l, int c) :
             ast_node(AST_ID), info(NULL), gen_name(NULL) {
         if (org != NULL) {
@@ -1583,8 +1584,13 @@ public:
     virtual void dump_tree(int id_level);
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
     virtual ast_expr* copy(bool cp_syminfo = false);
+
     virtual bool driver_is_field() {
         return false;
+    }
+
+    virtual int get_source_type() {
+        return (driver == NULL) ? GMTYPE_VOID : driver->getTypeSummary();
     }
 
     static ast_expr_builtin* new_builtin_expr(ast_id* id, const char* orgname, expr_list* t) {
@@ -1659,11 +1665,11 @@ public:
         delete field_driver;
     }
 
-    virtual ast_id* get_driver() {
+    ast_id* get_driver() {
         assert(false);
     }
 
-    virtual bool driver_is_field() {
+    bool driver_is_field() {
         return true;
     }
 
@@ -1671,7 +1677,14 @@ public:
         return field_driver;
     }
 
-    virtual ast_field* get_field() { return field_driver; }
+    ast_field* get_field() {
+        return field_driver;
+    }
+
+    int get_source_type() {
+        assert(field_driver != NULL);
+        return field_driver->get_second()->getTargetTypeInfo()->getTypeSummary();
+    }
 
     static ast_expr_builtin_field* new_builtin_field_expr(ast_field* field, const char* orgname, expr_list* exList) {
 
