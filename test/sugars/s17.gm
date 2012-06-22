@@ -1,0 +1,11 @@
+// Test of Synonyms
+Procedure foo()
+{
+   Graph G;
+   Node_Property<Node_Set(G)>(G) A;
+   N_P<N_S> B;
+   
+   Edge_Property<Node_Order(G)>(G) C;
+   E_P<N_O> D;
+   
+}
