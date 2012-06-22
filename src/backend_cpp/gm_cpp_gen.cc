@@ -1011,38 +1011,42 @@ void gm_cpp_gen::generate_expr_nil(ast_expr* ee) {
     get_lib()->generate_expr_nil(ee, Body);
 }
 
+const char* gm_cpp_gen::get_function_name(int methodId, bool& addThreadId) {
+    switch (methodId) {
+        case GM_BLTIN_TOP_DRAND:
+            addThreadId = true;
+            return "gm_rt_uniform";
+        case GM_BLTIN_TOP_IRAND:
+            addThreadId = true;
+            return "gm_rt_rand";
+        case GM_BLTIN_TOP_LOG:
+            return "log";
+        case GM_BLTIN_TOP_EXP:
+            return "exp";
+        case GM_BLTIN_TOP_POW:
+            return "pow";
+        default:
+            assert(false);
+    }
+}
+
 void gm_cpp_gen::generate_expr_builtin(ast_expr* ee) {
     ast_expr_builtin* e = (ast_expr_builtin*) ee;
 
     gm_builtin_def* def = e->get_builtin_def();
-    ast_id* i = e->get_driver(); // driver 
-    assert(def!=NULL);
+
+    ast_id* driver;
+    if(e->driver_is_field())
+        driver = ((ast_expr_builtin_field*)e)->get_field_driver()->get_second();
+    else
+        driver = e->get_driver();
+
+    assert(def != NULL);
     int method_id = def->get_method_id();
     bool add_thread_id = false;
     const char* func_name = "";
-    if (i == NULL) {
-        switch (method_id) {
-            case GM_BLTIN_TOP_DRAND:
-                func_name = "gm_rt_uniform";
-                add_thread_id = true;
-                break;
-            case GM_BLTIN_TOP_IRAND:
-                func_name = "gm_rt_rand";
-                add_thread_id = true;
-                break;
-            case GM_BLTIN_TOP_LOG:
-                func_name = "log";
-                break;
-            case GM_BLTIN_TOP_EXP:
-                func_name = "exp";
-                break;
-            case GM_BLTIN_TOP_POW:
-                func_name = "pow";
-                break;
-            default:
-                assert(false);
-                break;
-        }
+    if (driver == NULL) {
+        func_name = get_function_name(method_id, add_thread_id);
         Body.push(func_name);
         Body.push('(');
         generate_expr_list(e->get_args());

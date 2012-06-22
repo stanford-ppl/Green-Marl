@@ -1,0 +1,7 @@
+Procedure test_property_of_collection_bad_function_call(G:Graph)
+{
+    N_P<N_S> p;
+    Node n;
+    n.p.PushBack(n); //pushback not defined for Node_Set
+    
+}
