@@ -1,0 +1,7 @@
+Procedure test_property_of_collection_iteration(G:Graph)
+{
+    N_P<N_S> prop;
+    Foreach(n: G.Nodes) {
+    	N_S s = n.prop;
+    }
+}
