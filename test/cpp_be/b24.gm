@@ -1,0 +1,12 @@
+Procedure test_property_of_collection_loop(G:Graph)
+{
+    N_P<N_S> p;
+    
+    Foreach(n: G.Nodes) {
+    	N_S s = n.p;
+    }
+    	
+    For(n: G.Nodes) {
+    	N_S s = n.p;
+    }
+}

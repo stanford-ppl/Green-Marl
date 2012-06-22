@@ -132,12 +132,126 @@ void gm_cpplib::generate_expr_nil(ast_expr* e, gm_code_writer& Body) {
     }
 }
 
+const char* gm_cpplib::get_function_name_nset(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_SET_HAS:
+            return "is_in";
+        case GM_BLTIN_SET_REMOVE:
+            return "remove";
+        case GM_BLTIN_SET_ADD:
+            return "add";
+        case GM_BLTIN_SET_UNION:
+            return "union_";
+        case GM_BLTIN_SET_COMPLEMENT:
+            return "complement";
+        case GM_BLTIN_SET_INTERSECT:
+            return "intersect";
+        case GM_BLTIN_SET_SUBSET:
+            return "is_subset";
+        default:
+            assert(false);
+    }
+}
+
+const char* gm_cpplib::get_function_name_nseq(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_SET_ADD:
+            return "push_front";
+        case GM_BLTIN_SET_ADD_BACK:
+            return "push_back";
+        case GM_BLTIN_SET_REMOVE:
+            return "pop_front";
+        case GM_BLTIN_SET_REMOVE_BACK:
+            return "pop_back";
+        default:
+            assert(false);
+    }
+}
+
+const char* gm_cpplib::get_function_name_norder(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_SET_ADD:
+            return "push_front";
+        case GM_BLTIN_SET_ADD_BACK:
+            return "push_back";
+        case GM_BLTIN_SET_REMOVE:
+            return "pop_front";
+        case GM_BLTIN_SET_REMOVE_BACK:
+            return "pop_back";
+        case GM_BLTIN_SET_HAS:
+            return "is_in";
+        default:
+            assert(false);
+    }
+}
+
+const char* gm_cpplib::get_function_name_graph(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_GRAPH_NUM_NODES:
+            return NUM_NODES;
+        case GM_BLTIN_GRAPH_NUM_EDGES:
+            return NUM_EDGES;
+        default:
+            assert(false);
+    }
+}
+
+void gm_cpplib::add_arguments_and_thread(gm_code_writer& body, ast_expr_builtin* builtinExpr, bool addThreadId) {
+    main->generate_expr_list(builtinExpr->get_args());
+    if (addThreadId)
+        body.push(",gm_rt_thread_id()");
+    body.push(")");
+}
+
+void gm_cpplib::generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr, gm_code_writer& body) {
+
+    ast_field* driver = builtinExpr->get_field_driver();
+    gm_builtin_def* definition = builtinExpr->get_builtin_def();
+    ast_sent* sent = gm_find_parent_sentence(builtinExpr);
+
+    assert(definition != NULL);
+    assert(sent != NULL);
+
+    int sourceType = definition->get_source_type_summary();
+    int methodId = definition->get_method_id();
+
+    bool parallelExecution = sent->is_under_parallel_execution();
+    bool addThreadId = false;
+
+    const char* functionName;
+    switch (sourceType) {
+        case GMTYPE_NSET:
+            functionName = get_function_name_nset(methodId);
+            break;
+        case GMTYPE_NSEQ:
+            functionName = get_function_name_nseq(methodId);
+            break;
+        case GMTYPE_NORDER:
+            functionName = get_function_name_norder(methodId);
+            break;
+        default:
+            assert(false);
+    }
+
+
+    sprintf(str_buf, "%s[%s].%s(", driver->get_second()->get_genname(), driver->get_first()->get_genname(), functionName);
+    body.push(str_buf);
+    add_arguments_and_thread(body, builtinExpr, addThreadId);
+
+}
+
 void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body) {
-    ast_id* i = e->get_driver(); // driver 
+
+    if (e->driver_is_field()) {
+        generate_expr_builtin_field((ast_expr_builtin_field*) e, Body);
+        return;
+    }
+
+    ast_id* i = e->get_driver(); // driver
     gm_builtin_def* def = e->get_builtin_def();
-    ast_sent * s = gm_find_parent_sentence(e);
-    assert(def!=NULL);
-    assert(s!=NULL);
+    ast_sent* s = gm_find_parent_sentence(e);
+    assert(def != NULL);
+    assert(s != NULL);
     int src_type = def->get_source_type_summary();
     int method_id = def->get_method_id();
     bool under_parallel = s->is_under_parallel_execution();
@@ -146,18 +260,8 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
     const char* func_name;
     switch (src_type) {
         case GMTYPE_GRAPH:
-            switch (method_id) {
-                case GM_BLTIN_GRAPH_NUM_NODES:
-                    func_name = NUM_NODES;
-                    break;
-                case GM_BLTIN_GRAPH_NUM_EDGES:
-                    func_name = NUM_EDGES;
-                    break;
-                default:
-                    assert(false);
-            }
+            func_name = get_function_name_graph(method_id);
             break;
-
         case GMTYPE_NODE:
             switch (method_id) {
                 case GM_BLTIN_NODE_DEGREE:
@@ -185,7 +289,6 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     break;
             }
             return;
-
         case GMTYPE_NODEITER_NBRS:
         case GMTYPE_NODEITER_IN_NBRS:
         case GMTYPE_NODEITER_UP_NBRS:
@@ -203,7 +306,6 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             }
             Body.push(str_buf);
             return;
-
         case GMTYPE_EDGE:
             switch (method_id) {
                 case GM_BLTIN_EDGE_FROM: {
@@ -219,85 +321,20 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             }
             Body.push(str_buf);
             return;
-
         case GMTYPE_NSET:
-            switch (method_id) {
-                case GM_BLTIN_SET_HAS:
-                    func_name = "is_in";
-                    break;
-                case GM_BLTIN_SET_REMOVE:
-                    func_name = "remove";
-                    break;
-                case GM_BLTIN_SET_ADD:
-                    func_name = "add";
-                    break;
-                case GM_BLTIN_SET_UNION:
-                    func_name = "union_";
-                    break;
-                case GM_BLTIN_SET_COMPLEMENT:
-                    func_name = "complement";
-                    break;
-                case GM_BLTIN_SET_INTERSECT:
-                    func_name = "intersect";
-                    break;
-                case GM_BLTIN_SET_SUBSET:
-                    func_name = "is_subset";
-                    break;
-                default:
-                    assert(false);
-            }
+            func_name = get_function_name_nset(method_id);
             break;
-
         case GMTYPE_NORDER:
-            switch (method_id) {
-                case GM_BLTIN_SET_ADD:
-                    func_name = "push_front";
-                    break;
-                case GM_BLTIN_SET_ADD_BACK:
-                    func_name = "push_back";
-                    break;
-                case GM_BLTIN_SET_REMOVE:
-                    func_name = "pop_front";
-                    break;
-                case GM_BLTIN_SET_REMOVE_BACK:
-                    func_name = "pop_back";
-                    break;
-                case GM_BLTIN_SET_HAS:
-                    func_name = "is_in";
-                    break;
-                default:
-                    assert(false);
-            }
+            func_name = get_function_name_norder(method_id);
             break;
-
         case GMTYPE_NSEQ:
-            switch (method_id) {
-                case GM_BLTIN_SET_ADD:
-                    func_name = "push_front";
-                    break;
-                case GM_BLTIN_SET_ADD_BACK:
-                    func_name = "push_back";
-                    break;
-                case GM_BLTIN_SET_REMOVE:
-                    func_name = "pop_front";
-                    break;
-                case GM_BLTIN_SET_REMOVE_BACK:
-                    func_name = "pop_back";
-                    break;
-                default:
-                    assert(false);
-            }
+            func_name = get_function_name_nseq(method_id);
             break;
-
         default:
             assert(false);
     }
 
     sprintf(str_buf, "%s.%s(", i->get_genname(), func_name);
     Body.push(str_buf);
-    main->generate_expr_list(e->get_args());
-    if (add_thread_id) {
-        Body.push(",gm_rt_thread_id()");
-    }
-    Body.push(")");
+    add_arguments_and_thread(Body, e, add_thread_id);
 }

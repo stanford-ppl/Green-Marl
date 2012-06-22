@@ -313,8 +313,7 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
 // The name is added to the current procedure vocaburary 
 //---------------------
 bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bool is_readable, bool is_writeable) {
-    //printf("adding %s to %p, type[%d,%s]\n", id->get_orgname(), SYM,
-    //        type->getTypeSummary(), gm_get_type_string(type->getTypeSummary())); 
+    //printf("adding %s to %p, type[%d,%s]\n", id->get_orgname(), SYM, type->getTypeSummary(), gm_get_type_string(type->getTypeSummary()));
     //fflush(stdout);
     if (!type->is_well_defined()) {
         assert(!type->is_property()); // if so SYM is FIELD actually.
@@ -678,7 +677,13 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
             }
             break;
         }
-
+        case GMEXPR_BUILTIN_FIELD: {
+            ast_expr_builtin_field* builtinField = (ast_expr_builtin_field*) p;
+            ast_field* field = builtinField->get_field_driver();
+            is_okay = find_symbol_field(field);
+            is_okay &= find_symbol_id(field->get_first());
+        }
+            break;
         case GMEXPR_FOREIGN: {
             ast_expr_foreign* f = (ast_expr_foreign*) p;
             std::list<ast_node*>& L = f->get_parsed_nodes();

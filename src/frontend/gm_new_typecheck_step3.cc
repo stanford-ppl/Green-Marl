@@ -96,15 +96,15 @@ public:
                 okay = check_ter(e);
                 break;
 
-            case GMEXPR_BUILTIN: {
+            case GMEXPR_BUILTIN:
+            case GMEXPR_BUILTIN_FIELD: {
                 ast_expr_builtin* b = (ast_expr_builtin*) e;
                 okay = check_builtin(b);
             }
                 break;
-            case GMEXPR_FOREIGN: {
+            case GMEXPR_FOREIGN:
                 e->set_type_summary(GMTYPE_FOREIGN_EXPR);
                 okay = true;
-            }
                 break;
             default:
                 assert(false);
@@ -271,13 +271,12 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e) {
 }
 
 bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
-
+int x = 123;
     bool okay = true;
 
     std::list<ast_expr*>& args = b->get_args();
     std::list<ast_expr*>::iterator iter;
     gm_builtin_def* def = b->get_builtin_def();
-
     int position = 0;
     for (iter = args.begin(); iter != args.end(); iter++, position++) {
         ast_expr* e = *iter;
@@ -287,18 +286,15 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
             okay = false;
             continue;
         }
-
         bool warning;
         int coerced_type;
         bool isCompatible = gm_is_compatible_type_for_assign(def_type, currentType, coerced_type, warning);
-
         if (!isCompatible) {
             char temp[20];
             sprintf(temp, "%d", position + 1);
             gm_type_error(GM_ERROR_INVALID_BUILTIN_ARG_TYPE, b->get_line(), b->get_col(), b->get_callname(), temp);
             okay = false;
         }
-
         if (warning) {
             // [XXX] to be coerced
             //assert(false);
@@ -310,7 +306,6 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
 bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
 
     bool okay = check_arguments(b);
-
     gm_builtin_def* def = b->get_builtin_def();
     int fun_ret_type = def->get_result_type_summary();
     b->set_type_summary(fun_ret_type);
