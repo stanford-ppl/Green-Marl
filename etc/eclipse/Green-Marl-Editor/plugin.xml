@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?eclipse version="3.0"?>
+
+<plugin>
+       <extension point="org.eclipse.imp.runtime.languageDescription">
+          <language extensions="gm" description="Green-Marl" language="Green-Marl" derivedFrom="DynamicRoot" validator="GreenMarlEditor.GreenMarlValidator" validatorClass="GreenMarlEditor.GreenMarlValidator"></language>
+       </extension>
+       <extension id="GreenMarlEditor.parser" name="Green-Marl Parser" point="org.eclipse.imp.runtime.parser">
+          <parser class="GreenMarlEditor.GreenMarlParseController" language="Green-Marl">
+          </parser>
+       </extension>    
+    </plugin>

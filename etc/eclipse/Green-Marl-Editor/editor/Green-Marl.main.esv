@@ -1,0 +1,16 @@
+module Green-Marl.main
+
+imports Green-Marl-Builders Green-Marl-Colorer Green-Marl-Completions Green-Marl-Folding Green-Marl-Outliner Green-Marl-References Green-Marl-Syntax
+
+language General properties
+                  
+  name          : Green-Marl
+  id            : GreenMarlEditor
+  extends       : Root
+                  
+  description   : "Spoofax/IMP-generated editor for the Green-Marl language"
+  url           : http://strategoxt.org
+                  
+  extensions    : gm
+  table         : include/Green-Marl.tbl
+  start symbols : Prog

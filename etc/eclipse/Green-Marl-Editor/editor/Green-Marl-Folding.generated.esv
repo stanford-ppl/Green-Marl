@@ -1,0 +1,50 @@
+module Green-Marl-Folding.generated
+
+folding Default folding definitions
+  
+  // Folding rules indicate which syntactic constructs can be folded,
+  // and take one of the following forms:
+  //
+  //   <sort>.<constructor>
+  //
+  //   <sort>._
+  //
+  //   _.<constructor>
+  //
+  // To indicate that an element should always be folded, add
+  // a (folded) annotation:
+  //
+  //   _.Imports (folded)
+  //
+  // To disable a folding rule defined elsewhere, add a (disabled) annotation:
+  //
+  //   Definition._ (disabled)
+  
+  Prog.Prog
+  Proc-def.Proc-def
+  Proc-head.Proc-head
+  Arg-declist1.Arg-declist1
+  Arg-decl.Arg-decl
+  Arg-target.Arg-target
+  Id-comma-list.Id-comma-list
+  Property.Property
+  OptId1
+  Property.Property
+  Node-type.Node-type
+  Edge-type.Edge-type
+  Property.Property
+  Set-type.Set-type
+  Set-type.Set-type
+  Set-type.Set-type
+  Property.Property
+  Property.Property
+  Property.Property
+  Proc-head.Proc-head
+  Arg-declist2.Arg-declist2
+  Proc-body.Proc-body
+  Sent-variable-decl.Sent-variable-decl
+  Var-target.Var-target
+  Sent-user.Sent-user
+  Lhs-list.Lhs-list
+  Lhs-list2.Lhs-list2
+  Rhs-list2.Rhs-list2
