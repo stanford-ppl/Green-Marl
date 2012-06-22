@@ -198,15 +198,13 @@ const char* gm_cpplib::get_function_name_graph(int methodId) {
 
 void gm_cpplib::add_arguments_and_thread(gm_code_writer& body, ast_expr_builtin* builtinExpr, bool addThreadId) {
     main->generate_expr_list(builtinExpr->get_args());
-    if (addThreadId) {
+    if (addThreadId)
         body.push(",gm_rt_thread_id()");
-    }
     body.push(")");
 }
 
 void gm_cpplib::generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr, gm_code_writer& body) {
 
-    printf("is field builtin\n");
     ast_field* driver = builtinExpr->get_field_driver();
     gm_builtin_def* definition = builtinExpr->get_builtin_def();
     ast_sent* sent = gm_find_parent_sentence(builtinExpr);
