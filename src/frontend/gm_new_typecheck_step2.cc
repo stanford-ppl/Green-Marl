@@ -127,7 +127,7 @@ bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* 
 
     builtinExpr->set_builtin_def(builtinDef);
 
-    if (is_okay) {
+    if (isOkay) {
         std::list<ast_expr*>& arguments = builtinExpr->get_args();
 
         int argCount = arguments.size();
