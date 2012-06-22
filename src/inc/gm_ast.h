@@ -1382,7 +1382,7 @@ public:
         return expr_class == GMEXPR_REDUCE;
     }
     bool is_builtin() {
-        return expr_class == GMEXPR_BUILTIN;
+        return expr_class == GMEXPR_BUILTIN || expr_class == GMEXPR_BUILTIN_FIELD;
     }
     bool is_terop() {
         return expr_class == GMEXPR_TER;
