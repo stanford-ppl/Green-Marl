@@ -1,0 +1,7 @@
+Procedure test_property_of_collection_asignment(G:Graph)
+{
+    //must not compile since assignments to properties are not allowed
+    N_P<N_S> p1;
+    N_P<N_S> p2;
+    p1 = p2;
+}

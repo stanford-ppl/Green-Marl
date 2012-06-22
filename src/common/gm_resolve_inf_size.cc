@@ -61,6 +61,7 @@ bool gm_resolve_size_of_inf_expr(ast_expr* e, int dest_type) {
             break;
         }
 
+        case GMEXPR_BUILTIN_FIELD:
         case GMEXPR_BUILTIN: {
             // for each argument check type check
             ast_expr_builtin* r = (ast_expr_builtin*) e;

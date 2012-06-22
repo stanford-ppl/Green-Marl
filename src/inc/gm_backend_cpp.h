@@ -55,9 +55,14 @@ public:
     virtual void generate_down_initializer(ast_foreach* fe, gm_code_writer& Body);
     virtual void generate_foreach_header(ast_foreach* fe, gm_code_writer& Body);
 
-protected:
-
 private:
+    virtual void generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr, gm_code_writer& body);
+    const char* get_function_name_graph(int methodId);
+    const char* get_function_name_nset(int methodId);
+    const char* get_function_name_nseq(int methodId);
+    const char* get_function_name_norder(int methodId);
+    void add_arguments_and_thread(gm_code_writer& body, ast_expr_builtin* builtinExpr, bool addThreadId);
+
     char str_buf[1024 * 8];
     gm_cpp_gen* main;
 };
@@ -207,6 +212,9 @@ protected:
 
     const char* i_temp;  // temporary variable name
     char temp[2048];
+
+private:
+    const char* get_function_name(int methodId, bool& addThreadId);
 };
 
 extern gm_cpp_gen CPP_BE;
