@@ -97,11 +97,13 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body.pushln("options.addOption(\"h\", \"help\", false, \"Help\");");
     Body.pushln("options.addOption(\"v\", \"verbose\", false, \"Verbose\");");
     Body.pushln("options.addOption(\"w\", \"workers\", true, \"Number of workers\");");
+    Body.pushln("options.addOption(\"i\", \"input\", true, \"Input filename\");");
+    Body.pushln("options.addOption(\"o\", \"output\", true, \"Output filename\");");
     for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;
         if (s->isReadable()) {
-            sprintf(temp, "options.addOption(\"%s\", \"%s\", true, \"%s\");", s->getId()->get_genname(), s->getId()->get_genname(), s->getId()->get_genname());
+            sprintf(temp, "options.addOption(\"_%s\", \"%s\", true, \"%s\");", s->getId()->get_genname(), s->getId()->get_genname(), s->getId()->get_genname());
             Body.pushln(temp);
         }
     }
