@@ -139,6 +139,7 @@ protected:
     void do_generate_vertex_state_body(gm_gps_basic_block *b);
     void do_generate_vertex_state_receive_global(gm_gps_basic_block *b);
 
+    void do_generate_input_output_formats();
     void do_generate_job_configuration();
 
 private:
