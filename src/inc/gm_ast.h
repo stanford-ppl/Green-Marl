@@ -332,7 +332,7 @@ public:
         if (cp_syminfo) {
             cp->info = this->info;
         }
-        cp->instant_assignment = instant_assignment;
+        cp->set_instant_assigned(is_instantly_assigned());
         return cp;
     }
 
@@ -361,7 +361,7 @@ private:
     }
 
     ast_id(const char* org, int l, int c) :
-            ast_node(AST_ID), info(NULL), gen_name(NULL) {
+            ast_node(AST_ID), info(NULL), gen_name(NULL), instant_assignment(false) {
         if (org != NULL) {
             name = new char[strlen(org) + 1];
             strcpy(name, org);
@@ -2031,6 +2031,7 @@ public:
         type->set_parent(d);
         if (init != NULL) init->set_parent(d);
         id->set_instant_assigned(check_instant_initialization(type, init));
+        printf("Test1: %d\n", check_instant_initialization(type, init));
         return d;
     }
 
