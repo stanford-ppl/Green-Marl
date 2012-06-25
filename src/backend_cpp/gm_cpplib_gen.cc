@@ -198,8 +198,7 @@ const char* gm_cpplib::get_function_name_graph(int methodId) {
 
 void gm_cpplib::add_arguments_and_thread(gm_code_writer& body, ast_expr_builtin* builtinExpr, bool addThreadId) {
     main->generate_expr_list(builtinExpr->get_args());
-    if (addThreadId)
-        body.push(",gm_rt_thread_id()");
+    if (addThreadId) body.push(",gm_rt_thread_id()");
     body.push(")");
 }
 
@@ -232,7 +231,6 @@ void gm_cpplib::generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr,
         default:
             assert(false);
     }
-
 
     sprintf(str_buf, "%s[%s].%s(", driver->get_second()->get_genname(), driver->get_first()->get_genname(), functionName);
     body.push(str_buf);
