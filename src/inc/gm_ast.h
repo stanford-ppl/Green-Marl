@@ -332,6 +332,7 @@ public:
         if (cp_syminfo) {
             cp->info = this->info;
         }
+        cp->instant_initialize = instant_initialize;
         return cp;
     }
 
@@ -356,7 +357,7 @@ public:
 
 private:
     ast_id() :
-            ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL) {
+            ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL), instant_initialize(false) {
     }
 
     ast_id(const char* org, int l, int c) :
@@ -392,12 +393,22 @@ public:
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
 
+    bool is_instantly_initialized() {
+        return instant_initialize;
+    }
+
+    void set_instant_initialize(bool value) {
+        instant_initialize = value;
+    }
+
 public:
     char* name;
 
 private:
     gm_symtab_entry* info;
     char* gen_name;
+
+    bool instant_initialize;
 
     char* get_orgname_from_symbol();  // gm_typecheck.cc
     char* get_genname_from_symbol();  // gm_typecheck.cc
@@ -1978,15 +1989,18 @@ public:
         delete type;
         //assert(init_expr == NULL);
     }
+
 private:
     ast_vardecl() :
-            ast_sent(AST_VARDECL), idlist(NULL), type(NULL), init_expr(NULL), tc_finished(false) {
+            ast_sent(AST_VARDECL), idlist(NULL), type(NULL), init_expr(NULL), tc_finished(false), instand_init(false) {
+        printf("INIT\n");
     }
 
 public:
     void set_typechecked(bool b) {
         tc_finished = b;
     }
+
     static ast_vardecl* new_vardecl(ast_typedecl* type, ast_idlist* id) {
         ast_vardecl* d = new ast_vardecl();
         d->idlist = id;
@@ -1995,6 +2009,7 @@ public:
         type->set_parent(d);
         return d;
     }
+
     static ast_vardecl* new_vardecl(ast_typedecl* type, ast_id* id) {
         ast_vardecl* d = new ast_vardecl();
         ast_idlist* idl = new ast_idlist();
@@ -2003,8 +2018,11 @@ public:
         d->type = type;
         idl->set_parent(d);
         type->set_parent(d);
+        d->instand_init = id->is_instantly_initialized();
+        printf("Gnaaa: %d\n", id->is_instantly_initialized());
         return d;
     }
+
     static ast_vardecl* new_vardecl_init(ast_typedecl* type, ast_id* id, ast_expr* init) {
         ast_vardecl* d = new ast_vardecl();
         ast_idlist* idl = new ast_idlist();
@@ -2015,23 +2033,36 @@ public:
         id->set_parent(d);
         type->set_parent(d);
         if (init != NULL) init->set_parent(d);
+        d->instand_init = check_instant_initialization(type, init);
+        id->set_instant_initialize(d->instand_init);
+        printf("Check instant init:\t%d\t%p\n", d->instand_init, d);
+        printf("%s\n", id->get_genname());
         return d;
     }
+
+    bool is_initialized_instantly() {
+        return instand_init;
+    }
+
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
+
     ast_idlist* get_idlist() {
         return idlist;
     }
+
     ast_typedecl* get_type() {
         if (!tc_finished)
             return type;           // obtain type from syntax
         else
             return idlist->get_item(0)->getTypeInfo(); // obtain type from symbol table
     }
+
     ast_expr* get_init() {
         return init_expr;
     }
+
     void set_init(ast_expr* v) {
         init_expr = v;
         if (v != NULL) v->set_parent(this);
@@ -2040,6 +2071,7 @@ public:
     bool is_tc_finished() {
         return tc_finished;
     }
+
     void set_tc_finished(bool b) {
         tc_finished = b;
     } // who calls it?
@@ -2049,6 +2081,15 @@ private:
     ast_typedecl* type;
     ast_expr* init_expr; // for syntax sugar.
     bool tc_finished;
+    bool instand_init;
+
+    static bool check_instant_initialization(ast_typedecl* type, ast_expr* init) {
+
+        if (init == NULL || type == NULL) return false;
+        if (!type->is_collection()) return false;
+        if (!init->is_field()) return false;
+        return true;
+    }
 };
 
 class ast_return: public ast_sent
