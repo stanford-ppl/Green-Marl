@@ -1,0 +1,8 @@
+// Test of BFS
+Proc gps15(G: Graph, n: Node(G))
+{
+    InBFS(s:G.Nodes From n)
+    {
+
+    }
+}

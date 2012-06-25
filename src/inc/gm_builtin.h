@@ -9,6 +9,7 @@
 
 #define GM_BLTIN_MUTATE_GROW 1
 #define GM_BLTIN_MUTATE_SHRINK 2
+#define GM_BLTIN_FLAG_TRUE true
 
 DEF_STRING(GM_BLTIN_INFO_USE_REVERSE);
 DEF_STRING(GM_BLTIN_INFO_CHECK_NBR);
@@ -72,13 +73,13 @@ const gm_builtin_desc_t GM_builtins[] = {
         { "Graph:NumNodes:Int:0", GM_BLTIN_GRAPH_NUM_NODES, "" }, { "Graph:NumEdges:Int:0", GM_BLTIN_GRAPH_NUM_EDGES, "" }, { "Node:NumNbrs:Int:0",
                 GM_BLTIN_NODE_DEGREE, "" }, { "*NumOutNbrs", GM_BLTIN_NODE_DEGREE, "" },   // * means synonym to previous
         { "*Degree", GM_BLTIN_NODE_DEGREE, "" }, { "*OutDegree", GM_BLTIN_NODE_DEGREE, "" }, { "Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,
-                AUX_INFO(GM_BLTIN_INFO_USE_REVERSE,"true") }, { "*InDegree", GM_BLTIN_NODE_IN_DEGREE, "" }, { "Node:IsNbrFrom:Bool:1:Node",
-                GM_BLTIN_NODE_IS_NBR, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,"true") },
+                AUX_INFO(GM_BLTIN_INFO_USE_REVERSE,GM_BLTIN_FLAG_TRUE) }, { "*InDegree", GM_BLTIN_NODE_IN_DEGREE, "" }, { "Node:IsNbrFrom:Bool:1:Node",
+                GM_BLTIN_NODE_IS_NBR, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE) },
 
         { "!NI_In:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Out:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Down:ToEdge:Edge:0",
                 GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Up:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" },
 
-        { "Edge:FromNode:Node:0", GM_BLTIN_EDGE_FROM, AUX_INFO(GM_BLTIN_INFO_NEED_FROM,"true") }, { "Edge:ToNode:Node:0", GM_BLTIN_EDGE_TO, "" },
+        { "Edge:FromNode:Node:0", GM_BLTIN_EDGE_FROM, AUX_INFO(GM_BLTIN_INFO_NEED_FROM,GM_BLTIN_FLAG_TRUE) }, { "Edge:ToNode:Node:0", GM_BLTIN_EDGE_TO, "" },
 
         // Set:
         { "N_S:Add:Void:1:Node", GM_BLTIN_SET_ADD, AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW) }, { "N_S:Remove:Void:1:Node", GM_BLTIN_SET_REMOVE,
