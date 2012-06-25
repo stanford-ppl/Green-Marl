@@ -67,7 +67,7 @@ void gm_code_generator::generate_expr_foreign(ast_expr* e) {
     ast_expr_foreign* f = (ast_expr_foreign*) e;
 
     std::list<ast_node*>& N = f->get_parsed_nodes();
-    std::list<std::string>& T = f->get_parsed_text();
+    std::list < std::string > &T = f->get_parsed_text();
     std::list<ast_node*>::iterator I = N.begin();
     std::list<std::string>::iterator J = T.begin();
     for (; I != N.end(); I++, J++) {
@@ -282,6 +282,7 @@ void gm_code_generator::generate_sent_block(ast_sentblock* sb, bool need_brace) 
 }
 
 void gm_code_generator::generate_sent_assign(ast_assign* a) {
+
     if (a->is_target_scalar()) {
         generate_lhs_id(a->get_lhs_scala());
     } else {

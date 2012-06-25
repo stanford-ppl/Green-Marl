@@ -71,8 +71,9 @@ public:
         if (s->get_nodetype() != AST_VARDECL) return true;
 
         // if it has an initializer, create new sentence
-        ast_vardecl *v = (ast_vardecl*) s;
-        ast_expr *e = v->get_init();
+        ast_vardecl* v = (ast_vardecl*) s;
+        ast_expr* e = v->get_init();
+
         if (e == NULL) return true;
         v->set_init(NULL);
 
