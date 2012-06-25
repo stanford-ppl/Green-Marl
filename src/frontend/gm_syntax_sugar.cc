@@ -75,9 +75,8 @@ public:
         ast_expr* e = v->get_init();
 
         if (e == NULL) return true;
-        if (!v->is_initialized_instantly) {
             v->set_init(NULL);
-        }
+
             // should be single variable definition
             // should be non-field type.
             ast_idlist* idl = v->get_idlist();

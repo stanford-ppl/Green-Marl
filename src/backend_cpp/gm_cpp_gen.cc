@@ -460,7 +460,7 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
 
     if (a->is_target_scalar()) {
         ast_id* leftHandSide = a->get_lhs_scala();
-        if (leftHandSide->is_instantly_initialized()) {
+        if (leftHandSide->is_instantly_assigned()) { //we have to add the variable declaration here
             Body.push(get_lib()->get_type_string(leftHandSide->getTypeSummary()));
             Body.push(" ");
         }

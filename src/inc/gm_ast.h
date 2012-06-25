@@ -332,7 +332,7 @@ public:
         if (cp_syminfo) {
             cp->info = this->info;
         }
-        cp->instant_initialize = instant_initialize;
+        cp->instant_assignment = instant_assignment;
         return cp;
     }
 
@@ -357,7 +357,7 @@ public:
 
 private:
     ast_id() :
-            ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL), instant_initialize(false) {
+            ast_node(AST_ID), name(NULL), info(NULL), gen_name(NULL), instant_assignment(false) {
     }
 
     ast_id(const char* org, int l, int c) :
@@ -393,12 +393,12 @@ public:
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
 
-    bool is_instantly_initialized() {
-        return instant_initialize;
+    bool is_instantly_assigned() {
+        return instant_assignment;
     }
 
-    void set_instant_initialize(bool value) {
-        instant_initialize = value;
+    void set_instant_assigned(bool value) {
+        instant_assignment = value;
     }
 
 public:
@@ -408,7 +408,7 @@ private:
     gm_symtab_entry* info;
     char* gen_name;
 
-    bool instant_initialize;
+    bool instant_assignment;
 
     char* get_orgname_from_symbol();  // gm_typecheck.cc
     char* get_genname_from_symbol();  // gm_typecheck.cc
@@ -1992,8 +1992,7 @@ public:
 
 private:
     ast_vardecl() :
-            ast_sent(AST_VARDECL), idlist(NULL), type(NULL), init_expr(NULL), tc_finished(false), instand_init(false) {
-        printf("INIT\n");
+            ast_sent(AST_VARDECL), idlist(NULL), type(NULL), init_expr(NULL), tc_finished(false) {
     }
 
 public:
@@ -2018,8 +2017,6 @@ public:
         d->type = type;
         idl->set_parent(d);
         type->set_parent(d);
-        d->instand_init = id->is_instantly_initialized();
-        printf("Gnaaa: %d\n", id->is_instantly_initialized());
         return d;
     }
 
@@ -2033,15 +2030,8 @@ public:
         id->set_parent(d);
         type->set_parent(d);
         if (init != NULL) init->set_parent(d);
-        d->instand_init = check_instant_initialization(type, init);
-        id->set_instant_initialize(d->instand_init);
-        printf("Check instant init:\t%d\t%p\n", d->instand_init, d);
-        printf("%s\n", id->get_genname());
+        id->set_instant_assigned(check_instant_initialization(type, init));
         return d;
-    }
-
-    bool is_initialized_instantly() {
-        return instand_init;
     }
 
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
@@ -2081,7 +2071,6 @@ private:
     ast_typedecl* type;
     ast_expr* init_expr; // for syntax sugar.
     bool tc_finished;
-    bool instand_init;
 
     static bool check_instant_initialization(ast_typedecl* type, ast_expr* init) {
 
