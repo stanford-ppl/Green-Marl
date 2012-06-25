@@ -86,6 +86,8 @@ public:
                 sub_exprs[current_fe] = empty;  // initialization by copying
             }
         }
+
+        return true;
     }
 
     bool apply(ast_expr* e) {

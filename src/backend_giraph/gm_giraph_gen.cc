@@ -68,21 +68,85 @@ void gm_giraph_gen::do_generate_global_variables() {
     Body.NL();
 }
 
-void gm_giraph_gen::do_generate_job_configuration() {
+void gm_giraph_gen::do_generate_input_output_formats() {
     char temp[1024];
     ast_procdef* proc = FE.get_current_proc();
 
-    Body.NL();
-    Body.pushln("@Override");
-    Body.pushln("public Configuration getConf() {");
-    Body.pushln("return conf;");
-    Body.pushln("}");
+    const char* proc_name = proc->get_procname()->get_genname();
+    const char* vertex_id = PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable";
+    const char* edge_data = proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP) ? "EdgeData" : "NullWritable";
 
-    Body.NL();
+    Body.pushln("//----------------------------------------------");
+    Body.pushln("// Vertex Input format");
+    Body.pushln("//----------------------------------------------");
+
+    sprintf(temp, "static class %sVertexInputFormat extends TextVertexInputFormat<%s, VertexData, %s, MessageData> {", proc_name, vertex_id, edge_data);
+    Body.pushln(temp);
     Body.pushln("@Override");
-    Body.pushln("public void setConf(Configuration conf) {");
-    Body.pushln("this.conf = conf;");
+    sprintf(temp, "public VertexReader<%s, VertexData, %s, MessageData>", vertex_id, edge_data);
+    Body.pushln(temp);
+    Body.pushln("createVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {");
+    sprintf(temp, "return new %sVertexReader(textInputFormat.createRecordReader(split, context));", proc_name);
+    Body.pushln(temp);
     Body.pushln("}");
+    Body.pushln("}");
+    Body.NL();
+
+    sprintf(temp, "static class %sVertexReader extends TextVertexInputFormat.TextVertexReader<%s, VertexData, %s, MessageData> {", proc_name, vertex_id, edge_data);
+    Body.pushln(temp);
+    sprintf(temp, "public %sVertexReader(RecordReader<LongWritable, Text> lineRecordReader) {", proc_name);
+    Body.pushln(temp);
+    Body.pushln("super(lineRecordReader);");
+    Body.pushln("}");
+    Body.NL();
+
+    Body.pushln("@Override");
+    sprintf(temp, "public BasicVertex<%s, VertexData, %s, MessageData> getCurrentVertex() throws IOException, InterruptedException {", vertex_id, edge_data);
+    Body.pushln(temp);
+    sprintf(temp, "BasicVertex<%s, VertexData, %s, MessageData> vertex =", vertex_id, edge_data);
+    Body.pushln(temp);
+    sprintf(temp, "    BspUtils.<%s, VertexData, %s, MessageData> createVertex(getContext().getConfiguration());", vertex_id, edge_data);
+    Body.pushln(temp);
+    Body.NL();
+
+    Body.pushln("Text line = getRecordReader().getCurrentValue();");
+    Body.pushln("String[] values = line.toString().split(\"\\t\");");
+    if (PREGEL_BE->get_lib()->is_node_type_int()) {
+        Body.pushln("IntWritable vertexId = new IntWritable(Integer.parseInt(values[0]));");
+    } else {
+        Body.pushln("LongWritable vertexId = new LongWritable(Long.parseLong(values[0]));");
+    }
+    Body.pushln("//DoubleWritable vertexValue = new DoubleWritable(Double.parseDouble(values[1]));");
+    sprintf(temp, "Map<%s, %s> edges = Maps.newHashMap();", vertex_id, edge_data);
+    Body.pushln(temp);
+    Body.pushln("for (int i = 2; i < values.length; i += 2) {");
+    if (PREGEL_BE->get_lib()->is_node_type_int()) {
+        Body.pushln("IntWritable edgeId = new IntWritable(Integer.parseInt(values[i]));");
+    } else {
+        Body.pushln("LongWritable edgeId = new LongWritable(Long.parseLong(values[i]));");
+    }
+    Body.pushln("//DoubleWritable edgeValue = new DoubleWritable(Double.parseDouble(values[i+1]));");
+    if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        Body.pushln("edges.put(edgeId, new EdgeData());");
+    } else {
+        Body.pushln("edges.put(edgeId, NullWritable.get());");
+    }
+    Body.pushln("}");
+    Body.pushln("vertex.initialize(vertexId, new VertexData(), edges, null);");
+    Body.pushln("return vertex;");
+    Body.pushln("}");
+    Body.NL();
+
+    Body.pushln("@Override");
+    Body.pushln("public boolean nextVertex() throws IOException, InterruptedException {");
+    Body.pushln("return getRecordReader().nextKeyValue();");
+    Body.pushln("}");
+    Body.pushln("} // end of vertex input format");
+}
+
+void gm_giraph_gen::do_generate_job_configuration() {
+    char temp[1024];
+    ast_procdef* proc = FE.get_current_proc();
 
     // Iterate symbol table
     gm_symtab* args = proc->get_symtab_var();
@@ -91,17 +155,22 @@ void gm_giraph_gen::do_generate_job_configuration() {
     std::set<gm_symtab_entry*>::iterator I;
 
     Body.NL();
+    Body.pushln("//----------------------------------------------");
+    Body.pushln("// Job Configuration");
+    Body.pushln("//----------------------------------------------");
     Body.pushln("@Override");
     Body.pushln("public final int run(final String[] args) throws Exception {");
     Body.pushln("Options options = new Options();");
     Body.pushln("options.addOption(\"h\", \"help\", false, \"Help\");");
     Body.pushln("options.addOption(\"v\", \"verbose\", false, \"Verbose\");");
     Body.pushln("options.addOption(\"w\", \"workers\", true, \"Number of workers\");");
+    Body.pushln("options.addOption(\"i\", \"input\", true, \"Input filename\");");
+    Body.pushln("options.addOption(\"o\", \"output\", true, \"Output filename\");");
     for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;
         if (s->isReadable()) {
-            sprintf(temp, "options.addOption(\"%s\", \"%s\", true, \"%s\");", s->getId()->get_genname(), s->getId()->get_genname(), s->getId()->get_genname());
+            sprintf(temp, "options.addOption(\"_%s\", \"%s\", true, \"%s\");", s->getId()->get_genname(), s->getId()->get_genname(), s->getId()->get_genname());
             Body.pushln(temp);
         }
     }
@@ -145,10 +214,12 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body.pushln(temp);
     sprintf(temp, "job.setWorkerContextClass(%sWorkerContext.class);", proc->get_procname()->get_genname());
     Body.pushln(temp);
-    Body.pushln("job.setVertexInputFormatClass(null);");
+    sprintf(temp, "job.setVertexInputFormatClass(%sVertexInputFormat.class);", proc->get_procname()->get_genname());
+    Body.pushln(temp);
     Body.pushln("FileInputFormat.addInputPath(job.getInternalJob(), new Path(cmd.getOptionValue('i')));");
     Body.pushln("if (cmd.hasOption('o')) {");
-    Body.pushln("job.setVertexOutputFormatClass(null);");
+    sprintf(temp, "//job.setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc->get_procname()->get_genname());
+    Body.pushln(temp);
     Body.pushln("FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(cmd.getOptionValue('o')));");
     Body.pushln("}");
     Body.pushln("int workers = Integer.parseInt(cmd.getOptionValue('w'));");
@@ -197,6 +268,18 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body.pushln("} else {");
     Body.pushln("return -1;");
     Body.pushln("}");
+    Body.pushln("} // end of job configuration");
+
+    Body.NL();
+    Body.pushln("@Override");
+    Body.pushln("public Configuration getConf() {");
+    Body.pushln("return conf;");
+    Body.pushln("}");
+
+    Body.NL();
+    Body.pushln("@Override");
+    Body.pushln("public void setConf(Configuration conf) {");
+    Body.pushln("this.conf = conf;");
     Body.pushln("}");
 
     Body.NL();
@@ -217,6 +300,8 @@ void gm_giraph_gen::generate_proc(ast_procdef* proc) {
     do_generate_master();
 
     do_generate_vertex();
+
+    do_generate_input_output_formats();
 
     do_generate_job_configuration();
 
