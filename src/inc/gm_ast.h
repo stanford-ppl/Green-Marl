@@ -2030,7 +2030,7 @@ public:
         id->set_parent(d);
         type->set_parent(d);
         if (init != NULL) init->set_parent(d);
-        id->set_instant_assigned(check_instant_initialization(type, init));
+        id->set_instant_assigned(check_instant_assignment(type, init));
         return d;
     }
 
@@ -2072,7 +2072,7 @@ private:
     ast_expr* init_expr; // for syntax sugar.
     bool tc_finished;
 
-    static bool check_instant_initialization(ast_typedecl* type, ast_expr* init) {
+    static bool check_instant_assignment(ast_typedecl* type, ast_expr* init) {
 
         if (init == NULL || type == NULL) return false;
         if (!type->is_collection()) return false;

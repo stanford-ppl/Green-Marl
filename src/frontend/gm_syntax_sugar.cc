@@ -75,19 +75,19 @@ public:
         ast_expr* e = v->get_init();
 
         if (e == NULL) return true;
-            v->set_init(NULL);
+        v->set_init(NULL);
 
-            // should be single variable definition
-            // should be non-field type.
-            ast_idlist* idl = v->get_idlist();
-            assert(idl->get_length() == 1);
-            ast_id* id = idl->get_item(0)->copy();
+        // should be single variable definition
+        // should be non-field type.
+        ast_idlist* idl = v->get_idlist();
+        assert(idl->get_length() == 1);
+        ast_id* id = idl->get_item(0)->copy();
 
-            // new assign statement
-            ast_assign* a = ast_assign::new_assign_scala(id, e, GMASSIGN_NORMAL, NULL, GMREDUCE_NULL);
+        // new assign statement
+        ast_assign* a = ast_assign::new_assign_scala(id, e, GMASSIGN_NORMAL, NULL, GMREDUCE_NULL);
 
-            // add this sententence next to current statement
-            gm_add_sent_after(v, a, false /* no fix symtab */);
+        // add this sententence next to current statement
+        gm_add_sent_after(v, a, false /* no fix symtab */);
 
         return true;
     }
