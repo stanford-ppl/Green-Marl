@@ -25,7 +25,7 @@ void gm_giraph_gen::do_generate_master_class() {
     // create master class
     //--------------------------------------------------------------------
     char temp[1024];
-    sprintf(temp, "public static class %sMaster extends Master {", proc->get_procname()->get_genname());
+    sprintf(temp, "public static class %sMaster extends MasterCompute {", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("// Control fields");
     bool prep = FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE);
@@ -33,15 +33,56 @@ void gm_giraph_gen::do_generate_master_class() {
     Body.pushln(temp);
     sprintf(temp, "private int     _master_state_nxt            = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
     Body.pushln(temp);
+    Body.pushln("private boolean _master_initialized          = false;");
+    Body.pushln("private boolean _master_should_start_workers = false;");
     Body.pushln("private boolean _master_should_finish        = false;");
     Body.NL();
 
     //--------------------------------------------------------------------
-    // constructor
-    // (with command-line argument parsing)
+    // initialization function
     //--------------------------------------------------------------------
-    sprintf(temp, "public %sMaster() {", proc->get_procname()->get_genname());
+
+    Body.pushln("private void _master_initialize() {");
+
+    // Basic blocks iterator
+    std::list<gm_gps_basic_block*>& bb_blocks = info->get_basic_blocks();
+    std::list<gm_gps_basic_block*>::iterator I_bb;
+
+    // Symbol iterator
+    std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
+    std::set<gm_symtab_entry*>::iterator I_sym;
+
+    Body.pushln("try {");
+    sprintf(temp, "registerAggregator(%s, IntOverwriteAggregator.class);", GPS_KEY_FOR_STATE);
     Body.pushln(temp);
+    for (I_bb = bb_blocks.begin(); I_bb != bb_blocks.end(); I_bb++) {
+        gm_gps_basic_block* b = *I_bb;
+        if ((!b->is_prepare()) && (!b->is_vertex())) continue;
+
+        if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
+            int cond_bb_no = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
+            sprintf(temp, "registerAggregator(\"%s%d\", BooleanOverwriteAggregator.class);", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
+            Body.pushln(temp);
+        }
+    }
+
+    for (I_sym = scalar.begin(); I_sym != scalar.end(); I_sym++) {
+        gm_symtab_entry* sym = *I_sym;
+        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
+        assert(syminfo!=NULL);
+
+        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
+            sprintf(temp, "registerAggregator(%s, ", get_lib()->create_key_string(sym->getId()));
+            Body.push(temp);
+            get_lib()->generate_broadcast_variable_type(sym->getId()->getTypeSummary(), Body, syminfo->get_reduce_type());
+            Body.pushln(".class);");
+        }
+    }
+    Body.pushln("} catch (InstantiationException e) {");
+    Body.pushln("e.printStackTrace();");
+    Body.pushln("} catch (IllegalAccessException e) {");
+    Body.pushln("e.printStackTrace();");
+    Body.pushln("}");
 
     // Iterate symbol table
     gm_symtab* args = proc->get_symtab_var();
@@ -173,13 +214,6 @@ void gm_giraph_gen::do_generate_shared_variables_keys() {
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
         assert(syminfo!=NULL);
 
-        /*
-         printf("%s, used_in_vertex = %c, used_in_master =%c\n",
-         sym->getId()->get_orgname(),
-         syminfo->is_used_in_vertex() ? 'Y' : 'N',
-         syminfo->is_used_in_master() ? 'Y' : 'N');
-         */
-
         // if the symbol is used in vertex and master
         // we need shared variable
         if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
@@ -203,6 +237,7 @@ void gm_giraph_gen::do_generate_master_states() {
     Body.pushln("// Master's State-machine ");
     Body.pushln("//----------------------------------------------------------");
     Body.pushln("private void _master_state_machine() {");
+    Body.pushln("_master_should_start_workers = false;");
     Body.pushln("_master_should_finish = false;");
     Body.pushln("do {");
     Body.pushln("_master_state = _master_state_nxt ;");
@@ -219,21 +254,26 @@ void gm_giraph_gen::do_generate_master_states() {
         Body.pushln(temp);
     }
     Body.pushln("}");
-    Body.pushln("} while (!_master_should_finish);");
+    Body.pushln("} while (!_master_should_start_workers && !_master_should_finish);");
     Body.pushln("}");
     Body.NL();
 
     Body.pushln("//@ Override");
     Body.pushln("public void compute() {");
 
+    Body.pushln("if (!_master_initialized) {");
+    Body.pushln("_master_initialize();");
+    Body.pushln("}");
+    Body.NL();
+
     Body.pushln("_master_state_machine();");
     Body.NL();
 
     Body.pushln("if (_master_should_finish) { ");
     Body.pushln("haltComputation();");
-    Body.pushln("}");
-    Body.NL();
     Body.pushln("writeOutput();");
+    Body.pushln("}");
+
     Body.pushln("}");
     Body.NL();
 
@@ -259,7 +299,7 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b) {
     Body.flush();
     b->reproduce_sents();
     Body.pushln("-----*/");
-    sprintf(temp, "System.out.println(\"Running _master_state %d\");", id);
+    sprintf(temp, "LOG.info(\"Running _master_state %d\");", id);
     Body.pushln(temp);
     if (type == GM_GPS_BBTYPE_BEGIN_VERTEX) {
 
@@ -278,6 +318,7 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b) {
         int n = b->get_nth_exit(0)->get_id();
         sprintf(temp, "_master_state_nxt = %d;", n);
         Body.pushln(temp);
+        Body.pushln("_master_should_start_workers = true;");
     } else if (type == GM_GPS_BBTYPE_SEQ) {
         if (b->is_after_vertex()) {
             assert(b->get_num_entries() == 1);
@@ -377,6 +418,7 @@ void gm_giraph_gen::do_generate_master_state_body(gm_gps_basic_block* b) {
         int n = b->get_nth_exit(0)->get_id();
         sprintf(temp, "_master_state_nxt = %d;", n);
         Body.pushln(temp);
+        Body.pushln("_master_should_start_workers = true;");
     } else if (type == GM_GPS_BBTYPE_MERGED_TAIL) {
         Body.pushln("// Intra-Loop Merged");
         int source_id = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);

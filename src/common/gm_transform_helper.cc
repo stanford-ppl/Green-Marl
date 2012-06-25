@@ -31,7 +31,12 @@ static void find_enclosing_scope(ast_node* n, gm_scope* s) {
         ast_expr_reduce* r = (ast_expr_reduce*) n;
         r->get_this_scope(s);
         return;
+    } else if (n->get_nodetype() == AST_BFS) {
+        ast_bfs* r = (ast_bfs*) n;
+        r->get_this_scope(s);
+        return;
     } else {
+        printf("node type = %s\n", gm_get_nodetype_string(n->get_nodetype()));
         assert(false);
     }
 }
