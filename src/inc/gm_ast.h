@@ -2031,7 +2031,6 @@ public:
         type->set_parent(d);
         if (init != NULL) init->set_parent(d);
         id->set_instant_assigned(check_instant_initialization(type, init));
-        printf("Test1: %d\n", check_instant_initialization(type, init));
         return d;
     }
 
