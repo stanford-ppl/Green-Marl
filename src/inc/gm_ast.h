@@ -1154,7 +1154,7 @@ private:
 //-------------------------------------------------------
 // Class of Expressions
 //-------------------------------------------------------
-static enum
+enum GMEXPR_CLASS
 {
     GMEXPR_IVAL,    // integer literal
     GMEXPR_FVAL,    // floating literal
@@ -1174,7 +1174,7 @@ static enum
     GMEXPR_TER,      // ternary operation
     GMEXPR_FOREIGN,
 // foreign expression
-} GMEXPR_T;
+};
 
 // Numeric or boolean expression
 class gm_builtin_def;
@@ -1190,14 +1190,15 @@ public:
         delete right;
         delete cond;
     }
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+    virtual ast_expr* copy(bool cp_syminfo = false);
+
     virtual bool is_expr() {
         return true;
     }
-
-    virtual ast_expr* copy(bool cp_syminfo = false);
 
     // factory methods
 
@@ -1343,7 +1344,7 @@ protected:
     }
 
 protected:
-    int expr_class;  // GMEXPR_...
+    GMEXPR_CLASS expr_class;  // GMEXPR_...
     ast_expr* left;
     ast_expr* right;
     ast_expr* cond;
@@ -1448,7 +1449,7 @@ public:
         return field;
     }
 
-    int get_opclass() {
+    GMEXPR_CLASS get_opclass() {
         return expr_class;
     }
 
@@ -1535,8 +1536,8 @@ public:
         return alternative_type_of_expression;
     }
 
-    void set_expr_class(int i) {
-        expr_class = i;
+    void set_expr_class(GMEXPR_CLASS ec) {
+        expr_class = ec;
     }
 
 protected:
