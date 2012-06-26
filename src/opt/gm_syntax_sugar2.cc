@@ -187,7 +187,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
     ast_expr_reduce* left_nested = NULL;
     ast_expr_reduce* right_nested = NULL;
-    bool has_other_rhs;
+    bool has_other_rhs = false;
     bool has_nested = check_has_nested(target->get_body(), rtype, has_other_rhs, left_nested, right_nested);
 
     ast_sent* holder = NULL;

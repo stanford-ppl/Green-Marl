@@ -11,7 +11,7 @@
 #include <string>
 #include "gm_frontend_api.h"
 
-enum
+enum AST_NODE_TYPE
 {
     AST_ID,       // 
     AST_FIELD,    // A.B
@@ -153,10 +153,10 @@ class ast_node
 {
     friend class gm_apply;
 protected:
-    ast_node(int nt) :
+    ast_node(AST_NODE_TYPE nt) :
             nodetype(nt), parent(NULL) {
     }
-    int nodetype;
+    AST_NODE_TYPE nodetype;
 
 protected:
     ast_node() :
@@ -165,7 +165,7 @@ protected:
     ast_node* parent;
 
 public:
-    void set_nodetype(int nt) {
+    void set_nodetype(AST_NODE_TYPE nt) {
         nodetype = nt;
     }
 
@@ -177,7 +177,7 @@ public:
         extra.clear();
     }
 
-    int get_nodetype() {
+    AST_NODE_TYPE get_nodetype() {
         return nodetype;
     }
     ast_node* get_parent() {
@@ -190,12 +190,13 @@ public:
     virtual bool is_sentence() {
         return false;
     }
+
     virtual bool is_expr() {
         return false;
     }
+
     bool has_symtab() {
-        return (nodetype == AST_SENTBLOCK) || (nodetype == AST_FOREACH) || (nodetype == AST_PROCDEF) || (nodetype == AST_EXPR_RDC) || (nodetype == AST_BFS)
-                || false;
+        return (nodetype == AST_SENTBLOCK) || (nodetype == AST_FOREACH) || (nodetype == AST_PROCDEF) || (nodetype == AST_EXPR_RDC) || (nodetype == AST_BFS);
     }
 
     // for parser debug
@@ -935,7 +936,7 @@ private:
 class ast_sent: public ast_node
 {
 protected:
-    ast_sent(int y) :
+    ast_sent(AST_NODE_TYPE y) :
             ast_node(y), eline(0), _par(false) {
     }
 
@@ -948,10 +949,11 @@ public:
         eline = t;
     }
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
         assert(false);
     }
-    ;
+
     virtual bool is_sentence() {
         return true;
     }
@@ -960,6 +962,7 @@ public:
     virtual bool is_under_parallel_execution() {
         return _par;
     }
+
     virtual void set_under_parallel_execution(bool b) {
         _par = b;
     }
@@ -968,6 +971,7 @@ private:
     ast_sent() :
             ast_node(AST_SENT) {
     }
+
     int eline;
     bool _par;
 
@@ -985,10 +989,12 @@ public:
         }
         delete_symtabs();
     }
+
 public:
     static ast_sentblock* new_sentblock() {
         return new ast_sentblock();
     }
+
     void add_sent(ast_sent* s) {
         sents.push_back(s);
         s->set_parent(this);
@@ -2190,15 +2196,20 @@ public:
 
     // For is sequential while FOREACH is parallel.
     // Optimization may overrride parallel exeuction with sequential.
+
+    // sequential execution
     bool is_sequential() {
         return seq_exe;
-    } // sequential execution
+    }
+
     void set_sequential(bool b) {
         seq_exe = b;
     }
+
+    // parallel execution
     bool is_parallel() {
         return !is_sequential();
-    } // sequential execution
+    }
 
     // for set iterator
     bool is_reverse_iteration() {
