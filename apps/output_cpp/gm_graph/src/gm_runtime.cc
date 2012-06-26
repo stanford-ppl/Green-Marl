@@ -20,7 +20,7 @@ gm_runtime::gm_runtime() :
     initialize();
 }
 gm_runtime::~gm_runtime() {
-
+    delete[] random_seeds;
 }
 // Called at each procedure entry
 void gm_runtime::initialize() {
