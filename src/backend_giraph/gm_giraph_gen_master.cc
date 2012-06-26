@@ -263,6 +263,7 @@ void gm_giraph_gen::do_generate_master_states() {
 
     Body.pushln("if (!_master_initialized) {");
     Body.pushln("_master_initialize();");
+    Body.pushln("_master_initialized = true;");
     Body.pushln("}");
     Body.NL();
 
