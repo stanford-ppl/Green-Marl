@@ -658,7 +658,6 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
             is_okay = find_symbol_field(p->get_field());
             break;
         }
-
         case GMEXPR_REDUCE: {
             ast_expr_reduce* r = (ast_expr_reduce*) p;
             int iter_type = r->get_iter_type();
@@ -667,7 +666,6 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
                 r->set_iter_type(r->get_iterator()->getTypeSummary());
             break;
         }
-
         case GMEXPR_BUILTIN: {
             ast_expr_builtin* b = (ast_expr_builtin*) p;
             ast_id* i = b->get_driver();
@@ -682,8 +680,8 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
             ast_field* field = builtinField->get_field_driver();
             is_okay = find_symbol_field(field);
             is_okay &= find_symbol_id(field->get_first());
-        }
             break;
+        }
         case GMEXPR_FOREIGN: {
             ast_expr_foreign* f = (ast_expr_foreign*) p;
             std::list<ast_node*>& L = f->get_parsed_nodes();
@@ -701,7 +699,10 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
                     is_okay = b && is_okay;
                 }
             }
+            break;
         }
+        default:
+            break;
     }
 
     set_okay(is_okay);

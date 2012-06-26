@@ -203,6 +203,8 @@ bool gm_typechecker_stage_2::apply(ast_expr* e) {
             is_okay &= apply_on_field(builtinField->get_field_driver());
             break;
         }
+        default:
+            break;
     }
     set_okay(is_okay);
     return is_okay;
