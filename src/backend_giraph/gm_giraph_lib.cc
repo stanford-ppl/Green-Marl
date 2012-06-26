@@ -23,6 +23,7 @@ void gm_giraphlib::generate_headers(gm_code_writer& Body) {
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.hadoop.mapreduce.InputSplit;");
     Body.pushln("import org.apache.hadoop.mapreduce.RecordReader;");
+    Body.pushln("import org.apache.hadoop.mapreduce.RecordWriter;");
     Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
     Body.pushln("import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;");
     Body.pushln("import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;");
@@ -456,6 +457,8 @@ void gm_giraphlib::generate_master_class_details(std::set<gm_symtab_entry*>& pro
     Body.pushln("public void write(DataOutput out) throws IOException {");
     Body.pushln("out.writeInt(_master_state);");
     Body.pushln("out.writeInt(_master_state_nxt);");
+    Body.pushln("out.writeBoolean(_master_initialized);");
+    Body.pushln("out.writeBoolean(_master_should_start_workers);");
     Body.pushln("out.writeBoolean(_master_should_finish);");
 
     for (I = prop.begin(); I != prop.end(); I++) {
@@ -471,6 +474,8 @@ void gm_giraphlib::generate_master_class_details(std::set<gm_symtab_entry*>& pro
     Body.pushln("public void readFields(DataInput in) throws IOException {");
     Body.pushln("_master_state = in.readInt();");
     Body.pushln("_master_state_nxt = in.readInt();");
+    Body.pushln("_master_initialized = in.readBoolean();");
+    Body.pushln("_master_should_start_workers = in.readBoolean();");
     Body.pushln("_master_should_finish = in.readBoolean();");
 
     for (I = prop.begin(); I != prop.end(); I++) {
@@ -491,6 +496,15 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
                     ((gm_gps_beinfo*) FE.get_current_backend_info())->get_total_node_property_size();
 
     std::set<gm_symtab_entry*>::iterator I;
+
+    if (is_edge_prop) {
+        Body.pushln("public EdgeData(double input) {");
+    } else {
+        Body.pushln("public VertexData(double input) {");
+    }
+    Body.pushln("// Assign input data if desired");
+    Body.pushln("}");
+    Body.NL();
 
     Body.pushln("@Override");
     Body.pushln("public void write(DataOutput out) throws IOException {");
@@ -523,6 +537,12 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
         Body.pushln(temp);
         Body.pushln("}");
     }
+    Body.pushln("}");
+
+    Body.pushln("@Override");
+    Body.pushln("public String toString() {");
+    Body.pushln("// Implement output fields here for VertexOutputWriter");
+    Body.pushln("return \"1.0\";");
     Body.pushln("}");
 
 }
@@ -681,7 +701,6 @@ void gm_giraphlib::generate_message_class_details(gm_gps_beinfo* info, gm_code_w
 
     generate_message_class_write(this, info, Body);
     generate_message_class_read1(this, info, Body);
-    Body.NL();
 }
 
 void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) {
