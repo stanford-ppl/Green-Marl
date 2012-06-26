@@ -1,4 +1,3 @@
-
 #include "common_main.h"
 #include "v_cover.h"
 
@@ -26,12 +25,12 @@ public:
         // values
         //---------------------------------
         printf("covered (may be non-deterministic) = %d\n", covered);
+        delete[] selected;
         return true;
     }
 };
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     my_main M;
     M.main(argc, argv);
 }
