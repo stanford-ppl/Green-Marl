@@ -16,6 +16,7 @@ gm_runtime _GM_RT;
 //===============================
 gm_runtime::gm_runtime() :
         is_init(false), num_threads(0), random_seeds(NULL) {
+
     gm_spinlock_table_init();
     initialize();
 }
@@ -26,7 +27,8 @@ gm_runtime::~gm_runtime() {
 void gm_runtime::initialize() {
 
     if ((is_init == false) || (omp_get_max_threads() > num_threads)) {
-        set_num_threads (omp_get_max_threads());is_init = true;
+        set_num_threads (omp_get_max_threads());
+        is_init = true;
     }
 
 }
@@ -45,12 +47,9 @@ void gm_runtime::set_num_threads(int n) {
         _GM_MEM.resize(n);
         expand_random_seeds(old, n);
 
-        //printf("HELLO\n");
-
         // initialize threads by generationg random numbers
-#pragma omp parallel
+        #pragma omp parallel
         {
-            //printf("HELLO\n");
             uniform(gm_rt_thread_id());
         }
     }

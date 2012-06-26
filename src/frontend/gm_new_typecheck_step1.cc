@@ -207,7 +207,7 @@ ast_id* gm_get_default_graph(gm_symtab* symTab) {
                 foundCount++;
                 if (foundCount > 1) {
                     gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
-                    assert(false);
+                    return NULL;
                 }
                 targetGraph = (*II)->getId();
             }
@@ -222,13 +222,12 @@ bool gm_check_graph_is_defined(ast_typedecl* type, gm_symtab* symTab) {
 
     if (graph == NULL) {
         //no associated graph found - try to find default graph
-        graph = gm_get_default_graph(symTab)->copy(true);
-        assert(graph != NULL);
-
-        symTab->set_default_graph_used();
-
+        graph = gm_get_default_graph(symTab);
+        if (graph == NULL) return false;
+        graph = graph->copy(true);
         type->set_target_graph_id(graph);
         graph->set_parent(type);
+        symTab->set_default_graph_used();
     }
     return gm_check_target_is_defined(graph, symTab, SHOULD_BE_A_GRAPH);
 }
@@ -252,22 +251,20 @@ bool gm_check_graph_is_defined(ast_typedecl* type, gm_symtab* symTab) {
 //     - copy graph_id from collection_id
 //------------------------------------------------
 bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
-    if (type->is_primitive() || type->is_graph() || type->is_void()) {
-        if (type->is_graph()) {
-            //if default graph is used, check if no other graph is defined
-            if (SYM_V->is_default_graph_used() && SYM_V->get_graph_declaration_count() > 0) {
-                gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, (ast_id*) type, "", "");
-                assert(false);
-            }
+    if (type->is_primitive() || type->is_void()) {
+        //nothing to do
+    } else if (type->is_graph()) {
+        //if default graph is used, check if no other graph is defined
+        if (SYM_V->is_default_graph_used() && SYM_V->get_graph_declaration_count() > 0) {
+            gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, (ast_id*) type, "", "");
+            return false;
         }
     } else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator()) {
         bool is_okay = gm_check_graph_is_defined(type, SYM_V);
         if (!is_okay) return is_okay;
     } else if (type->is_property()) {
         bool is_okay = gm_check_graph_is_defined(type, SYM_V);
-        if (!is_okay) {
-            return false;
-        }
+        if (!is_okay) return false;
 
         ast_typedecl* target_type = type->get_target_type();
         if (target_type->is_nodeedge() || target_type->is_collection()) {
@@ -284,7 +281,8 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
         if (!is_okay) return is_okay;
 
         // update collection iter type
-        if (type->is_unknown_collection_iterator()) type->setTypeSummary(gm_get_natural_collection_iterator(col->getTypeSummary()));
+        if (type->is_unknown_collection_iterator())
+            type->setTypeSummary(gm_get_natural_collection_iterator(col->getTypeSummary()));
 
         // copy graph_id 
         type->set_target_graph_id(col->getTypeInfo()->get_target_graph_id()->copy(true));
