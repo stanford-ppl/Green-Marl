@@ -39,16 +39,17 @@ public:
 
     gm_property_of_collection_impl(int size) :
             size(size) {
+
         data = new T*[size];
         if (lazy) {
             locks = new Spinlock[size];
-#pragma omp parallel for
+            #pragma omp parallel for
             for (int i = 0; i < size; i++) {
                 data[i] = NULL;
                 init(locks[i]);
             }
         } else {
-#pragma omp parallel for
+            #pragma omp parallel for
             for (int i = 0; i < size; i++)
                 data[i] = new T(size);
         }

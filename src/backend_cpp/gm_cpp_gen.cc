@@ -8,14 +8,14 @@
 #include "gm_cpplib_words.h"
 
 void gm_cpp_gen::setTargetDir(const char* d) {
-    assert(d!=NULL);
+    assert(d != NULL);
     if (dname != NULL) delete[] dname;
     dname = new char[strlen(d) + 1];
     strcpy(dname, d);
 }
 
 void gm_cpp_gen::setFileName(const char* f) {
-    assert(f!=NULL);
+    assert(f != NULL);
     if (fname != NULL) delete[] fname;
     fname = new char[strlen(f) + 1];
     strcpy(fname, f);
@@ -23,8 +23,8 @@ void gm_cpp_gen::setFileName(const char* f) {
 
 bool gm_cpp_gen::open_output_files() {
     char temp[1024];
-    assert(dname!=NULL);
-    assert(fname!=NULL);
+    assert(dname != NULL);
+    assert(fname != NULL);
 
     sprintf(temp, "%s/%s.h", dname, fname);
     f_header = fopen(temp, "w");
@@ -124,7 +124,7 @@ void gm_cpp_gen::generate_proc(ast_procdef* proc) {
     //-------------------------------
     if (proc->find_info_bool(CPPBE_INFO_HAS_BFS)) {
         ast_extra_info_list* L = (ast_extra_info_list*) proc->find_info(CPPBE_INFO_BFS_LIST);
-        assert(L!=NULL);
+        assert(L != NULL);
         std::list<void*>::iterator I;
         Body.NL();
         Body.pushln("// BFS/DFS definitions for the procedure");
@@ -288,7 +288,7 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
         return get_type_string(t->get_typeid());
     } else if (t->is_property()) {
         ast_typedecl* t2 = t->get_target_type();
-        assert(t2!=NULL);
+        assert(t2 != NULL);
         if (t2->is_primitive()) {
             switch (t2->get_typeid()) {
                 case GMTYPE_BYTE:
@@ -317,10 +317,9 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
             sprintf(temp, "%s<%s>&", PROP_OF_COL, get_lib()->get_type_string(t2));
             return gm_strdup(temp);
         } else {
-           assert(false);
+            assert(false);
         }
-    }
-    else 
+    } else
         return get_lib()->get_type_string(t);
 
     return "ERROR";
@@ -332,7 +331,7 @@ void gm_cpp_gen::generate_sent_foreach(ast_foreach* f) {
     bool need_init_before = get_lib()->need_up_initializer(f);
 
     if (need_init_before) {
-        assert(f->get_parent() -> get_nodetype() == AST_SENTBLOCK);
+        assert(f->get_parent()->get_nodetype() == AST_SENTBLOCK);
         get_lib()->generate_up_initializer(f, Body);
     }
 
@@ -379,8 +378,7 @@ void gm_cpp_gen::generate_sent_call(ast_call* c) {
 // id: field name
 void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
     ast_typedecl* t2 = t->get_target_type();
-    assert(t2!=NULL);
-    //assert(t2->is_primitive());
+    assert(t2 != NULL);
 
     Body.push(" = ");
     switch (t2->getTypeSummary()) {
@@ -411,11 +409,11 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
         case GMTYPE_ESEQ:
         case GMTYPE_NORDER:
         case GMTYPE_EORDER: {
-        	char temp[128];
-        	bool lazyInitialization = false; //TODO: get some information here to check if lazy init is better
-        	sprintf(temp, "%s<%s, %s>", ALLOCATE_COLLECTION, get_lib()->get_type_string(t2), (lazyInitialization ? "true" : "false"));
-        	Body.push(temp);
-        	break;
+            char temp[128];
+            bool lazyInitialization = false; //TODO: get some information here to check if lazy init is better
+            sprintf(temp, "%s<%s, %s>", ALLOCATE_COLLECTION, get_lib()->get_type_string(t2), (lazyInitialization ? "true" : "false"));
+            Body.push(temp);
+            break;
         }
         default:
             assert(false);
@@ -456,6 +454,26 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
         Body.pushln(";");
     }
     return;
+}
+
+void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
+
+    if (a->is_target_scalar()) {
+        ast_id* leftHandSide = a->get_lhs_scala();
+        if (leftHandSide->is_instantly_assigned()) { //we have to add the variable declaration here
+            Body.push(get_lib()->get_type_string(leftHandSide->getTypeSummary()));
+            Body.push(" ");
+        }
+        generate_lhs_id(a->get_lhs_scala());
+    } else {
+        generate_lhs_field(a->get_lhs_field());
+    }
+
+    _Body.push(" = ");
+
+    generate_expr(a->get_rhs());
+
+    _Body.pushln(" ;");
 }
 
 void gm_cpp_gen::generate_sent_block(ast_sentblock* sb) {
@@ -1036,8 +1054,8 @@ void gm_cpp_gen::generate_expr_builtin(ast_expr* ee) {
     gm_builtin_def* def = e->get_builtin_def();
 
     ast_id* driver;
-    if(e->driver_is_field())
-        driver = ((ast_expr_builtin_field*)e)->get_field_driver()->get_second();
+    if (e->driver_is_field())
+        driver = ((ast_expr_builtin_field*) e)->get_field_driver()->get_second();
     else
         driver = e->get_driver();
 

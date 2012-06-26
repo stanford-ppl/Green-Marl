@@ -8,8 +8,10 @@
 // Add delaration here
 // declaration of optimization steps
 //-------------------------------------------
+GM_COMPILE_STEP(gm_gps_opt_transform_bfs, "Transform BFS into while and foreach")
 GM_COMPILE_STEP(gm_gps_opt_simplify_expr1, "Seperating builtin-calls from outer-loop driver")
 //GM_COMPILE_STEP(gm_gps_opt_find_nested_loops_test, "test find nested loops")
+GM_COMPILE_STEP(gm_gps_opt_find_nested_loops_test, "test find nested loops")
 GM_COMPILE_STEP(gm_gps_opt_insert_temp_property, "(Pre-Flip) Replacing scalars with temp-properties")
 GM_COMPILE_STEP(gm_gps_opt_split_loops_for_flipping, "(Pre-Flip) Splitting loops ")
 

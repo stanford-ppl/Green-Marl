@@ -1,0 +1,13 @@
+Procedure test_property_of_collection_no_instant_assign(G:Graph)
+{
+    N_P<N_S> prop;
+    Node n;
+    Bool b;
+    
+    N_S set2;		//create an empty set here
+    If(b)
+   		set2 = n.prop;
+   	Else
+   		set2 = n.prop;
+   	
+}

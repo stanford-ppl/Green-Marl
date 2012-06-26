@@ -35,7 +35,7 @@ public:
             // now delete
             ast_sent* z = *i;
             gm_ripoff_sent(z, false);
-            delete z;  //Causes problem with single-graph syntactic sugar.....why?????? o.O
+            delete z;
         }
         return true;
     }
@@ -116,7 +116,7 @@ public:
         //-------------------------------------
         // Add vardecls after all 'NOP's
         //-------------------------------------
-        std::list<ast_sent*> &sents = sb->get_sents();
+        std::list<ast_sent*>& sents = sb->get_sents();
         std::list<ast_sent*>::iterator ii;
         for (ii = sents.begin(); ii != sents.end(); ii++) {
             if ((*ii)->get_nodetype() != AST_NOP) break;
@@ -134,6 +134,10 @@ public:
             ast_id* id = e->getId()->copy(true);
 
             ast_vardecl* v = ast_vardecl::new_vardecl(type, id);
+
+            if (id->is_instantly_assigned())
+                continue; //we throw away the vardecl here, because we will declare it later at the assignment
+
             if (top == NULL)
                 gm_insert_sent_begin_of_sb(sb, v, GM_NOFIX_SYMTAB);
             else {
