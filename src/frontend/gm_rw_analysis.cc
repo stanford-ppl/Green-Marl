@@ -970,9 +970,12 @@ static bool cleanup_iterator_access_reduce(ast_id* iter, gm_rwinfo_map& D_temp, 
                 cp->driver = NULL;
                 cp->access_range = range;
             } else if (is_parallel) {
-                if ((cp->driver == NULL) && (cp->access_range == GM_RANGE_SINGLE)) {
-                    // scalar, do nothing
-                } else {
+                if (cp->driver == NULL){
+                    if (cp->access_range != GM_RANGE_SINGLE) {
+                        cp->access_range = GM_RANGE_RANDOM; // scalar access becomes random access
+                    }
+                }
+                else if (!cp->driver->getType()->is_node_edge_iterator()) {
                     cp->access_range = GM_RANGE_RANDOM;
                     cp->driver = NULL;
                 }

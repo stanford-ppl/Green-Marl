@@ -1,8 +1,23 @@
-// Test of BFS
-Proc gps15(G: Graph, n: Node(G))
+// Test of split 
+Procedure gps15(
+    G : Graph,
+    x,y,z : N_P <Float>(G))
 {
-    InBFS(s:G.Nodes From n)
-    {
 
+    Int a,b,c,d,e,f,g;
+
+    Foreach(i: G.Nodes) {
+        i.x = 0;
+        If (a > 0) {
+            b = 1;
+            Foreach(t: i.Nbrs)  {
+                i.y = t.z;
+            }
+            Foreach(t: i.InNbrs)  {
+                t.y = t.z;
+            }
+        }
+        d = 1;
     }
 }
+

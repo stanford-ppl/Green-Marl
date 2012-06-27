@@ -145,6 +145,8 @@ static bool check_if_conflict(gm_rwinfo_list* l1, gm_rwinfo_list* l2, gm_rwinfo*
             }
             if (conf_type == RD_CONFLICT) {
                 if (e2->reduce_op == GMREDUCE_DEFER) continue;
+                //printf("%d lev1 = %d, %d lev2 = %d\n", e1->access_range, lev1, e2->access_range, lev2);
+                //assert(false);
             }
             if (conf_type == MM_CONFLICT) {
                 if (e1->mutate_direction == e2->mutate_direction) continue;
@@ -442,7 +444,10 @@ bool gm_has_dependency(gm_rwinfo_sets* P_SET, gm_rwinfo_sets* Q_SET) {
 
     return false;
 }
-
+gm_rwinfo_map& gm_get_reduce_set(ast_sent *S) {
+    assert(S != NULL);
+    return get_rwinfo_sets(S)->reduce_set;
+}
 gm_rwinfo_map& gm_get_write_set(ast_sent *S) {
     assert(S != NULL);
     return get_rwinfo_sets(S)->write_set;

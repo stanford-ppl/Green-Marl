@@ -188,7 +188,23 @@ static void gm_make_it_belong_to_sentblock_main(ast_sent* s, bool allow_nesting,
         I = Sents.erase(I);
         Sents.insert(I, sb);
     }
-    // AST_BFS, AST_WHILE always has 'sent-block'
+    else if (up->get_nodetype() == AST_BFS) {
+        ast_bfs* bfs = (ast_bfs*) up;
+        if (bfs->get_fbody() == s) {
+            bfs->set_fbody(sb);
+        }
+        else if (bfs->get_bbody() == s) {
+            bfs->set_bbody(sb);
+        }
+        else {
+            assert(false);
+        }
+    } 
+    else if (up->get_nodetype() == AST_WHILE) {
+        ast_while* w = (ast_while*) up;
+        assert(w->get_body() == s);
+        w->set_body(sb);
+    }
     else {
         assert(false);
     }
@@ -595,4 +611,37 @@ ast_sent* gm_find_parent_sentence(ast_expr* e) {
         return gm_find_parent_sentence((ast_expr*) up);
     else
         return NULL;
+}
+
+class gm_reconstruct_scope_t : public gm_apply {
+public:
+    gm_reconstruct_scope_t(ast_node* n) {
+        set_for_sent(true);
+        S.push_symtabs(n->get_symtab_var(), n->get_symtab_field(), n->get_symtab_proc());
+        top = n;
+    }
+
+    virtual void begin_context(ast_node* n) {
+        if (n != top) {
+            n->get_symtab_var()->set_parent(S.get_varsyms());
+            n->get_symtab_field()->set_parent(S.get_fieldsyms());
+            n->get_symtab_proc()->set_parent(S.get_procsyms());
+        }
+        S.push_symtabs(n->get_symtab_var(), n->get_symtab_field(), n->get_symtab_proc());
+
+    }
+    virtual void end_context(ast_node* n) {
+        S.pop_symtabs();
+    }
+private:
+    gm_scope S;
+    ast_node* top;
+
+};
+
+void gm_reconstruct_scope(ast_node* top)
+{
+    assert(top->has_scope());
+    gm_reconstruct_scope_t T(top);
+    top->traverse_pre(&T);
 }

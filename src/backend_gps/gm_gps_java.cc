@@ -307,10 +307,12 @@ void gm_gps_gen::generate_sent_assign(ast_assign *a) {
             return;
         } else {
             // write to global scalar
+            get_lib()->generate_reduce_assign_vertex(a, Body, GMREDUCE_NULL);
+            return;
 
             // [TO BE DONE]
-            printf("need to implement: %s\n", i->get_genname());
-            assert(false);
+            //printf("need to implement: write to global %s\n", i->get_genname());
+            //assert(false);
         }
     } else {
         ast_field* f = a->get_lhs_field();

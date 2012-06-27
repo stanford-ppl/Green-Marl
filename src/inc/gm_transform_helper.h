@@ -65,6 +65,9 @@ extern void gm_ripoff_upper_scope(ast_node* n);
 extern void gm_put_new_upper_scope_on_null(ast_node* n, gm_scope* new_s);
 extern void gm_put_new_upper_scope(ast_node* n, gm_scope* new_s);
 
+// re-construct scope
+extern void gm_reconstruct_scope(ast_node* top);  // top should must have a scope
+
 //------------------------------------------------------------
 // Symbol addition and creation
 //------------------------------------------------------------

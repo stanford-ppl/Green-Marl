@@ -5,25 +5,73 @@
 #include "gm_rw_analysis.h"
 #include "gm_check_if_constant.h"
 
+
 //-------------------------------------------------------------------
-// reduce non-conflicting reductions
-// e.g)
-//    Foreach(s: G.Nodes)
-//        s.x += 1 @ s;       //---> can be changed to normal
+//  At each foreach or bfs
+//    check bound symbols
+//    if (1) every reduction assignment is (1) sigle-threaded or (2) non-conflicting
 //
-//    Seq S;
-//    Foreach(s: S.Items)
-//        s.x += 1 @ s;       //---> cannot be changed to normal
-//
-//
-//    InBFS(s: G.Nodes; root)
-//        s.x += 1 @ s;       //---> can be changed to normal
-//
-//    Foreach(s: G.Nodes)
-//      Foreach(t: s.Nbrs)
-//          s.x += 1 @ s;     //---> cannot be changed to normal
+//  ==> change it into normal 
 //-------------------------------------------------------------------
 //
+
+// optimize single-threaded reduction
+class gm_opt_optimize_single_reduction_t : public gm_apply {
+public:
+    gm_opt_optimize_single_reduction_t() {
+        set_for_sent(true);
+    }
+
+    virtual bool apply(ast_sent* s) {
+
+        if (s->get_nodetype() == AST_ASSIGN) {
+            ast_assign* a = (ast_assign*) s;
+            if (a->is_reduce_assign()) {
+                assert(a->get_bound() != NULL);
+                gm_symtab_entry* bound = a->get_bound()->getSymInfo();
+
+                // go up and check if it meets only single-threaded loops until top
+                ast_node* n = a->get_parent();
+                bool found = false;
+                bool single = true;
+                while (!found && single) {
+                    assert(n != NULL);
+                    if (n->get_nodetype() == AST_FOREACH) {
+                        ast_foreach* fe = (ast_foreach*) n;
+                        if (!fe->is_sequential()) single = false;
+                        if (fe->get_iterator()->getSymInfo() == bound) found = true;
+                    }
+                    else if (n->get_nodetype() == AST_BFS) {
+                        ast_bfs* bfs  = (ast_bfs*) n;
+                        if (bfs->is_bfs()) single = false;
+                        if (bfs->get_iterator()->getSymInfo() == bound) found = true;
+                        if (bfs->get_iterator2()->getSymInfo() == bound) found = true; // what was iterator 2 again?
+                    }
+                    n = n->get_parent();
+                }
+                if (single)
+                    targets.push_back(a);
+            }
+
+        }
+        return true;
+    }
+
+    void post_process() {
+        std::list<ast_assign*>::iterator I;
+        for (I = targets.begin(); I != targets.end(); I++) {
+            ast_assign * a = *I;
+            assert(a->is_reduce_assign());
+            gm_make_it_belong_to_sentblock(a);
+            gm_make_normal_assign(a);
+        }
+    }
+
+private:
+    std::list<ast_assign*> targets;
+
+};
+
 struct triple_t
 {
     gm_symtab_entry* bound;
@@ -50,60 +98,67 @@ struct triple_comp_t
     }
 };
 
-class gm_nonconf_reduce_opt_t : public gm_apply
+// optimize reductions if every assignment is reached linearly
+//
+// condition
+//    no other parallel loops in between
+class gm_reduce_opt_linear_t: public gm_apply
 {
 public:
-    gm_nonconf_reduce_opt_t() {
+    gm_reduce_opt_linear_t() {
         set_for_sent(true);
+        under_rev_bfs = false;
     }
 
     bool apply(ast_sent* s) {
-        if (s->get_nodetype() == AST_FOREACH) {
-            ast_foreach* fe = (ast_foreach*) s;
-            if (!fe->is_parallel()) return true;
-            if (gm_get_range_from_itertype(fe->get_iter_type()) != GM_RANGE_LINEAR) return true;
+        if (s->get_nodetype() != AST_ASSIGN) 
+            return true;
+        ast_assign* a = (ast_assign*) s;
+        if (!a->is_reduce_assign())
+            return true;
+        if (a->is_target_scalar()) 
+            return true;
 
-            gm_bound_set_info* SET = gm_get_bound_set_info(fe);
-            gm_rwinfo_map& B_SET = SET->bound_set;
-            check_bounds(B_SET, fe->get_iterator()->getSymInfo(), false);
-        } else if (s->get_nodetype() == AST_BFS) {
-            ast_bfs* bfs = (ast_bfs*) s;
-            if (!bfs->is_bfs()) return true;
-            gm_bound_set_info* SET = gm_get_bound_set_info(bfs);
-            gm_rwinfo_map& B_SET = SET->bound_set;
-            check_bounds(B_SET, bfs->get_iterator()->getSymInfo(), false);
-            gm_rwinfo_map& B_SET2 = SET->bound_set_back;
-            check_bounds(B_SET2, bfs->get_iterator()->getSymInfo(), true);
-        } else if (s->get_nodetype() == AST_ASSIGN) {
-            ast_assign * a = (ast_assign*) s;
-            if (!a->is_reduce_assign()) return true;
-            if (a->is_target_scalar()) return true;
+        assert(a->get_bound() != NULL);
+        gm_symtab_entry* bound = a->get_bound()->getSymInfo();
+        gm_symtab_entry* target = a->get_lhs_field()->get_second()->getSymInfo();
+        int is_rev_bfs = under_rev_bfs ? 1 : 0;
 
-            triple_t T;
-            T.bound = a->get_bound()->getSymInfo();
-            T.target = a->get_lhs_field()->get_second()->getSymInfo();
-            T.is_rev_bfs = is_bfs_reverse_iter(T.bound) ? 1 : 0;
-            /*
-             printf("looking for target %s %s(%p) %d\n",
-             T.target->getId()->get_genname(),
-             T.bound->getId()->get_genname(), T.bound,
-             T.is_rev_bfs);
-             */
-            if (sources.find(T) != sources.end()) {
-                //printf("found assign to %s bound %s\n", T.target->getId()->get_genname(), T.bound->getId()->get_genname());
-                targets.push_back(a);
-            }
+        triple_t key;
+        key.bound = bound;
+        key.target = target;
+        key.is_rev_bfs = is_rev_bfs;
+
+        if (candidates.find(key) == candidates.end()) {
+            std::list<ast_assign*> L;
+            candidates[key]  = L;  // copy
         }
-        return true;
-    }
+        candidates[key].push_back(a);
 
-    virtual bool begin_traverse_reverse(ast_bfs* bfs) {
-        gm_symtab_entry* iter = bfs->get_iterator()->getSymInfo();
-        is_bfs_reverse[iter] = true;
+        // todo distinguish fw and bw
         return true;
     }
 
     void post_process() {
+
+        std::map< triple_t, std::list<ast_assign*>, triple_comp_t >::iterator I;
+        for (I=candidates.begin(); I!=candidates.end(); I++)
+        {
+            gm_symtab_entry* target = I->first.target; 
+            gm_symtab_entry* bound = I->first.bound;
+            std::list<ast_assign*>& L = I->second;
+    
+            // check if every write is linear
+            if (check_all_okay(L, bound)) {
+                // add list to targets
+                targets.splice(targets.end(), L);
+            }
+        }
+
+        post_process2();
+    }
+
+    void post_process2() {
         std::list<ast_assign*>::iterator I;
         for (I = targets.begin(); I != targets.end(); I++) {
             ast_assign * a = *I;
@@ -113,58 +168,80 @@ public:
         }
     }
 
-private:
-    bool is_bfs_reverse_iter(gm_symtab_entry* e) {
-        if (is_bfs_reverse.find(e) == is_bfs_reverse.end())
-            return false;
-        else
-            return true;
+    virtual bool begin_traverse_reverse(ast_bfs* bfs) {
+        under_rev_bfs = true;
+
     }
 
-    void check_bounds(gm_rwinfo_map& B_SET, gm_symtab_entry* iter, bool is_reverse_bfs) {
-        gm_rwinfo_map::iterator I;
-        for (I = B_SET.begin(); I != B_SET.end(); I++) {
-            gm_symtab_entry* sym = I->first;
-            gm_rwinfo_list* list = I->second;
-            gm_rwinfo_list::iterator J;
-            bool matched = true;
-            for (J = list->begin(); J != list->end(); J++) {
-                gm_rwinfo* info = *J;
-                if (info->driver == NULL) {
-                    matched = false;
-                    break;
-                }
-                if (info->driver != iter) {
-                    matched = false;
-                    break;
-                }
-            }
+    virtual bool end_traverse_reverse(ast_bfs* bfs) {
+        under_rev_bfs = false;
+    }
 
-            if (matched) {
-                triple_t T;
-                T.bound = iter;
-                T.target = sym;
-                T.is_rev_bfs = is_reverse_bfs ? 1 : 0;
-                sources.insert(T);
-                /*
-                 printf("adding target %s %s(%p) %d\n", T.target->getId()->get_genname(),
-                 T.bound->getId()->get_genname(),
-                 T.bound, T.is_rev_bfs);
-                 */
+private:
+
+    bool check_all_okay(std::list<ast_assign*>& L, gm_symtab_entry* bound) {
+        std::list<ast_assign*>::iterator I;
+        for(I=L.begin(); I!=L.end(); I++)
+        {
+            ast_assign* a = *I;
+            
+            if (a->get_lhs_field()->get_first()->getSymInfo() != bound) return false;
+
+            // go up to bound
+            ast_node* n = a->get_parent();
+            while (true) {
+                assert(n != NULL);
+                if (n->get_nodetype() == AST_FOREACH) {
+                    ast_foreach* fe = (ast_foreach*) n;
+                    if (fe->get_iterator()->getSymInfo() != bound) {
+                        if (!fe->is_sequential())
+                            return false;
+                    } 
+                    else {
+                        int iter_type = fe->get_iter_type();
+                        if ((iter_type == GMTYPE_NODEITER_ALL) || (iter_type == GMTYPE_EDGEITER_ALL) ||
+                            (iter_type == GMTYPE_NODEITER_SET) || (iter_type == GMTYPE_EDGEITER_SET) ||
+                            (iter_type == GMTYPE_NODEITER_ORDER) || (iter_type == GMTYPE_EDGEITER_ORDER)) {
+                            break;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+                if (n->get_nodetype() == AST_BFS) {
+                    ast_bfs* bfs = (ast_bfs*) n;
+                    if ((bfs->get_iterator()->getSymInfo() == bound) ||
+                        (bfs->get_iterator2()->getSymInfo() == bound)) {
+                        break;
+                    }
+                    else if (bfs->is_bfs()) 
+                        return false;
+                }
+
+                n = n->get_parent();
             }
         }
+
+        return true;
     }
 
-private:
-    std::map<gm_symtab_entry*, bool> is_bfs_reverse;
-    std::set<triple_t, triple_comp_t> sources;
+    // map [(target, bound, is_bfs) ==> list of assign]
+    //std::map< std::pair<gm_symtab_entry*, gm_symtab_entry*>, std::list<ast_assign*> > candidates;
+    std::map< triple_t, std::list<ast_assign*>, triple_comp_t > candidates;
     std::list<ast_assign*> targets;
+    bool under_rev_bfs;
 };
 
+
 void gm_ind_opt_nonconf_reduce::process(ast_procdef* proc) {
-    gm_nonconf_reduce_opt_t T;
-    proc->traverse_pre(&T); // should traverse pre
-    T.post_process();
+
+    gm_opt_optimize_single_reduction_t T1;
+    proc->traverse_pre(&T1);
+    T1.post_process();
+
+    gm_reduce_opt_linear_t T2;
+    proc->traverse_pre(&T2);
+    T2.post_process();
 
     // re-do rw_analysis
     gm_redo_rw_analysis(proc->get_body());

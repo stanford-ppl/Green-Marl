@@ -284,42 +284,42 @@ extern gm_gps_gen* PREGEL_BE;
 DEF_STRING(GPS_FLAG_USE_REVERSE_EDGE);
 DEF_STRING(GPS_FLAG_USE_IN_DEGREE);
 DEF_STRING(GPS_FLAG_COMM_SYMBOL);
+//where:check_random_access, to:assign_statement, what:ptr to sent block
 DEF_STRING(GPS_FLAG_SENT_BLOCK_FOR_RANDOM_WRITE_ASSIGN);
-// where:check_random_access, to:assign_statement, what:ptr to sent block
-DEF_STRING(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
 //where:check_random_access, to:sentblock,what:set of symbols that are random-write driver
+DEF_STRING(GPS_FLAG_RANDOM_WRITE_SYMBOLS_FOR_SB);
 DEF_STRING(GPS_FLAG_USE_EDGE_PROP);
-DEF_STRING(GPS_FLAG_EDGE_DEFINED_INNER);
 // edge which is used inside in a inner llop
+DEF_STRING(GPS_FLAG_EDGE_DEFINED_INNER);
 DEF_STRING(GPS_FLAG_EDGE_DEFINING_WRITE);
-DEF_STRING(GPS_FLAG_EDGE_DEFINING_INNER);
 // inner loops that contains edges
+DEF_STRING(GPS_FLAG_EDGE_DEFINING_INNER);
 DEF_STRING(GPS_MAP_EDGE_PROP_ACCESS);
 DEF_STRING(GPS_LIST_EDGE_PROP_WRITE);
 DEF_STRING(GPS_FLAG_NODE_VALUE_INIT);
 
-DEF_STRING(GPS_FLAG_WHILE_HEAD);
 // used for intra-loop merging
+DEF_STRING(GPS_FLAG_WHILE_HEAD);
 DEF_STRING(GPS_FLAG_WHILE_TAIL);
 
-DEF_STRING(GPS_FLAG_HAS_COMMUNICATION);
 // an outerloop that has communication
-DEF_STRING(GPS_FLAG_HAS_COMMUNICATION_RANDOM);
+DEF_STRING(GPS_FLAG_HAS_COMMUNICATION);
 // an outerloop that random has communication
+DEF_STRING(GPS_FLAG_HAS_COMMUNICATION_RANDOM);
+// target: iterator or loop.
 DEF_STRING(GPS_FLAG_IS_OUTER_LOOP);
 // target: iterator or loop.
 DEF_STRING(GPS_FLAG_IS_INNER_LOOP);
-// target: iterator or loop.
-DEF_STRING(GPS_FLAG_IS_EDGE_ITERATOR);
 // target: edge scalar variable
+DEF_STRING(GPS_FLAG_IS_EDGE_ITERATOR);
 DEF_STRING(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL);
 DEF_STRING(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
 DEF_STRING(GPS_LIST_INTRA_MERGED_CONDITIONAL);
-DEF_STRING(GPS_FLAG_COMM_DEF_ASSIGN);
 // target: assign statement, rewrite_rhs.cc
-DEF_STRING(GPS_FLAG_HAS_UP_NBRS);
-DEF_STRING(GPS_FLAG_HAS_DOWN_NBRS);
+DEF_STRING(GPS_FLAG_COMM_DEF_ASSIGN);
+
 // target: ast_bfs, gps_opt_tranform.bfs
+DEF_STRING(GPS_FLAG_HAS_DOWN_NBRS);
 
 static const int GPS_PREPARE_STEP1 = 100000;
 static const int GPS_PREPARE_STEP2 = 100001;
@@ -341,13 +341,13 @@ static enum
     GPS_NEW_SCOPE_GLOBAL = 0, GPS_NEW_SCOPE_OUT, GPS_NEW_SCOPE_EDGE, GPS_NEW_SCOPE_IN, GPS_NEW_SCOPE_RANDOM,
 } gm_gps_new_scope_analysis_t;
 
-DEF_STRING(GPS_INT_ASSIGN_SCOPE);
 // where each assignment is destinated
-DEF_STRING(GPS_INT_EXPR_SCOPE);
+DEF_STRING(GPS_INT_ASSIGN_SCOPE);
 // where sub-expression is dependent on
-DEF_STRING(GPS_INT_SYMBOL_SCOPE);
+DEF_STRING(GPS_INT_EXPR_SCOPE);
 // where each symbol is defined (in syntax)
-DEF_STRING(GPS_INT_SYNTAX_CONTEXT);
+DEF_STRING(GPS_INT_SYMBOL_SCOPE);
 // where each statement is located (in syntax)
+DEF_STRING(GPS_INT_SYNTAX_CONTEXT);
 
 #endif
