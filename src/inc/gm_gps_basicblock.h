@@ -278,7 +278,7 @@ class gps_apply_bb_ast : public gm_apply, public gps_apply_bb
 {
 public:
     gps_apply_bb_ast() :
-            _curr(NULL), _under_receiver(false), _is_post(false), _is_pre(true), _receiver_type(GPS_COMM_NESTED) {
+            _curr(NULL), _under_receiver(false), _is_post(false), _is_pre(true), _receiver_type(GPS_COMM_NESTED), _check_receiver(true) {
     }
 
     // defined in gm_gps_misc.cc
@@ -298,6 +298,12 @@ public:
     bool is_pre() {
         return _is_pre;
     }
+    bool is_check_receiver() {
+        return _check_receiver;
+    }
+    void set_check_receiver(bool b) {
+        _check_receiver = b;
+    }
 
     // set by traverse engine
 protected:
@@ -305,6 +311,7 @@ protected:
     bool _under_receiver;
     bool _is_post;
     bool _is_pre;
+    bool _check_receiver;
     int _receiver_type;  // GPS_COMM_NESTED, COMM_RAND_WRITE
 
     bool is_under_receiver_traverse() {
@@ -333,6 +340,6 @@ void gps_bb_traverse_ast(gm_gps_basic_block* entry, gps_apply_bb_ast* apply, boo
 // traverse single BB only
 void gps_bb_traverse_ast_single(gm_gps_basic_block* entry, gps_apply_bb_ast* apply, bool is_post, bool is_pre);
 
-gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gm_gps_basic_block* BB, gm_rwinfo_sets* S);
-gm_rwinfo_sets* gm_gps_get_rwinfo_from_all_reachable_bb(gm_gps_basic_block* BB, gm_rwinfo_sets* S);
+gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gm_gps_basic_block* BB, gm_rwinfo_sets* S, bool check_receiver=false);
+gm_rwinfo_sets* gm_gps_get_rwinfo_from_all_reachable_bb(gm_gps_basic_block* BB, gm_rwinfo_sets* S, bool check_receiver=false);
 #endif

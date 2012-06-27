@@ -28,35 +28,37 @@ typedef gm_gps_basic_block gps_bb;
 //
 //
 // (2) <Conditions> 
-//    - First two is [PAR1]->[SEQ1], last two is [PARN]->[SEQN]
+//    - Say, First two is [PAR1]->[SEQ1], last two is [PARN]->[SEQN]
 //    - [PAR 1] contains no receive
 //    - [PAR N] contains no send
-//    - [PAR 1/SEQ 1] does not modify any argument
-//    - [PAR 1/SEQ 1] does not modify any symbol that is used outside while loop (or arguments). 
+//    - [PAR 1/SEQ 1/SEQ0] does not modify any symbol that is used outside while loop (or arguments). 
 //    - There should be no dependency between SN and P1
+//    - There should be no dependency between S0 and PN
+//    - There should be no dependency between S0 and SN
 //
 // (3)
 //   <after merge>
-//                           +--------------------------------------+
-//                           |                                      V
-//    -> [HEAD] -> (SEQ0)->[IF] -> [P2:S2] ...  -> [PN-1:SN-1] -> [PN/P1:SN/SN] -> [TAIL2] -> [TAIL] ->
-//         ^         ^                                                               |        |
-//         |         +---------------------------------------------------------------+        |
-//         +----------------------------------------------------------------------------------+
-//         (while_cond -> TAIL)
+//   (do-while, with SEQ0)
+//          +-----------------------------------+
+//          |                                   V
+//    -> [HEAD] [P2:S2] ...  -> [PN-1:SN-1] -> (SEQ0) -> [PN/P1:SN/SN] -> [TAIL2] -> [TAIL] ->
+//         ^       ^                                                        |        |
+//         |       +--------------------------------------------------------+        |
+//         +-------------------------------------------------------------------------+
 //
 //
-//         +-----------------------------------------------------------------------------------+
-//         |                 +-------------------------------------+                           |
-//         |                 |                                     V                           |
-//    -> [HEAD] -> (SEQ0)->[IF] -> [P2:S2] ...  -> [PN-1:SN-1] -> [PN/P1:SN/S1] -> [TAIL2]     V
-//         ^          ^                                                              |  |
-//         |          +-------------------------------------------------------- -----+  |  
-//         +----------------------------------------------------------------------------+
+//   (while, wite SEQ0)
+//        +------------------------------------------------------------------------------+
+//        |  +----------------------------------------+                                  |
+//        |  |                                        V                                  |
+//    -> [HEAD]     [P2:S2] ...  -> [PN-1:SN-1] -> (SEQ0) -> [PN/P1:SN/S1] -> [TAIL2]    V
+//         ^           ^                                                       |  |
+//         |           |-------------------------------------------------------+  |  
+//         +----------------------------------------------------------------------+
 //         (while_cond -> HEAD)
 //
 //
-// < Especially, when only two states > : no additional if required!
+// < Especially, when only two states >
 //
 //    -> [HEAD] -> (SEQ0) -> [PN/P1:SN/SN] -> [TAIL2] -> [TAIL] ->
 //         ^         ^                            |        |
@@ -64,6 +66,7 @@ typedef gm_gps_basic_block gps_bb;
 //         + ----------------------------------------------+
 //        
 //         +----------------------------------------------+
+//         |                                              |
 //    -> [HEAD] -> (SEQ0)  -> [PN/P1:SN/S1] -> [TAIL2]    V
 //         ^         ^                           |   |
 //         |         +---------------------------+   |  
@@ -206,10 +209,12 @@ private:
                 // check PAR1 contains no receive
                 if (p1->has_receiver())
                     is_okay = false;
-                else if (p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION) || p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION_RANDOM)) is_okay = false;
+                else if (p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION) || p2->find_info_bool(GPS_FLAG_HAS_COMMUNICATION_RANDOM)) 
+                    is_okay = false;
 
                 gm_rwinfo_sets* rwi = NULL;
                 if (is_okay) {
+                    // check dependency between p1 and s_n
                     rwi = new gm_rwinfo_sets();
                     gm_gps_get_rwinfo_from_bb(p1, rwi);
 
@@ -218,11 +223,33 @@ private:
 
                     if (gm_has_dependency(rwi, rwi_n)) is_okay = false;
 
+
+                    if (is_okay && (s0 != NULL)) {
+                        // check dependency between s2 and s0
+                        gm_rwinfo_sets* rwi_0 = new gm_rwinfo_sets();  // s_0
+                        gm_gps_get_rwinfo_from_bb(s0, rwi_0);
+                        if (gm_has_dependency(rwi_0, rwi_n)) is_okay = false;
+
+                        // check dependency between p2 and s0
+                        gm_rwinfo_sets* rwi_pn = new gm_rwinfo_sets();  // s_0
+                        gm_gps_get_rwinfo_from_bb(p2, rwi_pn);
+                        if (gm_has_dependency(rwi_0, rwi_pn)) is_okay = false;
+
+                        delete rwi_0;
+                        delete rwi_pn;
+                    }
+
                     delete rwi_n;
                 }
 
+
                 if (is_okay) {
-                    gm_gps_get_rwinfo_from_bb(s1, rwi);
+                    // accumulated rwi
+                    gm_gps_get_rwinfo_from_bb(s1, rwi); 
+
+                    if (s0 != NULL)
+                        gm_gps_get_rwinfo_from_bb(s0, rwi);  
+
                     /*
                      printf("read set for BB:%d,%d\n", p1->get_id(), s1->get_id());
                      gm_print_rwinfo_set(rwi->read_set);
@@ -365,81 +392,89 @@ static void apply_intra_merge(gps_intra_merge_candidate_t* C) {
 
     bool only_two_states = (p_2 == p_n);
     bool has_s_0 = (s_0 != NULL);
-    gps_bb* IF = NULL;
 
     if (has_s_0)
         assert(s_0->get_nth_exit(0) == p_1);
     else 
         assert(p_1->get_num_entries() == 1);
 
-    // entrance to the loop
-    if (only_two_states) {
-        if (has_s_0) {  
-            // HEAD -> SEQ0 -> PN
-            s_0->update_exit_to(p_1, p_n);
-            p_n->add_entry(s_0);
-        } else {       
-            // HEAD -> PN
-            gps_bb* while_entry = p_1->get_nth_entry(0);
-            while_entry->update_exit_to(p_1, p_n);
-            p_n->add_entry(while_entry);
-        }
-    }
-    else {
-        IF = new gps_bb(BEINFO->issue_basicblock_id(), GM_GPS_BBTYPE_MERGED_IF);
-        IF->add_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO, while_cond->get_id());
+    assert(p_n->get_num_entries() == 1);
+    gps_bb* while_entry = p_1->get_nth_entry(0);
+    gps_bb* s_n_1 = p_n->get_nth_entry(0);
 
-        if (has_s_0) {  
-            // HEAD -> SEQ0 -> IF(is_first)-> PN; else->P2
-            s_0->update_exit_to(p_1, IF);
-            IF->add_entry(s_0);
-        } else {
-            // HEAD -> IF (is_first) -> PN; else->P2
-            gps_bb* while_entry = p_1->get_nth_entry(0);
-            while_entry->update_exit_to(p_1, IF);
-            IF->add_entry(while_entry);
-        }
+    //-------------------------------------
+    // case 1: S_0, TWO_STATES
+    //-------------------------------------
+    if (has_s_0 ) {
+        // (only two states)
+        // HEAD -> SEQ0 -> P1 -> S1 -> PN -> SN -> ORG_EXIT
+        // ==>
+        // HEAD -> SEQ0 =>  PN/P1 -> SN/S1 => TAIL2 => SEQ0
+        //                                          => ORG_EXIT
+        // (more than 3 states)
+        // HEAD -> SEQ0 -> P1 -> S1 -> P2-> ... -> SN-1 ->PN -> SN -> ORG_EXIT
+        // ==>
+        // HEAD -> SEQ0 => PN/P1 -> SN/S1 => TAIL2 => P2 -> .. -> SN-1 => SEQ0
+        //                                         => ORG_EXIT
 
-        // [exit 0 is to p_n/p_1] if (is_first)
-        IF->add_exit(p_n, false);  
-        p_n->add_entry(IF);
+        // SEQ0 => PN
+        s_0->update_exit_to(p_1, p_n);
+        p_n->update_entry_from(s_n_1, s_0);
 
-        // [exit 1 is to p_2]     if not
-        IF->add_exit(p_2, false);
-        p_2->update_entry_from(s_1, IF);
-
-    }
-
-
-    // exit from merged s1/sn
-    {
+        // SN => TAIL2
         s_n->update_exit_to(org_exit, TAIL2);
-        org_exit->update_entry_from(s_n, TAIL2);
-
         TAIL2->add_entry(s_n);
 
-        // [exit 0] is to seq_0, if, or p2
-        // [exit 1] is to while cond
-        if (has_s_0) {
-            TAIL2->add_exit(s_0, true); 
-        }
-        else if (only_two_states) {
-            // no s_0, no if, p_2 == p_n
-            assert(IF == NULL);
-            assert(p_2 == p_n);
-            TAIL2->add_exit(p_2, true);
-        }
-        else {
-            // no s_0, has IF
-            assert(IF != NULL);
-            TAIL2->add_exit(IF, true);
+        // is_first case
+        if (only_two_states) {
+            // TAIL2=>S_0  
+            TAIL2->add_exit(s_0, false); 
+            s_0->add_entry(TAIL2);
+        } else {
+            // TAiL2 => P2
+            TAIL2->add_exit(p_2, false); 
+            p_2->update_entry_from(s_1, TAIL2);
+
+            // S_N-1 => SEQ0
+            s_n_1->update_exit_to(p_n, s_0);
+            s_0->add_entry(s_n_1);
         }
 
-        TAIL2->add_exit(org_exit);  // to original while condition
+        // TAIL2=>ORG_EXIT (!is_first)
+        TAIL2->add_exit(org_exit);
+        org_exit->update_entry_from(s_n, TAIL2);
+
+    } else {
+        // (only two states)
+        // HEAD -> P1 -> S1 -> PN -> SN -> ORG_EXIT
+        // ==>
+        // HEAD => PN/P1 -> SN/S1 => TAIL2 => PN
+        //                                 => ORG_EXIT
+        // (more than 3 states)
+        // HEAD -> P1 -> S1 -> P2-> ... -> SN-1 ->PN -> SN -> ORG_EXIT
+        // ==>
+        // HEAD => PN/P1 -> SN/S1 => TAIL2 => P2 -> .. -> SN-1 -> PN
+        //                                 => ORG_EXIT
+
+        // Head => PN
+        while_entry -> update_exit_to(p_1, p_n);
+        p_n->update_entry_from(s_n_1, while_entry);
+
+        // SN => TAIL2
+        s_n->update_exit_to(org_exit, TAIL2);
+        TAIL2->add_entry(s_n);
+
+        // TAiL2 => P2 (P2 == PN if only two states)
+        TAIL2->add_exit(p_2, false); 
+        p_2->update_entry_from(s_1, TAIL2);
+
+        // TAIL2=>ORG_EXIT (!is_first)
+        TAIL2->add_exit(org_exit);
+        org_exit->update_entry_from(s_n, TAIL2);
+
     }
 
     // delete states
     delete p_1;
     delete s_1;
-
 }

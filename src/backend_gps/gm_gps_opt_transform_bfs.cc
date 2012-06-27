@@ -83,13 +83,13 @@ private:
 static void create_initializer(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, gm_symtab_entry* fin_sym) {
 
     //---------------------------------------------
+    //    curr_level = -1;
+    //    bfs_finished = False;
     //    Foreach(i:G.Nodes) 
     //        i.level = ( i == root) ? 0 : +INF;
-    //    curr_level = 0;
-    //    bfs_finished = False;
     //---------------------------------------------
     ast_id* lhs_curr = curr_sym->getId()->copy(true);
-    ast_expr* rhs_curr = ast_expr::new_ival_expr(0);
+    ast_expr* rhs_curr = ast_expr::new_ival_expr(-1);
     ast_assign* a_curr = ast_assign::new_assign_scala(lhs_curr,rhs_curr);
 
     ast_id* lhs_fin = fin_sym->getId()->copy(true);
@@ -150,6 +150,8 @@ static void create_fw_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_fore
 static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, gm_symtab_entry* fin_sym) {
     //    While(bfs_finished != false) {
     //       bfs_finished = True;
+    //       curr_level ++;
+    //
     //       Foreach(v:G.Nodes) {
     //          if (v.level == curr_level) {
     //             Foreach(k:v.Nbrs) {
@@ -171,7 +173,6 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     //          }
     //       }
     //       
-    //       curr_level ++;
     //    }
 
     // while
@@ -182,10 +183,17 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     ast_sent* fw_while = ast_while::new_while(check_op, while_sb);
     sb->add_sent(fw_while);
 
-    // assign 1
+    // assign not finished
     ast_expr* true_rhs = ast_expr::new_bval_expr(true);
     ast_assign* true_a = ast_assign::new_assign_scala(fin_sym->getId()->copy(true),true_rhs);
     while_sb->add_sent(true_a);
+
+    // increase level
+    ast_expr* inc_rhs = ast_expr::new_biop_expr(GMOP_ADD,
+        ast_expr::new_id_expr(curr_sym->getId()->copy(true)),
+        ast_expr::new_ival_expr(1));
+    ast_assign* inc_a = ast_assign::new_assign_scala(curr_sym->getId()->copy(true), inc_rhs);
+    while_sb->add_sent(inc_a);
 
     // outer loop
     ast_sentblock* foreach_sb = ast_sentblock::new_sentblock();
@@ -255,6 +263,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         GMREDUCE_AND);
     lev_check_in_sb->add_sent(update_fin);
 
+
     // create user body
     if (((ast_sentblock*) bfs->get_fbody())->get_sents().size() > 0) 
     {
@@ -271,12 +280,6 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         create_fw_body_main(fw_body_to_add, bfs, foreach_out, lev_sym, curr_sym);
     }
 
-    // increase level
-    ast_expr* inc_rhs = ast_expr::new_biop_expr(GMOP_ADD,
-        ast_expr::new_id_expr(curr_sym->getId()->copy(true)),
-        ast_expr::new_ival_expr(1));
-    ast_assign* inc_a = ast_assign::new_assign_scala(curr_sym->getId()->copy(true), inc_rhs);
-    while_sb->add_sent(inc_a);
 
 }
 

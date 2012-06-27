@@ -33,6 +33,7 @@ public:
                 outer_loop = (ast_foreach*) s;
             } else if (s->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
                 inner_loop = (ast_foreach*) s;
+                assert(outer_loop != NULL);
             }
         }
 
@@ -226,8 +227,9 @@ protected:
     }
 };
 
-gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gps_bb* BB, gm_rwinfo_sets* S) {
+gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gps_bb* BB, gm_rwinfo_sets* S, bool check_receivers) {
     if (S == NULL) S = new gm_rwinfo_sets();
+    assert(check_receivers == false);
 
     //-------------------------------------------
     // traverse AST inside BB
@@ -235,13 +237,15 @@ gm_rwinfo_sets* gm_gps_get_rwinfo_from_bb(gps_bb* BB, gm_rwinfo_sets* S) {
     //   caution for communicating symbols
     //-------------------------------------------
     gm_gps_find_rwinfo_simple T(S);
+    T.set_check_receiver(check_receivers);
     gps_bb_traverse_ast_single(BB, &T, true, true);  // post && pre
 
     return S;
 }
 
-gm_rwinfo_sets* gm_gps_get_rwinfo_from_all_reachable_bb(gps_bb* BB, gm_rwinfo_sets* S) {
+gm_rwinfo_sets* gm_gps_get_rwinfo_from_all_reachable_bb(gps_bb* BB, gm_rwinfo_sets* S, bool check_receivers) {
     if (S == NULL) S = new gm_rwinfo_sets();
+    assert(check_receivers == false);
 
     //-------------------------------------------
     // traverse AST inside BB
@@ -249,6 +253,8 @@ gm_rwinfo_sets* gm_gps_get_rwinfo_from_all_reachable_bb(gps_bb* BB, gm_rwinfo_se
     //   caution for communicating symbols
     //-------------------------------------------
     gm_gps_find_rwinfo_simple T(S);
+    T.set_check_receiver(check_receivers);
+
     gps_bb_traverse_ast(BB, &T, true, true);  // post && pre
 
     return S;

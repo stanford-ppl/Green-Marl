@@ -161,7 +161,7 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b) {
     } else if (type == GM_GPS_BBTYPE_BEGIN_VERTEX) {
 
         // traverse receiver
-        if (_curr->has_receiver()) {
+        if (_curr->has_receiver() && is_check_receiver()) {
             std::list<gm_gps_comm_unit>& R = _curr->get_receivers();
             std::list<gm_gps_comm_unit>::iterator I;
             set_under_receiver_traverse(true);
