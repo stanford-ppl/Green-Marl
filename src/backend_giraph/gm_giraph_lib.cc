@@ -457,7 +457,6 @@ void gm_giraphlib::generate_master_class_details(std::set<gm_symtab_entry*>& pro
     Body.pushln("public void write(DataOutput out) throws IOException {");
     Body.pushln("out.writeInt(_master_state);");
     Body.pushln("out.writeInt(_master_state_nxt);");
-    Body.pushln("out.writeBoolean(_master_initialized);");
     Body.pushln("out.writeBoolean(_master_should_start_workers);");
     Body.pushln("out.writeBoolean(_master_should_finish);");
 
@@ -474,7 +473,6 @@ void gm_giraphlib::generate_master_class_details(std::set<gm_symtab_entry*>& pro
     Body.pushln("public void readFields(DataInput in) throws IOException {");
     Body.pushln("_master_state = in.readInt();");
     Body.pushln("_master_state_nxt = in.readInt();");
-    Body.pushln("_master_initialized = in.readBoolean();");
     Body.pushln("_master_should_start_workers = in.readBoolean();");
     Body.pushln("_master_should_finish = in.readBoolean();");
 
@@ -498,8 +496,16 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
     std::set<gm_symtab_entry*>::iterator I;
 
     if (is_edge_prop) {
+        Body.pushln("public EdgeData() {");
+        Body.pushln("// Default constructor needed for Giraph");
+        Body.pushln("}");
+        Body.NL();
         Body.pushln("public EdgeData(double input) {");
     } else {
+        Body.pushln("public VertexData() {");
+        Body.pushln("// Default constructor needed for Giraph");
+        Body.pushln("}");
+        Body.NL();
         Body.pushln("public VertexData(double input) {");
     }
     Body.pushln("// Assign input data if desired");
