@@ -7,7 +7,7 @@ extern void gm_flush_reproduce();
 extern void gm_newline_reproduce();
 extern void gm_push_reproduce(char *s);
 
-void gm_gps_basic_block::reproduce_sents() {
+void gm_gps_basic_block::reproduce_sents(bool reproduce_receiver) {
     if (type == GM_GPS_BBTYPE_IF_COND) {
         prepare_iter();
         ast_sent* s = get_next(); // should be only one sentence (if)
@@ -28,7 +28,7 @@ void gm_gps_basic_block::reproduce_sents() {
         gm_flush_reproduce();
     } else if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) || (type == GM_GPS_BBTYPE_SEQ)) {
 
-        if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) && (has_receiver())) {
+        if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) && (has_receiver()) && reproduce_receiver) {
             gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_current_backend_info();
             std::list<gm_gps_comm_unit>& L = get_receivers();
             std::list<gm_gps_comm_unit>::iterator I;
@@ -62,7 +62,7 @@ void gm_gps_basic_block::reproduce_sents() {
             if ((type == GM_GPS_BBTYPE_BEGIN_VERTEX) && (s != NULL)) gm_newline_reproduce();
         }
         gm_flush_reproduce();
-    } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2) || (type == GM_GPS_BBTYPE_MERGED_TAIL)) {
+    } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2) || (type == GM_GPS_BBTYPE_MERGED_TAIL) || (type == GM_GPS_BBTYPE_MERGED_IF)) {
         // do nothing;
     } else {
         assert(false);
@@ -224,6 +224,8 @@ void gps_apply_bb_ast::apply(gm_gps_basic_block* b) {
     } else if (type == GM_GPS_BBTYPE_PREPARE2) {
         // nothing
     } else if (type == GM_GPS_BBTYPE_MERGED_TAIL) {
+        // nothing
+    } else if (type == GM_GPS_BBTYPE_MERGED_IF) {
         // nothing
     } else {
         assert(false);

@@ -37,36 +37,36 @@ typedef gm_gps_basic_block gps_bb;
 //
 // (3)
 //   <after merge>
-//                   +---------------------------------------------+
-//                   |                                             V
-//    -> [HEAD] -> (SEQ0)         [P2:S2] ...  -> [PN-1:SN-1] -> [PN/P1:SN/SN] -> [TAIL2] -> [TAIL] ->
-//         ^                         ^                                                |        |
-//         |                         +------------------------------------------------+        |
-//         +-----------------------------------------------------------------------------------+
+//                           +--------------------------------------+
+//                           |                                      V
+//    -> [HEAD] -> (SEQ0)->[IF] -> [P2:S2] ...  -> [PN-1:SN-1] -> [PN/P1:SN/SN] -> [TAIL2] -> [TAIL] ->
+//         ^         ^                                                               |        |
+//         |         +---------------------------------------------------------------+        |
+//         +----------------------------------------------------------------------------------+
 //         (while_cond -> TAIL)
 //
 //
 //         +-----------------------------------------------------------------------------------+
-//         |         +---------------------------------------------+                           |
-//         |         |                                             V                           |
-//    -> [HEAD] -> (SEQ0)          [P2:S2] ...  -> [PN-1:SN-1] -> [PN/P1:SN/S1] -> [TAIL2]     V
-//         ^                          ^                                            |   |
-//         |                          +--------------------------------------------+   |  
-//         +---------------------------------------------------------------------------+
+//         |                 +-------------------------------------+                           |
+//         |                 |                                     V                           |
+//    -> [HEAD] -> (SEQ0)->[IF] -> [P2:S2] ...  -> [PN-1:SN-1] -> [PN/P1:SN/S1] -> [TAIL2]     V
+//         ^          ^                                                              |  |
+//         |          +-------------------------------------------------------- -----+  |  
+//         +----------------------------------------------------------------------------+
 //         (while_cond -> HEAD)
 //
 //
-// < Especially, when only two states >
+// < Especially, when only two states > : no additional if required!
 //
 //    -> [HEAD] -> (SEQ0) -> [PN/P1:SN/SN] -> [TAIL2] -> [TAIL] ->
-//         ^                  ^                   |        |
-//         |                  +-------------------+        |
+//         ^         ^                            |        |
+//         |         +----------------------------+        |
 //         + ----------------------------------------------+
 //        
 //         +----------------------------------------------+
 //    -> [HEAD] -> (SEQ0)  -> [PN/P1:SN/S1] -> [TAIL2]    V
-//         ^                   ^                 |   |
-//         |                   +-----------------+   |  
+//         ^         ^                           |   |
+//         |         +---------------------------+   |  
 //         +-----------------------------------------+
 //
 //   PN/SN is 'conditioned' on TAIL2 variable (i.e. checking is_first_execution flag)
@@ -353,27 +353,64 @@ static void apply_intra_merge(gps_intra_merge_candidate_t* C) {
     while_cond->add_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL, true);
     FE.get_current_proc()->add_info_list_element(GPS_LIST_INTRA_MERGED_CONDITIONAL, while_cond);
 
-    //-------------------------------------------------------------
-    // Now re-arrange connections 
-    //-------------------------------------------------------------
-    // entry to merged p1/pn
-    if (s_0 != NULL) {
-        assert(s_0->get_nth_exit(0) == p_1);
-        s_0->update_exit_to(p_1, p_n);
-        p_n->add_entry(s_0);
-    } else {
-        assert(p_1->get_num_entries() == 1);
-        gps_bb* while_entry = p_1->get_nth_entry(0);
-        while_entry->update_exit_to(p_1, p_n);
-        p_n->add_entry(while_entry);
-    }
-
     assert(s_n->get_num_exits() == 1);
     assert(s_n->get_nth_exit(0) == while_cond);
     assert(s_1->get_num_entries() == 1);
 
+    //-------------------------------------------------------------
+    // Now re-arrange connections 
+    //-------------------------------------------------------------
     gps_bb* org_exit = s_n->get_nth_exit(0);
     gps_bb* p_2 = s_1->get_nth_exit(0);  // p_2 may be p_n
+
+    bool only_two_states = (p_2 == p_n);
+    bool has_s_0 = (s_0 != NULL);
+    gps_bb* IF = NULL;
+
+    if (has_s_0)
+        assert(s_0->get_nth_exit(0) == p_1);
+    else 
+        assert(p_1->get_num_entries() == 1);
+
+    // entrance to the loop
+    if (only_two_states) {
+        if (has_s_0) {  
+            // HEAD -> SEQ0 -> PN
+            s_0->update_exit_to(p_1, p_n);
+            p_n->add_entry(s_0);
+        } else {       
+            // HEAD -> PN
+            gps_bb* while_entry = p_1->get_nth_entry(0);
+            while_entry->update_exit_to(p_1, p_n);
+            p_n->add_entry(while_entry);
+        }
+    }
+    else {
+        IF = new gps_bb(BEINFO->issue_basicblock_id(), GM_GPS_BBTYPE_MERGED_IF);
+        IF->add_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO, while_cond->get_id());
+
+        if (has_s_0) {  
+            // HEAD -> SEQ0 -> IF(is_first)-> PN; else->P2
+            s_0->update_exit_to(p_1, IF);
+            IF->add_entry(s_0);
+        } else {
+            // HEAD -> IF (is_first) -> PN; else->P2
+            gps_bb* while_entry = p_1->get_nth_entry(0);
+            while_entry->update_exit_to(p_1, IF);
+            IF->add_entry(while_entry);
+        }
+
+        // [exit 0 is to p_n/p_1] if (is_first)
+        IF->add_exit(p_n, false);  
+        p_n->add_entry(IF);
+
+        // [exit 1 is to p_2]     if not
+        IF->add_exit(p_2, false);
+        p_2->update_entry_from(s_1, IF);
+
+    }
+
+
     // exit from merged s1/sn
     {
         s_n->update_exit_to(org_exit, TAIL2);
@@ -381,12 +418,24 @@ static void apply_intra_merge(gps_intra_merge_candidate_t* C) {
 
         TAIL2->add_entry(s_n);
 
-        // [exit 0] is to p_2
+        // [exit 0] is to seq_0, if, or p2
         // [exit 1] is to while cond
-        TAIL2->add_exit(p_2, false);
-        TAIL2->add_exit(org_exit, false);
+        if (has_s_0) {
+            TAIL2->add_exit(s_0, true); 
+        }
+        else if (only_two_states) {
+            // no s_0, no if, p_2 == p_n
+            assert(IF == NULL);
+            assert(p_2 == p_n);
+            TAIL2->add_exit(p_2, true);
+        }
+        else {
+            // no s_0, has IF
+            assert(IF != NULL);
+            TAIL2->add_exit(IF, true);
+        }
 
-        p_2->update_entry_from(s_1, TAIL2);
+        TAIL2->add_exit(org_exit);  // to original while condition
     }
 
     // delete states

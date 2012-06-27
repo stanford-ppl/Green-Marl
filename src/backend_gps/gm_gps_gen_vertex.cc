@@ -359,7 +359,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b) {
         //assert (b->get_num_sents() == 1);
         Body.pushln("/*------");
         Body.flush();
-        b->reproduce_sents();
+        b->reproduce_sents(false);
         Body.pushln("-----*/");
         Body.NL();
 

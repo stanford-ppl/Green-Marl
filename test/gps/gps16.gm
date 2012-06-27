@@ -1,4 +1,4 @@
-// Test of split 
+// Test of BFS
 Procedure gps16(
     G : Graph,
     n : Node (G),
