@@ -1,0 +1,13 @@
+// Test of split 
+Procedure gps16(
+    G : Graph,
+    n : Node (G),
+    x,y,z : N_P <Float>(G))
+{
+
+    InBFS(v: G.Nodes From n) {
+        Foreach(t: v.UpNbrs) 
+            v.x += t.x;
+    }
+
+}
