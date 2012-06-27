@@ -89,7 +89,6 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     sprintf(temp, "return new %sVertexReader(textInputFormat.createRecordReader(split, context));", proc_name);
     Body.pushln(temp);
     Body.pushln("}");
-    Body.pushln("}");
     Body.NL();
 
     sprintf(temp, "static class %sVertexReader extends TextVertexInputFormat.TextVertexReader<%s, VertexData, %s, MessageData> {", proc_name, vertex_id, edge_data);
@@ -116,7 +115,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     } else {
         Body.pushln("LongWritable vertexId = new LongWritable(Long.parseLong(values[0]));");
     }
-    Body.pushln("//DoubleWritable vertexValue = new DoubleWritable(Double.parseDouble(values[1]));");
+    Body.pushln("double vertexValue = Double.parseDouble(values[1]);");
     sprintf(temp, "Map<%s, %s> edges = Maps.newHashMap();", vertex_id, edge_data);
     Body.pushln(temp);
     Body.pushln("for (int i = 2; i < values.length; i += 2) {");
@@ -125,14 +124,14 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     } else {
         Body.pushln("LongWritable edgeId = new LongWritable(Long.parseLong(values[i]));");
     }
-    Body.pushln("//DoubleWritable edgeValue = new DoubleWritable(Double.parseDouble(values[i+1]));");
     if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        Body.pushln("edges.put(edgeId, new EdgeData());");
+        Body.pushln("double edgeValue = Double.parseDouble(values[i+1]);");
+        Body.pushln("edges.put(edgeId, new EdgeData(edgeValue));");
     } else {
         Body.pushln("edges.put(edgeId, NullWritable.get());");
     }
     Body.pushln("}");
-    Body.pushln("vertex.initialize(vertexId, new VertexData(), edges, null);");
+    Body.pushln("vertex.initialize(vertexId, new VertexData(vertexValue), edges, null);");
     Body.pushln("return vertex;");
     Body.pushln("}");
     Body.NL();
@@ -141,7 +140,56 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.pushln("public boolean nextVertex() throws IOException, InterruptedException {");
     Body.pushln("return getRecordReader().nextKeyValue();");
     Body.pushln("}");
+    Body.pushln("}");
     Body.pushln("} // end of vertex input format");
+    Body.NL();
+
+    Body.pushln("// ----------------------------------------------");
+    Body.pushln("// Vertex Output format");
+    Body.pushln("// ----------------------------------------------");
+    Body.pushln("static class pagerankVertexOutputFormat extends");
+    sprintf(temp, "TextVertexOutputFormat<%s, VertexData, %s> {", vertex_id, edge_data);
+    Body.pushln(temp);
+    Body.pushln("@Override");
+    sprintf(temp, "public VertexWriter<%s, VertexData, %s> createVertexWriter(", vertex_id, edge_data);
+    Body.pushln(temp);
+    Body.pushln("TaskAttemptContext context) throws IOException, InterruptedException {");
+    Body.pushln("return new pagerankVertexWriter(textOutputFormat.getRecordWriter(context));");
+    Body.pushln("}");
+    Body.NL();
+
+    Body.pushln("static class pagerankVertexWriter");
+    sprintf(temp, "extends TextVertexOutputFormat.TextVertexWriter<%s, VertexData, %s> {", vertex_id, edge_data);
+    Body.pushln(temp);
+    Body.pushln("public pagerankVertexWriter(RecordWriter<Text, Text> lineRecordReader) {");
+    Body.pushln("super(lineRecordReader);");
+    Body.pushln("}");
+    Body.NL();
+
+    Body.pushln("@Override");
+    Body.pushln("public void writeVertex(");
+    sprintf(temp, "BasicVertex<%s, VertexData, %s, ?> vertex)", vertex_id, edge_data);
+    Body.pushln(temp);
+    Body.pushln("throws IOException, InterruptedException {");
+    Body.pushln("StringBuffer sb = new StringBuffer(vertex.getVertexId().toString());");
+    Body.pushln("sb.append('\\t').append(vertex.getVertexValue());");
+    Body.NL();
+
+    sprintf(temp, "for (%s neighbor : vertex) {", vertex_id);
+    Body.pushln(temp);
+    Body.pushln("sb.append('\\t').append(neighbor);");
+    if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        Body.pushln("sb.append('\\t').append(vertex.getEdgeValue(neighbor));");
+    } else {
+        Body.pushln("sb.append(\"\\t1.0\");");
+    }
+    Body.pushln("}");
+    Body.NL();
+
+    Body.pushln("getRecordWriter().write(new Text(sb.toString()), null);");
+    Body.pushln("}");
+    Body.pushln("}");
+    Body.pushln("} // end of vertex output format");
 }
 
 void gm_giraph_gen::do_generate_job_configuration() {
@@ -218,7 +266,7 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body.pushln(temp);
     Body.pushln("FileInputFormat.addInputPath(job.getInternalJob(), new Path(cmd.getOptionValue('i')));");
     Body.pushln("if (cmd.hasOption('o')) {");
-    sprintf(temp, "//job.setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc->get_procname()->get_genname());
+    sprintf(temp, "job.setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(cmd.getOptionValue('o')));");
     Body.pushln("}");
