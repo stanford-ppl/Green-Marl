@@ -33,7 +33,6 @@ void gm_giraph_gen::do_generate_master_class() {
     Body.pushln(temp);
     sprintf(temp, "private int     _master_state_nxt            = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
     Body.pushln(temp);
-    Body.pushln("private boolean _master_initialized          = false;");
     Body.pushln("private boolean _master_should_start_workers = false;");
     Body.pushln("private boolean _master_should_finish        = false;");
     Body.NL();
@@ -42,7 +41,7 @@ void gm_giraph_gen::do_generate_master_class() {
     // initialization function
     //--------------------------------------------------------------------
 
-    Body.pushln("private void _master_initialize() {");
+    Body.pushln("public void initialize() throws InstantiationException, IllegalAccessException {");
 
     // Basic blocks iterator
     std::list<gm_gps_basic_block*>& bb_blocks = info->get_basic_blocks();
@@ -52,7 +51,6 @@ void gm_giraph_gen::do_generate_master_class() {
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
     std::set<gm_symtab_entry*>::iterator I_sym;
 
-    Body.pushln("try {");
     sprintf(temp, "registerAggregator(%s, IntOverwriteAggregator.class);", GPS_KEY_FOR_STATE);
     Body.pushln(temp);
     for (I_bb = bb_blocks.begin(); I_bb != bb_blocks.end(); I_bb++) {
@@ -78,11 +76,6 @@ void gm_giraph_gen::do_generate_master_class() {
             Body.pushln(".class);");
         }
     }
-    Body.pushln("} catch (InstantiationException e) {");
-    Body.pushln("e.printStackTrace();");
-    Body.pushln("} catch (IllegalAccessException e) {");
-    Body.pushln("e.printStackTrace();");
-    Body.pushln("}");
 
     // Iterate symbol table
     gm_symtab* args = proc->get_symtab_var();
@@ -260,10 +253,9 @@ void gm_giraph_gen::do_generate_master_states() {
 
     Body.pushln("//@ Override");
     Body.pushln("public void compute() {");
-
-    Body.pushln("if (!_master_initialized) {");
-    Body.pushln("_master_initialize();");
-    Body.pushln("_master_initialized = true;");
+    Body.pushln("// Graph size is not available in superstep 0");
+    Body.pushln("if (getSuperstep() == 0) {");
+    Body.pushln("return;");
     Body.pushln("}");
     Body.NL();
 
