@@ -119,6 +119,7 @@ void gm_giraph_gen::do_generate_master_class() {
                     break;
                 default:
                     assert(false);
+                    break;
             }
             Body.pushln(temp);
         }
