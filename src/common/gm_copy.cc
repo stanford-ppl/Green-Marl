@@ -47,9 +47,9 @@ ast_expr* ast_expr::copy(bool b) {
         case GMEXPR_REDUCE:
             return ((ast_expr_reduce*) this)->copy(b);
             break;
-
         default:
             assert(false);
+            break;
     }
 
     e->set_type_summary(this->get_type_summary());

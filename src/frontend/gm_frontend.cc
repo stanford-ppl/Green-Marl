@@ -499,6 +499,7 @@ ast_node* GM_new_call_sent(ast_node* n, bool is_builtin) {
         return ast_call::new_builtin_call((ast_expr_builtin*) n);
     }
     assert(false);
+    return NULL;
 }
 
 lhs_list* GM_single_lhs_list(ast_node* lhs) {

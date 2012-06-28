@@ -262,6 +262,7 @@ public:
 class gps_apply_bb
 {
 public:
+    virtual ~gps_apply_bb() {}
     virtual void apply(gm_gps_basic_block* b)=0;
     virtual bool has_changed() {
         return changed;

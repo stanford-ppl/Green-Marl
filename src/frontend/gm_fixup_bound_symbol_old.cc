@@ -216,6 +216,7 @@ void gm_make_normal_assign(ast_assign* a) {
             break;
         default:
             assert(false);
+            break;
     }
 
     a->set_rhs(new_rhs);

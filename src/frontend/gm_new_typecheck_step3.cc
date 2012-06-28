@@ -108,6 +108,7 @@ public:
                 break;
             default:
                 assert(false);
+                break;
         }
 
         if (okay) {
@@ -136,8 +137,6 @@ public:
     // expression, dest-type
     std::map<ast_expr*, int> coercion_targets;
 };
-
-extern bool gm_check_biop_rule(int op_type, int l_type, int r_type, int& result_type);
 
 bool gm_typechecker_stage_3::check_ter(ast_expr *e) {
     int op_type = e->get_optype();

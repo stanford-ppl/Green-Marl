@@ -290,6 +290,7 @@ int gm_get_iter_type_from_set_type(int set_type) {
             return GMTYPE_NODEITER_ORDER;
         default:
             assert(false);
+            return EXIT_FAILURE;
     }
 }
 

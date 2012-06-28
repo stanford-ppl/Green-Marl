@@ -13,6 +13,8 @@ public:
             for_id(false), for_symtab(false), for_sent(false), for_expr(false), for_proc(false), for_lhs(false), for_rhs(false), for_builtin(false), separate_post_apply(
                     false), traverse_local_expr_only(false), curr_sent_being_traversed(NULL), matching_lhs(NULL), matching_rhs(NULL) {
     }
+    virtual ~gm_apply() {
+    }
 
     virtual bool apply(gm_symtab* e, int symtab_type) {
         return true;

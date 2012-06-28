@@ -308,6 +308,7 @@ void gm_make_normal_assign(ast_assign* a) {
             break;
         default:
             assert(false);
+            break;
     }
 
     if (!a->is_argminmax_assign()) {

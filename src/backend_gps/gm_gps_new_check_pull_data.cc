@@ -19,7 +19,6 @@ public:
 
     }
 
-public:
     // write to OUT_SCOPE in INNER_LOOP is an error
     bool apply(ast_sent* s) {
         if (s->get_nodetype() == AST_ASSIGN) {

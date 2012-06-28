@@ -17,6 +17,7 @@ public:
     gm_backend() :
             _voca_created(false) {
     }
+    virtual ~gm_backend() {}
 
     virtual void setTargetDir(const char* dname)=0;
     virtual void setFileName(const char* fname)=0;
@@ -64,6 +65,7 @@ static enum
 class gm_graph_library
 {
 public:
+    virtual ~gm_graph_library() {}
 
     //virtual const char* get_header_info()=0;
     //virtual const char* get_type_string(ast_typedecl*, int usage) =0;

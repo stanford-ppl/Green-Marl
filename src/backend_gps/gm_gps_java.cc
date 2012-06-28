@@ -24,7 +24,7 @@ const char* gm_gps_gen::get_type_string(int gm_type) {
                 return "long";
         default:
             assert(false);
-            break;
+            return "ERROR";
     }
 }
 

@@ -136,6 +136,7 @@ extern bool gm_replace_subexpr(ast_expr* top, ast_expr* old_e, ast_expr* new_e);
 class gm_expr_replacement_t
 {
 public:
+    virtual ~gm_expr_replacement_t() {}
     virtual bool is_target(ast_expr* e) = 0;
     virtual ast_expr* create_new_expr(ast_expr* target, bool& destory_target_after) =0;
 };

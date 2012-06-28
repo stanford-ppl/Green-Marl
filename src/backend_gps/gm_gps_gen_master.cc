@@ -9,7 +9,7 @@ void gm_gps_gen::write_headers() {
     ast_procdef* proc = FE.get_current_proc();
     char temp[1024];
     sprintf(temp, "package gps.examples.gm.%s;", proc->get_procname()->get_genname());
-    Body.pushln(temp);       // hardcodede
+    Body.pushln(temp);       // hardcoded
     get_lib()->generate_headers(Body);
     Body.NL();
 
@@ -106,6 +106,7 @@ void gm_gps_gen::do_generate_master_class() {
                     break;
                 default:
                     assert(false);
+                    break;
             }
             Body.pushln("}");
         }
@@ -443,6 +444,7 @@ static const char* get_reduce_base_value(int reduce_type, int gm_type) {
                     assert(false);
                     return "0";
             }
+            break;
         case GMREDUCE_MAX:
             switch (gm_type) {
                 case GMTYPE_INT:
@@ -457,8 +459,10 @@ static const char* get_reduce_base_value(int reduce_type, int gm_type) {
                     assert(false);
                     return "0";
             }
+            break;
         default:
             assert( false);
+            break;
     }
     return "0";
 }
