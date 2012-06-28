@@ -466,7 +466,12 @@ static void apply_intra_merge(gps_intra_merge_candidate_t* C) {
 
         // TAiL2 => P2 (P2 == PN if only two states)
         TAIL2->add_exit(p_2, false); 
-        p_2->update_entry_from(s_1, TAIL2);
+        if (only_two_states) {
+            p_2->add_entry(TAIL2);
+        }
+        else {
+            p_2->update_entry_from(s_1, TAIL2);
+        }
 
         // TAIL2=>ORG_EXIT (!is_first)
         TAIL2->add_exit(org_exit);
