@@ -55,7 +55,7 @@
 
 static enum
 {
-    GM_RANGE_LINEAR,     // G.Nodes or G.Edges
+    GM_RANGE_LINEAR=0,     // G.Nodes or G.Edges
     GM_RANGE_RANDOM,     // G.Nbrs, ...  (or access via non-iterator variable)
     GM_RANGE_SINGLE,     // t.X, t is a fixed iterator
     GM_RANGE_LEVEL,      // BFS iteration
@@ -339,6 +339,7 @@ public:
 };
 
 extern gm_rwinfo_map& gm_get_write_set(ast_sent *S);
+extern gm_rwinfo_map& gm_get_reduce_set(ast_sent *S);
 extern bool gm_is_modified(ast_sent* S, gm_symtab_entry * e);
 extern bool gm_is_modified_with_condition(ast_sent* S, gm_symtab_entry * e, gm_rwinfo_query* q);
 static bool gm_is_modified_always_linearly(ast_sent * S, gm_symtab_entry *e) {

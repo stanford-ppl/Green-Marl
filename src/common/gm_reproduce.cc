@@ -409,6 +409,7 @@ void ast_vardecl::reproduce(int ind_level) {
 }
 
 void ast_foreach::reproduce(int ind_level) {
+
     if (!is_sequential()) {
         Out.push("Foreach (");
     } else {

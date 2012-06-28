@@ -65,6 +65,9 @@ extern void gm_ripoff_upper_scope(ast_node* n);
 extern void gm_put_new_upper_scope_on_null(ast_node* n, gm_scope* new_s);
 extern void gm_put_new_upper_scope(ast_node* n, gm_scope* new_s);
 
+// re-construct scope
+extern void gm_reconstruct_scope(ast_node* top);  // top should must have a scope
+
 //------------------------------------------------------------
 // Symbol addition and creation
 //------------------------------------------------------------
@@ -213,6 +216,10 @@ extern void gm_mark_sents_under_parallel_execution(ast_sent* T, bool entry_is_se
 // Change a reduction assign into normal assign
 extern void gm_make_normal_assign(ast_assign *a);
 
+// flatten nested sentblock if possible
+extern void gm_flat_nested_sentblock(ast_node* n); 
+
 extern bool gm_check_if_end_with_return(ast_sentblock* sb);
 extern ast_sent* gm_find_parent_sentence(ast_expr* e);
+
 #endif

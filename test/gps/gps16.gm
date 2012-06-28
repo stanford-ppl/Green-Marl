@@ -1,0 +1,17 @@
+// Test of BFS
+Procedure gps16(
+    G : Graph,
+    n : Node (G),
+    A,B : N_P <Float>(G))
+{
+
+    InBFS(v: G.Nodes From n) {
+        Foreach(t: v.UpNbrs) 
+            v.B += t.B;
+    }
+    InReverse {
+        Foreach(t: v.DownNbrs) 
+            t.A += v.A;
+    }
+
+}

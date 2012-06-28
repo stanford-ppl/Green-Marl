@@ -37,17 +37,25 @@ public:
 
         else if (s->get_nodetype()==AST_FOREACH)
         {
-           ast_foreach* fe = (ast_foreach*) s;
-           if (in_bfs) {
-               int itt = fe->get_iter_type();
-               if (gm_is_iteration_on_up_neighbors(itt)) {
-                   current_bfs->add_info_bool(GPS_FLAG_HAS_UP_NBRS, true);
-               } 
-               else if (gm_is_iteration_on_down_neighbors(itt)) {
-                   current_bfs->add_info_bool(GPS_FLAG_HAS_DOWN_NBRS, true);
-               }
-
-           }
+            ast_foreach* fe = (ast_foreach*) s;
+            if (in_bfs) 
+            {
+                int itt = fe->get_iter_type();
+                if (gm_is_iteration_on_down_neighbors(itt)) 
+                {
+                // check if this is forward bfs
+                    ast_node* current = fe;
+                    ast_node* parent = fe->get_parent();
+                    while (parent != current_bfs) {
+                        assert(parent != NULL);
+                        current = parent;
+                        parent = parent->get_parent();
+                    }
+                    if (current == current_bfs->get_fbody()) {
+                        current_bfs->add_info_bool(GPS_FLAG_HAS_DOWN_NBRS, true);
+                    }
+                }
+            }
         }
         return true;
     }
@@ -75,13 +83,13 @@ private:
 static void create_initializer(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, gm_symtab_entry* fin_sym) {
 
     //---------------------------------------------
+    //    curr_level = -1;
+    //    bfs_finished = False;
     //    Foreach(i:G.Nodes) 
     //        i.level = ( i == root) ? 0 : +INF;
-    //    curr_level = 0;
-    //    bfs_finished = False;
     //---------------------------------------------
     ast_id* lhs_curr = curr_sym->getId()->copy(true);
-    ast_expr* rhs_curr = ast_expr::new_ival_expr(0);
+    ast_expr* rhs_curr = ast_expr::new_ival_expr(-1);
     ast_assign* a_curr = ast_assign::new_assign_scala(lhs_curr,rhs_curr);
 
     ast_id* lhs_fin = fin_sym->getId()->copy(true);
@@ -108,9 +116,42 @@ static void create_initializer(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry*
     inner_sb->add_sent(init_a);
 }
 
+
+static ast_sentblock* create_fw_body_prepare(ast_sentblock* while_sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym)
+{
+    // outer loop
+    ast_sentblock* foreach_sb = ast_sentblock::new_sentblock();
+    ast_foreach* foreach_out = gm_new_foreach_after_tc(
+        bfs->get_iterator()->copy(false),
+        bfs->get_source()->copy(true),
+        foreach_sb,
+        GMTYPE_NODEITER_ALL);
+    while_sb->add_sent(foreach_out);
+
+    // outer if
+    ast_expr* lev_check_out_c = ast_expr::new_comp_expr(
+        GMOP_EQ,
+        ast_expr::new_field_expr(
+            ast_field::new_field(
+                foreach_out->get_iterator()->copy(true),
+                lev_sym->getId()->copy(true))),
+        ast_expr::new_id_expr(curr_sym->getId()->copy(true))
+        );
+    ast_sentblock* lev_check_out_sb = ast_sentblock::new_sentblock();
+    ast_if* lev_check_out_if = ast_if::new_if(lev_check_out_c, lev_check_out_sb,NULL);
+    foreach_sb->add_sent(lev_check_out_if);
+
+    return lev_check_out_sb;
+    
+}
+
+static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_foreach* out_loop, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, bool is_fw);
+
 static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, gm_symtab_entry* fin_sym) {
     //    While(bfs_finished != false) {
     //       bfs_finished = True;
+    //       curr_level ++;
+    //
     //       Foreach(v:G.Nodes) {
     //          if (v.level == curr_level) {
     //             Foreach(k:v.Nbrs) {
@@ -132,7 +173,6 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     //          }
     //       }
     //       
-    //       curr_level ++;
     //    }
 
     // while
@@ -143,10 +183,17 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     ast_sent* fw_while = ast_while::new_while(check_op, while_sb);
     sb->add_sent(fw_while);
 
-    // assign 1
+    // assign not finished
     ast_expr* true_rhs = ast_expr::new_bval_expr(true);
     ast_assign* true_a = ast_assign::new_assign_scala(fin_sym->getId()->copy(true),true_rhs);
     while_sb->add_sent(true_a);
+
+    // increase level
+    ast_expr* inc_rhs = ast_expr::new_biop_expr(GMOP_ADD,
+        ast_expr::new_id_expr(curr_sym->getId()->copy(true)),
+        ast_expr::new_ival_expr(1));
+    ast_assign* inc_a = ast_assign::new_assign_scala(curr_sym->getId()->copy(true), inc_rhs);
+    while_sb->add_sent(inc_a);
 
     // outer loop
     ast_sentblock* foreach_sb = ast_sentblock::new_sentblock();
@@ -216,21 +263,87 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         GMREDUCE_AND);
     lev_check_in_sb->add_sent(update_fin);
 
-    // increase level
-    ast_expr* inc_rhs = ast_expr::new_biop_expr(GMOP_ADD,
-        ast_expr::new_id_expr(curr_sym->getId()->copy(true)),
-        ast_expr::new_ival_expr(1));
-    ast_assign* inc_a = ast_assign::new_assign_scala(curr_sym->getId()->copy(true), inc_rhs);
-    while_sb->add_sent(inc_a);
+
+    // create user body
+    if (((ast_sentblock*) bfs->get_fbody())->get_sents().size() > 0) 
+    {
+        ast_sentblock* fw_body_to_add;
+        if (bfs->find_info_bool(GPS_FLAG_HAS_DOWN_NBRS)) 
+        {
+            fw_body_to_add = create_fw_body_prepare(while_sb, bfs, lev_sym, curr_sym);
+        }
+        else
+        {
+            fw_body_to_add = lev_check_out_sb;
+        }
+
+        create_user_body_main(fw_body_to_add, bfs, foreach_out, lev_sym, curr_sym, true);
+    }
+
 
 }
 
 
+static void create_bw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, gm_symtab_entry* fin_sym) {
+    //   
+    //    While(curr_level >=0) {
+    //
+    //       Foreach(v:G.Nodes) {
+    //          if (v.level == curr_level) {
+    //             << body 1 >>
+    //          }
+    //       }
+    //
+    //       curr_level --
+    //    }
+    
+    // while loop
+    ast_sentblock* while_sb = ast_sentblock::new_sentblock();
+    ast_expr* check_l = ast_expr::new_id_expr(curr_sym->getId()->copy(true));
+    ast_expr* check_r = ast_expr::new_ival_expr(0);
+    ast_expr* check_op = ast_expr::new_comp_expr(GMOP_GE, check_l, check_r);
+    ast_sent* fw_while = ast_while::new_while(check_op, while_sb);
+    sb->add_sent(fw_while);
+
+    // outer loop
+    ast_sentblock* foreach_sb = ast_sentblock::new_sentblock();
+    ast_foreach* foreach_out = gm_new_foreach_after_tc(
+        bfs->get_iterator()->copy(false),
+        bfs->get_source()->copy(true),
+        foreach_sb,
+        GMTYPE_NODEITER_ALL);
+    while_sb->add_sent(foreach_out);
+
+    // level check
+    ast_expr* lev_check_out_c = ast_expr::new_comp_expr(
+        GMOP_EQ,
+        ast_expr::new_field_expr(
+            ast_field::new_field(
+                foreach_out->get_iterator()->copy(true),
+                lev_sym->getId()->copy(true))),
+        ast_expr::new_id_expr(curr_sym->getId()->copy(true))
+        );
+    ast_sentblock* lev_check_out_sb = ast_sentblock::new_sentblock();
+    ast_if* lev_check_out_if = ast_if::new_if(lev_check_out_c, lev_check_out_sb,NULL);
+    foreach_sb->add_sent(lev_check_out_if);
+
+
+    create_user_body_main(lev_check_out_sb, bfs, foreach_out, lev_sym, curr_sym, false);
+
+    // decrease curr level
+    ast_expr* dec_lev_rhs = ast_expr::new_biop_expr(GMOP_SUB,
+        ast_expr::new_id_expr(curr_sym->getId()->copy(true)),
+        ast_expr::new_ival_expr(1));
+    ast_assign* dec_level = ast_assign::new_assign_scala(curr_sym->getId()->copy(true), dec_lev_rhs);
+    while_sb->add_sent(dec_level);
+} 
+
+
 void gm_gps_rewrite_bfs(ast_bfs* b) {
     // for temporary
-    assert(b->get_bbody() == NULL); 
     assert(b->get_b_filter() == NULL);
     assert(b->get_f_filter() == NULL);
+    assert(b->get_navigator() == NULL);
 
     gm_make_it_belong_to_sentblock(b);
     ast_sentblock* parent = (ast_sentblock*) b->get_parent();
@@ -270,6 +383,7 @@ void gm_gps_rewrite_bfs(ast_bfs* b) {
 
     create_fw_iteration(sb, b, lev_sym, curr_sym, fin_sym);
 
+    create_bw_iteration(sb, b, lev_sym, curr_sym, fin_sym);
 
 
 
@@ -288,4 +402,96 @@ void gm_gps_opt_transform_bfs::process(ast_procdef* p) {
         ast_bfs* b = *I;
         gm_gps_rewrite_bfs(b);
     }
+
+    gm_flat_nested_sentblock(p);
+
+    gm_redo_rw_analysis(p->get_body());
+}
+
+
+
+
+//----------------------------------------------------------------------
+// Create body
+//  ->  find and replace up/down nbr
+//----------------------------------------------------------------------
+
+class gps_opt_find_updown_foreach_t : public gm_apply
+{
+
+public:
+    gps_opt_find_updown_foreach_t(gm_symtab_entry* c, gm_symtab_entry* l) : curr_sym(c), lev_sym(l) {
+        set_for_sent(true);
+    }
+
+    virtual bool apply(ast_sent* s) {
+        if (s->get_nodetype() == AST_FOREACH) 
+        {
+            ast_foreach* fe = (ast_foreach*) s;
+            if ((fe->get_iter_type() == GMTYPE_NODEITER_UP_NBRS) || (fe->get_iter_type() == GMTYPE_NODEITER_DOWN_NBRS))
+            {
+                targets.push_back(fe);
+            }
+        }
+    }
+
+    void post_process() {
+        //-------------------------
+        //  Foreach(i: n.UpNbrs) { ... }
+        //  ==>
+        //  Foreach(i: n.InNbrs) If (i.lev == curr_level -1) { ... }
+        //-------------------------
+        std::list<ast_foreach*>::iterator I;
+        for(I=targets.begin(); I!=targets.end(); I++)
+        {
+            ast_foreach* fe = *I;
+
+            ast_sent* body = fe->get_body();
+            gm_ripoff_sent(body);
+
+            int new_iter_type =  (fe->get_iter_type() == GMTYPE_NODEITER_UP_NBRS) ? GMTYPE_NODEITER_IN_NBRS : GMTYPE_NODEITER_NBRS;
+            int op_for_check =   (fe->get_iter_type() == GMTYPE_NODEITER_UP_NBRS) ? GMOP_SUB : GMOP_ADD;
+
+            // chechge iter type
+            fe->set_iter_type(new_iter_type);
+            fe->get_iterator()->getTypeInfo()->set_typeid(new_iter_type);
+
+            // if (i.lev == (curr_level -1))
+            ast_expr* check_level = ast_expr::new_comp_expr(GMOP_EQ,
+                    ast_expr::new_field_expr(ast_field::new_field(fe->get_iterator()->copy(true), lev_sym->getId()->copy(true))),
+                    ast_expr::new_biop_expr(op_for_check,
+                        ast_expr::new_id_expr(curr_sym->getId()->copy(true)),
+                        ast_expr::new_ival_expr(1))
+                    );
+            ast_if*  check_level_if = ast_if::new_if(check_level, body, NULL);
+            fe->set_body(check_level_if);
+        }
+    }
+
+private:
+    std::list<ast_foreach*> targets;
+    gm_symtab_entry* curr_sym;
+    gm_symtab_entry* lev_sym;
+
+};
+
+static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_foreach* out_loop, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, bool is_fw) {
+
+
+    // rip-off body from bfs
+    ast_sent* body = (is_fw) ? bfs->get_fbody() : bfs->get_bbody();
+    gm_ripoff_sent(body);
+
+    // replace iterator
+    gm_replace_symbol_entry(bfs->get_iterator()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
+    // what was iterator 2 again?
+    if (bfs->get_iterator2() != NULL)
+        gm_replace_symbol_entry(bfs->get_iterator2()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
+
+    // replace up/down nbr 
+    gps_opt_find_updown_foreach_t T(curr_sym, lev_sym);
+    body->traverse_pre(&T);
+    T.post_process();
+
+    sb_to_add->add_sent(body);
 }

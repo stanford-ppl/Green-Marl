@@ -124,6 +124,7 @@ public:
 
     void set_parent(gm_symtab* p) {
         parent = p;
+        assert(this!=parent);
     }
     gm_symtab* get_parent() {
         return parent;
@@ -148,7 +149,6 @@ public:
 
     gm_symtab_entry* find_symbol(ast_id* id) {
         //for(int i=0;i<entries.size(); i++) {
-        //printf("this:%p\n", this);
         std::set<gm_symtab_entry*>::iterator I;
         for (I = entries.begin(); I != entries.end(); I++) {
             gm_symtab_entry* e = *I;

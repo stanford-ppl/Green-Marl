@@ -105,6 +105,7 @@ public:
             ast_sent* dest;
             if (!capture_pattern(fe, if1, in, if2, dest)) return true;
 
+
             if (avoid_reverse) {
                 if (in->get_iter_type() == GMTYPE_NODEITER_IN_NBRS) {
                     target.push_back(fe);
