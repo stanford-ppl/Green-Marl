@@ -538,14 +538,16 @@ private:
 
     ast_sent* getNewBody() {
 
-        assert(fe->get_body()->get_nodetype() == AST_SENTBLOCK);
-        ast_sentblock* oldBody = (ast_sentblock*) fe->get_body();
+        ast_sentblock* newBody;
+        if (fe->get_body()->get_nodetype() == AST_SENTBLOCK)
+            newBody = (ast_sentblock*) fe->get_body();
+        else
+            newBody = ast_sentblock::new_sentblock();
 
         ast_assign* assign = createAssignStatement();
-        std::list<ast_sent*>& statements = oldBody->get_sents();
+        std::list<ast_sent*>& statements = newBody->get_sents();
         statements.push_front(assign);
 
-        ast_sent* newBody = oldBody;
         return newBody;
     }
 

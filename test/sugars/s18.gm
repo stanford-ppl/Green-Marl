@@ -9,7 +9,8 @@ Procedure foo()
    		s.Add(n);
    }
    
-   Foreach(s: prop.Items) {
+   Foreach(n2: G.Nodes) { //should be equal to above
+   		N_S s = n2.prop;
    		s.Add(n);
    }
    

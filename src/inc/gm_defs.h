@@ -175,7 +175,7 @@ inline static bool gm_is_property_iter_order_type(int i) {
 }
 
 inline static bool gm_is_property_iter_type(int i) {
-return gm_is_property_iter_order_type(i) || gm_is_property_iter_seq_type(i) || gm_is_property_iter_set_type(i);
+    return gm_is_property_iter_order_type(i) || gm_is_property_iter_seq_type(i) || gm_is_property_iter_set_type(i);
 }
 
 inline static bool gm_is_node_compatible_type(int i) {
