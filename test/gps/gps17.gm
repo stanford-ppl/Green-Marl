@@ -1,0 +1,28 @@
+
+// Test of Intra-loop merging
+Procedure gps17(
+    G : Graph, A,B,C : N_P <Float>(G))
+{
+    Int i = 0;
+
+    While(i < 10)
+    {
+        i++;
+
+        Foreach(n: G.Nodes) {
+            Foreach(k: n.Nbrs)
+                k.A += n.B;
+        }
+
+        Foreach(n: G.Nodes) {
+            Foreach(k: n.Nbrs)
+                k.B += n.C;
+        }
+
+        Foreach(n: G.Nodes) {
+            Foreach(k: n.Nbrs)
+                k.C += n.A;
+        }
+
+    }
+}

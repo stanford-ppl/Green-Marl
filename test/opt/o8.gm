@@ -16,6 +16,9 @@ Proc P(G:Graph, A,B,C:N_P<Int>(G), r:Node(G))
     Foreach(n:O.Items)
         n.B++;      // optimize-able
 
+    For(n:Q.Items)
+        n.B++;      // optimize-able
+
     InBFS(n:G.Nodes ; r)
     {
         Foreach(t:n.UpNbrs) 

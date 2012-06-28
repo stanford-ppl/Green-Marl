@@ -122,6 +122,8 @@ public:
         ast_sentblock* sb = (ast_sentblock*) (fe->get_body());
         //printf("(2)fe = %p, sb = %p\n", fe, sb);
         assert(sb->get_nodetype() == AST_SENTBLOCK);
+
+
         gm_symtab_entry* out_iter = NULL;
 
         // process raw property access first
@@ -236,7 +238,6 @@ private:
             }
             target = gm_add_new_symbol_nodeedge_type(sb, type, graph, (char*) temp_name);
         } else {
-            printf("typs = %s\n", gm_get_type_string(type));
             assert(false);
         }
         delete temp_name;
@@ -259,6 +260,9 @@ extern void gm_gps_do_new_analysis_scope_sent_var(ast_procdef* proc);
 extern void gm_gps_do_new_analysis_rhs_lhs(ast_procdef* proc);
 
 void gm_gps_new_rewrite_rhs::process(ast_procdef* proc) {
+    
+    gm_reconstruct_scope(proc); // TODO--> get rid of 'parent' pointer of symtabs. (It is hard to move sentences around with this)
+
     gps_rewrite_rhs_preprocessing_t T1;
     proc->traverse_pre(&T1);
     T1.process();

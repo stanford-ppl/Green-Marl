@@ -37,10 +37,15 @@ extern void gm_gps_find_double_nested_loops(ast_node* p, std::map<ast_foreach*, 
 //---------------------------------------
 //
 // Foreach(n.) {
-//    <optional if>   // no variables defined in between
+//    ....  (A)
+//
+//    <if> {  // no variables defined in between
 //       Foreach(t) {
 //         n.X = ...
 //       }
+//    }
+//
+//    .... (B)
 // }
 //---------------------------------------
 static void filter_target_loops(std::map<ast_foreach*, ast_foreach*>& SRC,
@@ -56,15 +61,39 @@ std::set<ast_foreach*>& SET) {
 
         bool is_target = false;
         // check if inner loop requires flipping
-        gm_rwinfo_map& WMAP = gm_get_write_set(in);
+        gm_rwinfo_map& WMAP = gm_get_write_set(in->get_body());
         gm_rwinfo_map::iterator M;
         for (M = WMAP.begin(); M != WMAP.end(); M++) {
+            gm_rwinfo_list* LIST = M->second;
+            gm_rwinfo_list::iterator I;
+            bool is_field = M->first->getType()->is_property();
+            for (I = LIST->begin(); I != LIST->end(); I++) {
+                gm_rwinfo* info = *I;
+                if (is_field && (info->driver == NULL) && (info->access_range == GM_RANGE_RANDOM)) {
+                    is_target = true;
+                    continue;
+                } else if (info->driver == NULL) {
+                    continue;
+                }
+
+                if (info->driver != out_iter) {
+                    is_target = false;
+                    break;
+                }
+                if (info->driver == out_iter) {
+                    is_target = true;
+                    continue;
+                }
+            }
+        }
+
+        gm_rwinfo_map& DMAP = gm_get_reduce_set(in->get_body());
+        for (M = DMAP.begin(); M != DMAP.end(); M++) {
             gm_rwinfo_list* LIST = M->second;
             gm_rwinfo_list::iterator I;
             for (I = LIST->begin(); I != LIST->end(); I++) {
                 gm_rwinfo* info = *I;
                 if ((info->driver == NULL) && (info->access_range == GM_RANGE_RANDOM)) {
-                    is_target = true;
                     continue;
                 } else if (info->driver == NULL) continue;
 
@@ -84,10 +113,12 @@ std::set<ast_foreach*>& SET) {
 
         bool meet_if = false;
         ast_node* current = in;
+        //printf("current = %p %s\n", current, gm_get_nodetype_string(in->get_nodetype()));
         // move up until meet the outer loop
         while (true) {
             ast_node* parent = current->get_parent();
             assert(parent!=NULL);
+            //printf(" parent = %p %s\n", parent, gm_get_nodetype_string(parent->get_nodetype()));
             if (parent->get_nodetype() == AST_IF) {
                 if (meet_if) {
                     is_target = false;
@@ -120,6 +151,7 @@ std::set<ast_foreach*>& SET) {
                     break;
                 }
             } else {
+                //printf("parent  = %s!!!\n", gm_get_nodetype_string(parent->get_nodetype()));
                 is_target = false;
                 break;
             }
@@ -186,11 +218,34 @@ std::map<ast_sentblock*, std::list<ast_sent*> >& younger);
 static void split_the_loop(ast_foreach* in) {
     ast_foreach* out = NULL;
 
-    //printf("splitting loop for %s\n", in->get_iterator()->get_genname());
-
     //----------------------------------------------------------------
     // find the current frame structure
+    // example>
+    //    Foreach() <--- out
+    //    {                        
+    //       A1; A2;
+    //       {  
+    //          B1; B2;
+    //          If (...) {
+    //              C1; C2; 
+    //              Froeach() { <--- in
+    //              }
+    //              C3; C4;
+    //          }
+    //          B3; B4;
+    //       }
+    //       A3; A4;
+    //   }
+    //
+    //   frame: C -> If -> B -> A
+    //   older[A] = {A1; A2;}
+    //   older[B] = {B1; B2;}
+    //   older[C] = {C1; C2;}
+    //   younger[A] = {A3; A4;}
+    //   younger[B] = {B3; B4;}
+    //   younger[C] = {C3; C4;}
     //----------------------------------------------------------------
+    
     std::list<ast_node*> frame;
     std::map<ast_sentblock*, std::list<ast_sent*> > older_siblings;
     std::map<ast_sentblock*, std::list<ast_sent*> > younger_siblings;
@@ -224,10 +279,12 @@ static void split_the_loop(ast_foreach* in) {
                     older = false;
                     continue;
                 }
-                if (older)
+                if (older) {
                     OLD.push_back(s);
-                else
+                }
+                else {
                     YOUNG.push_back(s);
+                }
             }
 
             All.clear();
@@ -236,7 +293,7 @@ static void split_the_loop(ast_foreach* in) {
             assert(older == false);
             older_siblings[sb] = OLD;
             younger_siblings[sb] = YOUNG;
-            need_young = need_young || (YOUNG.size() > 0);
+            need_young = need_young || (YOUNG.size() > 0); 
             need_old = need_old || (OLD.size() > 0);
             current = node;
 
@@ -244,7 +301,9 @@ static void split_the_loop(ast_foreach* in) {
         } else {
             assert(false);
         }
-    }assert(out!=NULL);
+    }
+    assert(out!=NULL);
+
     assert(gm_is_iteration_on_all_graph(out->get_iter_type()));
     gm_make_it_belong_to_sentblock(out);
     assert(out->get_parent()->get_nodetype() == AST_SENTBLOCK);
@@ -262,22 +321,22 @@ static void split_the_loop(ast_foreach* in) {
         assert(old!=NULL);
 
         ast_foreach* old_loop = gm_new_foreach_after_tc(out->get_iterator()->copy(false), out->get_source()->copy(true), (ast_sent*) old, out->get_iter_type());
+        // replace iterator id
+        gm_replace_symbol_entry(out->get_iterator()->getSymInfo(), old_loop->get_iterator()->getSymInfo(), old);
 
         gm_add_sent_before(out, old_loop);
 
-        // replace iterator id
-        gm_replace_symbol_entry(out->get_iterator()->getSymInfo(), old_loop->get_iterator()->getSymInfo(), old);
     }
 
     if (need_young) {
         ast_node* old = reconstruct_old_new(frame, younger_siblings, false);
         assert(old!=NULL);
         ast_foreach* new_loop = gm_new_foreach_after_tc(out->get_iterator()->copy(false), out->get_source()->copy(true), (ast_sent*) old, out->get_iter_type());
+        // replace iterator id
+        gm_replace_symbol_entry(out->get_iterator()->getSymInfo(), new_loop->get_iterator()->getSymInfo(), old);
 
         gm_add_sent_after(out, new_loop);
 
-        // replace iterator id
-        gm_replace_symbol_entry(out->get_iterator()->getSymInfo(), new_loop->get_iterator()->getSymInfo(), old);
     }
 }
 
@@ -351,64 +410,79 @@ std::map<ast_sentblock*, std::list<ast_sent*> >& younger) {
     }
 }
 
-static ast_node* reconstruct_old_new(std::list<ast_node*>& frame, std::map<ast_sentblock*, std::list<ast_sent*> >& siblings,
-bool is_old) {
-
+static void reconstruct_old_new_main(ast_node* n, std::map<ast_sentblock*, std::list<ast_sent*> >& siblings, bool is_old, ast_node*& last); 
+static ast_node* reconstruct_old_new(std::list<ast_node*>& frame, std::map<ast_sentblock*, std::list<ast_sent*> >& siblings, bool is_old) {
     ast_node* last = NULL;
 
     // reconstruct hierarchy
     // inmost --> outmost
     std::list<ast_node*>::iterator I;
     for (I = frame.begin(); I != frame.end(); I++) {
-        if ((*I)->get_nodetype() == AST_IF) {
-            if (last == NULL) continue; // can ignore this if loop
-            ast_if* iff = (ast_if*) (*I);
-            ast_if* new_if = ast_if::new_if(iff->get_cond()->copy(true), (ast_sent*) last, NULL);
-            new_if->set_line(iff->get_line());
-            new_if->set_col(iff->get_col());
-            last = new_if;
-        } else if ((*I)->get_nodetype() == AST_SENTBLOCK) {
-            ast_sentblock* sb_org = (ast_sentblock*) (*I);
-            ast_sentblock* sb = ast_sentblock::new_sentblock();
-            std::list<ast_sent*>& SIB = siblings[sb_org];
-            std::list<ast_sent*>::iterator J;
-            sb->set_line(sb_org->get_line());
-            sb->set_col(sb_org->get_col());
+         reconstruct_old_new_main(*I, siblings, is_old, last);
+    }
 
-            if (is_old && (last != NULL)) sb->add_sent((ast_sent*) last);
+    return last;
+}
+
+
+static void reconstruct_old_new_main(ast_node* n, std::map<ast_sentblock*, std::list<ast_sent*> >& siblings, bool is_old, ast_node*& last) {
+
+    if (n->get_nodetype() == AST_IF) {
+        if (last == NULL) return; // can ignore this if loop
+
+        ast_if* iff = (ast_if*) (n);
+        ast_if* new_if = ast_if::new_if(iff->get_cond()->copy(true), (ast_sent*) last, NULL);
+        new_if->set_line(iff->get_line());
+        new_if->set_col(iff->get_col());
+        last = new_if;
+
+    } else if ((n)->get_nodetype() == AST_SENTBLOCK) {
+        ast_sentblock* sb_org = (ast_sentblock*) (n);
+        ast_sentblock* sb = ast_sentblock::new_sentblock();
+        std::list<ast_sent*>& SIB = siblings[sb_org];
+        std::list<ast_sent*>::iterator J;
+        sb->set_line(sb_org->get_line());
+        sb->set_col(sb_org->get_col());
+
+        if (is_old) {
+            for (J = SIB.begin(); J != SIB.end(); J++) {
+                sb->add_sent(*J);
+            }
+            if (last != NULL)
+                sb->add_sent((ast_sent*) last);
+        }
+        else {
+            if (last != NULL)
+                sb->add_sent((ast_sent*) last);
 
             for (J = SIB.begin(); J != SIB.end(); J++) {
                 sb->add_sent(*J);
             }
+        }
 
-            if (!is_old && (last != NULL)) sb->add_sent((ast_sent*) last);
+        last = sb;
 
-            last = sb;
-
-            // move scalar symbols
-            gm_symtab* old_tab = sb_org->get_symtab_var();
-            gm_symtab* new_tab = sb->get_symtab_var();
-            std::set<gm_symtab_entry*>& entries = old_tab->get_entries();
-            std::set<gm_symtab_entry*>::iterator E;
-            std::set<gm_symtab_entry*> T;
-            for (E = entries.begin(); E != entries.end(); E++) {
-                gm_symtab_entry* e = *E;
-                int used_by = e->find_info_int(USED_BY_WHO);
-                if ((used_by == USED_BY_OLDER) && (is_old)) {
-                    T.insert(e);
-                } else if ((used_by == USED_BY_YOUNGER) && (!is_old)) {
-                    T.insert(e);
-                }
-            }
-            for (E = T.begin(); E != T.end(); E++) {
-                gm_symtab_entry* e = *E;
-                old_tab->remove_entry_in_the_tab(e);
-                new_tab->add_symbol(e);
+        // move scalar symbols
+        gm_symtab* old_tab = sb_org->get_symtab_var();
+        gm_symtab* new_tab = sb->get_symtab_var();
+        std::set<gm_symtab_entry*>& entries = old_tab->get_entries();
+        std::set<gm_symtab_entry*>::iterator E;
+        std::set<gm_symtab_entry*> T;
+        for (E = entries.begin(); E != entries.end(); E++) {
+            gm_symtab_entry* e = *E;
+            int used_by = e->find_info_int(USED_BY_WHO);
+            if ((used_by == USED_BY_OLDER) && (is_old)) {
+                T.insert(e);
+            } else if ((used_by == USED_BY_YOUNGER) && (!is_old)) {
+                T.insert(e);
             }
         }
+        for (E = T.begin(); E != T.end(); E++) {
+            gm_symtab_entry* e = *E;
+            old_tab->remove_entry_in_the_tab(e);
+            new_tab->add_symbol(e);
+        }
     }
-
-    return last;
 }
 
 void gm_gps_opt_split_loops_for_flipping::process(ast_procdef* p) {
@@ -432,8 +506,14 @@ void gm_gps_opt_split_loops_for_flipping::process(ast_procdef* p) {
         split_the_loop(*I);
     }
 
+    gm_flat_nested_sentblock(p);
+
+    // reconstruct_scope implied in flattening
+    //gm_reconstruct_scope(p);  
+
     //-------------------------------------
     // Re-do RW analysis
     //-------------------------------------
     gm_redo_rw_analysis(p->get_body());
+
 }
