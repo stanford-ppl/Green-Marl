@@ -145,8 +145,8 @@ static bool check_if_conflict(gm_rwinfo_list* l1, gm_rwinfo_list* l2, gm_rwinfo*
             }
             if (conf_type == RD_CONFLICT) {
                 if (e2->reduce_op == GMREDUCE_DEFER) continue;
-                //printf("%d lev1 = %d, %d lev2 = %d\n", e1->access_range, lev1, e2->access_range, lev2);
-                //assert(false);
+                printf("%d lev1 = %d, %d lev2 = %d\n", e1->access_range, lev1, e2->access_range, lev2);
+                assert(false);
             }
             if (conf_type == MM_CONFLICT) {
                 if (e1->mutate_direction == e2->mutate_direction) continue;
@@ -345,6 +345,9 @@ bool gm_check_conf_t::apply(ast_sent* s) {
             gm_rwinfo_map& W = get_rwinfo_sets(body)->write_set;   // 
             gm_rwinfo_map& D = get_rwinfo_sets(body)->reduce_set;  // 
             gm_rwinfo_map& M = get_rwinfo_sets(body)->mutate_set;
+
+            //printf("R:");gm_print_rwinfo_set(R);
+            //printf("D:");gm_print_rwinfo_set(D);
 
             check_rw_conf_error(R, W, RW_CONFLICT, Report); // R-W (warning)
             check_rw_conf_error(R_filter, W, RW_CONFLICT, Report); // R-W (warning)

@@ -16,6 +16,10 @@
 #include "gm_builtin.h"
 
 static bool merge_for_if_else(gm_rwinfo_map& Target, gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool is_reduce);
+const char* gm_get_range_string(int access_range) {
+    return (access_range == GM_RANGE_LINEAR) ? "LINEAR" : (access_range == GM_RANGE_RANDOM) ? "RANDOM" : (access_range == GM_RANGE_LEVEL) ? "LEVEL" : 
+           (access_range == GM_RANGE_LEVEL_UP) ? "LEVEL_UP" : (access_range == GM_RANGE_LEVEL_DOWN) ? "LEVEL_DOWN" : "???";
+}
 
 //----------------------------------------------------
 // Traverse for Analysis
@@ -880,6 +884,7 @@ static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwin
     gm_symtab_entry* iter_sym = iter->getSymInfo();
     gm_rwinfo_map::iterator i;
     int range = gm_get_range_from_itertype(iter_type);
+    //printf("iter_type = %s, range = %s\n", gm_get_type_string(iter_type), gm_get_range_string(range));
 
     for (i = T_temp.begin(); i != T_temp.end(); i++) {
         gm_symtab_entry* sym = i->first;
@@ -889,6 +894,14 @@ static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwin
         for (ii = l->begin(); ii != l->end(); ii++) {
             gm_rwinfo* e = *ii;
             gm_rwinfo* cp = e->copy();
+            if (cp->driver != NULL)
+                /*
+                printf("cp->driver = %s %p, iter_sym = %s %p\n", 
+                        cp->driver->getId()->get_genname(),
+                        cp->driver,
+                        iter_sym->getId()->get_genname(),
+                        iter_sym);
+                */
             if (cp->driver == iter_sym) { // replace access from this iterator
                 cp->driver = NULL;
                 cp->access_range = range;
@@ -896,12 +909,13 @@ static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwin
                 if (cp->access_range == GM_RANGE_SINGLE) {
                     // scalar, do nothing
                 } else if (is_parallel) {
+                    //printf("sym = %s!!! %p line:%d, col:%d\n", sym->getId()->get_genname(), e->driver, e->location->get_line(), e->location->get_col());
                     cp->access_range = GM_RANGE_RANDOM;
                     cp->driver = NULL;
                 }
             } else if (is_parallel) {
-                cp->access_range = GM_RANGE_RANDOM;
-                cp->driver = NULL;
+                //cp->access_range = GM_RANGE_RANDOM;
+                //cp->driver = NULL;
             }
             is_okay = gm_add_rwinfo_to_set(T, sym, cp, false) && is_okay;
         }
@@ -1039,11 +1053,16 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a) {
 
     // 3) Eliminate access driven by the current iterator
     // 4) And construct bound set
+    //printf("foreach: %s, iter_type = %s\n", a->get_iterator()->get_genname(), gm_get_type_string(a->get_iter_type()));
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;
     is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type(), a->is_parallel()) && is_okay;
     is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type(), a->is_parallel()) && is_okay;
     is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type(), a->is_parallel()) && is_okay;
     is_okay = cleanup_iterator_access(a->get_iterator(), M_temp, M, a->get_iter_type(), a->is_parallel()) && is_okay;
+
+    //printf("R:");gm_print_rwinfo_set(R);
+    //printf("done\n");
+
 
     return is_okay;
 }
@@ -1256,9 +1275,7 @@ void gm_rwinfo::print() {
         else
             printf("(%s, ", driver->getId()->get_orgname());
     } else {
-        printf("(%s, ",
-                (access_range == GM_RANGE_LINEAR) ? "LINEAR" : (access_range == GM_RANGE_RANDOM) ? "RANDOM" : (access_range == GM_RANGE_LEVEL) ? "LEVEL" :
-                (access_range == GM_RANGE_LEVEL_UP) ? "LEVEL_UP" : (access_range == GM_RANGE_LEVEL_DOWN) ? "LEVEL_DOWN" : "???");
+        printf("(%s, ", gm_get_range_string(access_range));
     }
 
     if (always)
