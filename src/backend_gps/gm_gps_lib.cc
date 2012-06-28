@@ -1060,6 +1060,11 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
             Body.push(")");
             break;
 
+        case GM_BLTIN_GRAPH_RAND_NODE:         // random node function
+            Body.push("(new java.util.Random()).nextInt(");
+            Body.push("getGraphSize()");
+            Body.push(")");
+
         case GM_BLTIN_GRAPH_NUM_NODES:
             //Body.push("/*please check*/");
             Body.push("getGraphSize()");

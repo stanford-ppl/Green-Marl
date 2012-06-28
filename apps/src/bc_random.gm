@@ -1,0 +1,34 @@
+
+//-------------------------------------------------------------
+// Computation of estimiated betweenness centrality
+//-------------------------------------------------------------
+Procedure bc_random(G: Graph, BC: N_P<Float>, K:Int)
+{
+  G.BC = 0; // Initialize
+
+  Int k = 0;
+  While (k < K)
+  {
+    Node s = G.PickRandom();
+
+    // temporary values per Node
+    Node_Property<Float> sigma;
+    Node_Property<Float> delta;
+    G.sigma = 0;
+    s.sigma = 1;
+
+    // BFS order iteration from s
+    InBFS(v: G.Nodes From s) {
+       // Summing over BFS parents
+       v.sigma = Sum(w:v.UpNbrs) { w.sigma };
+    }
+    InReverse { // Reverse-BFS order iteration to s
+      v.delta =  // Summing over BFS children
+         Sum (w:v.DownNbrs) {
+            v.sigma / w.sigma * (1+ w.delta) };
+
+      v.BC += v.delta ; // accumulate BC
+    }
+  }
+}
+

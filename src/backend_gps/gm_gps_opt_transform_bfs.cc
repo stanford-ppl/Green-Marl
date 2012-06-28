@@ -117,7 +117,7 @@ static void create_initializer(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry*
 }
 
 
-static ast_sentblock* create_fw_body_prepare(ast_sentblock* while_sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym)
+static ast_sentblock* create_fw_body_prepare(ast_sentblock* while_sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, ast_foreach*& out)
 {
     // outer loop
     ast_sentblock* foreach_sb = ast_sentblock::new_sentblock();
@@ -141,6 +141,7 @@ static ast_sentblock* create_fw_body_prepare(ast_sentblock* while_sb, ast_bfs* b
     ast_if* lev_check_out_if = ast_if::new_if(lev_check_out_c, lev_check_out_sb,NULL);
     foreach_sb->add_sent(lev_check_out_if);
 
+    out = foreach_out;
     return lev_check_out_sb;
     
 }
@@ -270,7 +271,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         ast_sentblock* fw_body_to_add;
         if (bfs->find_info_bool(GPS_FLAG_HAS_DOWN_NBRS)) 
         {
-            fw_body_to_add = create_fw_body_prepare(while_sb, bfs, lev_sym, curr_sym);
+            fw_body_to_add = create_fw_body_prepare(while_sb, bfs, lev_sym, curr_sym, foreach_out);
         }
         else
         {
@@ -385,8 +386,6 @@ void gm_gps_rewrite_bfs(ast_bfs* b) {
 
     create_bw_iteration(sb, b, lev_sym, curr_sym, fin_sym);
 
-
-
     // replace bfs with sb
     
     gm_ripoff_sent(b);
@@ -483,6 +482,7 @@ static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_fo
     gm_ripoff_sent(body);
 
     // replace iterator
+    //printf("repalce :%s -> %s\n", bfs->get_iterator()->get_genname(), out_loop->get_iterator()->get_genname());
     gm_replace_symbol_entry(bfs->get_iterator()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
     // what was iterator 2 again?
     if (bfs->get_iterator2() != NULL)

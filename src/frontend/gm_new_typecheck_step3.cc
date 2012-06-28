@@ -311,7 +311,11 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
     b->set_type_summary(fun_ret_type);
 
     if (gm_has_target_graph_type(fun_ret_type)) {
-        b->set_bound_graph(b->get_driver()->getTypeInfo()->get_target_graph_sym());
+        if (b->get_driver()->getTypeInfo()->is_graph()) {
+            b->set_bound_graph(b->get_driver()->getSymInfo());
+        }
+        else 
+            b->set_bound_graph(b->get_driver()->getTypeInfo()->get_target_graph_sym());
         //assert(false); // to be done
     }
     //assert(!gm_has_target_graph_type(fun_ret_type));
