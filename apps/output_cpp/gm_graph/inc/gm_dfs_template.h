@@ -136,9 +136,15 @@ private:
                 } else {
                     z = G.node_idx[curr_idx];
                 }
-                if (has_visited(z)) continue;
+                if (has_visited(z)) {
+                    curr_idx++;
+                    continue;
+                }
                 if (has_navigator) {
-                    if (check_navigator(z, curr_idx) == false) continue;
+                    if (check_navigator(z, curr_idx) == false) {
+                        curr_idx++;
+                        continue;
+                    }
                 }
                 curr_idx++;
                 enter_node(z);
