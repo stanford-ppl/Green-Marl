@@ -131,6 +131,7 @@ public:
             switch (def->get_method_id()) {
                 case GM_BLTIN_TOP_DRAND:         // rand function
                 case GM_BLTIN_TOP_IRAND:         // rand function
+                case GM_BLTIN_GRAPH_RAND_NODE:
                     _rand_used = true;
                     break;
 

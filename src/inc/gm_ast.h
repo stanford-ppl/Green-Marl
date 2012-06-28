@@ -11,6 +11,8 @@
 #include <string>
 #include "gm_frontend_api.h"
 
+extern const char* gm_get_type_string(int i);
+
 enum AST_NODE_TYPE
 {
     AST_ID,       // 
@@ -874,6 +876,7 @@ public:
             assert(target_graph->getSymInfo() != NULL);
             return target_graph->getSymInfo();
         } else {
+            printf("type = %s\n", gm_get_type_string(type_id));
             assert(false);
             return NULL;
         }

@@ -8,6 +8,7 @@
 #include <set>
 
 typedef gm_gps_basic_block gps_bb;
+extern void gm_flush_reproduce();
 
 //-------------------------------------------------------
 // simple RW info; believe every access is random
@@ -187,7 +188,12 @@ public:
             } else if (drv->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) {
                 if (is_under_receiver_traverse()) return true;
             } else {
-                printf("driver = %s\n", drv->getId()->get_orgname());
+                printf("driver = %s outer_loop:%s\n", drv->getId()->get_orgname(), outer_loop->get_iterator()->get_genname());
+                ast_node * n = field;
+                while (!n->is_sentence())
+                    n=n->get_parent();
+                n->reproduce(0);
+                gm_flush_reproduce();
                 assert(false);
             }
         } else if (is_outer_loop_only()) {

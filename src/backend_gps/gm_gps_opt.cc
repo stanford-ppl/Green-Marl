@@ -20,6 +20,7 @@ void gm_gps_gen::init_opt_steps() {
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_flip_edges));               // Flip Edges
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl));            // Move property declarations
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_remove_master_random_write));               // Merge Loops
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_loop_merge));               // Merge Loops
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_synthesizable));      // check if contains DFS, etc
