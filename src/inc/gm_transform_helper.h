@@ -216,6 +216,10 @@ extern void gm_mark_sents_under_parallel_execution(ast_sent* T, bool entry_is_se
 // Change a reduction assign into normal assign
 extern void gm_make_normal_assign(ast_assign *a);
 
+// flatten nested sentblock if possible
+extern void gm_flat_nested_sentblock(ast_node* n); 
+
 extern bool gm_check_if_end_with_return(ast_sentblock* sb);
 extern ast_sent* gm_find_parent_sentence(ast_expr* e);
+
 #endif

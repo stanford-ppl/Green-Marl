@@ -113,10 +113,12 @@ std::set<ast_foreach*>& SET) {
 
         bool meet_if = false;
         ast_node* current = in;
+        //printf("current = %p %s\n", current, gm_get_nodetype_string(in->get_nodetype()));
         // move up until meet the outer loop
         while (true) {
             ast_node* parent = current->get_parent();
             assert(parent!=NULL);
+            //printf(" parent = %p %s\n", parent, gm_get_nodetype_string(parent->get_nodetype()));
             if (parent->get_nodetype() == AST_IF) {
                 if (meet_if) {
                     is_target = false;
@@ -149,6 +151,7 @@ std::set<ast_foreach*>& SET) {
                     break;
                 }
             } else {
+                //printf("parent  = %s!!!\n", gm_get_nodetype_string(parent->get_nodetype()));
                 is_target = false;
                 break;
             }
@@ -503,7 +506,10 @@ void gm_gps_opt_split_loops_for_flipping::process(ast_procdef* p) {
         split_the_loop(*I);
     }
 
-    gm_reconstruct_scope(p);
+    gm_flat_nested_sentblock(p);
+
+    // reconstruct_scope implied in flattening
+    //gm_reconstruct_scope(p);  
 
     //-------------------------------------
     // Re-do RW analysis

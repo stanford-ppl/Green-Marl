@@ -347,6 +347,10 @@ void gm_gps_opt_transform_bfs::process(ast_procdef* p) {
         ast_bfs* b = *I;
         gm_gps_rewrite_bfs(b);
     }
+
+    gm_flat_nested_sentblock(p);
+
+    gm_redo_rw_analysis(p->get_body());
 }
 
 
