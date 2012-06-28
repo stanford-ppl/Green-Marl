@@ -106,10 +106,30 @@ private:
     //if sourceId is defined as a field variable (= is a property) the iter type should be a property iterator
     int adjust_iter_type(ast_foreach* fe) {
         if (curr_field->find_symbol(fe->get_source()) != NULL) {
-            fe->set_iter_type(GMTYPE_PROPERTYITER);
-            return GMTYPE_PROPERTYITER;
+            ast_id* source = fe->get_source();
+            gm_symtab_entry* tabEntry = curr_field->find_symbol(source);
+            int targetType = tabEntry->getType()->getTargetTypeSummary();
+            int newIterType =mapTargetToIterType(targetType);
+            fe->set_iter_type(newIterType);
+            return newIterType;
         } else {
             return fe->get_iter_type();
+        }
+    }
+
+    static int mapTargetToIterType(int targetType) {
+        switch (targetType) {
+            case GMTYPE_NSET:
+            case GMTYPE_ESET:
+                return GMTYPE_PROPERTYITER_SET;
+            case GMTYPE_NSEQ:
+            case GMTYPE_ESEQ:
+                return GMTYPE_PROPERTYITER_SEQ;
+            case GMTYPE_NORDER:
+            case GMTYPE_EORDER:
+                return GMTYPE_PROPERTYITER_ORDER;
+            default:
+                assert(false);
         }
     }
 };

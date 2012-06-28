@@ -104,7 +104,7 @@ private:
 };
 
 bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType) {
-
+if(sourceType == 209) sourceType = GMTYPE_NSET;
     gm_builtin_def* builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname());
 
     if (builtinDef == NULL) {
@@ -119,12 +119,10 @@ bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* 
     }
 
     bool isOkay = true;
-
     if (builtinDef == NULL) {
         gm_type_error(GM_ERROR_INVALID_BUILTIN, builtinExpr->get_line(), builtinExpr->get_col(), builtinExpr->get_callname());
         isOkay = false;
     }
-
     builtinExpr->set_builtin_def(builtinDef);
 
     if (isOkay) {

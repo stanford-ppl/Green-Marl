@@ -1,4 +1,4 @@
-CC = g++
+CC = clang++
 LEX = flex
 YACC = bison
 PARSE = ./parse

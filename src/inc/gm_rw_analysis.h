@@ -96,7 +96,9 @@ static int gm_get_range_from_itertype(int itype) {
         case GMTYPE_NODE:
         case GMTYPE_EDGE:
             return GM_RANGE_RANDOM;
-        case GMTYPE_PROPERTYITER:
+        case GMTYPE_PROPERTYITER_SET:
+        case GMTYPE_PROPERTYITER_SEQ:
+        case GMTYPE_PROPERTYITER_ORDER:
             return GM_RANGE_LINEAR;
         default:
             printf("type = %d\n", itype);

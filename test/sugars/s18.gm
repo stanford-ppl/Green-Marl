@@ -1,0 +1,16 @@
+// Test of Iteration ofer properties
+Procedure foo()
+{
+   Graph G;
+   Node n;
+   N_P<N_S> prop;
+   
+   For(s: prop.Items) {
+   		s.Add(n);
+   }
+   
+   Foreach(s: prop.Items) {
+   		s.Add(n);
+   }
+   
+}

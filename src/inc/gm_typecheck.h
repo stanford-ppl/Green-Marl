@@ -27,6 +27,7 @@ public:
         assert(type != NULL);
         assert(id->name != NULL);
     }
+
     virtual ~gm_symtab_entry() {
         delete id;
         delete type;
@@ -46,9 +47,11 @@ public:
     bool isReadable() {
         return (isRA == GM_READ_AVAILABLE);
     }
+
     bool isWriteable() {
         return (isWA == GM_WRITE_AVAILABLE);
     }
+
     bool isArgument() {
         return isArg;
     }
@@ -152,7 +155,6 @@ public:
             //gm_symtab_entry* e = entries[i];
             const char* c = e->id->get_orgname();
             const char* c2 = id->get_orgname();
-//            printf("Again:\t'%s'\t'%s'\n", c, c2);
             if (!strcmp(c, c2)) return e;
         }
         if (parent == NULL) return NULL;
