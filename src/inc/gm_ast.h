@@ -377,6 +377,7 @@ public:
     static ast_id* new_id(const char* org, int line, int col) {
         return new ast_id(org, line, col);
     }
+
     char* get_orgname();  // returns name in GM
     void set_orgname(const char* c) {  // copy is saved. old name is deleted
         if (name != NULL) delete[] name;
@@ -706,6 +707,14 @@ public:
         return t;
     }
 
+    static ast_typedecl* new_property_iterator(ast_id* property, int iter_type) {
+        ast_typedecl* typeDecl = new ast_typedecl();
+        typeDecl->type_id = iter_type;
+        typeDecl->target_collection = property;
+        property->set_parent(typeDecl);
+        return typeDecl;
+    }
+
     static ast_typedecl* new_void() {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = GMTYPE_VOID;
@@ -783,6 +792,10 @@ public:
 
     bool is_node_edge_iterator() {
         return is_node_iterator() || is_edge_iterator();
+    }
+
+    bool is_property_iterator() {
+        return gm_is_property_iter_type(type_id);
     }
 
     bool is_numeric() {
@@ -871,6 +884,10 @@ public:
     }
 
     ast_id* get_target_collection_id() {
+        return target_collection;
+    }
+
+    ast_id* get_target_property_id() {
         return target_collection;
     }
 
@@ -1003,6 +1020,7 @@ public:
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
+
     virtual bool has_scope() {
         return true;
     }
@@ -2162,6 +2180,11 @@ public:
     ast_id* get_iterator() {
         return iterator;
     }
+
+    void set_iterator(ast_id* newIterator) {
+        iterator = newIterator;
+    }
+
     ast_sent* get_body() {
         return body;
     }
@@ -2196,7 +2219,7 @@ public:
     }
 
     // For is sequential while FOREACH is parallel.
-    // Optimization may overrride parallel exeuction with sequential.
+    // Optimization may override parallel execution with sequential.
 
     // sequential execution
     bool is_sequential() {

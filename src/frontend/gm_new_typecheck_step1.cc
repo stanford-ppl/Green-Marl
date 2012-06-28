@@ -102,6 +102,16 @@ private:
     gm_symtab* curr_proc;
 
     bool _is_okay;
+
+    //if sourceId is defined as a field variable (= is a property) the iter type should be a property iterator
+    int adjust_iter_type(ast_foreach* fe) {
+        if (curr_field->find_symbol(fe->get_source()) != NULL) {
+            fe->set_iter_type(GMTYPE_PROPERTYITER);
+            return GMTYPE_PROPERTYITER;
+        } else {
+            return fe->get_iter_type();
+        }
+    }
 };
 
 // check id1 and id2 have same target graph symbol
@@ -154,6 +164,7 @@ static bool gm_find_and_connect_symbol(ast_id* id, gm_symtab* begin, bool print_
 #define SHOULD_BE_A_GRAPH             1 
 #define SHOULD_BE_A_COLLECTION        2
 #define SHOULD_BE_A_NODE_COMPATIBLE   3
+#define SHOULD_BE_A_PROPERTY          4
 #define ANY_THING                     0
 
 //-------------------------------------------------
@@ -181,6 +192,12 @@ bool gm_check_target_is_defined(ast_id* target, gm_symtab* vars, int should_be_w
         case SHOULD_BE_A_NODE_COMPATIBLE:
             if ((!target->getTypeInfo()->is_node_compatible())) {
                 gm_type_error(GM_ERROR_NONNODE_TARGET, target, target);
+                return false;
+            }
+            break;
+        case SHOULD_BE_A_PROPERTY:
+            if (!target->getTypeInfo()->is_property()) {
+                gm_type_error(GM_ERROR_NONSET_TARGET, target, target);
                 return false;
             }
             break;
@@ -278,21 +295,28 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
         ast_id* col = type->get_target_collection_id();
         assert(col != NULL);
         bool is_okay = gm_check_target_is_defined(col, SYM_V, SHOULD_BE_A_COLLECTION);
-        if (!is_okay) return is_okay;
+        if (!is_okay) return false;
 
         // update collection iter type
-        if (type->is_unknown_collection_iterator())
-            type->setTypeSummary(gm_get_natural_collection_iterator(col->getTypeSummary()));
+        if (type->is_unknown_collection_iterator()) type->setTypeSummary(gm_get_natural_collection_iterator(col->getTypeSummary()));
 
-        // copy graph_id 
+        // copy graph_id
         type->set_target_graph_id(col->getTypeInfo()->get_target_graph_id()->copy(true));
+    } else if (type->is_property_iterator()) {
+        ast_id* property = type->get_target_property_id();
+        assert(property != NULL);
+        bool is_okay = gm_check_target_is_defined(property, SYM_V, SHOULD_BE_A_PROPERTY);
+        if (!is_okay) return false;
+
+        type->set_target_graph_id(property->getTypeInfo()->get_target_graph_id()->copy(true));
+
     } else if (type->is_common_nbr_iterator() || type->is_any_nbr_iterator()) {
         ast_id* node = type->get_target_nbr_id();
         assert(node != NULL);
         bool is_okay = gm_check_target_is_defined(node, SYM_V, SHOULD_BE_A_NODE_COMPATIBLE);
         if (!is_okay) return is_okay;
 
-        // copy graph_id 
+        // copy graph_id
         //printf("copying graph id = %s\n", node->getTypeInfo()->get_target_graph_id()->get_orgname());
         type->set_target_graph_id(node->getTypeInfo()->get_target_graph_id()->copy(true));
     } else {
@@ -312,27 +336,29 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
 //
 // The name is added to the current procedure vocaburary 
 //---------------------
-bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bool is_readable, bool is_writeable) {
-    //printf("adding %s to %p, type[%d,%s]\n", id->get_orgname(), SYM, type->getTypeSummary(), gm_get_type_string(type->getTypeSummary()));
-    //fflush(stdout);
+bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable, gm_symtab* SYM_ALT) {
+
     if (!type->is_well_defined()) {
         assert(!type->is_property()); // if so SYM is FIELD actually.
-        bool b = gm_check_type_is_well_defined(type, SYM);
-        if (!b) return b;
+        if (SYM_ALT != NULL) {
+            if (!gm_check_type_is_well_defined(type, SYM_ALT)) return false;
+        } else if (!gm_check_type_is_well_defined(type, SYM)) {
+            return false;
+        }
     }
-
     gm_symtab_entry* old_e;
     bool is_okay = SYM->check_duplicate_and_add_symbol(id, type, old_e, is_readable, is_writeable);
     if (!is_okay) gm_type_error(GM_ERROR_DUPLICATE, id, old_e->getId());
 
     gm_find_and_connect_symbol(id, SYM);
-    //printf("sym=%p, target_graph_id = %p\n", id->getSymInfo(), id->getTypeInfo()->get_target_graph_id());
 
-    if (is_okay) {
-        FE.voca_add(id->get_orgname());
-    }
+    if (is_okay) FE.voca_add(id->get_orgname());
 
     return is_okay;
+}
+
+bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable) {
+    return gm_declare_symbol(SYM, id, type, is_readable, is_writeable, NULL);
 }
 
 // symbol checking for foreach and in-place reduction
@@ -342,9 +368,13 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src
     if (gm_is_iteration_on_all_graph(iter_type)) {
         is_okay = gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_GRAPH);
     }
-    // items
+    // items - collection
     else if (gm_is_iteration_on_collection(iter_type)) {
         is_okay = gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_COLLECTION);
+    }
+    // items - property
+    else if (gm_is_iteration_on_property(iter_type)) {
+        is_okay = gm_check_target_is_defined(src, curr_field, SHOULD_BE_A_PROPERTY);
     }
     // out.in.up.down
     else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
@@ -397,12 +427,18 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src
     ast_typedecl* type;
     if (gm_is_iteration_on_collection(iter_type)) {
         type = ast_typedecl::new_set_iterator(src->copy(true), iter_type);
+    } else if (gm_is_iteration_on_property(iter_type)) {
+        type = ast_typedecl::new_property_iterator(src->copy(true), iter_type);
     } else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
         type = ast_typedecl::new_nbr_iterator(src->copy(true), iter_type);
     } else {
         type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
     }
-    is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE);
+    if (gm_is_iteration_on_property(iter_type))
+        is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, curr_field);
+    else
+        is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE);
+
     delete type;
 
     return is_okay;
@@ -413,7 +449,7 @@ bool gm_typechecker_stage_1::gm_symbol_check_bfs_header(ast_id* it, ast_id* src,
     // check source: should be a graph
     bool is_okay = true;
     is_okay = gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_GRAPH);
-    // check root: 
+    // check root:
     is_okay = gm_find_and_connect_symbol(root, curr_sym) && is_okay;
     if (is_okay) {
         // root should be a node. and target should be the graph
@@ -579,10 +615,12 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
             // check bound symbol
         case AST_FOREACH: {
             ast_foreach* fe = (ast_foreach*) s;
-            int iter_type = fe->get_iter_type();
+            int iter_type = adjust_iter_type(fe);
             is_okay = gm_symbol_check_iter_header(fe->get_iterator(), fe->get_source(), iter_type, fe->get_source2());
-            if (gm_is_unknown_collection_iter_type(iter_type)) // resolve unknown iterator
+            if (!is_okay) break;
+            if (gm_is_unknown_collection_iter_type(iter_type)) { // resolve unknown iterator
                 fe->set_iter_type(fe->get_iterator()->getTypeSummary());
+            }
             break;
         }
 
