@@ -15,8 +15,8 @@ void gm_giraph_gen::init_gen_steps() {
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_reverse_edges));       // check if reverse edges are used
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_depth_two));           // check if max two-depth and apply scope analysis
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_pull_data));           // check if it contains data pulling
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_read));       // check if it contains random access
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_write));       // check if it contains random access
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_read));         // check if it contains random access
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_write));        // check if it contains random access
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));          //
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_rewrite_rhs));               //
 
@@ -91,7 +91,8 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.pushln("}");
     Body.NL();
 
-    sprintf(temp, "static class %sVertexReader extends TextVertexInputFormat.TextVertexReader<%s, VertexData, %s, MessageData> {", proc_name, vertex_id, edge_data);
+    sprintf(temp, "static class %sVertexReader extends TextVertexInputFormat.TextVertexReader<%s, VertexData, %s, MessageData> {", proc_name, vertex_id,
+            edge_data);
     Body.pushln(temp);
     sprintf(temp, "public %sVertexReader(RecordReader<LongWritable, Text> lineRecordReader) {", proc_name);
     Body.pushln(temp);
@@ -147,21 +148,25 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.pushln("// ----------------------------------------------");
     Body.pushln("// Vertex Output format");
     Body.pushln("// ----------------------------------------------");
-    Body.pushln("static class pagerankVertexOutputFormat extends");
+    sprintf(temp, "static class %sVertexOutputFormat extends", proc_name);
+    Body.pushln(temp);
     sprintf(temp, "TextVertexOutputFormat<%s, VertexData, %s> {", vertex_id, edge_data);
     Body.pushln(temp);
     Body.pushln("@Override");
     sprintf(temp, "public VertexWriter<%s, VertexData, %s> createVertexWriter(", vertex_id, edge_data);
     Body.pushln(temp);
     Body.pushln("TaskAttemptContext context) throws IOException, InterruptedException {");
-    Body.pushln("return new pagerankVertexWriter(textOutputFormat.getRecordWriter(context));");
+    sprintf(temp, "return new %sVertexWriter(textOutputFormat.getRecordWriter(context));", proc_name);
+    Body.pushln(temp);
     Body.pushln("}");
     Body.NL();
 
-    Body.pushln("static class pagerankVertexWriter");
+    sprintf(temp, "static class %sVertexWriter", proc_name);
+    Body.pushln(temp);
     sprintf(temp, "extends TextVertexOutputFormat.TextVertexWriter<%s, VertexData, %s> {", vertex_id, edge_data);
     Body.pushln(temp);
-    Body.pushln("public pagerankVertexWriter(RecordWriter<Text, Text> lineRecordReader) {");
+    sprintf(temp, "public %sVertexWriter(RecordWriter<Text, Text> lineRecordReader) {", proc_name);
+    Body.pushln(temp);
     Body.pushln("super(lineRecordReader);");
     Body.pushln("}");
     Body.NL();
