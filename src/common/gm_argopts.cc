@@ -5,7 +5,6 @@
 #include "gm_misc.h"
 #include "gm_argopts.h"
 
-extern const char* GM_version_info;
 extern gm_userargs OPTIONS;
 extern std::list<char*> GM_input_lists;
 

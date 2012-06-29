@@ -48,6 +48,7 @@ const char* gm_cpplib::get_type_string(int type) {
             return EDGE_T;
         else {
             assert(false);
+            return "ERROR";
         }
     } else if (gm_is_collection_type(type)) {
         assert(gm_is_node_collection_type(type));
@@ -59,6 +60,7 @@ const char* gm_cpplib::get_type_string(int type) {
             return SEQ_T;
         else {
             assert(false);
+            return "ERROR";
         }
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));
@@ -119,6 +121,7 @@ void gm_cpplib::generate_sent_nop(ast_nop *f) {
     switch (subtype) {
         default:
             assert(false);
+            break;
     }
 }
 
@@ -150,6 +153,7 @@ const char* gm_cpplib::get_function_name_nset(int methodId) {
             return "is_subset";
         default:
             assert(false);
+            return "ERROR";
     }
 }
 
@@ -165,6 +169,7 @@ const char* gm_cpplib::get_function_name_nseq(int methodId) {
             return "pop_back";
         default:
             assert(false);
+            return "ERROR";
     }
 }
 
@@ -182,6 +187,7 @@ const char* gm_cpplib::get_function_name_norder(int methodId) {
             return "is_in";
         default:
             assert(false);
+            return "ERROR";
     }
 }
 
@@ -193,6 +199,7 @@ const char* gm_cpplib::get_function_name_graph(int methodId) {
             return NUM_EDGES;
         default:
             assert(false);
+            return "ERROR";
     }
 }
 
@@ -230,6 +237,7 @@ void gm_cpplib::generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr,
             break;
         default:
             assert(false);
+            break;
     }
 
     sprintf(str_buf, "%s[%s].%s(", driver->get_second()->get_genname(), driver->get_first()->get_genname(), functionName);
@@ -301,6 +309,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     break;
                 default:
                     assert(false);
+                    break;
             }
             Body.push(str_buf);
             return;
@@ -316,6 +325,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     break;
                 default:
                     assert(false);
+                    break;
             }
             Body.push(str_buf);
             return;
@@ -330,6 +340,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             break;
         default:
             assert(false);
+            break;
     }
 
     sprintf(str_buf, "%s.%s(", i->get_genname(), func_name);

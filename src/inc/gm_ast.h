@@ -1681,6 +1681,7 @@ public:
 
     ast_id* get_driver() {
         assert(false);
+        return NULL;
     }
 
     bool driver_is_field() {

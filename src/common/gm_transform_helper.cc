@@ -319,6 +319,7 @@ static void gm_insert_sent_in_sb(ast_sentblock* sb, ast_sent* target, int locati
             break;
         default:
             assert(false);
+            break;
     }
 }
 
@@ -494,6 +495,7 @@ public:
                 break;
             default:
                 assert(false);
+                break;
         }
         return true;
     }

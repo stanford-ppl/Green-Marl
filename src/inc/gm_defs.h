@@ -213,8 +213,10 @@ inline static int gm_get_sized_inf_type(int i) {
         return GMTYPE_INF_FLOAT;
     else if (i == GMTYPE_DOUBLE)
         return GMTYPE_INF_DOUBLE;
-    else
+    else {
         assert(false);
+        return EXIT_FAILURE;
+    }
 }
 
 inline static bool gm_is_node_set_type(int i) {
@@ -278,8 +280,10 @@ inline int gm_get_natural_collection_iterator(int src_type) {
         return GMTYPE_NODEITER_SEQ;
     else if (src_type == GMTYPE_EORDER)
         return GMTYPE_NODEITER_ORDER;
-    else
+    else {
         assert(false);
+        return EXIT_FAILURE;
+    }
 }
 
 // return true if this type has a target graph

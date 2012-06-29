@@ -643,6 +643,7 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
         default:
             printf("type = %s\n", gm_get_nodetype_string(s->get_nodetype()));
             assert(false);
+            break;
     }
     set_okay(is_okay);
 
@@ -704,6 +705,7 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
                 }
             }
         }
+            break;
     }
 
     set_okay(is_okay);

@@ -199,6 +199,7 @@ static bool check_rw_conf_error(gm_rwinfo_map& S1, gm_rwinfo_map& S2, int conf_t
             break;
         default:
             assert(false);
+            break;
     }
 
     gm_rwinfo_map::iterator i1, i2;

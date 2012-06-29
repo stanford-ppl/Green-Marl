@@ -71,7 +71,9 @@ static bool check_if_met_conditional_before(ast_node *s, gm_symtab_entry *symbol
             return true;
         }
         if (s->has_symtab()) {
-            if (s->get_symtab_var()->is_entry_in_the_tab(symbol)) return false;
+            if (s->get_symtab_var()->is_entry_in_the_tab(symbol)) {
+                return false;
+            }
         }
 
         s = (ast_node*) s->get_parent();

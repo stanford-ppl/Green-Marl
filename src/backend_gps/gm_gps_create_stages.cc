@@ -8,7 +8,6 @@
 #include "gm_gps_basicblock.h"
 
 #include <map>
-extern void gm_flush_reproduce();
 
 //----------------------------------------------------------------------
 // Basic Block Creation
@@ -210,7 +209,6 @@ public:
 
                 // prev/next after this sentence
                 prev = fin;
-                next = next;
 
             } else if (s->get_nodetype() == AST_WHILE) {
                 // create while blocks
@@ -262,7 +260,6 @@ public:
 
                 // prev/next after this sentence
                 prev = dummy;
-                next = next;
             } else {
                 assert(false);
             }

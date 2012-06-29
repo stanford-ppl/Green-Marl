@@ -46,8 +46,10 @@ static int gm_get_type_from_string(const char* s) {
         return GMTYPE_VOID;
     else if (gm_is_same_string(s, "Bool"))
         return GMTYPE_BOOL;
-    else
+    else {
         assert(false);
+        return EXIT_FAILURE;
+    }
 }
 
 gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def) {
