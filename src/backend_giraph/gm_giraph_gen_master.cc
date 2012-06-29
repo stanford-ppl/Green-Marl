@@ -452,6 +452,7 @@ static const char* get_reduce_base_value(int reduce_type, int gm_type) {
                     assert(false);
                     return "0";
             }
+            break;
         case GMREDUCE_MAX:
             switch (gm_type) {
                 case GMTYPE_INT:
@@ -466,6 +467,7 @@ static const char* get_reduce_base_value(int reduce_type, int gm_type) {
                     assert(false);
                     return "0";
             }
+            break;
         default:
             assert(false);
             break;

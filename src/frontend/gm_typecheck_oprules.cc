@@ -97,6 +97,7 @@ static inline bool in_typeclass(int tclass, int type) {
         return gm_is_boolean_type(type);
     }
     assert(false);
+    return false;
 }
 
 static inline bool in_opclass(int oclass, int op) {
@@ -122,6 +123,7 @@ static inline bool in_opclass(int oclass, int op) {
         return (op == GMOP_ASSIGN);
     }
     assert(false);
+    return false;
 }
 
 static inline bool is_applicable_rule(gm_type_rule& R, int op, int type1, int type2) {

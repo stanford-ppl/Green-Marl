@@ -78,8 +78,6 @@ private:
     std::map<ast_foreach*, ast_foreach*>& MAP;
 };
 
-extern void gm_gps_find_double_nested_loops(std::map<ast_foreach*, ast_foreach*>& MAP);
-
 void gm_gps_find_double_nested_loops(ast_node* p, std::map<ast_foreach*, ast_foreach*>& MAP) {
     gps_opt_find_nested_loops_t T(MAP);
     p->traverse_both(&T);

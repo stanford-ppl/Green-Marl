@@ -210,6 +210,9 @@ public:
     gm_code_generator(gm_code_writer& W) :
             _Body(W) {
     }
+    virtual ~gm_code_generator() {
+    }
+
     // should be overrided
     virtual void generate_rhs_id(ast_id* i) =0;
     virtual void generate_rhs_field(ast_field* i) =0;

@@ -307,6 +307,7 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
                     return "bool*";
                 default:
                     assert(false);
+                    break;
             }
         } else if (t2->is_nodeedge()) {
             char temp[128];
@@ -417,6 +418,7 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
         }
         default:
             assert(false);
+            break;
     }
 
     Body.push('(');
@@ -432,7 +434,7 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
     /*
      */
 
-    // regeister to memory controller 
+    // register to memory controller
 }
 
 void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
@@ -1045,6 +1047,7 @@ const char* gm_cpp_gen::get_function_name(int methodId, bool& addThreadId) {
             return "pow";
         default:
             assert(false);
+            return "ERROR";
     }
 }
 
