@@ -23,7 +23,8 @@ public:
 
     void resize(int n) {
         if ((max > 0) && (n <= max)) return;
-        memptrs.resize(n);
+        primitivePointers.resize(n);
+        complexPointers.resize(n);
         max = n;
     }
 
@@ -34,21 +35,38 @@ private:
 public:
     // save pointer of primitive array type into a thread-private list
     void save(void* ptr, int typeinfo, int thread_id = 0) {
-        memptrs[thread_id].push_back(ptr);
+        primitivePointers[thread_id].push_back(ptr);
+    }
+
+    //save pointer of complex type into a thread-private list
+    void save(gm_complex_data_type* ptr, int typeinfo, int thread_id = 0) {
+        complexPointers[thread_id].push_back(ptr);
     }
 
     // remove pointer of primitive array type and remove it from the list
     void clear(void* ptr, int typeinfo, int thread_id = 0) {
-        std::list<void*>& L = memptrs[thread_id];
+        std::list<void*>& L = primitivePointers[thread_id];
         std::list<void*>::iterator i;
         for (i = L.begin(); i != L.end(); i++) {
             if (*i == ptr) {
-                // primitive aray. 
+                // primitive aray.
                 // This will work for primitive types.
                 float* P = (float*) *i;
                 delete[] P;
 
                 L.erase(i);
+                return;
+            }
+        }
+
+        std::list<gm_complex_data_type*>& L_c = complexPointers[thread_id];
+        std::list<gm_complex_data_type*>::iterator i_c;
+        for (i_c = L_c.begin(); i_c != L_c.end(); i_c++) {
+            if (*i_c == ptr) {
+                //complex type
+                delete[] *i_c;
+
+                L_c.erase(i_c);
                 return;
             }
         }
@@ -59,19 +77,27 @@ public:
     void cleanup() {
         // remove every thread'
         for (int p = 0; p < max; p++) {
-            std::list<void*>& L = memptrs[p];
+            std::list<void*>& L = primitivePointers[p];
             std::list<void*>::iterator i;
             for (i = L.begin(); i != L.end(); i++) {
                 float* P = (float*) *i;
                 delete[] P;
             }
             L.clear();
+
+            std::list<gm_complex_data_type*>& L_c = complexPointers[p];
+            std::list<gm_complex_data_type*>::iterator i_c;
+            for (i_c = L_c.begin(); i_c != L_c.end(); i_c++) {
+                delete *i_c;
+            }
+            L_c.clear();
         }
     }
 
 private:
-    std::vector<std::list<void*> > memptrs;
     int max;
+    std::vector<std::list<void*> > primitivePointers;
+    std::vector<std::list<gm_complex_data_type*> > complexPointers;
 };
 
 // defined in gm_runtime.cc

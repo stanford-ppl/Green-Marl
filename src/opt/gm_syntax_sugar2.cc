@@ -6,6 +6,8 @@
 #include "gm_builtin.h"
 #include "gm_ind_opt.h"
 #include "gm_rw_analysis.h"
+#include "gm_error.h"
+
 //----------------------------------------------------
 // syntax sugar elimination (after type resolution)
 //   Reduce op(e.g. Sum) --> initialization + foreach + reduce assign(e.g. +=)
@@ -31,7 +33,7 @@ DEF_STRING(OPT_SB_NESTED_REDUCTION_SCOPE);
 //       _t += t.A + t.B @ t;
 //     X = Y + _t;
 //---------------------------------------------------
-class ss2_reduce_op : public gm_apply
+class ss2_reduce_op: public gm_apply
 {
 public:
     ss2_reduce_op() {
@@ -40,7 +42,7 @@ public:
 
     // Pre visit.  
     // Resolve nested 'reductions' from outside
-    virtual bool apply(ast_expr *s) {
+    virtual bool apply(ast_expr* s) {
         if (!s->is_reduction()) return true;
 
         ast_expr_reduce* r = (ast_expr_reduce*) s;
@@ -186,7 +188,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
     ast_expr_reduce* left_nested = NULL;
     ast_expr_reduce* right_nested = NULL;
-    bool has_other_rhs;
+    bool has_other_rhs = false;
     bool has_nested = check_has_nested(target->get_body(), rtype, has_other_rhs, left_nested, right_nested);
 
     ast_sent* holder = NULL;
@@ -194,11 +196,11 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
     if (is_nested) {
         nested_up_sentblock = (ast_sentblock*) target->find_info_ptr(OPT_SB_NESTED_REDUCTION_SCOPE);
-        assert(nested_up_sentblock!=NULL);
+        assert(nested_up_sentblock != NULL);
     } else {
         ast_node* up = target->get_parent();
         while (true) {
-            assert(up!=NULL);
+            assert(up != NULL);
             if (up->is_sentence()) break;
             up = up->get_parent();
         }
@@ -315,7 +317,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
     lhs_id = lhs_symbol->getId()->copy(true);
     if (is_nested) {
         bound_sym = (gm_symtab_entry*) target->find_info_ptr(OPT_SYM_NESTED_REDUCTION_BOUND);
-        assert(bound_sym!=NULL);
+        assert(bound_sym != NULL);
         bound_id = bound_sym->getId()->copy(true);
     } else {
         bound_sym = NULL; // will set later
@@ -470,6 +472,164 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
 }
 
+class Replace_PropertyItarator_With_NodeIterator: public gm_apply
+{
+
+public:
+
+    Replace_PropertyItarator_With_NodeIterator() {
+        set_for_sent(true);
+    }
+
+    virtual bool apply(ast_sent* sent) {
+        if (sent->get_nodetype() != AST_FOREACH) return true;
+        fe = (ast_foreach*) sent;
+        if (!gm_is_property_iter_type(fe->get_iter_type()))
+            return true;
+        else
+            return changeForeach();
+    }
+
+private:
+
+    const char* newIteratorName;
+    const char* oldIteratorName;
+    ast_foreach* fe;
+    int iterType;
+
+    //For(s: prop.Items) -> For(n: G.Nodes) {Set s = n.prop
+    bool changeForeach() {
+
+        ast_id* newIterator = getNewIterator();
+        assert(newIterator != NULL);
+
+        ast_sent* newBody = getNewBody();
+        assert(newBody != NULL);
+
+        assemble(newIterator, newBody);
+
+        return true;
+    }
+
+    ast_id* getNewIterator() {
+
+        ast_id* oldIterator = fe->get_iterator();
+        oldIteratorName = oldIterator->get_genname();
+        newIteratorName = getUniqueName();
+        ast_id* newIterator = ast_id::new_id(newIteratorName, 0, 0);
+
+        iterType = getNewIterType();
+        ast_id* sourceGraph = fe->get_source()->getTargetTypeInfo()->get_target_graph_id();
+        ast_typedecl* type = ast_typedecl::new_nodeedge_iterator(sourceGraph->copy(true), iterType);
+        if (!declare_symbol(fe->get_symtab_var(), newIterator, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE)) assert(false);
+
+        return newIterator;
+    }
+
+    int getNewIterType() {
+        int sourceType = fe->get_source()->getTypeSummary();
+        if (gm_is_node_property_type(sourceType))
+            return GMTYPE_NODEITER_ALL;
+        else if (gm_is_edge_property_type(sourceType))
+            return GMTYPE_EDGEITER_ALL;
+        else
+            assert(false);
+    }
+
+    ast_sent* getNewBody() {
+
+        ast_sentblock* newBody;
+        if (fe->get_body()->get_nodetype() == AST_SENTBLOCK)
+            newBody = (ast_sentblock*) fe->get_body();
+        else
+            newBody = ast_sentblock::new_sentblock();
+
+        ast_assign* assign = createAssignStatement();
+        std::list<ast_sent*>& statements = newBody->get_sents();
+        statements.push_front(assign);
+
+        return newBody;
+    }
+
+    ast_assign* createAssignStatement() {
+        ast_id* leftHandSide = createLeftHandSide();
+        ast_expr* rightHandSide = createRightHandSide();
+        return ast_assign::new_assign_scala(leftHandSide, rightHandSide);
+    }
+
+    ast_id* createLeftHandSide() {
+        ast_id* leftHandSide = ast_id::new_id(oldIteratorName, 0, 0);
+        find_and_connect_symbol(leftHandSide, fe->get_symtab_var());
+        leftHandSide->set_instant_assigned(true);
+
+        ast_typedecl* type = ast_typedecl::new_set(leftHandSide, getTypeOfSourceItems());
+        gm_symtab_entry* fakeEntry = new gm_symtab_entry(leftHandSide->copy(), type);
+        leftHandSide->setSymInfo(fakeEntry);
+
+        return leftHandSide;
+    }
+
+    int getTypeOfSourceItems() {
+        ast_id* source = fe->get_source();
+        assert(gm_is_collection_type(source->getTargetTypeSummary()));
+        return source->getTargetTypeSummary();
+    }
+
+    ast_expr* createRightHandSide() {
+        ast_id* first = ast_id::new_id(newIteratorName, 0, 0);
+        find_and_connect_symbol(first, fe->get_symtab_var());
+
+        ast_id* second = ast_id::new_id(fe->get_source()->get_genname(), 0, 0);
+        find_and_connect_symbol(second, fe->get_symtab_field());
+
+        ast_field* field = ast_field::new_field(first, second);
+        return ast_expr::new_field_expr(field);
+    }
+
+    void assemble(ast_id* newIterator, ast_sent* newBody) {
+        delete fe->get_iterator();
+        fe->set_iterator(newIterator);
+        fe->set_body(newBody);
+
+        fe->set_iter_type(iterType);
+    }
+
+    static const char* getUniqueName() {
+        return FE.voca_temp_name_and_add("iter_aux", "");
+    }
+
+    static bool declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable) {
+
+        gm_symtab_entry* old_e;
+        bool is_okay = SYM->check_duplicate_and_add_symbol(id, type, old_e, is_readable, is_writeable);
+        if (!is_okay) gm_type_error(GM_ERROR_DUPLICATE, id, old_e->getId());
+
+        find_and_connect_symbol(id, SYM);
+
+        if (is_okay) FE.voca_add(id->get_orgname());
+
+        return is_okay;
+    }
+
+    static bool find_and_connect_symbol(ast_id* id, gm_symtab* begin) {
+        assert(id != NULL);
+        assert(id->get_orgname() != NULL);
+
+        gm_symtab_entry* se = begin->find_symbol(id);
+        if (se == NULL) {
+            gm_type_error(GM_ERROR_UNDEFINED, id);
+            return false;
+        }
+
+        if (id->getSymInfo() != NULL)
+            assert(id->getSymInfo() == se);
+        else
+            id->setSymInfo(se);
+
+        return true;
+    }
+};
+
 void gm_ind_opt_syntax_sugar2::process(ast_procdef* p) {
     // 2. ReduceOP --> Reduce Assign
     ss2_reduce_op A;
@@ -478,6 +638,9 @@ void gm_ind_opt_syntax_sugar2::process(ast_procdef* p) {
 
     // Should re-do rw-analysis
     /*    gm_redo_rw_analysis(p->get_body()); */
+
+    Replace_PropertyItarator_With_NodeIterator B;
+    p->traverse_pre(&B);
 }
 
 static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_type, ast_sent* curr, ast_expr* default_val) {
@@ -513,7 +676,7 @@ static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_t
     return e;
 }
 
-class replace_avg_to_varaible_t : public gm_expr_replacement_t
+class replace_avg_to_varaible_t: public gm_expr_replacement_t
 {
 public:
     replace_avg_to_varaible_t(ast_expr* target, gm_symtab_entry* entry) :
@@ -531,10 +694,10 @@ public:
     }
 private:
     ast_expr* T;
-    gm_symtab_entry *E;
+    gm_symtab_entry* E;
 };
 
-static void replace_avg_to_varaible(ast_sent* s, ast_expr * rhs, gm_symtab_entry * e) {
+static void replace_avg_to_varaible(ast_sent* s, ast_expr* rhs, gm_symtab_entry* e) {
     replace_avg_to_varaible_t T(rhs, e);
     gm_replace_expr_general(s, &T);
 }

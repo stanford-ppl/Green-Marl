@@ -1,4 +1,3 @@
-
 #include "common_main.h"
 #include "sssp.h"
 
@@ -16,7 +15,7 @@ public:
         root = 0;
         dist = new int[G.num_nodes()];
         len = new int[G.num_edges()];
-        for(int i=0;i<G.num_edges();i++) 
+        for (int i = 0; i < G.num_edges(); i++)
             len[i] = (rand() % 100) + 1;  // length: 1 ~ 100
         return true;
     }
@@ -30,15 +29,16 @@ public:
         //---------------------------------
         // dist values of 10 nodes
         //---------------------------------
-        for(int i=0;i<10;i++) {
+        for (int i = 0; i < 10; i++) {
             printf("dist[%d] = %d\n", i, dist[i]);
         }
+        delete[] len;
+        delete[] dist;
         return true;
     }
 };
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     my_main M;
     M.main(argc, argv);
 }
