@@ -405,6 +405,10 @@ public:
         instant_assignment = value;
     }
 
+    virtual bool is_entry_reference() {
+        return false;
+    }
+
 public:
     char* name;
 
@@ -418,6 +422,40 @@ private:
     char* get_genname_from_symbol();  // gm_typecheck.cc
 public:
     void use_names_from_symbol(); // gm_typecheck.cc
+
+};
+
+class ast_entryref: public ast_id
+{
+private:
+    ast_field* targetField;
+
+    ast_entryref(const char* org, int line, int column) :
+            ast_id(org, l, c), targetField(NULL) {
+    }
+
+    void set_target_field(ast_field* field) {
+        targetField = field;
+    }
+
+public:
+    virtual ~ast_entryref() {
+        delete targetField;
+    }
+
+    bool is_entry_reference() {
+        return true;
+    }
+
+    ast_field* get_target_field() {
+        return targetField;
+    }
+
+    static ast_entryref* new_entryref(ast_field* field, const char* org, int line, int col) {
+        ast_entryref* newRef = new ast_entryref(org, line, col);
+        newRef->set_target_field(field);
+        return newRef;
+    }
 
 };
 
