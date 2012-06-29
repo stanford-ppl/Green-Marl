@@ -45,7 +45,7 @@ int gm_determine_result_type(int t1, int t2) {
         return t1;
     else {
         assert(false);
-        return EXIT_FAILURE;
+        return 0;
     }
 }
 
