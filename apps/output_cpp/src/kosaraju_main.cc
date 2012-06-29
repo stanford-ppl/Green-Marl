@@ -25,6 +25,7 @@ public:
 
     virtual bool post_process() {
         printf("num_membership = %d\n", num_membership);
+        delete[] membership;
         return true;
     }
 };

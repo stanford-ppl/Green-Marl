@@ -221,6 +221,7 @@ void gm_graph::make_reverse_edges() {
     if (is_edge_source_ready()) prepare_edge_source_reverse();
 
     // TODO: if id2idx?
+    delete[] loc;
 }
 
 inline static void swap(edge_t idx1, edge_t idx2, node_t* dest_array, edge_t* aux_array) {

@@ -97,6 +97,9 @@ public:
                 okay = check_assign((ast_assign*) s);
                 break;
             }
+
+            default:
+                break;
         }
 
         set_okay(okay);

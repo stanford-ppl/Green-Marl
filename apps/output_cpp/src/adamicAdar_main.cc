@@ -1,6 +1,5 @@
 #include "common_main.h"
 #include "adamicAdar.h"  // defined in generated
-
 class aa_main: public main_t
 {
 public:
@@ -15,8 +14,7 @@ public:
         return true;
     }
 
-    virtual bool run() 
-    {
+    virtual bool run() {
         if (method == 0)
             adamicAdar(G, aa);
         else
@@ -28,26 +26,24 @@ public:
         printf("[usemethod=0/1]");
     }
     virtual bool check_args(int argc, char** argv) {
-        if (argc > 0) 
-            method = atoi(argv[0]);
+        if (argc > 0) method = atoi(argv[0]);
         return true;
     }
 
     virtual bool post_process() {
         int max_cnt = 0;
-        for(int i=0;i<G.num_edges();i++) {
+        for (int i = 0; i < G.num_edges(); i++) {
             if (aa[i] != 0) {
                 printf("%d-> %5.5f\n", i, aa[i]);
                 if (max_cnt++ == 100) break;
             }
         }
-
+        delete[] aa;
         return true;
     }
 };
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     aa_main M;
     M.main(argc, argv);
 }

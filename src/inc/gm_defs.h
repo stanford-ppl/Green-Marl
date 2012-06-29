@@ -42,6 +42,10 @@ static enum
     GMTYPE_EDGEITER_SEQ,            // sequence
     GMTYPE_EDGEITER_ORDER,          // order
 
+    GMTYPE_PROPERTYITER_SET,
+    GMTYPE_PROPERTYITER_SEQ,
+    GMTYPE_PROPERTYITER_ORDER,
+
     // 
     GMTYPE_BIT = 1000,     // 1b (for future extension)
     GMTYPE_BYTE,        // 1B (for future extension)
@@ -156,6 +160,22 @@ inline static bool gm_is_unknown_collection_iter_type(int i) {
 
 inline static bool gm_is_collection_iter_type(int i) {
     return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) || gm_is_unknown_collection_iter_type(i);
+}
+
+inline static bool gm_is_property_iter_set_type(int i) {
+    return i == GMTYPE_PROPERTYITER_SET;
+}
+
+inline static bool gm_is_property_iter_seq_type(int i) {
+    return i == GMTYPE_PROPERTYITER_SEQ;
+}
+
+inline static bool gm_is_property_iter_order_type(int i) {
+    return i == GMTYPE_PROPERTYITER_ORDER;
+}
+
+inline static bool gm_is_property_iter_type(int i) {
+    return gm_is_property_iter_order_type(i) || gm_is_property_iter_seq_type(i) || gm_is_property_iter_set_type(i);
 }
 
 inline static bool gm_is_node_compatible_type(int i) {
@@ -391,6 +411,11 @@ inline static bool gm_is_boolean_reduce_op(int t) {
 inline static bool gm_is_iteration_on_collection(int itype) {
     return gm_is_collection_iter_type(itype);
 }
+
+inline static bool gm_is_iteration_on_property(int iterType) {
+    return gm_is_property_iter_type(iterType);
+}
+
 inline static bool gm_is_iteration_on_set(int itype) {
     return (itype == GMTYPE_NODEITER_SET) || (itype == GMTYPE_EDGEITER_SET);
 }
