@@ -99,7 +99,7 @@ static int gm_get_range_from_itertype(int itype) {
         default:
             printf("type = %d\n", itype);
             assert(false);
-            return EXIT_FAILURE;
+            return 0;
     }
 }
 

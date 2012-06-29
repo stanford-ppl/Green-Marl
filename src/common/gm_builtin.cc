@@ -48,7 +48,7 @@ static int gm_get_type_from_string(const char* s) {
         return GMTYPE_BOOL;
     else {
         assert(false);
-        return EXIT_FAILURE;
+        return 0;
     }
 }
 
