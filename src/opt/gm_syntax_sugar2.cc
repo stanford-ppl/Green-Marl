@@ -15,7 +15,6 @@
 
 //====================================================================
 // static functions in this file
-static ast_foreach* create_surrounding_fe(ast_assign* a);
 static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_type, ast_sent* curr, ast_expr* default_val);
 static void replace_avg_to_varaible(ast_sent* s, ast_expr * rhs, gm_symtab_entry * e);
 //static void mark_
@@ -259,6 +258,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
                 break;
             default:
                 assert(false);
+                break;
         }
 
         bool need_count_for_avg = false;

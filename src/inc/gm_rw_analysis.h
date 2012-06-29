@@ -103,8 +103,8 @@ static int gm_get_range_from_itertype(int itype) {
         default:
             printf("type = %d\n", itype);
             assert(false);
+            return 0;
     }
-    assert(false);
 }
 
 class gm_rwinfo

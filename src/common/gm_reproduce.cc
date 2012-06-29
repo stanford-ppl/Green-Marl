@@ -55,6 +55,7 @@ void ast_typedecl::reproduce(int ind_level) {
                 break;
             default:
                 assert(false);
+                break;
         }
     } else if (is_node_property()) {
         assert(target_type!=NULL);

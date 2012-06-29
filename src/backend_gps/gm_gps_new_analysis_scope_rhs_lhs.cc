@@ -117,7 +117,7 @@ public:
             case GMEXPR_FOREIGN:
             default:
                 assert(false);
-
+                break;
         }
         return true;
     }

@@ -45,6 +45,7 @@ int gm_determine_result_type(int t1, int t2) {
         return t1;
     else {
         assert(false);
+        return 0;
     }
 }
 
@@ -176,6 +177,7 @@ char* ast_id::get_orgname() {
             printf("line:%d, col:%d, name:%p\n", line, col, &name);
             fflush (stdout);
             assert(false);
+            return NULL;
         }
     } else {
         assert(info != NULL);
@@ -198,6 +200,7 @@ char* ast_id::get_genname() {
             return name;
         else
             assert(false);
+            return NULL;
     } else {
         assert(info != NULL);
         return get_genname_from_symbol();

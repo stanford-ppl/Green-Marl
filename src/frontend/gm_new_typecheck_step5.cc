@@ -17,8 +17,6 @@
 //       - or should be all scalar            (e.g <x; y, z>  max= <... ; ... > )
 //----------------------------------------------------------------
 
-static int gm_determine_result_type_after_numeric_op(int t1, int t2);
-
 // resolve type of every sub-expression
 class gm_typechecker_stage_5: public gm_apply
 {

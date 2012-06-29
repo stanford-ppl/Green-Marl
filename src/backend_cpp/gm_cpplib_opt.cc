@@ -29,6 +29,7 @@ bool gm_cpplib::do_local_optimize() {
                 case COUNT:
                 default:
                     assert(false);
+                    break;
             }
         }
         gm_end_minor_compiler_stage();

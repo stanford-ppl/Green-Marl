@@ -152,14 +152,15 @@ void gm_code_generator::generate_expr_uop(ast_expr *e) {
                 return;
             } else {
                 assert(false);
+                break;
             }
         case GMEXPR_LUOP:
             _Body.push(" !");
             generate_expr(e->get_left_op());
-            return;
-
+            break;
         default:
             assert(false);
+            break;
     }
 }
 
@@ -261,6 +262,7 @@ void gm_code_generator::generate_sent(ast_sent* s) {
             break;
         default:
             assert(false);
+            break;
     }
 }
 void gm_code_generator::generate_sent_foreign(ast_foreign* f) {

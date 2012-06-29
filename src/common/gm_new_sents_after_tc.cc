@@ -5,7 +5,6 @@
 #include "gm_misc.h"
 
 // temporary: should be improved
-extern bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V); // should be called separatedly for property type.
 extern bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bool is_readable, bool is_writeable);
 
 //------------------------------------------------------------
@@ -165,6 +164,7 @@ ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type) {
         default:
             printf("%d %s \n", reduce_type, gm_get_reduce_string(reduce_type));
             assert(false);
+            break;
     }
 
     return init_val;
