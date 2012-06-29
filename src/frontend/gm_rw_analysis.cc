@@ -316,7 +316,7 @@ void traverse_expr_for_readset_adding_reduce(ast_expr_reduce* e2, gm_rwinfo_map&
     ast_expr* f = e2->get_filter();
     ast_expr* b = e2->get_body();
     bool is_conditional = (f != NULL) || gm_is_collection_iter_type(iter_type);
-    range_cond_t R((int) gm_get_range_from_itertype(iter_type), !is_conditional);
+    range_cond_t R(gm_get_range_from_itertype(iter_type), !is_conditional);
     DrvMap[it] = R;
     traverse_expr_for_readset_adding(b, rset, DrvMap);
     DrvMap.erase(it);

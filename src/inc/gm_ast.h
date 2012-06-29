@@ -13,7 +13,7 @@
 
 extern const char* gm_get_type_string(int i);
 
-enum
+enum AST_NODE_TYPE
 {
     AST_ID,       // 
     AST_FIELD,    // A.B
@@ -155,10 +155,10 @@ class ast_node
 {
     friend class gm_apply;
 protected:
-    ast_node(int nt) :
+    ast_node(AST_NODE_TYPE nt) :
             nodetype(nt), parent(NULL) {
     }
-    int nodetype;
+    AST_NODE_TYPE nodetype;
 
 protected:
     ast_node() :
@@ -167,7 +167,7 @@ protected:
     ast_node* parent;
 
 public:
-    void set_nodetype(int nt) {
+    void set_nodetype(AST_NODE_TYPE nt) {
         nodetype = nt;
     }
 
@@ -179,7 +179,7 @@ public:
         extra.clear();
     }
 
-    int get_nodetype() {
+    AST_NODE_TYPE get_nodetype() {
         return nodetype;
     }
     ast_node* get_parent() {
@@ -192,12 +192,13 @@ public:
     virtual bool is_sentence() {
         return false;
     }
+
     virtual bool is_expr() {
         return false;
     }
+
     bool has_symtab() {
-        return (nodetype == AST_SENTBLOCK) || (nodetype == AST_FOREACH) || (nodetype == AST_PROCDEF) || (nodetype == AST_EXPR_RDC) || (nodetype == AST_BFS)
-                || false;
+        return (nodetype == AST_SENTBLOCK) || (nodetype == AST_FOREACH) || (nodetype == AST_PROCDEF) || (nodetype == AST_EXPR_RDC) || (nodetype == AST_BFS);
     }
 
     // for parser debug
@@ -378,6 +379,7 @@ public:
     static ast_id* new_id(const char* org, int line, int col) {
         return new ast_id(org, line, col);
     }
+
     char* get_orgname();  // returns name in GM
     void set_orgname(const char* c) {  // copy is saved. old name is deleted
         if (name != NULL) delete[] name;
@@ -403,6 +405,10 @@ public:
         instant_assignment = value;
     }
 
+    virtual bool is_entry_reference() {
+        return false;
+    }
+
 public:
     char* name;
 
@@ -416,6 +422,40 @@ private:
     char* get_genname_from_symbol();  // gm_typecheck.cc
 public:
     void use_names_from_symbol(); // gm_typecheck.cc
+
+};
+
+class ast_entryref: public ast_id
+{
+private:
+    ast_field* targetField;
+
+    ast_entryref(const char* org, int line, int column) :
+            ast_id(org, l, c), targetField(NULL) {
+    }
+
+    void set_target_field(ast_field* field) {
+        targetField = field;
+    }
+
+public:
+    virtual ~ast_entryref() {
+        delete targetField;
+    }
+
+    bool is_entry_reference() {
+        return true;
+    }
+
+    ast_field* get_target_field() {
+        return targetField;
+    }
+
+    static ast_entryref* new_entryref(ast_field* field, const char* org, int line, int col) {
+        ast_entryref* newRef = new ast_entryref(org, line, col);
+        newRef->set_target_field(field);
+        return newRef;
+    }
 
 };
 
@@ -707,6 +747,14 @@ public:
         return t;
     }
 
+    static ast_typedecl* new_property_iterator(ast_id* property, int iter_type) {
+        ast_typedecl* typeDecl = new ast_typedecl();
+        typeDecl->type_id = iter_type;
+        typeDecl->target_collection = property;
+        property->set_parent(typeDecl);
+        return typeDecl;
+    }
+
     static ast_typedecl* new_void() {
         ast_typedecl* t = new ast_typedecl();
         t->type_id = GMTYPE_VOID;
@@ -784,6 +832,10 @@ public:
 
     bool is_node_edge_iterator() {
         return is_node_iterator() || is_edge_iterator();
+    }
+
+    bool is_property_iterator() {
+        return gm_is_property_iter_type(type_id);
     }
 
     bool is_numeric() {
@@ -876,6 +928,10 @@ public:
         return target_collection;
     }
 
+    ast_id* get_target_property_id() {
+        return target_collection;
+    }
+
     ast_id* get_target_nbr_id() {
         return target_nbr;
     }
@@ -938,7 +994,7 @@ private:
 class ast_sent: public ast_node
 {
 protected:
-    ast_sent(int y) :
+    ast_sent(AST_NODE_TYPE y) :
             ast_node(y), eline(0), _par(false) {
     }
 
@@ -951,10 +1007,11 @@ public:
         eline = t;
     }
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
         assert(false);
     }
-    ;
+
     virtual bool is_sentence() {
         return true;
     }
@@ -963,6 +1020,7 @@ public:
     virtual bool is_under_parallel_execution() {
         return _par;
     }
+
     virtual void set_under_parallel_execution(bool b) {
         _par = b;
     }
@@ -971,6 +1029,7 @@ private:
     ast_sent() :
             ast_node(AST_SENT) {
     }
+
     int eline;
     bool _par;
 
@@ -988,10 +1047,12 @@ public:
         }
         delete_symtabs();
     }
+
 public:
     static ast_sentblock* new_sentblock() {
         return new ast_sentblock();
     }
+
     void add_sent(ast_sent* s) {
         sents.push_back(s);
         s->set_parent(this);
@@ -1000,6 +1061,7 @@ public:
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
+
     virtual bool has_scope() {
         return true;
     }
@@ -1151,7 +1213,7 @@ private:
 //-------------------------------------------------------
 // Class of Expressions
 //-------------------------------------------------------
-static enum
+enum GMEXPR_CLASS
 {
     GMEXPR_IVAL,    // integer literal
     GMEXPR_FVAL,    // floating literal
@@ -1171,7 +1233,7 @@ static enum
     GMEXPR_TER,      // ternary operation
     GMEXPR_FOREIGN,
 // foreign expression
-} GMEXPR_T;
+};
 
 // Numeric or boolean expression
 class gm_builtin_def;
@@ -1187,14 +1249,15 @@ public:
         delete right;
         delete cond;
     }
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
     virtual void traverse(gm_apply*a, bool is_post, bool is_pre);
+    virtual ast_expr* copy(bool cp_syminfo = false);
+
     virtual bool is_expr() {
         return true;
     }
-
-    virtual ast_expr* copy(bool cp_syminfo = false);
 
     // factory methods
 
@@ -1340,7 +1403,7 @@ protected:
     }
 
 protected:
-    int expr_class;  // GMEXPR_...
+    GMEXPR_CLASS expr_class;  // GMEXPR_...
     ast_expr* left;
     ast_expr* right;
     ast_expr* cond;
@@ -1445,7 +1508,7 @@ public:
         return field;
     }
 
-    int get_opclass() {
+    GMEXPR_CLASS get_opclass() {
         return expr_class;
     }
 
@@ -1532,8 +1595,8 @@ public:
         return alternative_type_of_expression;
     }
 
-    void set_expr_class(int i) {
-        expr_class = i;
+    void set_expr_class(GMEXPR_CLASS ec) {
+        expr_class = ec;
     }
 
 protected:
@@ -2158,6 +2221,11 @@ public:
     ast_id* get_iterator() {
         return iterator;
     }
+
+    void set_iterator(ast_id* newIterator) {
+        iterator = newIterator;
+    }
+
     ast_sent* get_body() {
         return body;
     }
@@ -2192,16 +2260,21 @@ public:
     }
 
     // For is sequential while FOREACH is parallel.
-    // Optimization may overrride parallel exeuction with sequential.
+    // Optimization may override parallel execution with sequential.
+
+    // sequential execution
     bool is_sequential() {
         return seq_exe;
-    } // sequential execution
+    }
+
     void set_sequential(bool b) {
         seq_exe = b;
     }
+
+    // parallel execution
     bool is_parallel() {
         return !is_sequential();
-    } // sequential execution
+    }
 
     // for set iterator
     bool is_reverse_iteration() {

@@ -22,6 +22,12 @@ public:
         P(G, A, B, c);
         return true;
     }
+
+    virtual bool post_process() {
+        delete[] A;
+        delete[] B;
+        return true;
+    }
 };
 
 int main(int argc, char** argv)

@@ -27,6 +27,7 @@ public:
         assert(type != NULL);
         assert(id->name != NULL);
     }
+
     virtual ~gm_symtab_entry() {
         delete id;
         delete type;
@@ -46,9 +47,11 @@ public:
     bool isReadable() {
         return (isRA == GM_READ_AVAILABLE);
     }
+
     bool isWriteable() {
         return (isWA == GM_WRITE_AVAILABLE);
     }
+
     bool isArgument() {
         return isArg;
     }

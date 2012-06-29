@@ -1,7 +1,5 @@
-
 #include "common_main.h"
 #include "bc.h"  // defined in generated
-
 class my_main: public main_t
 {
 public:
@@ -9,9 +7,8 @@ public:
 
     float* BC;
 
-    my_main()
-    {
-        Seeds =NULL;
+    my_main() {
+        Seeds = NULL;
     }
 
     virtual bool prepare() {
@@ -20,15 +17,13 @@ public:
         return true;
     }
 
-    virtual bool run() 
-    {
-        assert(Seeds!=NULL);
+    virtual bool run() {
+        assert(Seeds != NULL);
         // pick 5 random starting points;
-        for(int i=0;i<5;i++)
-        {
+        for (int i = 0; i < 5; i++) {
             node_t t;
             do {
-                t = rand(); 
+                t = rand();
             } while (t >= G.num_nodes());
 
             Seeds->push_back(t);
@@ -43,12 +38,14 @@ public:
         printf("BC[1] = %0.9lf\n", BC[1]);
         printf("BC[2] = %0.9lf\n", BC[2]);
         printf("BC[3] = %0.9lf\n", BC[3]);
+
+        delete[] BC;
+        delete Seeds;
         return true;
     }
 };
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     my_main M;
     M.main(argc, argv);
 }
