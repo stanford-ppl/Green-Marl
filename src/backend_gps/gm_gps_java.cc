@@ -402,7 +402,7 @@ void gm_gps_gen::generate_expr_inf(ast_expr *e) {
             sprintf(temp, "Double.%s", e->is_plus_inf() ? "MAX_VALUE" : "MIN_VALUE"); // temporary
             break;
         default:
-            sprintf(temp, "%s", e->is_plus_inf() ? "INT_MAX" : "INT_MIN"); // temporary
+            sprintf(temp, "%s", e->is_plus_inf() ? "Integer.MAX_VALUE" : "Integer.MIN_VALUE"); // temporary
             break;
     }
     _Body.push(temp);
