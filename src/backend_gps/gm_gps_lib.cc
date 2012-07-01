@@ -163,10 +163,10 @@ void gm_gpslib::generate_broadcast_variable_type(int type_id, gm_code_writer& Bo
             Body.push("Max");
             break;
         case GMREDUCE_AND:
-            Body.push("And");
+            Body.push("AND");
             break;
         case GMREDUCE_OR:
-            Body.push("Or");
+            Body.push("OR");
             break;
         default:
             assert(false);
@@ -1064,6 +1064,7 @@ void gm_gpslib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body
             Body.push("(new java.util.Random()).nextInt(");
             Body.push("getGraphSize()");
             Body.push(")");
+            break;
 
         case GM_BLTIN_GRAPH_NUM_NODES:
             //Body.push("/*please check*/");
