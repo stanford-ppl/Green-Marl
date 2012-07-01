@@ -202,6 +202,7 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p) {
     ast_expr* new_rhs = old_rhs->get_body(); // reuse old expr structure.  
     gm_replace_symbol_entry(old_iter->getSymInfo(), bfs->get_iterator()->getSymInfo(), new_rhs);
     old_rhs->set_body(NULL);  // prevent new_rhs being deleted with old assignment.
+    new_rhs->set_up_op(NULL);
 
     ast_assign* new_assign = ast_assign::new_assign_field(new_lhs, new_rhs, GMASSIGN_REDUCE, bfs->get_iterator()->copy(true), old_rhs->get_reduce_type());
 

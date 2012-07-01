@@ -303,6 +303,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
     ast_expr* body = target->get_body();
     target->set_body(NULL);
     gm_ripoff_upper_scope(body);
+    body->set_up_op(NULL);
 
     // 2.2. new assignment state (as for the body of for-each)
     ast_sent* foreach_body = NULL;
