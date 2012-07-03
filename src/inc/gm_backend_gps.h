@@ -331,15 +331,15 @@ static const char* GPS_INTRA_MERGE_IS_FIRST = "_is_first_";
 static const char* GPS_KEY_FOR_STATE = "\"__gm_gps_state\"";
 static const char* STATE_SHORT_CUT = "_this";
 
-static enum
+enum gm_gps_edge_access_t
 {
     GPS_ENUM_EDGE_VALUE_WRITE, GPS_ENUM_EDGE_VALUE_SENT, GPS_ENUM_EDGE_VALUE_SENT_WRITE, GPS_ENUM_EDGE_VALUE_WRITE_SENT, GPS_ENUM_EDGE_VALUE_ERROR
-} gm_gps_edge_access_t;
+};
 
-static enum
+enum gm_gps_new_scope_analysis_t
 {
     GPS_NEW_SCOPE_GLOBAL = 0, GPS_NEW_SCOPE_OUT, GPS_NEW_SCOPE_EDGE, GPS_NEW_SCOPE_IN, GPS_NEW_SCOPE_RANDOM,
-} gm_gps_new_scope_analysis_t;
+};
 
 // where each assignment is destinated
 DEF_STRING(GPS_INT_ASSIGN_SCOPE);

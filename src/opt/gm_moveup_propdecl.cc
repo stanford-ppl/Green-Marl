@@ -64,6 +64,7 @@ public:
         curr_state = OUT_NIL;
         curr_top_scope = NULL;
         curr_pushed_node = NULL;
+        this_scope = NULL;
     }
 
     //--------------------------------------------

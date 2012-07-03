@@ -170,11 +170,12 @@ public:
 
     virtual bool begin_traverse_reverse(ast_bfs* bfs) {
         under_rev_bfs = true;
-
+        return true;
     }
 
     virtual bool end_traverse_reverse(ast_bfs* bfs) {
         under_rev_bfs = false;
+        return true;
     }
 
 private:

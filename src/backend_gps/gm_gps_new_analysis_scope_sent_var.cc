@@ -121,15 +121,6 @@ void gm_gps_new_analyze_scope_sent_var::process(ast_procdef* proc) {
     return;
 }
 
-static inline int get_more_restricted_scope(int i, int j) {
-    //GPS_NEW_SCOPE_GLOBAL = 0, <-- least restricted
-    //GPS_NEW_SCOPE_OUT ,
-    //GPS_NEW_SCOPE_EDGE,
-    //GPS_NEW_SCOPE_IN ,
-    //GPS_NEW_SCOPE_RANDOM,  <-- most restricted
-    return std::max(i, j);
-}
-
 static void add_syminfo_struct(gm_symtab_entry * sym, bool is_scalar, int scope) {
     ast_extra_info* info = sym->find_info(GPS_TAG_BB_USAGE);
     gps_syminfo* syminfo;

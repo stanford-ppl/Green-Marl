@@ -78,6 +78,7 @@ static bool check_if_met_conditional_before(ast_node *s, gm_symtab_entry *symbol
 
         s = (ast_node*) s->get_parent();
     }
+    return false;
 }
 
 class gps_check_random_access_t2 : public gm_apply

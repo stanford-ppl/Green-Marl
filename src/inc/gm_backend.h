@@ -57,10 +57,10 @@ protected:
 
 };
 
-static enum
+enum gm_usage_enu
 {
     GMUSE_INARG, GMUSE_OUTARG, GMUSE_RETURN, GMUSE_LOCALDEF,
-} gm_usage_enu;
+};
 
 class gm_graph_library
 {

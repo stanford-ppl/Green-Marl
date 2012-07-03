@@ -16,7 +16,7 @@ class gm_symtab_entry
 
 private:
     gm_symtab_entry() :
-            id(NULL), type(NULL) {
+            id(NULL), type(NULL), isRA(false), isWA(false), isArg(false) {
     }
 
 public:
@@ -87,21 +87,21 @@ private:
     std::map<std::string, ast_extra_info*> extra;
 };
 
-static enum
+enum SYMTAB_TYPES
 {
     GM_SYMTAB_ARG,        // argument
     GM_SYMTAB_VAR,        // variable
     GM_SYMTAB_FIELD,      // node/edge property
     GM_SYMTAB_PROC,
 // procedures
-} SYMTAB_TYPES;
+};
 
 // symbol table
 class gm_symtab
 {
 public:
     gm_symtab(int _symtab_type, ast_node* _ast) :
-            parent(NULL), symtab_type(_symtab_type), ast(_ast) {
+            parent(NULL), symtab_type(_symtab_type), ast(_ast), default_graph_used(false) {
     }
     int get_symtab_type() {
         return symtab_type;

@@ -40,6 +40,8 @@ public:
         set_for_symtab(true);
         set_separate_post_apply(true);
         level = 0;
+        outloop = NULL;
+        inloop = NULL;
     }
     virtual bool apply(gm_symtab_entry* e, int symtab_type) {
         // find scalar variables defined in the first level
