@@ -401,54 +401,6 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gi
     Body.pushln(";");
 }
 
-static void get_java_parse_string(gm_giraphlib* L, int gm_type, const char*& name1, const char*& name2) {
-    switch (gm_type) {
-        case GMTYPE_INT:
-            name1 = "Integer";
-            name2 = "parseInt";
-            break;
-        case GMTYPE_LONG:
-            name1 = "Long";
-            name2 = "parseLong";
-            break;
-        case GMTYPE_FLOAT:
-            name1 = "Float";
-            name2 = "parseFloat";
-            break;
-        case GMTYPE_DOUBLE:
-            name1 = "Double";
-            name2 = "parseDouble";
-            break;
-        case GMTYPE_BOOL:
-            name1 = "Boolean";
-            name2 = "parseBoolean";
-            break;
-        case GMTYPE_NODE:
-            if (L->is_node_type_int()) {
-                name1 = "Integer";
-                name2 = "parseInt";
-                break;
-            } else {
-                name1 = "Long";
-                name2 = "parseLong";
-                break;
-            }
-        case GMTYPE_EDGE:
-            if (L->is_edge_type_int()) {
-                name1 = "Integer";
-                name2 = "parseInt";
-                break;
-            } else {
-                name1 = "Long";
-                name2 = "parseLong";
-                break;
-            }
-        default:
-            assert(false);
-            break;
-    }
-}
-
 void gm_giraphlib::generate_master_class_details(std::set<gm_symtab_entry*>& prop, gm_code_writer& Body) {
     char temp[1024];
     std::set<gm_symtab_entry*>::iterator I;
@@ -640,7 +592,6 @@ static int get_total_size(gm_gps_communication_size_info& I) {
 
 #define MESSAGE_PER_TYPE_LOOP_END() \
     }\
-    if (!is_single) Body.pushln("//for empty messages (signaling only)");\
 
 static void generate_message_write_each(gm_giraphlib* lib, int cnt, int gm_type, gm_code_writer& Body) {
     for (int i = 0; i < cnt; i++) {
@@ -735,9 +686,12 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
         }
     } else {
         assert((fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_NBRS));
-        sprintf(temp, "for (%s _neighborId : this) {", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
-        Body.pushln(temp);
         Body.pushln("// Sending messages to each neighbor");
+        sprintf(temp, "Iterator<%s> neighbors = this.getOutEdgesIterator();", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
+        Body.pushln(temp);
+        Body.pushln("while (neighbors.hasNext()) {");
+        sprintf(temp, "%s _neighborId = neighbors.next();", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
+        Body.pushln(temp);
         Body.pushln("EdgeData _outEdgeData = this.getEdgeValue(_neighborId);");
     }
 

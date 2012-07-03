@@ -134,7 +134,6 @@ protected:
     void do_generate_vertex_property_class(bool is_edge_prop);
     void do_generate_vertex_class();
     void do_generate_message_class();
-    void do_generate_message_class_default_constructor();
     void do_generate_vertex_states();
     void do_generate_vertex_state_body(gm_gps_basic_block *b);
     void do_generate_vertex_state_receive_global(gm_gps_basic_block *b);
