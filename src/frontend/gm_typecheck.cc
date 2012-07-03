@@ -53,13 +53,13 @@ int gm_determine_result_type(int t1, int t2) {
 // t1:lhs type summary, t2:rhs type summary (GMTYPE_ ...), t1!=t2
 // return true, if assignment is possible
 // assumption: target graph check is separately done.
-// assumption: write-protection check is sperately done. (i.e. preventing write to node iterator)
+// assumption: write-protection check is separately done. (i.e. preventing write to node iterator)
 //-----------------------------------------------------------
 
-static enum
+enum gm_type_compatible_t
 {
     FOR_ASSIGN, FOR_EQ, FOR_LESS, FOR_BOP
-} gm_type_compatible_t;
+};
 
 inline bool gm_check_compatible_types(int t1, int t2, int for_what) {
     if (t1 == t2) return true;

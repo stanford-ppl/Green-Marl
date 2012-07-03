@@ -16,6 +16,7 @@ struct gm_gps_congruent_msg_class;
 struct gm_gps_communication_size_info
 {
     gm_gps_communication_size_info() {
+        id = 0;
         num_int = num_bool = num_long = num_float = num_double = 0;
         msg_class = NULL;
     }

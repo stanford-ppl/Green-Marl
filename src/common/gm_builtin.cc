@@ -128,6 +128,8 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def) {
             p = strtok(NULL, ":");
             p2 = strtok(NULL, ":");
         }
+
+        free(extra_info);
     }
 
     delete[] temp_org;

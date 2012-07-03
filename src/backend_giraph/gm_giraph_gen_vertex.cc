@@ -161,6 +161,9 @@ void gm_giraph_gen::do_generate_message_class() {
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
     Body.pushln("public static class MessageData implements Writable {");
 
+    Body.pushln("public MessageData() {}");
+    Body.NL();
+
     if (info->is_single_message()) {
         Body.pushln("//single message type; argument ignored");
         Body.pushln("public MessageData(byte type) {}");
@@ -170,20 +173,10 @@ void gm_giraph_gen::do_generate_message_class() {
     }
     Body.NL();
 
-    do_generate_message_class_default_constructor();
-
     get_lib()->generate_message_class_details(info, Body);
 
     Body.pushln("} // end of message-data class");
     Body.NL();
-}
-
-void gm_giraph_gen::do_generate_message_class_default_constructor() {
-    Body.NL();
-    Body.pushln("public MessageData() {");
-    Body.pushln("// default constructor that is required for constructing a "
-            "representative instance for IncomingMessageStore.");
-    Body.pushln("}");
 }
 
 void gm_giraph_gen::do_generate_vertex_class() {

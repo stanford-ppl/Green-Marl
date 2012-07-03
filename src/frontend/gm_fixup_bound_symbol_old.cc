@@ -172,15 +172,6 @@ private:
     std::map<gm_symtab_entry*, bool> para_iter_map; // map of iterator symbol & is parallel
 };
 
-bool gm_frontend::fix_bound_symbols(ast_procdef* p) {
-    find_hpb_t T;
-    gm_traverse_symtabs(p, &T);
-
-    gm_traverse_sents(p, &T);
-
-    return true;
-}
-
 // used in later optimizations
 void gm_make_normal_assign(ast_assign* a) {
     //-----------------------------------

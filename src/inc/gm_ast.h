@@ -156,14 +156,14 @@ class ast_node
     friend class gm_apply;
 protected:
     ast_node(AST_NODE_TYPE nt) :
-            nodetype(nt), parent(NULL) {
+            nodetype(nt), parent(NULL), line(0), col(0), sym_vars(NULL), sym_procs(NULL), sym_fields(NULL) {
     }
-    AST_NODE_TYPE nodetype;
 
-protected:
     ast_node() :
-            nodetype(AST_END), parent(NULL) {
+            nodetype(AST_END), parent(NULL), line(0), col(0), sym_vars(NULL), sym_procs(NULL), sym_fields(NULL)  {
     }
+
+    AST_NODE_TYPE nodetype;
     ast_node* parent;
 
 public:
@@ -570,7 +570,7 @@ class ast_typedecl: public ast_node
 {  // property or type
 private:
     ast_typedecl() :
-            ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), target_collection(NULL), target_nbr(NULL), target_nbr2(NULL), _well_defined(false) {
+            ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), target_collection(NULL), target_nbr(NULL), target_nbr2(NULL), _well_defined(false), type_id(0) {
     }
 
 public:
@@ -989,7 +989,7 @@ public:
 
 private:
     ast_sent() :
-            ast_node(AST_SENT) {
+            ast_node(AST_SENT), eline(0), _par(false) {
     }
 
     int eline;
@@ -1052,7 +1052,7 @@ public:
     }
 private:
     ast_argdecl() :
-            ast_node(AST_ARGDECL), tc_finished(false) {
+            ast_node(AST_ARGDECL), tc_finished(false), idlist(NULL), type(NULL) {
     }
 public:
     static ast_argdecl* new_argdecl(ast_idlist* id, ast_typedecl* type) {
@@ -1839,7 +1839,7 @@ public:
 
 private:
     ast_expr_reduce() :
-            ast_expr(), iter(NULL), src(NULL), src2(NULL), body(NULL), filter(NULL), reduce_type(GMREDUCE_NULL) {
+            ast_expr(), iter(NULL), src(NULL), src2(NULL), body(NULL), filter(NULL), reduce_type(GMREDUCE_NULL), iter_type(0) {
         set_nodetype(AST_EXPR_RDC);
         create_symtabs();
     }
@@ -1992,7 +1992,7 @@ public:
 
 private:
     ast_assign() :
-            ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false) {
+            ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false), lhs_type(0), assign_type(0), reduce_type(0) {
     }
 
     int assign_type; // normal, deferred, reduce
@@ -2155,7 +2155,7 @@ public:
     }
 private:
     ast_foreach() :
-            ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), source2(NULL), cond(NULL), seq_exe(false), use_reverse(false) {
+            ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), source2(NULL), cond(NULL), seq_exe(false), use_reverse(false), iter_type(0) {
         create_symtabs();
     }
 
@@ -2625,7 +2625,7 @@ class ast_nop: public ast_sent
 {
 protected:
     ast_nop() :
-            ast_sent(AST_NOP) {
+            ast_sent(AST_NOP), subtype(0) {
     }
     ast_nop(int t) :
             ast_sent(AST_NOP) {

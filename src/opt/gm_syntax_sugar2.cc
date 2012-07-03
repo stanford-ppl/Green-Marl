@@ -473,12 +473,13 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
 }
 
-class Replace_PropertyItarator_With_NodeIterator: public gm_apply
+class Replace_PropertyItarator_With_NodeIterator : public gm_apply
 {
 
 public:
 
-    Replace_PropertyItarator_With_NodeIterator() {
+    Replace_PropertyItarator_With_NodeIterator() :
+            newIteratorName(NULL), oldIteratorName(NULL), fe(NULL), iterType(0) {
         set_for_sent(true);
     }
 
@@ -533,8 +534,10 @@ private:
             return GMTYPE_NODEITER_ALL;
         else if (gm_is_edge_property_type(sourceType))
             return GMTYPE_EDGEITER_ALL;
-        else
+        else {
             assert(false);
+            return 0;
+        }
     }
 
     ast_sent* getNewBody() {

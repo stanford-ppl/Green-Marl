@@ -4,7 +4,7 @@
 // 'C' Functions called by gm_grammer.y
 #include <assert.h>
 
-static enum
+enum GMTYPE_T
 {
     GMTYPE_GRAPH,
     GMTYPE_UGRAPH,
@@ -69,7 +69,7 @@ static enum
     GMTYPE_ITER_ANY,        // iterator to some collection. resolved after type checking
     GMTYPE_VOID,
     GMTYPE_INVALID = 99999,
-} GMTYPE_T;
+};
 
 inline static bool gm_is_foreign_expr_type(int i) {
     return (i == GMTYPE_FOREIGN_EXPR);
@@ -319,7 +319,7 @@ inline static bool gm_is_same_node_or_edge_compatible_type(int i1, int i2) {
     return (gm_is_node_compatible_type(i1) && gm_is_node_compatible_type(i2)) || (gm_is_edge_compatible_type(i1) && gm_is_edge_compatible_type(i2));
 }
 
-static enum
+enum GM_OPS_T
 { // list of operators
     GMOP_ABS, GMOP_NEG, GMOP_MULT, GMOP_DIV, GMOP_MOD, GMOP_MAX, GMOP_MIN,  //
     GMOP_ADD,
@@ -338,7 +338,7 @@ static enum
     GMOP_ASSIGN,    // used in typechecking only.
     GMOP_END
 // a marker indicating end of enum
-} GM_OPS_T;
+};
 
 // see http://cppreference.com/wiki/language/operator_precedence
 static int GM_OPPRED_LEVEL[GMOP_END] = { 2,           // ABS (not in cpp)
@@ -386,7 +386,7 @@ inline bool gm_is_compatible_type_for_assign(int t_lhs, int t_rhs, int& t_new_rh
     return gm_is_compatible_type(GMOP_ASSIGN, t_lhs, t_rhs, dummy1, dummy2, t_new_rhs, dummy_b, warning);
 }
 
-static enum
+enum GM_REDUCE_T
 {
     GMREDUCE_INVALID = 0, GMREDUCE_PLUS = 1, GMREDUCE_MULT, GMREDUCE_MIN, GMREDUCE_MAX, GMREDUCE_AND,     // logical AND
     GMREDUCE_OR,      // logical OR
@@ -394,7 +394,7 @@ static enum
     GMREDUCE_DEFER,  // deferred assignment is not a reduce op. but shares a lot of properies
     GMREDUCE_NULL,
 // dummy value to mark end
-} GM_REDUCE_T;
+};
 
 inline static bool gm_is_strict_reduce_op(int t) {
     return (t == GMREDUCE_PLUS) || (t == GMREDUCE_MULT) || (t == GMREDUCE_MIN) || (t == GMREDUCE_MAX) || (t == GMREDUCE_AND) || (t == GMREDUCE_OR)
@@ -459,7 +459,7 @@ inline static bool gm_is_iteration_on_neighbors_compatible(int itype) {
     return gm_is_any_nbr_node_iter_type(itype);
 }
 
-static enum
+enum GM_ACCESS_T
 {   // 16 bit bitmap
     GMACCESS_NONE = 0x0000,
     GMACCESS_EMPTY = 0x0001,
@@ -468,19 +468,19 @@ static enum
     GMACCESS_FULL = 0x0008,
     GMACCESS_LOOKUP = 0x0010,
     GMACCESS_COPY = 0x0020,
-} GM_ACCESS_T;
+};
 
 inline static bool gm_is_collection_access_none(int i) {
     return (i == GMACCESS_NONE);
 }
 
-static enum
+enum GM_PROP_USAGE_T
 {
     GMUSAGE_UNUSED, GMUSAGE_IN,              // Read only
     GMUSAGE_OUT,             // Write all, then optionally read
     GMUSAGE_INOUT,              // Read and Write
     GMUSAGE_INVALID
-} GM_PROP_USAGE_T;
+};
 
 //DEF_STRING(GMUSAGE_PROPERTY);
 

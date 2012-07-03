@@ -27,7 +27,7 @@ struct gm_builtin_desc_t
     const char* extra_info; //key:value,key:value,...
 };
 
-static enum
+enum gm_method_id_t
 {
     GM_BLTIN_GRAPH_NUM_NODES,   // number of nodes in graph
     GM_BLTIN_GRAPH_NUM_EDGES,   // number of edges in graph
@@ -61,7 +61,7 @@ static enum
     GM_BLTIN_SET_SIZE,
 
     GM_BLTIN_END
-} gm_method_id_t;
+};
 
 const gm_builtin_desc_t GM_builtins[] = {
 
@@ -164,7 +164,8 @@ public:
     }
 
 private:
-    gm_builtin_def() {
+    gm_builtin_def() :
+            src_type(0), res_type(0), num_args(0), arg_types(NULL), orgname(NULL), method_id(0), need_strict(false), org_def(NULL), synonym(false) {
     } // not allow random creation
     int src_type;
     int res_type;

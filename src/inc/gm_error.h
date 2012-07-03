@@ -4,7 +4,7 @@
 #include "gm_ast.h"
 #include "gm_typecheck.h"
 
-static enum
+enum GM_ERRORS_AND_WARNINGS
 {
     GM_ERROR_UNKNOWN, GM_ERROR_UNDEFINED, GM_ERROR_UNDEFINED_FIELD, GM_ERROR_UNDEFINED_FIELD_GRAPH,
     //GM_ERROR_MULTIPLE_TARGET,
@@ -106,7 +106,7 @@ static enum
 
     GM_ERROR_END
 // END_MARKER
-} GM_ERRORS_AND_WARNINGS;
+};
 
 extern void gm_type_error(int errnumber, ast_id* id, const char* str1 = "", const char* str2 = "");
 extern void gm_type_error(int errnumber, ast_id* id, ast_id* id2);

@@ -29,6 +29,9 @@ public:
         is_message_write_target = false;
         is_edge_prop_write_target = false;
         random_write_target = NULL;
+        random_write_target_sb = NULL;
+        foreach_depth = 0;
+        in_loop = NULL;
     }
 
     virtual bool apply(ast_sent* s) {

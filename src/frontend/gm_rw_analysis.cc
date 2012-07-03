@@ -234,7 +234,8 @@ struct range_cond_t
     range_cond_t(int r, bool b) :
             range_type(r), is_always(b) {
     }
-    range_cond_t() {
+    range_cond_t() :
+            range_type(0), is_always(false) {
     }
     int range_type;
     bool is_always;
