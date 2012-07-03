@@ -432,6 +432,7 @@ public:
                 targets.push_back(fe);
             }
         }
+        return true;
     }
 
     void post_process() {

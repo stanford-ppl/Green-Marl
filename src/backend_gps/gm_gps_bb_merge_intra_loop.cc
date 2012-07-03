@@ -143,7 +143,7 @@ class gps_find_intra_merge_candidate_t : public gps_apply_bb
 {
 public:
     gps_find_intra_merge_candidate_t(std::list<gps_intra_merge_candidate_t*>& L) :
-            cands(L) {
+            cands(L), curr_head(NULL), curr_tail(NULL) {
         current_trace_head = -1;
         stack.clear();
     }

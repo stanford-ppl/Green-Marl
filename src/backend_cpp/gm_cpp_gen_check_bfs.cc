@@ -24,12 +24,10 @@ class check_bfs_main_t : public gm_apply
 {
 public:
     check_bfs_main_t(ast_procdef* p) :
-            proc(p) {
-        has_bfs = false;
+            current_bfs(NULL), proc(p), has_bfs(false), in_bfs(false) {
         set_for_sent(true);
         set_for_expr(true);
         set_separate_post_apply(true);
-        in_bfs = false;
     }
 
     void process_rwinfo(gm_rwinfo_map& MAP, std::set<void*>& SET) {

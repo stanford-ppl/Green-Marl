@@ -37,11 +37,6 @@ void gm_giraph_gen::init_gen_steps() {
 //----------------------------------------------------
 
 void gm_giraph_gen::write_headers() {
-    ast_procdef* proc = FE.get_current_proc();
-    char temp[1024];
-    sprintf(temp, "package giraph.examples.%s;", proc->get_procname()->get_genname());
-    Body.pushln(temp);       // hardcoded
-    Body.NL();
     get_lib()->generate_headers(Body);
     Body.NL();
 }
@@ -180,12 +175,16 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.pushln("sb.append('\\t').append(vertex.getVertexValue());");
     Body.NL();
 
-    sprintf(temp, "for (%s neighbor : vertex) {", vertex_id);
+    sprintf(temp, "Iterator<%s> outEdges = vertex.getOutEdgesIterator();", vertex_id);
     Body.pushln(temp);
-    Body.pushln("sb.append('\\t').append(neighbor);");
+    Body.pushln("while (outEdges.hasNext()) {");
     if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        sprintf(temp, "%s neighbor = outEdges.next();", vertex_id);
+        Body.pushln(temp);
+        Body.pushln("sb.append('\\t').append(neighbor);");
         Body.pushln("sb.append('\\t').append(vertex.getEdgeValue(neighbor));");
     } else {
+        Body.pushln("sb.append('\\t').append(outEdges.next());");
         Body.pushln("sb.append(\"\\t1.0\");");
     }
     Body.pushln("}");

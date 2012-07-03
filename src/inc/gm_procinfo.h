@@ -130,7 +130,8 @@ public:
     }
 
 private:
-    gm_procinfo() {
+    gm_procinfo() :
+            body(NULL), temp_no(0), be_info(NULL) {
     } // cannot create without body
     ast_procdef* body;
     int temp_no;

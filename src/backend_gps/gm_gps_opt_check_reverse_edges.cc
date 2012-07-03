@@ -16,6 +16,7 @@ public:
         set_for_expr(true);
         r_edge = false;
         r_degree = false;
+        target_graph = NULL;
     }
     bool apply(ast_sent *s) {
         if (s->get_nodetype() == AST_FOREACH) {

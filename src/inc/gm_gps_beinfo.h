@@ -20,6 +20,7 @@ public:
         total_node_prop_size = 0;
         total_edge_prop_size = 0;
         rand_used = false;
+        bb_entry = NULL;
     }
     virtual ~gm_gps_beinfo() {
     }

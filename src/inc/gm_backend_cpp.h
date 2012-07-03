@@ -223,10 +223,10 @@ extern gm_cpp_gen CPP_BE;
 //---------------------------------------------------
 // (NOPS) for CPP/CPP_LIB
 //---------------------------------------------------
-static enum
+enum nop_enum_cpp
 {
     NOP_REDUCE_SCALAR = 1000,
-} nop_enum_cpp;
+};
 
 class nop_reduce_scalar : public ast_nop
 {

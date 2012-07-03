@@ -51,6 +51,8 @@ private:
 public:
     replace_upper_scope() {
         set_for_symtab(true);
+        old_scope = NULL;
+        new_scope = NULL;
     }
     void set_old_scope(gm_scope* g) {
         old_scope = g;

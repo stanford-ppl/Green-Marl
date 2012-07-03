@@ -53,7 +53,7 @@
 // Note. Same variable may have multiple WSET/RSET entries
 //-----------------------------------------------------------------
 
-static enum
+enum gm_range_type_t
 {
     GM_RANGE_LINEAR=0,     // G.Nodes or G.Edges
     GM_RANGE_RANDOM,     // G.Nbrs, ...  (or access via non-iterator variable)
@@ -62,7 +62,7 @@ static enum
     GM_RANGE_LEVEL_UP,   // BFS iteration, up level
     GM_RANGE_LEVEL_DOWN, // BFS iteration, down level
     GM_RANGE_INVALID,
-} gm_range_type_t;
+};
 
 static int gm_get_range_from_itertype(int itype) {
     switch (itype) {
@@ -141,6 +141,8 @@ public:
         reduce_op = GMREDUCE_NULL;
         access_range = GM_RANGE_SINGLE; // default is single access           
         mutate_direction = -1;
+        org_lhs = NULL;
+        is_supplement = false;
     }
 
     static gm_rwinfo* new_scala_inst(ast_id* loc, int reduce_op = GMREDUCE_NULL, gm_symtab_entry* bound_symbol = NULL, bool supple = false,

@@ -175,10 +175,10 @@ public:
 
 };
 
-static enum
+enum nop_enum_for_frontend
 {
     NOP_DUMMY_MARKER,
-} nop_enum_for_frontend;        // NOPs used in front-end
+};        // NOPs used in front-end
 
 class ast_temp_marker : public ast_nop
 {
