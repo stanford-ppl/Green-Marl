@@ -1,0 +1,17 @@
+// Test of BFS
+Procedure gps18(
+    G : Graph,
+    n : Node (G),
+    A,B,C,D : N_P <Float>(G))
+{
+
+    InBFS(v: G.Nodes From n) {
+
+        Foreach(t: v.UpNbrs) 
+            t.A += v.B;
+
+        Foreach(t: v.Nbrs) 
+            t.D += v.C;
+    }
+
+}
