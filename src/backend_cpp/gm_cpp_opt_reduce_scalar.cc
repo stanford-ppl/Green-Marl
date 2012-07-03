@@ -175,13 +175,13 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe) {
         const char* new_name = FE.voca_temp_name_and_add(e->getId()->get_genname(), "_prv");
 
         // add local variable at scope
-        gm_symtab_entry* thread_local;
+        gm_symtab_entry* local;
         if (gm_is_prim_type(e_type)) {
-            thread_local = gm_add_new_symbol_primtype(se, e_type, (char*) new_name);
+            local = gm_add_new_symbol_primtype(se, e_type, (char*) new_name);
         } else if (gm_is_node_compatible_type(e_type)) {
-            thread_local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_NODE, e->getType()->get_target_graph_sym(), (char*) new_name);
+            local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_NODE, e->getType()->get_target_graph_sym(), (char*) new_name);
         } else if (gm_is_edge_compatible_type(e_type)) {
-            thread_local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_EDGE, e->getType()->get_target_graph_sym(), (char*) new_name);
+            local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_EDGE, e->getType()->get_target_graph_sym(), (char*) new_name);
         } else {
             assert(false);
         }
@@ -189,19 +189,19 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe) {
         assert(symbol_map.find(e) == symbol_map.end());
 
         // save to symbol_map (for change_reduction_t)
-        symbol_map[e] = thread_local;
+        symbol_map[e] = local;
 
         if (is_supple) {
             std::list<gm_symtab_entry*> & L1 = old_supple_map[org_target];
             std::list<gm_symtab_entry*> & L2 = new_supple_map[org_target];
             L1.push_back(e);
-            L2.push_back(thread_local);
+            L2.push_back(local);
             //printf("%s is supplement LHS (%s)\n", e->getId()->get_genname(), org_target->getId()->get_genname());
         } else {
             // save to lists (for code-generation nop)
             assert(gm_is_strict_reduce_op(reduce_type));
             old_s.push_back(e);
-            new_s.push_back(thread_local);
+            new_s.push_back(local);
             reduce_op.push_back(reduce_type);
         }
 
@@ -214,7 +214,7 @@ void opt_scalar_reduction_t::apply_transform(ast_foreach* fe) {
             } else {
                 init_val = gm_new_bottom_symbol(reduce_type, expr_type);
             }
-            ast_assign* init_a = ast_assign::new_assign_scala(thread_local->getId()->copy(true), init_val, GMASSIGN_NORMAL);
+            ast_assign* init_a = ast_assign::new_assign_scala(local->getId()->copy(true), init_val, GMASSIGN_NORMAL);
 
             gm_add_sent_before(fe, init_a);
         }
