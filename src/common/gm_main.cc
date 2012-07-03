@@ -56,18 +56,24 @@ static void parse_stop_string() {
 
     char* d = strdup(c);
     char* p = strtok(d, ".");
-    if (p == NULL) return;
+    if (p == NULL) {
+        free(d);
+        return;
+    }
     gm_stop_major = atoi(p);
     p = strtok(NULL, ".");
     if (p != NULL) gm_stop_minor = atoi(p);
 
-    if (gm_stop_major == 0) return;
+    if (gm_stop_major == 0) {
+        free(d);
+        return;
+    }
     if (gm_stop_minor == 0) {
         printf("stopping after stage %d\n", gm_stop_major);
     } else {
         printf("stopping at stage %d.%d\n", gm_stop_major, gm_stop_minor);
     }
-    delete[] d;
+    free(d);
 }
 
 void gm_begin_major_compiler_stage(int major, const char* desc) {
