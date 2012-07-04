@@ -60,8 +60,8 @@ static struct GM_comp_args GM_compiler_options[] = { { GMARGFLAG_HELP, GMARG_NUL
 { GMARGFLAG_STOP_STRING, GMARG_STRING, "(For debug) Stop the compiler after certain stage. <string>=(step)[.(step)]", "0" },
 
 { GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For debug) When stopped, reproduce green-marl program", "1" }, { GMARGFLAG_PRINTRW, GMARG_BOOL,
-        "(For  debug) When stopped, print rw analysis information", "0" }, { GMARGFLAG_PRINTBB, GMARG_BOOL,
-        "(For  gps-debug) When stopped, print basicblock information", "0" },
+        "(For debug) When stopped, print rw analysis information", "0" }, { GMARGFLAG_PRINTBB, GMARG_BOOL,
+        "(For gps-debug) When stopped, print basicblock information", "0" },
 
 //{GMARGFLAG_DUMPIR, GMARG_BOOL, "(For internal debug) When stopped, dump IR tree", "0"},
 //{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},

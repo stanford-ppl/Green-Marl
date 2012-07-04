@@ -460,7 +460,7 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
         Body.NL();
         Body.pushln("public VertexData(double input) {");
     }
-    Body.pushln("// Assign input data if desired");
+    Body.pushln("// Assign input data to node property if desired");
     Body.pushln("}");
     Body.NL();
 
