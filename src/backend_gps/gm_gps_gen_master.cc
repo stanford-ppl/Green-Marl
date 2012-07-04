@@ -389,9 +389,9 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b) {
 
         if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
             sprintf(temp, "if (!_expression_result) %s%d=true; // reset is_first\n\n", GPS_INTRA_MERGE_IS_FIRST, b->get_id());
+            Body.pushln(temp);
         }
 
-        Body.pushln(temp);
 
     } else if ((type == GM_GPS_BBTYPE_PREPARE1) || (type == GM_GPS_BBTYPE_PREPARE2)) {
 

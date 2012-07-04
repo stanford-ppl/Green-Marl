@@ -11,8 +11,8 @@ Proc v_cover(G: Graph, select: E_P<Bool>) : Int
         Int max_val = 0;
         Node(G) from, to;
         Edge(G) e;
-        Foreach(s: G.Nodes)(!s.Covered) {
-            Foreach(t: s.Nbrs) {
+        Foreach(s: G.Nodes) {
+            Foreach(t: s.Nbrs)(!(s.Covered && t.Covered)) {
                 <max_val; from, to, e> max= <s.Deg + t.Deg; s, t, t.ToEdge()>;
             }
         }

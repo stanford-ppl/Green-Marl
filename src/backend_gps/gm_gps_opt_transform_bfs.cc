@@ -384,7 +384,8 @@ void gm_gps_rewrite_bfs(ast_bfs* b) {
 
     create_fw_iteration(sb, b, lev_sym, curr_sym, fin_sym);
 
-    create_bw_iteration(sb, b, lev_sym, curr_sym, fin_sym);
+    if (b->get_bbody() != NULL)
+        create_bw_iteration(sb, b, lev_sym, curr_sym, fin_sym);
 
     // replace bfs with sb
     

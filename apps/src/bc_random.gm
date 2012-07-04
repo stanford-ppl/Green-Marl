@@ -29,6 +29,8 @@ Procedure bc_random(G: Graph, BC: N_P<Float>, K:Int)
 
       v.BC += v.delta ; // accumulate BC
     }
+
+    k++;
   }
 }
 

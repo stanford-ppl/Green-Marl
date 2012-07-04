@@ -795,7 +795,7 @@ static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm
 static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body) {
     Body.pushln("@Override");
     Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
-    if (!info->is_single_message()) Body.pushln("byte m_type = IOB.get(_BA, _idx, 1).get();");
+    if (!info->is_single_message()) Body.pushln("byte m_type; IOB.get(_BA, _idx, 1); m_byte = _BA[_idx];");
     char str_buf[1024];
     MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
         int offset;
@@ -809,8 +809,13 @@ static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm
             Body.pushln("//empty message(dummy byte)");
             sz2 = 1;
         }
-        sprintf(str_buf, "IOB.get(_BA, _idx+%d, %d);", offset, sz2);
+        if (sz2 == 0) {
+            sprintf(str_buf, "//empty message");
+        } else {
+            sprintf(str_buf, "IOB.get(_BA, _idx+%d, %d);", offset, sz2);
+        }
         Body.pushln(str_buf);
+
         if (info->is_single_message())
             if (get_total_size(SYMS) == 0)
                 sprintf(str_buf, "return 1;");

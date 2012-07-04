@@ -100,15 +100,15 @@ def build_and_run_apps(apps_out_dir, run_apps):
     if run_apps:
         assert os.path.isfile(APPS_PATH+apps_out_dir+"/bin/graph_gen")
         os.chdir(APPS_PATH+apps_out_dir);
-        graph_res = commands.getstatusoutput("./bin/graph_gen 100000 800000 data/__regressions_graph__.bin 0");
+        graph_res = commands.getstatusoutput("./bin/graph_gen 10000 80000 data/__regressions_graph__.bin 0");
         assert graph_res[0] == 0;
         apps_names = get_apps_names(apps_out_dir);
         for app in apps_names:
             assert os.path.isfile(APPS_PATH+apps_out_dir+"/generated/"+app)
             assert os.path.isfile(APPS_PATH+apps_out_dir+"/bin/"+(re.split("\.", app)[0]));
-#            app_res = commands.getstatusoutput("./bin/"+(re.split("\.", app)[0])+" data/__regressions_graph__.bin 1");
-#            assert app_res[0] == 0;
-#            print "RES: "+app_res[1];
+            app_res = commands.getstatusoutput("./bin/"+(re.split("\.", app)[0])+" data/__regressions_graph__.bin 1");
+            assert app_res[0] == 0;
+            print "APP "+app+" RES: "+app_res[1];
             
             
 
