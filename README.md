@@ -286,7 +286,7 @@ Refer to [tutorial document](Green-Marl/blob/master/doc/tutorial.md) which provi
 program, to compile it, and to execute it.
 
 
-5 Generating GPS output
+5 Generating output for distributed graph analysis frameworks
 ====================================
 
 The usage model of the Green-Marl language is not restricted to the cache-coherent
@@ -296,31 +296,43 @@ compiled into another program that runs on a completely different target environ
 'gm_comp' can translate (a subset of) Green-Marl programs into Java codes
 that run on a Pregel[3]-like framework. Pregel[3] is a framework that enables
 distributed execution of graph algorithms that are written on its API.
-However, the way Pregel API is designed is far from the way graph algorithms are 
+However, the way Pregel API is designed is far from the way graph algorithms are
 normally designed; often the user should re-design his/her algorithm completely,
 in order to comply with the API.
 
 Green-Marl aims to solve this problem: the user can write his/her algorithm
 in a natural way, while the compiler automatically re-write the algorithm
-into the API.
+into the Pregel API.
 
 Currently, gm_comp can translate a certain subset of Green-Marl programs into
-GPS application; GPS is a custom replicate of Pregel[3] with a few enhancements.  
-This GPS back-end of gm_comp is still in early development stage.
+GPS or Giraph applications. GPS is a custom replicate of Pregel[3], developed at
+Stanford, with a few enhancements to the original Pregel model. Giraph is an
+open-source clone of Pregel running on Hadoop.
+This GPS and Giraph back-ends of gm_comp are still in early development stage.
 
-To see how gm_comp-GPS works, try following steps: 
+To see how gm_comp-GPS works, try following steps:
 
      cd $(top)/apps
-     make env=gps PROGS="gps_test gps_test2"
+     make env=gps PROGS="pagerank avg_teen_cnt"
      
      %%%% Now check the generated (java) files, and see that how differently they look
      %%%% to the C++ implementation.
-     cd $(top)/apps/output_gps/generate/
+     cd $(top)/apps/output_gps/generated/
      ls *.java
 
-Note that a simple Green-Marl code (e.g. gps_test.gm) are turned into a very
-complicated java class; all these methods are required to comply with
-Pregel(GPS) API.  The compiler automatically generates all these stuffs.
+And for gm_comp-Giraph:
+
+     cd $(top)/apps
+     make env=giraph PROGS="pagerank avg_teen_cnt"
+
+     cd $(top)/apps/output_giraph/generated/
+     ls *.java
+
+To run the generated Giraph code, follow [these instructions](https://cwiki.apache.org/confluence/display/GIRAPH/Quick+Start+Guide).
+
+Note that simple Green-Marl code (e.g. avg_teen_cnt.gm) is turned into a very
+complicated java class; all these methods are required to comply with the
+Pregel API.  The compiler automatically generates all these methods.
 
 
 6 License
