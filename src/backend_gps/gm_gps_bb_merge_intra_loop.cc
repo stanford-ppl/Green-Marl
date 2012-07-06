@@ -214,6 +214,7 @@ private:
 
                 gm_rwinfo_sets* rwi = NULL;
                 if (is_okay) {
+
                     // check dependency between p1 and s_n
                     rwi = new gm_rwinfo_sets();
                     gm_gps_get_rwinfo_from_bb(p1, rwi);
@@ -225,10 +226,19 @@ private:
 
 
                     if (is_okay && (s0 != NULL)) {
-                        // check dependency between s2 and s0
+                        /*
+                        printf("hello2\n");
+                        s0->print();
+                        p1->print();
+                        s1->print();
+                        p2->print();
+                        s2->print();
+
+                        // check dependency between sn and s0
                         gm_rwinfo_sets* rwi_0 = new gm_rwinfo_sets();  // s_0
                         gm_gps_get_rwinfo_from_bb(s0, rwi_0);
                         if (gm_has_dependency(rwi_0, rwi_n)) is_okay = false;
+                        if (is_okay) printf("hello3\n");
 
                         // check dependency between p2 and s0
                         gm_rwinfo_sets* rwi_pn = new gm_rwinfo_sets();  // s_0
@@ -237,6 +247,7 @@ private:
 
                         delete rwi_0;
                         delete rwi_pn;
+                        */
                     }
 
                     delete rwi_n;
