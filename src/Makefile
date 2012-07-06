@@ -54,7 +54,7 @@ SRCS2 =\
        gm_reduce_error_check.cc\
        gm_prepare_genname.cc\
        gm_replace_sym_access.cc\
-	   gm_flat_nested_sentblock.cc\
+       gm_flat_nested_sentblock.cc\
        gm_frontend.cc gm_rw_analysis.cc gm_rw_analysis_check2.cc \
        gm_handle_vardecl.cc  gm_fixup_bound_symbol.cc\
        gm_syntax_sugar.cc  \
@@ -127,7 +127,7 @@ SRCS2 =\
        gm_gps_new_check_edge_value.cc\
        gm_gps_new_check_random_write.cc\
        gm_gps_new_check_random_read.cc\
-	   gm_gps_new_rewrite_rhs.cc\
+       gm_gps_new_rewrite_rhs.cc\
        gm_giraph_gen.cc\
        gm_giraph_gen_master.cc\
        gm_giraph_gen_vertex.cc\
