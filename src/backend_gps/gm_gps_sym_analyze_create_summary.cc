@@ -34,7 +34,8 @@ public:
             if (symtab_type == GM_SYMTAB_ARG) {
                 syminfo->set_is_argument(true);
                 scalar.insert(sym);
-            } else if (syminfo->is_used_in_multiple_BB() && syminfo->is_scoped_global()) {
+            //} else if (syminfo->is_used_in_multiple_BB() && syminfo->is_scoped_global()) {
+            } else if (syminfo->is_scoped_global()) {
                 scalar.insert(sym);
             } else {
                 // temporary variables. can be ignored

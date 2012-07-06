@@ -150,7 +150,14 @@ void gm_gps_gen::do_generate_master_scalar() {
     for (I = scalar.begin(); I != scalar.end(); I++) {
         gm_symtab_entry *e = *I;
         gps_syminfo* syminfo = (gps_syminfo*) e->find_info(GPS_TAG_BB_USAGE);
-        if (!syminfo->is_used_in_master() && !syminfo->is_argument()) continue;
+
+        //printf("%s\n", e->getId()->get_genname());
+        if (!syminfo->is_used_in_master() && !syminfo->is_used_in_vertex() && !syminfo->is_argument()) {
+            //printf("%s is not used in master\n", e->getId()->get_genname());
+            continue;
+        }
+        //if (!syminfo->is_used_in_master() && !syminfo->is_argument()) continue;
+        //if (!syminfo->is_used_in_master() && !syminfo->is_used_in_vertex() && !syminfo->is_argument()) continue;
 
         sprintf(temp, "private %s %s;", get_type_string(e->getType(), true), e->getId()->get_genname());
         Body.pushln(temp);
@@ -198,7 +205,7 @@ void gm_gps_gen::do_generate_shared_variables_keys() {
 
         // if the symbol is used in vertex and master
         // we need shared variable
-        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && (syminfo->is_used_in_master() || syminfo->is_argument())) {
+        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && (syminfo->is_scoped_global())) {
             Body.push("private static final String ");
             Body.push(get_lib()->create_key_string(sym->getId()));
             Body.push(" = ");
