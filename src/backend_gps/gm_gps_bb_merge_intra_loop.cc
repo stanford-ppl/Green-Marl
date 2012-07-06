@@ -33,8 +33,8 @@ typedef gm_gps_basic_block gps_bb;
 //    - [PAR N] contains no send
 //    - [PAR 1/SEQ 1/SEQ0] does not modify any symbol that is used outside while loop (or arguments). 
 //    - There should be no dependency between SN and P1
-//    - There should be no dependency between S0 and PN
-//    - There should be no dependency between S0 and SN
+//    - There should be no dependency between S0 and P1
+//    - There should be no dependency between S0 and S1
 //
 // (3)
 //   <after merge>
@@ -233,21 +233,22 @@ private:
                         s1->print();
                         p2->print();
                         s2->print();
+                        */
 
-                        // check dependency between sn and s0
                         gm_rwinfo_sets* rwi_0 = new gm_rwinfo_sets();  // s_0
                         gm_gps_get_rwinfo_from_bb(s0, rwi_0);
-                        if (gm_has_dependency(rwi_0, rwi_n)) is_okay = false;
-                        if (is_okay) printf("hello3\n");
 
-                        // check dependency between p2 and s0
-                        gm_rwinfo_sets* rwi_pn = new gm_rwinfo_sets();  // s_0
-                        gm_gps_get_rwinfo_from_bb(p2, rwi_pn);
-                        if (gm_has_dependency(rwi_0, rwi_pn)) is_okay = false;
+                        
+                        // check dependency between s1 and s0
+                        gm_rwinfo_sets* rwi_s1 = new gm_rwinfo_sets();
+                        gm_gps_get_rwinfo_from_bb(s1, rwi_s1);
+                        if (gm_has_dependency(rwi_0, rwi_s1)) is_okay = false;
+
+                        // check dependency between p1 and s0
+                        if (gm_has_dependency(rwi_0, rwi)) is_okay = false;
 
                         delete rwi_0;
-                        delete rwi_pn;
-                        */
+                        delete rwi_s1;
                     }
 
                     delete rwi_n;
