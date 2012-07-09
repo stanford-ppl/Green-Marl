@@ -260,7 +260,7 @@ static void sort(edge_t begin_idx, edge_t end_idx, node_t* dest_array, edge_t* a
     } else {   // do quick sort
 
         // pivot and paritition
-        edge_t pivot_idx = (begin_idx + end_idx - 1) / 2;
+        edge_t pivot_idx = (end_idx - begin_idx - 1) / 2 + begin_idx;
         node_t pivot_value = dest_array[pivot_idx];
         swap(pivot_idx, end_idx - 1, dest_array, aux_array);
         edge_t store_idx = begin_idx;
@@ -446,12 +446,12 @@ bool gm_graph::store_binary(char* filename) {
     key = this->_numEdges;
     fwrite(&key, sizeof(edge_t), 1, f);
 
-    for (int i = 0; i < _numNodes + 1; i++) {
+    for (node_t i = 0; i < _numNodes + 1; i++) {
         key = this->begin[i];
         fwrite(&key, sizeof(edge_t), 1, f);
     }
 
-    for (int i = 0; i < _numEdges; i++) {
+    for (edge_t i = 0; i < _numEdges; i++) {
         key = this->node_idx[i];
         fwrite(&key, sizeof(node_t), 1, f);
     }
