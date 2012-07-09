@@ -38,7 +38,7 @@ static ast_sent* get_single_destination_sentence(ast_sent* s) {
         if (sb->get_sents().size() != 1) return NULL;  // no single sentence
         s = sb->get_sents().front();
     }
-    return false;
+    return NULL;
 }
 
 // return true if  sym is used inside e

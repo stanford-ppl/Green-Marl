@@ -3,14 +3,25 @@
 
 #include <stdio.h>
 #include <omp.h>
-#include <pthread.h>
 #include "gm_set.h"
 
-#define Spinlock 	pthread_spinlock_t
-#define lock(X) 	pthread_spin_lock(&X)
-#define unlock(X)	pthread_spin_unlock(&X)
-#define init(X)		pthread_spin_init(&X, 0)
-#define destroy(X)	pthread_spin_destroy(&X)
+#ifdef __APPLE__
+	#include <libkern/OSAtomic.h>
+
+	#define Spinlock 	OSSpinLock
+	#define lock(X) 	OSSpinLockLock(&X)
+	#define unlock(X)	OSSpinLockUnlock(&X)
+	#define init(X)		;
+	#define destroy(X)	;
+#else
+	#include <pthread.h>
+
+	#define Spinlock 	pthread_spinlock_t
+	#define lock(X) 	pthread_spin_lock(&X)
+	#define unlock(X)	pthread_spin_unlock(&X)
+	#define init(X)		pthread_spin_init(&X, 0)
+	#define destroy(X)	pthread_spin_destroy(&X)
+#endif
 
 class gm_complex_data_type
 {
