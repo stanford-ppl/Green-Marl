@@ -102,7 +102,7 @@ The compiler(gm_comp) and runtime(gm_graph) requires the following environments:
 
  * POSIX environment: linux or unix, (not tested with cygwin)
  * x86 instruction-set architecture (i386 or x86_64)
- * gcc (version >= 4.2), which supports OpenMP (tested on Mac OS with gcc 4.7.1 from MacPorts, Apple 4.2.1 does not work)
+ * gcc (version >= 4.2), which supports OpenMP (tested on Mac OS with gcc 4.7.1 from MacPorts, Apple's gcc 4.2.1 does not work)
  * g++ 
  * GNU flex and bison 
 
