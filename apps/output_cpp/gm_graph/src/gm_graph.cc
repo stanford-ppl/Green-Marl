@@ -468,7 +468,7 @@ bool gm_graph::load_binary(char* filename) {
     FILE *f = fopen(filename, "rb");
     if (f == NULL) {
         fprintf(stderr, "cannot open %s for reading\n", filename);
-        goto error_return;
+        goto error_return_noclose;
     }
 
     // write it 4B wise?
@@ -532,7 +532,8 @@ bool gm_graph::load_binary(char* filename) {
     _frozen = true;
     return true;
 
-    error_return: clear_graph();
+    error_return: fclose(f);
+    error_return_noclose: clear_graph();
     return false;
 }
 
