@@ -104,7 +104,7 @@ private:
 };
 
 bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType) {
-if(sourceType == 209) sourceType = GMTYPE_NSET;
+
     gm_builtin_def* builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname());
 
     if (builtinDef == NULL) {
@@ -139,6 +139,19 @@ if(sourceType == 209) sourceType = GMTYPE_NSET;
 
 bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
     int sourceType = builtinExpr->get_source_type();
+    switch(sourceType) {
+        case GMTYPE_PROPERTYITER_SET:
+            sourceType = GMTYPE_NSET;
+            break;
+        case GMTYPE_PROPERTYITER_SEQ:
+            sourceType = GMTYPE_NSEQ;
+            break;
+        case GMTYPE_PROPERTYITER_ORDER:
+            sourceType = GMTYPE_NORDER;
+            break;
+        default:
+            break;
+    }
     return set_and_check_builtin_definition(builtinExpr, sourceType);
 }
 
