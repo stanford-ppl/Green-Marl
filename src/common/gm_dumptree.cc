@@ -177,6 +177,15 @@ void ast_expr::dump_tree(int ind_level) {
             //id1->dump_tree(0);
             //printf(".%s()]",get_builtin_call());
             return;
+        case GMEXPR_NIL:
+        case GMEXPR_BIOP:
+        case GMEXPR_LBIOP:
+        case GMEXPR_COMP:
+        case GMEXPR_REDUCE:
+        case GMEXPR_BUILTIN_FIELD:
+        case GMEXPR_FOREIGN:
+            //TODO add some print statements for these?
+            return;
     }
     const char* opstr = gm_get_op_string(op_type);
 
