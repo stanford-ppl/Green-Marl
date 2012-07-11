@@ -167,8 +167,8 @@
            |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            |  T_NORDER                { $$ = GM_settype_ref(GMTYPE_NORDER, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            
-           |  T_QUEUE '('  id ')'	  { $$ = GM_settype_ref(GMTYPE_QUEUE, $3); 	  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-           |  T_QUEUE 				  { $$ = GM_settype_ref(GMTYPE_QUEUE, NULL);  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_QUEUE '<' set_type '>' '(' id ')'	  { $$ = GM_queuetype_ref($3, $6); 	  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_QUEUE '<' set_type '>' 				  { $$ = GM_queuetype_ref($3, NULL);  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            
 
   property : T_NODEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}

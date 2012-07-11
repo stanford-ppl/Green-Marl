@@ -439,6 +439,20 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
 
 void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
     ast_typedecl* t = v->get_type();
+
+    if (t->is_queue()) {
+        Body.push(get_type_string(t));
+        ast_typedecl* targetType = t->get_target_type();
+        Body.push('<');
+        Body.push(get_type_string(t->getTargetTypeSummary()));
+        Body.push("> ");
+        ast_idlist* idl = v->get_idlist();
+        assert(idl->get_length() == 1);
+        generate_lhs_id(idl->get_item(0));
+        get_lib()->add_collection_def(idl->get_item(0));
+        return;
+    }
+
     Body.push_spc(get_type_string(t));
 
     if (t->is_property()) {
@@ -455,7 +469,6 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
         generate_idlist(v->get_idlist());
         Body.pushln(";");
     }
-    return;
 }
 
 void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
