@@ -18,6 +18,7 @@ enum GMTYPE_T
     GMTYPE_ESET,
     GMTYPE_ESEQ,
     GMTYPE_EORDER,
+    GMTYPE_QUEUE,
 
     // iterators
     GMTYPE_NODEITER_ALL = 100,
@@ -279,6 +280,10 @@ inline static bool gm_is_sequence_collection_type(int i) {
 
 inline static bool gm_is_collection_type(int i) {
     return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i);
+}
+
+inline static bool gm_is_queue_type(int type) {
+    return type == GMTYPE_QUEUE;
 }
 
 inline static bool gm_is_sequential_collection_type(int i) {

@@ -768,6 +768,10 @@ public:
         return gm_is_collection_type(type_id);
     }
 
+    bool is_queue() {
+        return gm_is_queue_type(type_id);
+    }
+
     bool is_node_collection() {
         return gm_is_node_collection_type(type_id);
     }

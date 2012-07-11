@@ -97,6 +97,7 @@ ALPHANUM    [a-zA-Z][a-zA-Z0-9_]*
 "Node_Seq"      {MarkToken(); return T_NSEQ;}
 "Node_Sequence" {MarkToken(); return T_NSEQ;}
 "N_Q"      {MarkToken(); return T_NSEQ;}
+"Queue"		{MarkToken(); return T_QUEUE;}
 "Int" {MarkToken(); return T_INT;}
 "Long" {MarkToken(); return T_LONG;}
 "Float" {MarkToken(); return T_FLOAT;}
