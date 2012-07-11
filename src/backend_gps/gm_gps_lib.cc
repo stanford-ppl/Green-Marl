@@ -795,7 +795,7 @@ static void generate_message_class_read2(gm_gpslib* lib, gm_gps_beinfo* info, gm
 static void generate_message_class_read3(gm_gpslib* lib, gm_gps_beinfo* info, gm_code_writer& Body) {
     Body.pushln("@Override");
     Body.pushln("public int read(IoBuffer IOB, byte[] _BA, int _idx) {");
-    if (!info->is_single_message()) Body.pushln("byte m_type; IOB.get(_BA, _idx, 1); m_byte = _BA[_idx];");
+    if (!info->is_single_message()) Body.pushln("byte m_type; IOB.get(_BA, _idx, 1); m_type = _BA[_idx];");
     char str_buf[1024];
     MESSAGE_PER_TYPE_LOOP_BEGIN(info, SYMS, str_buf)
         int offset;
