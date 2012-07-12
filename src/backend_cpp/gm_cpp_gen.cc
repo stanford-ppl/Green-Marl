@@ -443,7 +443,7 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
     if (t->is_queue()) {
         Body.push(get_type_string(t));
         ast_typedecl* targetType = t->get_target_type();
-        Body.push('<');
+        Body.push("<");
         Body.push(get_type_string(t->getTargetTypeSummary()));
         Body.push("> ");
         ast_idlist* idl = v->get_idlist();

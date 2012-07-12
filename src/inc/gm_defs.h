@@ -314,14 +314,19 @@ inline int gm_get_natural_collection_iterator(int src_type) {
 // return true if this type has a target graph
 inline bool gm_has_target_graph_type(int t) {
     return gm_is_node_edge_compatible_type(t) || // any node-edge iterator (including collection iterator)
-            gm_is_collection_type(t);
+            gm_is_collection_type(t) || gm_is_queue_type(t);
 }
 
 inline static bool gm_is_same_type(int i1, int i2) {
     return (i1 == i2);
 }
+
 inline static bool gm_is_same_node_or_edge_compatible_type(int i1, int i2) {
     return (gm_is_node_compatible_type(i1) && gm_is_node_compatible_type(i2)) || (gm_is_edge_compatible_type(i1) && gm_is_edge_compatible_type(i2));
+}
+
+inline static bool gm_collection_of_collection_compatible_type(int def_src, int source_type) {
+    return gm_is_order_collection_type(def_src) && gm_is_queue_type(source_type);
 }
 
 enum GM_OPS_T

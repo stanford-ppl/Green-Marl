@@ -270,7 +270,7 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e) {
 }
 
 bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
-int x = 123;
+
     bool okay = true;
 
     std::list<ast_expr*>& args = b->get_args();

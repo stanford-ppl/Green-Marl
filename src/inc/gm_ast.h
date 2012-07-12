@@ -886,7 +886,7 @@ public:
             assert(target_collection->getTypeInfo() != NULL);
             assert(target_collection->getTypeInfo()->get_target_graph_sym() != NULL);
             return target_collection->getTypeInfo()->get_target_graph_sym();
-        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator()) {
+        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator() || is_queue()) {
             assert(target_graph != NULL);
             assert(target_graph->getSymInfo() != NULL);
             return target_graph->getSymInfo();

@@ -105,7 +105,7 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
         else if (t->is_edge_collection())
             Body->push("."NUM_EDGES"()");
         else if (t->is_queue())
-            Body->push("100"); //TODO
+            Body->push("100"); //TODO what could be an appropriate initial value?
         else
             assert(false);
     }
