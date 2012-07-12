@@ -254,7 +254,7 @@ public:
         return false;
     }
 
-    inline bool add_next_local_q(node_t n, int tid, indlong_t& cnt) {
+    inline bool add_next_local_q(node_t n, int tid, int32_t& cnt) {
         assert(n < num_nodes);
         assert(tid < num_threads);
         if (!_gm_get_bit(visited, n)) {
@@ -268,7 +268,7 @@ public:
     }
 
     // under parallel execution
-    inline bool add_next_level(node_t n, indlong_t& cnt) {
+    inline bool add_next_level(node_t n, int32_t& cnt) {
         assert(n < num_nodes);
         if (!_gm_get_bit(visited, n)) {
             if (_gm_set_bit_atomic(visited, n)) {
@@ -279,14 +279,14 @@ public:
         }
         return false;
     }
-    inline void copy_local_q(int tid, indlong_t local_cnt) {
+    inline void copy_local_q(int tid, int32_t local_cnt) {
         assert(tid < num_threads);
         int idx = __sync_fetch_and_add(&cnt_next, local_cnt);
         memcpy(&(next_Q[idx]), local_Q[tid], local_cnt * sizeof(node_t));
     }
 
     // under parallel execution
-    inline void increase_next_count(int tid, indlong_t local_cnt) {
+    inline void increase_next_count(int tid, int32_t local_cnt) {
         assert(tid < num_threads);
         __sync_fetch_and_add(&cnt_next, local_cnt);
     }
@@ -335,14 +335,14 @@ public:
     static const int THRESHOLD2 = 4096;
     node_t num_nodes;
     edge_t num_edges;
-    indlong_t BIT_END;
+    int32_t BIT_END;
     int state;
     unsigned char* visited;
     node_t* next_Q;
     node_t* curr_Q;
     unsigned short* level;
-    indlong_t cnt_curr;
-    indlong_t cnt_next;
+    int32_t cnt_curr;
+    int32_t cnt_next;
     bool is_finished;
     int curr_level;
     static const int ST_SEQ = 0;
@@ -357,7 +357,7 @@ public:
 
     node_t num_nodes_pre;
     edge_t num_edges_pre;
-    indlong_t num_threads_pre;
+    int32_t num_threads_pre;
 
 };
 
@@ -377,7 +377,7 @@ public:
         delete[] bitmap;
     }
 
-    void set_size(indlong_t s) {
+    void set_size(int32_t s) {
         if (s > max_sz) {
             BIT_END = (s + 7) / 8;
             delete[] bitmap;
@@ -398,7 +398,7 @@ public:
         curr_sz = 0;
     }
 
-    bool is_in(indlong_t t) {
+    bool is_in(int32_t t) {
         if (is_small) {
             for (int i = 0; i < small_ptr; i++)
                 if (small_v[i] == t) return true;
@@ -416,7 +416,7 @@ public:
             _gm_set_bit(bitmap, small_v[i]);
     }
 
-    void add(indlong_t t) {
+    void add(int32_t t) {
         if (is_in(t)) return;
         if (!is_small) {
             _gm_set_bit(bitmap, t);
@@ -440,7 +440,7 @@ public:
     int max_sz;
     int small_ptr;
     bool is_small;
-    std::vector<indlong_t> small_v;
+    std::vector<int32_t> small_v;
     unsigned char *bitmap;
 };
 
@@ -498,15 +498,15 @@ private:
     inline void initialize(bool use_parallel = false) {
         if (use_parallel) {
 #pragma omp parallel for
-            for (indlong_t i = 0; i < BIT_END; i++)
+            for (int32_t i = 0; i < BIT_END; i++)
                 visited[i] = 0;
         } else {
-            for (indlong_t i = 0; i < BIT_END; i++)
+            for (int32_t i = 0; i < BIT_END; i++)
                 visited[i] = 0;
         }
 
         /*
-         for(indlong_t i =0; i < SMALL_SZ; i++)
+         for(int32_t i =0; i < SMALL_SZ; i++)
          _gm_set_bit(visited, small_set[i])  ;
          */
     }
@@ -584,12 +584,12 @@ private:
 public:
     node_t num_nodes_pre;
     node_t num_nodes;
-    indlong_t BIT_END;
+    int32_t BIT_END;
     std::vector<_dfs_pair> context;
     std::vector<node_t> small_set;
-    indlong_t small_set_ptr;
+    int32_t small_set_ptr;
     bool is_small;
-    indlong_t ptr;
+    int32_t ptr;
     unsigned char* visited;
 };
 

@@ -14,6 +14,4 @@ typedef int32_t edge_t;
 typedef int32_t node_t;
 #endif
 
-typedef int32_t indlong_t;
-
 #endif
