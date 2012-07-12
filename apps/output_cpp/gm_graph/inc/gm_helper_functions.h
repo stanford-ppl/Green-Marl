@@ -18,8 +18,6 @@
 #endif
 #endif
 
-typedef int32_t indlong_t;
-
 extern void _gm_init_locktable();
 extern void _gm_lock_addr(void*p);
 extern void _gm_lock_addrs(void*p[], int cnt);
@@ -222,11 +220,11 @@ public:
     inline void set_num_threads(int p) {
         num_threads_pre = p;
     }
-    inline indlong_t get_num_nodes() {
+    inline node_t get_num_nodes() {
         return num_nodes;
     }
 
-    inline void set_num_nodes(indlong_t n, indlong_t m = 0) {
+    inline void set_num_nodes(node_t n, edge_t m = 0) {
         num_nodes_pre = n;
         num_edges_pre = m;
         prepare();
@@ -335,8 +333,8 @@ public:
 public:
     static const int THRESHOLD1 = 128;
     static const int THRESHOLD2 = 4096;
-    indlong_t num_nodes;
-    indlong_t num_edges;
+    node_t num_nodes;
+    edge_t num_edges;
     indlong_t BIT_END;
     int state;
     unsigned char* visited;
@@ -357,8 +355,8 @@ public:
     node_t** local_Q;
     unsigned char* marker;
 
-    indlong_t num_nodes_pre;
-    indlong_t num_edges_pre;
+    node_t num_nodes_pre;
+    edge_t num_edges_pre;
     indlong_t num_threads_pre;
 
 };
@@ -449,8 +447,8 @@ public:
 // for temporary?
 struct _dfs_pair
 {
-    indlong_t node;
-    indlong_t edge;
+    node_t node;
+    edge_t edge;
 };
 class _dfs_helper
 {
@@ -471,7 +469,7 @@ public:
         //context.clear();
     }
 
-    inline void set_num_nodes(indlong_t n) {
+    inline void set_num_nodes(node_t n) {
         num_nodes_pre = n;
         prepare();
     }
@@ -523,7 +521,7 @@ private:
         delete[] visited;
     }
 public:
-    inline bool has_visited(indlong_t v) {
+    inline bool has_visited(node_t v) {
         if (is_small) {
             for (int i = 0; i < small_set_ptr; i++) {
                 if (small_set[i] == v) return true;
@@ -544,7 +542,7 @@ public:
     //      -> is visited?
     //      -> end iterate ==> (post())  end_visiting POP
     //------------------------------------
-    inline void start_visiting(indlong_t v) {
+    inline void start_visiting(node_t v) {
         _dfs_pair P;
         P.node = v;
         P.edge = 0;
@@ -573,19 +571,19 @@ public:
         P.edge++;
     }
 
-    inline bool end_visiting(indlong_t v) {
+    inline bool end_visiting(node_t v) {
         ptr--;
         return is_finished();
     }
 
 public:
-    indlong_t curr_node;
-    indlong_t curr_idx;
+    node_t curr_node;
+    edge_t curr_idx;
 
 private:
 public:
-    indlong_t num_nodes_pre;
-    indlong_t num_nodes;
+    node_t num_nodes_pre;
+    node_t num_nodes;
     indlong_t BIT_END;
     std::vector<_dfs_pair> context;
     std::vector<node_t> small_set;

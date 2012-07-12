@@ -363,8 +363,9 @@ void gm_graph::delete_frozen_graph() {
     delete[] e_id2idx;
     delete[] e_idx2id;
 
-    node_idx = begin = node_idx_src = NULL;
-    r_node_idx = r_begin = r_node_idx_src = NULL;
+    begin = r_begin = NULL;
+    node_idx = node_idx_src = NULL;
+    r_node_idx = r_node_idx_src = NULL;
     e_id2idx = e_idx2id = NULL;
 }
 

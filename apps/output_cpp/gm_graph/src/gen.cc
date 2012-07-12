@@ -5,11 +5,11 @@
 #include <assert.h>
 #include <sys/time.h>
 
-gm_graph* create_uniform_random_graph(indlong_t N, indlong_t M, long seed);
-gm_graph* create_uniform_random_graph2(indlong_t N, indlong_t M, long seed);
+gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed);
+gm_graph* create_uniform_random_graph2(node_t N, edge_t M, long seed);
 
 /*
- gm_graph* create_RMAT_graph(indlong_t N, indlong_t M, int rseed=2387, bool need_gackedge = true, double a=0.45, double b=0.25, double c=0.15, bool permute=true);
+ gm_graph* create_RMAT_graph(node_t N, edge_t M, int rseed=2387, bool need_gackedge = true, double a=0.45, double b=0.25, double c=0.15, bool permute=true);
  */
 
 bool test_backedge(gm_graph* g) {
