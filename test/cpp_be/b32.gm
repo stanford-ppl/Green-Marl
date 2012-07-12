@@ -1,0 +1,14 @@
+Procedure test_collection_of_collection_functions(G:Graph)
+{
+    Queue<N_S> c1;
+    Queue<Node_Sequence> c2;
+    Queue<N_O> c3;
+    
+    c1.PopBack();
+  	//c1.PopFront();
+    c2.PopBack();
+    //c2.PopFront();
+    c3.PopBack();
+    //c3.PopFront();
+
+}
