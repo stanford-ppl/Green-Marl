@@ -18,7 +18,6 @@
 #endif
 #endif
 
-typedef int32_t node_t;
 typedef int32_t indlong_t;
 
 extern void _gm_init_locktable();
