@@ -205,6 +205,6 @@ private:
 
 typedef gm_order<node_t> gm_node_order;
 typedef gm_order<edge_t> gm_edge_order;
-#define gm_collection gm_order
+
 
 #endif

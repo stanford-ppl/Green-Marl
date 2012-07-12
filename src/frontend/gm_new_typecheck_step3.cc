@@ -273,6 +273,8 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
 
     bool okay = true;
 
+    if(gm_is_queue_type(b->get_source_type())) return true; //TODO check argument types
+
     std::list<ast_expr*>& args = b->get_args();
     std::list<ast_expr*>::iterator iter;
     gm_builtin_def* def = b->get_builtin_def();

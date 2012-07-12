@@ -105,11 +105,11 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
         else if (t->is_edge_collection())
             Body->push("."NUM_EDGES"()");
         else if (t->is_queue())
-            Body->push("100"); //TODO what could be an appropriate initial value?
+            assert(true);
         else
             assert(false);
     }
-    if (t->is_order_collection() || t->is_queue()) Body->push(", ");
+    if (t->is_order_collection()) Body->push(", ");
 
     if (t->is_order_collection() || t->is_sequence_collection() || t->is_queue()) {
         Body->push(MAX_THREADS"()");
