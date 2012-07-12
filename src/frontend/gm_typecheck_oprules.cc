@@ -74,6 +74,7 @@ static void init_op_rules() {
 
     NEW_RULE(ASSIGN_OP, T_NUMERIC_INF, T_NUMERIC_INF, RESULT_LEFT, COERCION_RIGHT);
     NEW_RULE(ASSIGN_OP, T_COMPATIBLE, T_COMPATIBLE, RESULT_LEFT, COERCION_RIGHT);
+
 }
 ;
 void gm_frontend::init_op_type_rules() {

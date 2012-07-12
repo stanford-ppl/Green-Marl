@@ -269,11 +269,27 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e) {
     return true;
 }
 
+static bool gm_is_compatible_type_collection_of_collection(int shouldbeType, int currentType, int methodId) {
+    //TODO find better way to do this
+    switch (methodId) {
+        case GM_BLTIN_SET_ADD:
+        case GM_BLTIN_SET_ADD_BACK:
+            return shouldbeType == currentType;
+        case GM_BLTIN_SET_REMOVE:
+        case GM_BLTIN_SET_REMOVE_BACK:
+        case GM_BLTIN_SET_SIZE:
+            return true;
+        default:
+            assert(false);
+            return false;
+    }
+
+    return true;
+}
+
 bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
 
     bool okay = true;
-
-    if(gm_is_queue_type(b->get_source_type())) return true; //TODO check argument types
 
     std::list<ast_expr*>& args = b->get_args();
     std::list<ast_expr*>::iterator iter;
@@ -289,7 +305,11 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
         }
         bool warning;
         int coerced_type;
-        bool isCompatible = gm_is_compatible_type_for_assign(def_type, currentType, coerced_type, warning);
+        bool isCompatible;
+        if (gm_is_queue_type(b->get_source_type()))
+            isCompatible = gm_is_compatible_type_collection_of_collection(b->get_driver()->getTargetTypeSummary(), currentType, def->get_method_id());
+        else
+            isCompatible = gm_is_compatible_type_for_assign(def_type, currentType, coerced_type, warning);
         if (!isCompatible) {
             char temp[20];
             sprintf(temp, "%d", position + 1);
@@ -314,8 +334,7 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
     if (gm_has_target_graph_type(fun_ret_type)) {
         if (b->get_driver()->getTypeInfo()->is_graph()) {
             b->set_bound_graph(b->get_driver()->getSymInfo());
-        }
-        else 
+        } else
             b->set_bound_graph(b->get_driver()->getTypeInfo()->get_target_graph_sym());
         //assert(false); // to be done
     }

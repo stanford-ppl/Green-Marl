@@ -1,0 +1,6 @@
+Procedure test_collection_of_collection_method_types(G:Graph)
+{
+    Queue<N_S> c;
+    N_O o;
+    c.PushBack(o); //type error
+}
