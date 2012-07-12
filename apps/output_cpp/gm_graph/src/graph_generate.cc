@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <sys/time.h>
 
+#define GM_NODE64 // always generate graphs with 64 bit ints
 #include "gm_graph.h"
 
 gm_graph* create_uniform_random_graph(indlong_t N, indlong_t M, long seed) {
