@@ -48,8 +48,8 @@ int main(int argc, char** argv) {
         exit(0);
     }
 
-    int N = atoi(argv[1]);
-    int M = atoi(argv[2]);
+    node_t N = atol(argv[1]);
+    edge_t M = atol(argv[2]);
     int gtype = atoi(argv[4]);
 
     gm_graph* g;
