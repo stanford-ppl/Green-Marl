@@ -302,6 +302,9 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     sprintf(str_buf, ",%s)", i->get_genname());
                     Body.push(str_buf);
                     break;
+                case GM_BLTIN_NODE_RAND_NBR:
+                    Body.push("//pick random neighbor");
+                    break;
                 default:
                     assert(false);
                     break;
