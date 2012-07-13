@@ -3,7 +3,7 @@ AR= ar
 LIBDIR = ../lib
 BINDIR = ../../bin
 INCDIR = ../inc
-CFLAGS = -O3 -g  -I$(INCDIR) -fopenmp 
+CFLAGS = -O3 -g -I$(INCDIR) -fopenmp -Wall
 OUT = $(BINDIR)/graph_gen $(LIBDIR)/libgmgraph.a
 
 ifdef ORACLE
