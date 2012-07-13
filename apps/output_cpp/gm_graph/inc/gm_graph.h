@@ -183,6 +183,19 @@ public:
 
     void clear_graph();                         // invalidate everything and make the graph empty
 
+    //returns one of the outgoing neighbors of 'node' - by random choice
+    // if 'node' does not have a neighbor, 'node' is returned
+    node_t pick_random_out_neighbor(node_t node) {
+        edge_t outCount = 0;//TODO get_num_edges(node);
+        if(outCount == 0) return node;
+
+        edge_t lowestPos = 0; //TODO
+        edge_t randomValue = 0; //TODO
+        edge_t randomEdge = 0; //TODO
+
+        return 0;
+    }
+
 private:
 
     void delete_frozen_graph();
