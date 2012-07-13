@@ -114,9 +114,9 @@ def build_and_run_apps(apps_out_dir, run_apps):
 
 os.putenv("env", "gps");
 build_and_run_apps("output_gps", False);
-os.putenv("env", "cpp_omp");
-build_and_run_apps("output_cpp", True);
 os.putenv("env", "cpp_seq");
+build_and_run_apps("output_cpp", True);
+os.putenv("env", "cpp_omp");
 build_and_run_apps("output_cpp", True);
 
 

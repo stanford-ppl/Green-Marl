@@ -24,6 +24,6 @@
       ___result; \
     })
 
-#endif
-
 #define _gm_pause() asm volatile ("pause" ::: "memory")
+
+#endif
