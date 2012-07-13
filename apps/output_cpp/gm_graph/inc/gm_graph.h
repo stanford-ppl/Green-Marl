@@ -196,6 +196,10 @@ public:
         return 0;
     }
 
+    node_t pick_random_node() {
+        return 0; //TODO
+    }
+
 private:
 
     void delete_frozen_graph();
