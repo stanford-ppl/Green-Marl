@@ -160,7 +160,7 @@ protected:
     }
 
     ast_node() :
-            nodetype(AST_END), parent(NULL), line(0), col(0), sym_vars(NULL), sym_procs(NULL), sym_fields(NULL)  {
+            nodetype(AST_END), parent(NULL), line(0), col(0), sym_vars(NULL), sym_procs(NULL), sym_fields(NULL) {
     }
 
     AST_NODE_TYPE nodetype;
@@ -570,7 +570,8 @@ class ast_typedecl: public ast_node
 {  // property or type
 private:
     ast_typedecl() :
-            ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), target_collection(NULL), target_nbr(NULL), target_nbr2(NULL), _well_defined(false), type_id(0) {
+            ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), target_collection(NULL), target_nbr(NULL), target_nbr2(NULL), _well_defined(false), type_id(
+                    0) {
     }
 
 public:
@@ -666,6 +667,16 @@ public:
         t->target_graph = tg;
         tg->set_parent(t);
         return t;
+    }
+
+    static ast_typedecl* new_queue(ast_id* targetGraph, ast_typedecl* collectionType) {
+        ast_typedecl* typeDecl = new ast_typedecl();
+        typeDecl->type_id = GMTYPE_QUEUE;
+        typeDecl->target_type = collectionType;
+        if (targetGraph == NULL) return typeDecl; //no graph defined for this queue - we will handle this later (typecheck step 1)
+        typeDecl->target_graph = targetGraph;
+        targetGraph->set_parent(typeDecl);
+        return typeDecl;
     }
 
     static ast_typedecl* new_set_iterator(ast_id* set, int iter_type) {
@@ -766,6 +777,10 @@ public:
 
     bool is_collection() {
         return gm_is_collection_type(type_id);
+    }
+
+    bool is_queue() {
+        return gm_is_queue_type(type_id);
     }
 
     bool is_node_collection() {
@@ -871,7 +886,7 @@ public:
             assert(target_collection->getTypeInfo() != NULL);
             assert(target_collection->getTypeInfo()->get_target_graph_sym() != NULL);
             return target_collection->getTypeInfo()->get_target_graph_sym();
-        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator()) {
+        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator() || is_queue()) {
             assert(target_graph != NULL);
             assert(target_graph->getSymInfo() != NULL);
             return target_graph->getSymInfo();
@@ -916,7 +931,7 @@ public:
     }
 
     int getTargetTypeSummary() {
-        assert(is_property());
+        assert(is_property() || is_queue());
         assert(target_type != NULL);
         return target_type->getTypeSummary();
     }

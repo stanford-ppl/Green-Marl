@@ -1,0 +1,7 @@
+Procedure test_has_edge_to(G:Graph)
+{
+    Node n;
+    Node m;
+    Bool b1 = n.IsNbrFrom(m);
+    Bool b2 = n.HasEdgeTo(m);
+}

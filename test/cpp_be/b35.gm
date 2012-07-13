@@ -1,0 +1,5 @@
+Procedure test_pickrandomnbr(G:Graph)
+{
+    Node n;
+    Node m = n.PickRandomNbr();
+}

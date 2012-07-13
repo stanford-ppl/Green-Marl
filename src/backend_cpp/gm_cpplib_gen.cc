@@ -62,6 +62,8 @@ const char* gm_cpplib::get_type_string(int type) {
             assert(false);
             return "ERROR";
         }
+    } else if (gm_is_queue_type(type)) {
+        return QUEUE_T;
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));
         assert(false);
@@ -94,20 +96,22 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     Body->push("(");
 
     ast_typedecl* t = i->getTypeInfo();
-    if (t->is_set_collection() || t->is_order_collection()) {
+    if (t->is_set_collection() || t->is_order_collection() || t->is_queue()) {
         // total size;
         assert(t->get_target_graph_id() != NULL);
-        Body->push(t->get_target_graph_id()->get_genname());
+        if (!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
         if (t->is_node_collection())
             Body->push("."NUM_NODES"()");
         else if (t->is_edge_collection())
             Body->push("."NUM_EDGES"()");
+        else if (t->is_queue())
+            assert(true);
         else
             assert(false);
     }
     if (t->is_order_collection()) Body->push(", ");
 
-    if ((t->is_order_collection() || t->is_sequence_collection())) {
+    if (t->is_order_collection() || t->is_sequence_collection() || t->is_queue()) {
         Body->push(MAX_THREADS"()");
     }
 
@@ -288,6 +292,19 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     Body.push(str_buf);
                     main->generate_expr(e->get_args().front());
                     sprintf(str_buf, ",%s)", i->get_genname());
+                    Body.push(str_buf);
+                    break;
+                case GM_BLTIN_NODE_HAS_EDGE_TO:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
+                    sprintf(str_buf, "%s.has_edge_to(", i->getTypeInfo()->get_target_graph_id()->get_genname());
+                    Body.push(str_buf);
+                    main->generate_expr(e->get_args().front());
+                    sprintf(str_buf, ",%s)", i->get_genname());
+                    Body.push(str_buf);
+                    break;
+                case GM_BLTIN_NODE_RAND_NBR:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
+                    sprintf(str_buf, "%s.pick_random_out_neighbor(%s)", i->getTypeInfo()->get_target_graph_id()->get_genname(), i->get_genname());
                     Body.push(str_buf);
                     break;
                 default:

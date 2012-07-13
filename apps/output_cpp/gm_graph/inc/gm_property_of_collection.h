@@ -61,7 +61,7 @@ private:
 public:
 
     gm_property_of_collection_impl(int size) :
-            size(size) {
+            size(size), locks(NULL) {
 
         data = new T*[size];
         #pragma omp parallel for
