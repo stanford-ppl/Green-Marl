@@ -37,6 +37,8 @@ enum gm_method_id_t
     GM_BLTIN_NODE_IN_DEGREE,    // in-degree of a node
     GM_BLTIN_NODE_TO_EDGE,      // edge to that node-iterator
     GM_BLTIN_NODE_IS_NBR,       // check if the node should be 
+    GM_BLTIN_NODE_HAS_EDGE_TO,   // check if a node has an outgoing edge to other node
+
 
     GM_BLTIN_EDGE_FROM,        // source node of an edge
     GM_BLTIN_EDGE_TO,          // destination 
@@ -71,13 +73,16 @@ const gm_builtin_desc_t GM_builtins[] = {
 //    ! at source type means that it requires strict type
 // builtin id
 // additional info
-        { "Graph:NumNodes:Int:0", GM_BLTIN_GRAPH_NUM_NODES, "" }, { "Graph:NumEdges:Int:0", GM_BLTIN_GRAPH_NUM_EDGES, "" }, 
-        { "Graph:PickRandom:Node:0", GM_BLTIN_GRAPH_RAND_NODE, "" }, 
+        { "Graph:NumNodes:Int:0", GM_BLTIN_GRAPH_NUM_NODES, "" }, { "Graph:NumEdges:Int:0", GM_BLTIN_GRAPH_NUM_EDGES, "" }, { "Graph:PickRandom:Node:0",
+                GM_BLTIN_GRAPH_RAND_NODE, "" },
 
         { "Node:NumNbrs:Int:0", GM_BLTIN_NODE_DEGREE, "" }, { "*NumOutNbrs", GM_BLTIN_NODE_DEGREE, "" },   // * means synonym to previous
-        { "*Degree", GM_BLTIN_NODE_DEGREE, "" }, { "*OutDegree", GM_BLTIN_NODE_DEGREE, "" }, { "Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE,
-                AUX_INFO(GM_BLTIN_INFO_USE_REVERSE,GM_BLTIN_FLAG_TRUE) }, { "*InDegree", GM_BLTIN_NODE_IN_DEGREE, "" }, { "Node:IsNbrFrom:Bool:1:Node",
-                GM_BLTIN_NODE_IS_NBR, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE) },
+        { "*Degree", GM_BLTIN_NODE_DEGREE, "" },
+        { "*OutDegree", GM_BLTIN_NODE_DEGREE, "" },
+        { "Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE, AUX_INFO(GM_BLTIN_INFO_USE_REVERSE,GM_BLTIN_FLAG_TRUE) },
+        { "*InDegree", GM_BLTIN_NODE_IN_DEGREE, "" },
+        { "Node:IsNbrFrom:Bool:1:Node", GM_BLTIN_NODE_IS_NBR, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE) },
+        { "Node:HasEdgeTo:Bool:1:Node", GM_BLTIN_NODE_HAS_EDGE_TO, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE)},
 
         { "!NI_In:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Out:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Down:ToEdge:Edge:0",
                 GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Up:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" },

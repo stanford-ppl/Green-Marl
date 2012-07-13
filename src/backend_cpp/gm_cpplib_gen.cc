@@ -99,7 +99,7 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     if (t->is_set_collection() || t->is_order_collection() || t->is_queue()) {
         // total size;
         assert(t->get_target_graph_id() != NULL);
-        if(!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
+        if (!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
         if (t->is_node_collection())
             Body->push("."NUM_NODES"()");
         else if (t->is_edge_collection())
@@ -289,6 +289,14 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                 case GM_BLTIN_NODE_IS_NBR:
                     assert(i->getTypeInfo()->get_target_graph_id() != NULL);
                     sprintf(str_buf, "%s.is_neighbor(", i->getTypeInfo()->get_target_graph_id()->get_genname());
+                    Body.push(str_buf);
+                    main->generate_expr(e->get_args().front());
+                    sprintf(str_buf, ",%s)", i->get_genname());
+                    Body.push(str_buf);
+                    break;
+                case GM_BLTIN_NODE_HAS_EDGE_TO:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
+                    sprintf(str_buf, "%s.has_edge_to(", i->getTypeInfo()->get_target_graph_id()->get_genname());
                     Body.push(str_buf);
                     main->generate_expr(e->get_args().front());
                     sprintf(str_buf, ",%s)", i->get_genname());

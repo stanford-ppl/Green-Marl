@@ -80,6 +80,10 @@ public:
 
     bool is_neighbor(node_t src, node_t to); // need semi sorting
 
+    inline bool has_edge_to(node_t source, node_t to) {
+        return is_neighbor(to, source) ;
+    }
+
 public:
     node_t num_nodes() {
         return _numNodes;
