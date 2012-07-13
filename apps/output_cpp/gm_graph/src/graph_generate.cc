@@ -20,8 +20,8 @@ gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed) {
     memset(degree, 0, sizeof(edge_t) * N);
 
     for (edge_t i = 0; i < M; i++) {
-        src[i] = rand() % N;
-        dest[i] = rand() % N;
+        src[i] = rand() % N;  //TODO 64-bit ?
+        dest[i] = rand() % N; //TODO 64-bit ?
 
         degree[src[i]]++;
     }
