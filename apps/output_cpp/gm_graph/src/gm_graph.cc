@@ -441,20 +441,16 @@ bool gm_graph::store_binary(char* filename) {
     key = sizeof(edge_t);
     fwrite(&key, 4, 1, f);  // edge_t size (in 4B)
 
-    key = this->_numNodes;
-    fwrite(&key, sizeof(node_t), 1, f);
+    fwrite(&(this->_numNodes), sizeof(node_t), 1, f);
 
-    key = this->_numEdges;
-    fwrite(&key, sizeof(edge_t), 1, f);
+    fwrite(&(this->_numEdges), sizeof(edge_t), 1, f);
 
     for (node_t i = 0; i < _numNodes + 1; i++) {
-        key = this->begin[i];
-        fwrite(&key, sizeof(edge_t), 1, f);
+        fwrite(&(this->begin[i]), sizeof(edge_t), 1, f);
     }
 
     for (edge_t i = 0; i < _numEdges; i++) {
-        key = this->node_idx[i];
-        fwrite(&key, sizeof(node_t), 1, f);
+        fwrite(&(this->node_idx[i]), sizeof(node_t), 1, f);
     }
 
     fclose(f);
