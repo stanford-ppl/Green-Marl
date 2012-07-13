@@ -12,10 +12,13 @@ public:
     }
 
     virtual bool run() {
+        int x = rand() % G.num_nodes();
         gm_node_set set(G.num_nodes());
-        RandomNodeSampling(G, 0, set);
-        RandomDegreeNodeSampling(G, 0, set);
-        RandomWalkSamplingWithRandomJump(G, 0, 0.0, set);
+        gm_node_set set2(G.num_nodes());
+        gm_node_set set3(G.num_nodes());
+        RandomNodeSampling(G, x, set);
+        RandomDegreeNodeSampling(G, x, set);
+        RandomWalkSamplingWithRandomJump(G, x, 0.2, set);
         return true;
     }
 

@@ -15,6 +15,9 @@ public:
         gm_property_of_collection_impl<gm_node_set, false> coll(G.num_nodes());
         int tCount = TriangleCounting(G);
         PotentialFriends(G, coll);
+
+        printf("triangle count: %d\n", tCount);
+
         return true;
     }
 

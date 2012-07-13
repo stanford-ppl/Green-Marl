@@ -1,4 +1,4 @@
-Procedure sssp_path(G:Graph, dist:N_P<Int>(G), len:E_P<Int>(G), root: Node(G), prev: N_P<Node>(G) )
+Procedure sssp_path(G:Graph, dist: N_P<Int>, len: E_P<Int>, root: Node, prev: N_P<Node>)
 {
     N_P<Bool> updated;
     N_P<Bool> updated_nxt;
@@ -30,7 +30,7 @@ Procedure sssp_path(G:Graph, dist:N_P<Int>(G), len:E_P<Int>(G), root: Node(G), p
 }
 
 // get the specific path instance
-Procedure get_path(G:Graph, begin,end:Node(G), prev: N_P<Node>(G), Q: Node_Seq)
+Procedure get_path(G: Graph, begin,end: Node, prev: N_P<Node>, Q: Node_Seq)
 {
    Node(G) t = end;
    If (end.prev != NIL) {
