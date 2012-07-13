@@ -93,6 +93,7 @@ extern ast_node* GM_edgeprop_ref(ast_node* typedecl, ast_node* id);
 extern ast_node* GM_edgetype_ref(ast_node* id);
 
 extern ast_node* GM_settype_ref(int set_type_id, ast_node* id);
+extern ast_node* GM_queuetype_ref(ast_node* collectionType, ast_node* id);
 
 extern ast_node* GM_id(char* orgname, int line, int col);
 extern ast_node* GM_field(ast_node* id, ast_node* field, bool is_rarrow);

@@ -212,9 +212,10 @@ gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char
             }
             bool is_strict = d->need_strict_source_type();
             if (is_strict) continue;
-            if (def_src == GMTYPE_VOID) continue;assert(!gm_is_prim_type(def_src));
+            if (def_src == GMTYPE_VOID) continue;
+            assert(!gm_is_prim_type(def_src));
 
-            if (gm_is_same_node_or_edge_compatible_type(def_src, source_type)) {
+            if (gm_is_same_node_or_edge_compatible_type(def_src, source_type) || gm_collection_of_collection_compatible_type(def_src, source_type)) {
                 if (d->is_synonym_def())
                     return d->get_org_def();
                 else
