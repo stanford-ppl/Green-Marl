@@ -247,6 +247,13 @@ void ast_expr::reproduce(int ind_level) {
             if (need_para) Out.push(')');
             return;
         }
+        case GMEXPR_BIOP:
+        case GMEXPR_LBIOP:
+        case GMEXPR_COMP:
+        case GMEXPR_BUILTIN_FIELD:
+        case GMEXPR_FOREIGN:
+            //TODO add some print statements for these?
+            return;
     }
 
     // binop

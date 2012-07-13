@@ -210,7 +210,7 @@ void gm_giraph_gen::do_generate_shared_variables_keys() {
 
         // if the symbol is used in vertex and master
         // we need shared variable
-        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
+        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && (syminfo->is_scoped_global())) {
             Body.push("private static final String ");
             Body.push(get_lib()->create_key_string(sym->getId()));
             Body.push(" = ");
