@@ -81,7 +81,7 @@ public:
     bool is_neighbor(node_t src, node_t to); // need semi sorting
 
     inline bool has_edge_to(node_t source, node_t to) {
-        return is_neighbor(to, source) ;
+        return is_neighbor(to, source);
     }
 
 public:
@@ -131,15 +131,21 @@ public:
     //-------------------------------------------------------
     node_id add_node();                             // returns ID of a node
     edge_id add_edge(node_id n, node_id m);         // add an edge n->m
+
     bool is_node(node_id n) {
         return (n < _numNodes);
     } // what if after
+
     bool is_edge(edge_id n) {
         return (n < _numEdges);
     }
+
     bool has_edge(node_id from, node_id to);
     edge_t get_num_edges(node_id from, node_id to);   // how many edges between two nodes
-    edge_t get_num_edges(node_id from);               // how many edges from this node
+
+    edge_t get_num_edges(node_id from) {               // how many edges from this node
+        return begin[from + 1] - begin[from];
+    }
 
     //------------------------------------------------------------
     // Methods to be implemented for deletion
@@ -186,14 +192,15 @@ public:
     //returns one of the outgoing neighbors of 'node' - by random choice
     // if 'node' does not have a neighbor, 'node' is returned
     node_t pick_random_out_neighbor(node_t node) {
-        edge_t outCount = 0;//TODO get_num_edges(node);
-        if(outCount == 0) return node;
+        edge_t outCount = get_num_edges(node);
+        if (outCount == 0)
+            return node;
+        else
+            return begin[node] + rand() % outCount; //TODO make 64bit compatible
+    }
 
-        edge_t lowestPos = 0; //TODO
-        edge_t randomValue = 0; //TODO
-        edge_t randomEdge = 0; //TODO
-
-        return 0;
+    node_t pick_random_node() {
+        return rand() % num_nodes(); //TODO make 64bit compatible
     }
 
 private:
