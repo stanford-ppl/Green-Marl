@@ -8,6 +8,7 @@
 #define R_BEGIN   "r_begin"
 #define NUM_NODES "num_nodes"
 #define NUM_EDGES "num_edges"
+#define RANDOM_NODE "pick_random_node"
 
 #define NODE_T       "node_t"
 #define EDGE_T       "edge_t"

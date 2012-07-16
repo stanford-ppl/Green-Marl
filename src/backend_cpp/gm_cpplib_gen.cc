@@ -202,7 +202,7 @@ const char* gm_cpplib::get_function_name_graph(int methodId) {
         case GM_BLTIN_GRAPH_NUM_EDGES:
             return NUM_EDGES;
         case GM_BLTIN_GRAPH_RAND_NODE:
-            return "pick_random_node";
+            return RANDOM_NODE;
         default:
             assert(false);
             return "ERROR";
