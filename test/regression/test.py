@@ -81,7 +81,7 @@ build_compiler();
 
 # BUILD AND RUN THE APPS
 
-APP_EXCLUSIONS=[ "b2_main.cc", "Makefile", "common_main.cc", "common_main.h", "randomnodesampling_main.cc", "sssp_path_main.cc", "trianglecounting_main.cc" ];
+APP_EXCLUSIONS=[ "b2_main.cc", "Makefile", "common_main.cc", "common_main.h" ];
 
 def get_apps_names(apps_out_dir):
     main_names = os.listdir(APPS_PATH+apps_out_dir+"/src/");
