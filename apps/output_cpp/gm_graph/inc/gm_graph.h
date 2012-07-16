@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <map>
 #include <vector>
+#include <stdlib.h>
 #include "gm_graph_typedef.h"
 
 typedef node_t node_id;
