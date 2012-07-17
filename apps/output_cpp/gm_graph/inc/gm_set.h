@@ -3,15 +3,17 @@
 
 #include <set>
 #include "gm_graph_typedef.h"
+#include "gm_lock.h"
 
 template<typename T>
 class gm_sized_set
 {
 public:
     gm_sized_set(size_t _max_sz) :
-            max_sz(_max_sz), byte_map(NULL) {
+            max_sz(_max_sz), byte_map(NULL), setLock(0) {
         is_small = true;
         est_size = 0;
+       // init(setLock);
     }
 
     virtual ~gm_sized_set() {
@@ -36,24 +38,40 @@ public:
         else
             return is_in_large(e);
     }
-    void add(T e) {
+
+    void add_seq(T e) {
         if (is_small)
             add_small(e);
         else
             add_large(e);
     }
-    void remove(T e) {
+
+    void add_par(T e) {
+        gm_spinlock_acquire(&setLock);
+        add_seq(e);
+        gm_spinlock_release(&setLock);
+    }
+
+    void remove_seq(T e) {
         if (is_small)
             remove_small(e);
         else
             remove_large(e);
     }
+
+    void remove_par(T e) {
+        gm_spinlock_acquire(&setLock);
+        remove_seq(e);
+        gm_spinlock_release(&setLock);
+    }
+
     void clear() {
         if (is_small)
             clear_small();
         else
             clear_large();
     }
+
     size_t get_size() {
         if (is_small)
             return get_size_small();
@@ -89,18 +107,24 @@ public:
             intersect_large(other);
     }
 
+private:
+
     bool is_in_small(T e) {
         return (small_set.find(e) != small_set.end());
     }
+
     void add_small(T e) {
         small_set.insert(e);
     }
+
     void remove_small(T e) {
         small_set.erase(e);
     }
+
     void clear_small() {
         small_set.clear();
     }
+
     size_t get_size_small() {
         return small_set.size();
     }
@@ -108,17 +132,21 @@ public:
     bool is_in_large(T e) {
         return (byte_map[e] != 0);
     }
+
     void add_large(T e) {
         if (byte_map[e] == 0) est_size++;
         byte_map[e] = 1;
     }
+
     void remove_large(T e) {
         if (byte_map[e] == 1) est_size--;
         byte_map[e] = 0;
     }
+
     void add_large_par(T e) { // called in parallel mode
         byte_map[e] = 1;
     }
+
     void remove_large_par(T e) { // called in parallel mode
         byte_map[e] = 0;
     }
@@ -178,7 +206,7 @@ public:
         while (II.has_next()) {
             T item = II.get_next();
             if (!is_in(item)) {
-                add(item);
+                add_seq(item);
                 est_size++;
             }
         }
@@ -214,6 +242,8 @@ public:
         }
         est_size = newSize;
     }
+
+public:
 
     //-------------------------------------------
     // should be called in seq mode
@@ -259,12 +289,12 @@ public:
     class seq_iter
     {
     public:
-        seq_iter() {
+        seq_iter() : is_small(true), bytemap(NULL) {
         }
 
         // for small instance
         seq_iter(typename std::set<T>::iterator I, typename std::set<T>::iterator E) :
-                ITER(I), END_ITER(E), is_small(true) {
+                ITER(I), END_ITER(E), is_small(true), bytemap(NULL) {
         }
 
         // for large instance
@@ -335,7 +365,7 @@ public:
     }
 
 private:
-    gm_sized_set() {
+    gm_sized_set() : max_sz(-1), is_small(true), byte_map(NULL), est_size(-1), setLock(0) {
     } // initialize without size is prohibited
 
     size_t max_sz;
@@ -343,6 +373,7 @@ private:
     unsigned char* byte_map;
     bool is_small;
     size_t est_size;  // estimated size of the set
+    gm_spinlock_t setLock;
 
 public:
     //-------------------------------------------------
@@ -356,5 +387,11 @@ public:
 
 typedef gm_sized_set<node_t> gm_node_set;
 typedef gm_sized_set<edge_t> gm_edge_set;
+
+#undef Spinlock
+#undef lock
+#undef unlock
+#undef init
+#undef destroy
 
 #endif

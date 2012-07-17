@@ -197,7 +197,7 @@ public:
         if (outCount == 0)
             return node;
         else
-            return begin[node] + rand() % outCount; //TODO make 64bit compatible
+            return node_idx[begin[node]] + (rand() % outCount); //TODO make 64bit compatible
     }
 
     node_t pick_random_node() {
