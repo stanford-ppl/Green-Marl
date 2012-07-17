@@ -1,0 +1,43 @@
+Procedure sssp_path(G:Graph, dist: N_P<Int>, len: E_P<Int>, root: Node, prev: N_P<Node>)
+{
+    N_P<Bool> updated;
+    N_P<Bool> updated_nxt;
+    N_P<Int>  dist_nxt;
+    Bool fin = False;
+
+    G.dist = (G == root) ? 0 : +INF;
+    G.updated = (G == root) ? True: False;
+    G.dist_nxt = G.dist;
+    G.updated_nxt = G.updated;
+    G.prev = NIL;
+
+    While(!fin) {
+        fin = True;
+
+        Foreach(n: G.Nodes)(n.updated) {
+            Foreach(s: n.Nbrs) {
+                Edge(G) e = s.ToEdge(); // the edge to s
+                // updated_nxt becomes true only if dist_nxt is actually updated
+                <s.dist_nxt; s.updated_nxt, s.prev> min= <n.dist + e.len; True, n>;
+            }
+        }
+
+        G.dist = G.dist_nxt;
+        G.updated = G.updated_nxt;
+        G.updated_nxt = False;
+        fin = ! Exist(n: G.Nodes){n.updated};
+    }
+}
+
+// get the specific path instance
+Procedure get_path(G: Graph, begin,end: Node, prev: N_P<Node>, Q: Node_Seq)
+{
+   Node(G) t = end;
+   If (end.prev != NIL) {
+       While(t != begin) {
+           Q.PushFront(t);
+           t = t.prev;     
+       }
+       Q.PushFront(t);
+   }
+}

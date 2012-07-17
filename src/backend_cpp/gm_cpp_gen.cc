@@ -220,7 +220,37 @@ void gm_cpp_gen::generate_idlist(ast_idlist* idl) {
         generate_lhs_id(id);
         if (i < z - 1) Body.push_spc(',');
     }
-    return;
+}
+
+void gm_cpp_gen::generate_idlist_primitive(ast_idlist* idList) {
+    int length = idList->get_length();
+    for(int i = 0; i < length; i++) {
+        ast_id* id = idList->get_item(i);
+        generate_lhs_id(id);
+        generate_lhs_default(id->getTypeSummary());
+        if (i < length - 1) Body.push_spc(',');
+    }
+}
+
+void gm_cpp_gen::generate_lhs_default(int type) {
+    switch (type) {
+                case GMTYPE_BYTE:
+                case GMTYPE_SHORT:
+                case GMTYPE_INT:
+                case GMTYPE_LONG:
+                    Body.push_spc(" = 0");
+                    break;
+                case GMTYPE_FLOAT:
+                case GMTYPE_DOUBLE:
+                    Body.push_spc(" = 0.0");
+                    break;
+                case GMTYPE_BOOL:
+                    Body.push_spc(" = false");
+                    break;
+                default:
+                    assert(false);
+                    return;
+            }
 }
 
 void gm_cpp_gen::generate_lhs_id(ast_id* id) {
@@ -465,6 +495,9 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
         assert(idl->get_length() == 1);
         generate_lhs_id(idl->get_item(0));
         get_lib()->add_collection_def(idl->get_item(0));
+    } else if (t->is_primitive()) {
+        generate_idlist_primitive(v->get_idlist());
+        Body.pushln(";");
     } else {
         generate_idlist(v->get_idlist());
         Body.pushln(";");

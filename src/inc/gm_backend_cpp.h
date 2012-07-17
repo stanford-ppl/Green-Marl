@@ -216,6 +216,8 @@ protected:
 
 private:
     const char* get_function_name(int methodId, bool& addThreadId);
+    void generate_idlist_primitive(ast_idlist* idList);
+    void generate_lhs_default(int type);
 };
 
 extern gm_cpp_gen CPP_BE;
