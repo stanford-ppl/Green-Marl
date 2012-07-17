@@ -55,12 +55,15 @@ void GM_start_sentblock() {
     ast_sentblock* newblock = ast_sentblock::new_sentblock();
     FE.start_sentblock(newblock);
 }
+
 ast_node* GM_finish_sentblock() {
     ast_sentblock* b = FE.get_current_sentblock();
     FE.end_sentblock();
     return b;
 }
+
 extern int GM_get_empty_lines();
+
 void GM_add_sent(ast_node *s) {
     assert(s->is_sentence());
     ast_sent* sent = (ast_sent*) s;

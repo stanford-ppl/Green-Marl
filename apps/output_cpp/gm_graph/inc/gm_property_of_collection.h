@@ -49,7 +49,8 @@ class gm_property_of_collection_impl: public gm_property_of_collection<T>
 {
 
 private:
-    T** data;Spinlock* locks;
+    T** data;
+    Spinlock* locks;
     int size;
 
     inline void lazyInit(int index) {
