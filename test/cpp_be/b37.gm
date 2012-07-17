@@ -1,0 +1,14 @@
+Procedure test_collection_iteration(G:Graph)
+{
+    N_O o;
+    N_S s;
+    Node_Seq seq;
+    Queue<N_S> q1;
+    Queue<N_S> q2;
+    Queue<N_S> q3;
+    
+    For(x: q.Items) {
+    	s = x;
+    }
+    
+}
