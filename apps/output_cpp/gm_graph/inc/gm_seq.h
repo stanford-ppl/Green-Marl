@@ -106,6 +106,7 @@ public:
     // [xxx] to be implemented
     par_iter prepare_par_iteration(int thread_id, int max_threads) {
         assert(false);
+        return NULL;
     }
 
 private:
