@@ -2213,29 +2213,39 @@ public:
     int get_iter_type() {
         return iter_type;
     } // GM_ITERATORS
+
     void set_iter_type(int i) {
         iter_type = i;
     } // GM_ITERATORS
+
       // should be same to get_iterator()->get_type_summary()
     ast_id* get_source2() {
         return source2;
     }
+
     void set_source2(ast_id* i) {
         source2 = i;
         if (i != NULL) i->set_parent(this);
     }
+
     void set_filter(ast_expr* expr = NULL) {
         cond = expr;
         if (cond != NULL) cond->set_parent(this);
     }
+
     void set_body(ast_sent* s) {
         body = s;
         assert(body != NULL);
         body->set_parent(this);
     }
+
     virtual bool has_scope() {
         return true;
     }
+
+    virtual bool is_under_parallel_execution() {
+            return is_parallel();
+        }
 
     // For is sequential while FOREACH is parallel.
     // Optimization may override parallel execution with sequential.
