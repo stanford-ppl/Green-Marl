@@ -388,10 +388,4 @@ public:
 typedef gm_sized_set<node_t> gm_node_set;
 typedef gm_sized_set<edge_t> gm_edge_set;
 
-#undef Spinlock
-#undef lock
-#undef unlock
-#undef init
-#undef destroy
-
 #endif
