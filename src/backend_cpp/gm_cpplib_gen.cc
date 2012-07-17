@@ -155,6 +155,8 @@ const char* gm_cpplib::get_function_name_nset(int methodId, bool in_parallel) {
             return "intersect";
         case GM_BLTIN_SET_SUBSET:
             return "is_subset";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
@@ -171,6 +173,8 @@ const char* gm_cpplib::get_function_name_nseq(int methodId) {
             return "pop_front";
         case GM_BLTIN_SET_REMOVE_BACK:
             return "pop_back";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
@@ -189,6 +193,8 @@ const char* gm_cpplib::get_function_name_norder(int methodId) {
             return "pop_back";
         case GM_BLTIN_SET_HAS:
             return "is_in";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
