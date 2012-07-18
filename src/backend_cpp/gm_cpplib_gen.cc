@@ -139,14 +139,14 @@ void gm_cpplib::generate_expr_nil(ast_expr* e, gm_code_writer& Body) {
     }
 }
 
-const char* gm_cpplib::get_function_name_nset(int methodId) {
+const char* gm_cpplib::get_function_name_nset(int methodId, bool in_parallel) {
     switch (methodId) {
         case GM_BLTIN_SET_HAS:
             return "is_in";
         case GM_BLTIN_SET_REMOVE:
-            return "remove";
+            return in_parallel ? "remove_par" : "remove_seq";
         case GM_BLTIN_SET_ADD:
-            return "add";
+            return in_parallel ? "add_par" : "add_seq";
         case GM_BLTIN_SET_UNION:
             return "union_";
         case GM_BLTIN_SET_COMPLEMENT:
@@ -233,7 +233,7 @@ void gm_cpplib::generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr,
     const char* functionName;
     switch (sourceType) {
         case GMTYPE_NSET:
-            functionName = get_function_name_nset(methodId);
+            functionName = get_function_name_nset(methodId, parallelExecution);
             break;
         case GMTYPE_NSEQ:
             functionName = get_function_name_nseq(methodId);
@@ -349,7 +349,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             Body.push(str_buf);
             return;
         case GMTYPE_NSET:
-            func_name = get_function_name_nset(method_id);
+            func_name = get_function_name_nset(method_id, under_parallel);
             break;
         case GMTYPE_NORDER:
             func_name = get_function_name_norder(method_id);

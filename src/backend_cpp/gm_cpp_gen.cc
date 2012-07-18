@@ -1111,9 +1111,7 @@ void gm_cpp_gen::generate_expr_builtin(ast_expr* ee) {
     int method_id = def->get_method_id();
     if (driver == NULL) {
         bool add_thread_id = false;
-        const char* func_name = "";
-
-        func_name = get_function_name(method_id, add_thread_id);
+        const char* func_name = get_function_name(method_id, add_thread_id);
         Body.push(func_name);
         Body.push('(');
         generate_expr_list(e->get_args());

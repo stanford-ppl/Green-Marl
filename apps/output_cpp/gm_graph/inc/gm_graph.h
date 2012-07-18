@@ -81,8 +81,12 @@ public:
 
     bool is_neighbor(node_t src, node_t to); // need semi sorting
 
-    inline bool has_edge_to(node_t source, node_t to) {
-        return is_neighbor(to, source);
+    bool has_edge_to(node_t source, node_t to) {
+        edge_t current = begin[source];
+        edge_t end = begin[source + 1];
+        while(current < end)
+            if(node_idx[current++] == to) return true;
+        return false;
     }
 
 public:
@@ -197,7 +201,7 @@ public:
         if (outCount == 0)
             return node;
         else
-            return begin[node] + rand() % outCount; //TODO make 64bit compatible
+            return node_idx[begin[node]] + (rand() % outCount); //TODO make 64bit compatible
     }
 
     node_t pick_random_node() {

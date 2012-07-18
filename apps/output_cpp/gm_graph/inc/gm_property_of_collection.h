@@ -4,24 +4,8 @@
 #include <stdio.h>
 #include <omp.h>
 #include "gm_set.h"
+#include "gm_lock.h"
 
-#ifdef __APPLE__
-	#include <libkern/OSAtomic.h>
-
-	#define Spinlock 	OSSpinLock
-	#define lock(X) 	OSSpinLockLock(&X)
-	#define unlock(X)	OSSpinLockUnlock(&X)
-	#define init(X)		;
-	#define destroy(X)	;
-#else
-	#include <pthread.h>
-
-	#define Spinlock 	pthread_spinlock_t
-	#define lock(X) 	pthread_spin_lock(&X)
-	#define unlock(X)	pthread_spin_unlock(&X)
-	#define init(X)		pthread_spin_init(&X, 0)
-	#define destroy(X)	pthread_spin_destroy(&X)
-#endif
 
 class gm_complex_data_type
 {
@@ -49,26 +33,28 @@ class gm_property_of_collection_impl: public gm_property_of_collection<T>
 {
 
 private:
-    T** data;Spinlock* locks;
+    T** data;
+    gm_spinlock_t* locks;
     int size;
 
     inline void lazyInit(int index) {
-        lock(locks[index]);
+        gm_spinlock_acquire(locks + index);
         if (data[index] == NULL) data[index] = new T(size);
-        unlock(locks[index]);
+        gm_spinlock_release(locks + index);
     }
 
 public:
-
     gm_property_of_collection_impl(int size) :
             size(size), locks(NULL) {
 
         data = new T*[size];
+        if(lazy) locks = new gm_spinlock_t[size];
+
         #pragma omp parallel for
         for (int i = 0; i < size; i++) {
             if (lazy) {
                 data[i] = NULL;
-                init(locks[i]);
+                locks[i] = 0;
             } else {
                 data[i] = new T(size);
             }
@@ -76,10 +62,8 @@ public:
     }
 
     ~gm_property_of_collection_impl() {
-        for (int i = 0; i < size; i++) {
-            if (lazy) destroy(locks[i]);
+        for (int i = 0; i < size; i++)
             delete data[i];
-        }
         delete[] data;
         if (lazy) delete[] locks;
     }
@@ -89,11 +73,5 @@ public:
         return *data[index];
     }
 };
-
-#undef Spinlock
-#undef lock
-#undef unlock
-#undef init
-#undef destroy
 
 #endif
