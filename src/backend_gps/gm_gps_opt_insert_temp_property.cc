@@ -146,7 +146,6 @@ void gm_gps_opt_insert_temp_property::process(ast_procdef* p) {
         ast_sentblock* sb = gm_find_upscope(out_loop);
         assert(sb!=NULL);
 
-        char buf[128];
         char* temp_name = FE.voca_temp_name_and_add(sym->getId()->get_orgname(), "prop", NULL, true);
         gm_symtab_entry* temp_prop = gm_add_new_symbol_property(sb, sym->getType()->getTypeSummary(), true,
                 out_loop->get_iterator()->getTypeInfo()->get_target_graph_sym(), temp_name);

@@ -221,7 +221,6 @@ void gm_path_parser::parsePath(const char* fullpath) {
     //----------------------------------------
     // parse path name
     //----------------------------------------
-    int count = 0;
     char* p_last = NULL;
     char* p = strtok(_temp, "/"); // ignore windows for now
     while (p != NULL) {
@@ -251,14 +250,13 @@ void gm_path_parser::parsePath(const char* fullpath) {
         p_last = p;
         p = strtok(NULL, "."); // strtok is not thread safe, you know.
     }
-    int index1;
     if (p_begin == p_last) {
         strcpy(_ext, "");
         strcpy(_fname, h_begin);
     } else {
         strcpy(_ext, p_last);
 
-        index1 = ((int) (p_last - p_begin));
+        int index1 = ((int) (p_last - p_begin));
         if (index1 > 1) strncpy(_fname, h_begin, index1 - 1);
         _fname[index1 - 1] = '\0';
     }
