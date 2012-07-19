@@ -4,19 +4,19 @@
 #include "gm_typecheck.h"
 
 // where the symbol is defined
-enum
+enum gm_gps_scope_t
 {
     GPS_SCOPE_GLOBAL, GPS_SCOPE_OUTER, GPS_SCOPE_INNER
 };
 
 // how the symbols is used (LHS/RHS/REDUCE) 
-enum
+enum gm_gps_symbol_usage_t
 {
     GPS_SYM_USED_AS_RHS, GPS_SYM_USED_AS_LHS, GPS_SYM_USED_AS_REDUCE,
 };
 
 // where the symbols is used 
-enum
+enum gm_gps_symbol_usage_location_t
 {
     GPS_CONTEXT_MASTER, GPS_CONTEXT_VERTEX, GPS_CONTEXT_RECEIVER
 };

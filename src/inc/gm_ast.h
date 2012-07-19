@@ -1855,11 +1855,11 @@ private:
 //-------------------------------------------------------
 // Assignments
 //-------------------------------------------------------
-enum
+enum gm_assignment_t
 {
     GMASSIGN_NORMAL, GMASSIGN_REDUCE, GMASSIGN_DEFER, GMASSIGN_INVALID
 };
-enum
+enum gm_assignment_location_t
 {
     GMASSIGN_LHS_SCALA, GMASSIGN_LHS_FIELD, GMASSIGN_LHS_END
 };
