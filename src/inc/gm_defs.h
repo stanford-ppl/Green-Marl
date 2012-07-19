@@ -33,6 +33,8 @@ enum GMTYPE_T
 
     GMTYPE_NODEITER_COMMON_NBRS,    // common neighbors
 
+    GMTYPE_COLLECTIONITER,          // iterator over collection of collection
+
     GMTYPE_EDGEITER_ALL = 200,
     GMTYPE_EDGEITER_NBRS,
     GMTYPE_EDGEITER_IN_NBRS,
@@ -160,7 +162,7 @@ inline static bool gm_is_unknown_collection_iter_type(int i) {
 }
 
 inline static bool gm_is_collection_iter_type(int i) {
-    return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) || gm_is_unknown_collection_iter_type(i);
+    return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) || gm_is_unknown_collection_iter_type(i) || i == GMTYPE_COLLECTIONITER;
 }
 
 inline static bool gm_is_property_iter_set_type(int i) {
@@ -173,6 +175,10 @@ inline static bool gm_is_property_iter_seq_type(int i) {
 
 inline static bool gm_is_property_iter_order_type(int i) {
     return i == GMTYPE_PROPERTYITER_ORDER;
+}
+
+inline static bool gm_is_collection_collection_iter_type(int i) {
+    return i == GMTYPE_COLLECTIONITER;
 }
 
 inline static bool gm_is_property_iter_type(int i) {
@@ -278,12 +284,12 @@ inline static bool gm_is_sequence_collection_type(int i) {
     return gm_is_node_sequence_type(i) || gm_is_edge_sequence_type(i);
 }
 
-inline static bool gm_is_collection_type(int i) {
-    return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i);
-}
-
 inline static bool gm_is_queue_type(int type) {
     return type == GMTYPE_QUEUE;
+}
+
+inline static bool gm_is_collection_type(int i) {
+    return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i) || gm_is_queue_type(i);
 }
 
 inline static bool gm_is_sequential_collection_type(int i) {
@@ -305,6 +311,8 @@ inline int gm_get_natural_collection_iterator(int src_type) {
         return GMTYPE_NODEITER_SEQ;
     else if (src_type == GMTYPE_EORDER)
         return GMTYPE_NODEITER_ORDER;
+    else if (src_type == GMTYPE_QUEUE)
+        return GMTYPE_COLLECTIONITER;
     else {
         assert(false);
         return 0;

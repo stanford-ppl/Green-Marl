@@ -100,6 +100,8 @@ static int gm_get_range_from_itertype(int itype) {
         case GMTYPE_PROPERTYITER_SEQ:
         case GMTYPE_PROPERTYITER_ORDER:
             return GM_RANGE_LINEAR;
+        case GMTYPE_COLLECTIONITER:
+            return GM_RANGE_RANDOM; //TODO is there somthing more suitable?
         default:
             printf("type = %d\n", itype);
             assert(false);
