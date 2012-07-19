@@ -209,8 +209,8 @@ public:
 
 // [todo make stop traverse]
 
-#define GM_POST_APPLY   true
-#define GM_PRE_APPLY    false
+static const bool GM_POST_APPLY = true;
+static const bool GM_PRE_APPLY = false;
 
 //--------------------------------------------------------------------
 // traverse all the ids in the procedure ast and apply operation 

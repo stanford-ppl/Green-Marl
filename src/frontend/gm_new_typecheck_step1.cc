@@ -182,11 +182,11 @@ static bool gm_find_and_connect_symbol(ast_id* id, gm_symtab* begin, bool print_
     return true;
 }
 
-#define SHOULD_BE_A_GRAPH             1 
-#define SHOULD_BE_A_COLLECTION        2
-#define SHOULD_BE_A_NODE_COMPATIBLE   3
-#define SHOULD_BE_A_PROPERTY          4
-#define ANY_THING                     0
+static const int SHOULD_BE_A_GRAPH = 1;
+static const int SHOULD_BE_A_COLLECTION = 2;
+static const int SHOULD_BE_A_NODE_COMPATIBLE = 3;
+static const int SHOULD_BE_A_PROPERTY = 4;
+static const int ANY_THING = 0;
 
 //-------------------------------------------------
 // check target-id is well defined as a graph/collection/node

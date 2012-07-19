@@ -272,30 +272,30 @@ DEF_STRING(CPPBE_INFO_NEED_FROM_INFO);
 //----------------------------------------
 // For runtime
 //----------------------------------------
-#define MAX_THREADS     "gm_rt_get_num_threads"         
-#define THREAD_ID       "gm_rt_thread_id"         
-#define ALLOCATE_BOOL   "gm_rt_allocate_bool"
-#define ALLOCATE_LONG   "gm_rt_allocate_long"
-#define ALLOCATE_INT    "gm_rt_allocate_int"
-#define ALLOCATE_DOUBLE "gm_rt_allocate_double"
-#define ALLOCATE_FLOAT  "gm_rt_allocate_float"
-#define ALLOCATE_NODE   "gm_rt_allocate_node_t"
-#define ALLOCATE_EDGE   "gm_rt_allocate_edge_t"
-#define ALLOCATE_COLLECTION	"gm_rt_allocate_collection"
-#define DEALLOCATE      "gm_rt_deallocate"
-#define CLEANUP_PTR     "gm_rt_cleanup"
-#define RT_INIT         "gm_rt_initialize"
-#define BFS_TEMPLATE    "gm_bfs_template"
-#define DFS_TEMPLATE    "gm_dfs_template"
-#define DO_BFS_FORWARD  "do_bfs_forward"
-#define DO_BFS_REVERSE  "do_bfs_reverse"
-#define DO_DFS          "do_dfs"
-#define RT_INCLUDE      "gm.h"
-#define PREPARE         "prepare"
-#define FREEZE          "freeze"
-#define MAKE_REVERSE        "make_reverse_edges"
-#define SEMI_SORT           "do_semi_sort"
-#define IS_SEMI_SORTED      "is_semi_sorted"
-#define PREPARE_FROM_INFO   "prepare_edge_source"
+static const char* MAX_THREADS = "gm_rt_get_num_threads";
+static const char* THREAD_ID = "gm_rt_thread_id";
+static const char* ALLOCATE_BOOL = "gm_rt_allocate_bool";
+static const char* ALLOCATE_LONG = "gm_rt_allocate_long";
+static const char* ALLOCATE_INT = "gm_rt_allocate_int";
+static const char* ALLOCATE_DOUBLE = "gm_rt_allocate_double";
+static const char* ALLOCATE_FLOAT = "gm_rt_allocate_float";
+static const char* ALLOCATE_NODE = "gm_rt_allocate_node_t";
+static const char* ALLOCATE_EDGE = "gm_rt_allocate_edge_t";
+static const char* ALLOCATE_COLLECTION = "gm_rt_allocate_collection";
+static const char* DEALLOCATE = "gm_rt_deallocate";
+static const char* CLEANUP_PTR = "gm_rt_cleanup";
+static const char* RT_INIT = "gm_rt_initialize";
+static const char* BFS_TEMPLATE = "gm_bfs_template";
+static const char* DFS_TEMPLATE = "gm_dfs_template";
+static const char* DO_BFS_FORWARD = "do_bfs_forward";
+static const char* DO_BFS_REVERSE = "do_bfs_reverse";
+static const char* DO_DFS = "do_dfs";
+static const char* RT_INCLUDE = "gm.h";
+static const char* PREPARE = "prepare";
+static const char* FREEZE = "freeze";
+static const char* MAKE_REVERSE = "make_reverse_edges";
+static const char* SEMI_SORT = "do_semi_sort";
+static const char* IS_SEMI_SORTED = "is_semi_sorted";
+static const char* PREPARE_FROM_INFO = "prepare_edge_source";
 
 #endif

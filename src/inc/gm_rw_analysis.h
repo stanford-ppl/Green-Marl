@@ -240,7 +240,7 @@ public:
     }
 };
 
-#define GM_INFOKEY_RW  "GM_INFOKEY_RW"
+static const char* GM_INFOKEY_RW = "GM_INFOKEY_RW";
 static gm_rwinfo_sets* get_rwinfo_sets(ast_node* n) {
     // get rwinfo from a node. (create one if not there)
     gm_rwinfo_sets* rwi = (gm_rwinfo_sets*) n->find_info(GM_INFOKEY_RW);
@@ -257,7 +257,7 @@ inline static gm_rwinfo_sets* gm_get_rwinfo_sets(ast_node* n) {
 //-------------------------------------------------------
 // additional information for foreach statement
 //-------------------------------------------------------
-#define GM_INFOKEY_BOUND  "GM_INFOKEY_BOUND"
+static const char* GM_INFOKEY_BOUND = "GM_INFOKEY_BOUND";
 class gm_bound_set_info : public ast_extra_info
 {
 public:
