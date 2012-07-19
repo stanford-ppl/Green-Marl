@@ -466,7 +466,7 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
 void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
     ast_typedecl* t = v->get_type();
 
-    if (t->is_queue()) {
+    if (t->is_collection_of_collection()) {
         Body.push(get_type_string(t));
         ast_typedecl* targetType = t->get_target_type();
         Body.push("<");

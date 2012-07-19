@@ -98,22 +98,22 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     Body->push("(");
 
     ast_typedecl* t = i->getTypeInfo();
-    if (t->is_set_collection() || t->is_order_collection() || t->is_queue()) {
+    if (t->is_set_collection() || t->is_order_collection() || t->is_collection_of_collection()) {
         // total size;
         assert(t->get_target_graph_id() != NULL);
-        if (!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
+        if (!t->is_collection_of_collection()) Body->push(t->get_target_graph_id()->get_genname());
         if (t->is_node_collection())
             Body->push("."NUM_NODES"()");
         else if (t->is_edge_collection())
             Body->push("."NUM_EDGES"()");
-        else if (t->is_queue())
+        else if (t->is_collection_of_collection())
             assert(true);
         else
             assert(false);
     }
     if (t->is_order_collection()) Body->push(", ");
 
-    if (t->is_order_collection() || t->is_sequence_collection() || t->is_queue()) {
+    if (t->is_order_collection() || t->is_sequence_collection() || t->is_collection_of_collection()) {
         Body->push(MAX_THREADS"()");
     }
 

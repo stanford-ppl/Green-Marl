@@ -8,15 +8,15 @@ Procedure test_collection_iteration(G:Graph)
     Queue<Node_Seq> q3;
     
     For(x: q1.Items) {
-    	//s = x;
+    	s = x;
     }
     
     For(x: q2.Items) {
-    	//o = x;
+    	o = x;
     }
     
     For(x: q3.Items) {
-//    	seq = x;
+	seq = x;
     }
     
 }

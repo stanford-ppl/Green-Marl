@@ -185,7 +185,7 @@ void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body) {
     } else if (gm_is_iteration_on_collection(type)) {
 
         assert(!fe->is_parallel());
-        assert(gm_is_node_collection_iter_type(type) || gm_is_collection_collection_iter_type(type));
+        assert(gm_is_node_collection_iter_type(type) || gm_is_collection_of_collection_iter_type(type));
 
         const char* iter_name = fe->find_info_string(CPPBE_INFO_COLLECTION_ITERATOR);
         sprintf(str_buf, "while (%s.has_next())", iter_name);
