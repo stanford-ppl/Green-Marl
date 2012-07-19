@@ -51,20 +51,20 @@ const char* gm_cpplib::get_type_string(int type) {
             return "ERROR";
         }
     } else if (gm_is_collection_type(type)) {
-        assert(gm_is_node_collection_type(type) || gm_is_queue_type(type));
+        assert(gm_is_node_collection_type(type) || gm_is_collection_of_collection_type(type));
         if (gm_is_set_collection_type(type))
             return SET_T;
         else if (gm_is_order_collection_type(type))
             return ORDER_T;
         else if (gm_is_sequence_collection_type(type))
             return SEQ_T;
-        else if (gm_is_queue_type(type))
+        else if (gm_is_collection_of_collection_type(type))
             return QUEUE_T;
         else {
             assert(false);
             return "ERROR";
         }
-    } else if (gm_is_queue_type(type)) {
+    } else if (gm_is_collection_of_collection_type(type)) {
         return QUEUE_T;
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));

@@ -18,7 +18,7 @@ enum GMTYPE_T
     GMTYPE_ESET,
     GMTYPE_ESEQ,
     GMTYPE_EORDER,
-    GMTYPE_QUEUE,
+    GMTYPE_COLLECTION,
 
     // iterators
     GMTYPE_NODEITER_ALL = 100,
@@ -300,12 +300,12 @@ inline static bool gm_is_sequence_collection_type(int i) {
     return gm_is_node_sequence_type(i) || gm_is_edge_sequence_type(i);
 }
 
-inline static bool gm_is_queue_type(int type) {
-    return type == GMTYPE_QUEUE;
+inline static bool gm_is_collection_of_collection_type(int type) {
+    return type == GMTYPE_COLLECTION;
 }
 
 inline static bool gm_is_collection_type(int i) {
-    return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i) || gm_is_queue_type(i);
+    return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i) || gm_is_collection_of_collection_type(i);
 }
 
 inline static bool gm_is_sequential_collection_type(int i) {
@@ -327,7 +327,7 @@ inline int gm_get_natural_collection_iterator(int src_type) {
         return GMTYPE_NODEITER_SEQ;
     else if (src_type == GMTYPE_EORDER)
         return GMTYPE_NODEITER_ORDER;
-    else if (src_type == GMTYPE_QUEUE)
+    else if (src_type == GMTYPE_COLLECTION)
         return GMTYPE_ITER_UNDERSPECIFIED; //handle that later
     else {
         assert(false);
@@ -355,7 +355,7 @@ inline int gm_get_specified_collection_iterator(int type) {
 // return true if this type has a target graph
 inline bool gm_has_target_graph_type(int t) {
     return gm_is_node_edge_compatible_type(t) || // any node-edge iterator (including collection iterator)
-            gm_is_collection_type(t) || gm_is_queue_type(t);
+            gm_is_collection_type(t) || gm_is_collection_of_collection_type(t);
 }
 
 inline static bool gm_is_same_type(int i1, int i2) {
@@ -367,7 +367,7 @@ inline static bool gm_is_same_node_or_edge_compatible_type(int i1, int i2) {
 }
 
 inline static bool gm_collection_of_collection_compatible_type(int def_src, int source_type) {
-    return gm_is_order_collection_type(def_src) && gm_is_queue_type(source_type);
+    return gm_is_order_collection_type(def_src) && gm_is_collection_of_collection_type(source_type);
 }
 
 enum GM_OPS_T

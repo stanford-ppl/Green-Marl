@@ -58,7 +58,7 @@ void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body) {
 
         // get a list
         const char* typeString = NULL;
-        if(source->getTypeSummary() == GMTYPE_QUEUE)
+        if(gm_is_collection_of_collection_type(source->getTypeSummary()))
             sprintf(str_buf, "%s<%s>::%s", get_type_string(source->getTypeInfo()), get_type_string(source->getTargetTypeInfo()), iter_type_str);
         else
             sprintf(str_buf, "%s::%s", get_type_string(source->getTypeInfo()), iter_type_str);
@@ -93,7 +93,7 @@ void gm_cpplib::generate_down_initializer(ast_foreach* f, gm_code_writer& Body) 
         assert(f->find_info(CPPBE_INFO_COLLECTION_ITERATOR) != NULL);
         const char* lst_iter_name = f->find_info_string(CPPBE_INFO_COLLECTION_ITERATOR);
         const char* type_name;
-        if(gm_is_queue_type(source->getTypeSummary()))
+        if(gm_is_collection_of_collection_type(source->getTypeSummary()))
             type_name = get_type_string(source->getTargetTypeInfo());
         else
             type_name = source->getTypeInfo()->is_node_collection() ? NODE_T : EDGE_T;

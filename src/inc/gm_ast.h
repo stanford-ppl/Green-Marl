@@ -671,7 +671,7 @@ public:
 
     static ast_typedecl* new_queue(ast_id* targetGraph, ast_typedecl* collectionType) {
         ast_typedecl* typeDecl = new ast_typedecl();
-        typeDecl->type_id = GMTYPE_QUEUE;
+        typeDecl->type_id = GMTYPE_COLLECTION;
         typeDecl->target_type = collectionType;
         if (targetGraph == NULL) return typeDecl; //no graph defined for this queue - we will handle this later (typecheck step 1)
         typeDecl->target_graph = targetGraph;
@@ -780,7 +780,7 @@ public:
     }
 
     bool is_collection_of_collection() {
-        return gm_is_queue_type(type_id);
+        return gm_is_collection_of_collection_type(type_id);
     }
 
     bool is_node_collection() {
