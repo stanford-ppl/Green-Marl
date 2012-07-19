@@ -100,19 +100,25 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
         // total size;
         assert(t->get_target_graph_id() != NULL);
         if (!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
-        if (t->is_node_collection())
-            Body->push("."NUM_NODES"()");
-        else if (t->is_edge_collection())
-            Body->push("."NUM_EDGES"()");
-        else if (t->is_queue())
+        if (t->is_node_collection()) {
+            Body->push(".");
+            Body->push(NUM_NODES);
+            Body->push("()");
+        } else if (t->is_edge_collection()) {
+            Body->push(".");
+            Body->push(NUM_EDGES);
+            Body->push("()");
+        } else if (t->is_queue()) {
             assert(true);
-        else
+        } else {
             assert(false);
+        }
     }
     if (t->is_order_collection()) Body->push(", ");
 
     if (t->is_order_collection() || t->is_sequence_collection() || t->is_queue()) {
-        Body->push(MAX_THREADS"()");
+        Body->push(MAX_THREADS);
+        Body->push("()");
     }
 
     Body->pushln(");");

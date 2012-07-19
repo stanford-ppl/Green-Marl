@@ -18,33 +18,33 @@ struct GM_comp_args
     const char* def_value;
 
 };
-#define GMARG_NULL    0
-#define GMARG_STRING  1
-#define GMARG_INT     2
-#define GMARG_BOOL    3
+static const int GMARG_NULL = 0;
+static const int GMARG_STRING = 1;
+static const int GMARG_INT = 2;
+static const int GMARG_BOOL = 3;
 
-#define GMARGFLAG_HELP              "h"
-#define GMARGFLAG_VERSION           "v"
-#define GMARGFLAG_TARGET            "t"
-#define GMARGFLAG_OUTDIR            "o"
-#define GMARGFLAG_OPT_LEV           "O"
-#define GMARGFLAG_VERB_LEV          "V"
-#define GMARGFLAG_OPT_
-//#define GMARGFLAG_STOP_MAJOR        "DS"
-//#define GMARGFLAG_STOP_MINOR        "Ds"
-#define GMARGFLAG_STOP_STRING       "DS"
-#define GMARGFLAG_REPRODUCE         "Dr"
-#define GMARGFLAG_PRINTRW           "Dw"
-#define GMARGFLAG_PRINTBB           "Db" 
-#define GMARGFLAG_FLIP_REVERSE      "FlipRev"
-#define GMARGFLAG_FLIP_PULL         "FlipPull"
-#define GMARGFLAG_FLIP_BFSUP        "FlipUp"
+static const char* GMARGFLAG_HELP = "h";
+static const char* GMARGFLAG_VERSION = "v";
+static const char* GMARGFLAG_TARGET = "t";
+static const char* GMARGFLAG_OUTDIR = "o";
+static const char* GMARGFLAG_OPT_LEV = "O";
+static const char* GMARGFLAG_VERB_LEV = "V";
 
-#define GMARGFLAG_MERGE_BB          "GPSMerge"
-#define GMARGFLAG_MERGE_BB_INTRA    "GPSMergeIntra"
-//#define GMARGFLAG_DUMPIR            "Dd"
-//#define GMARGFLAG_NOMERGE           "NoMerge"
-//#define GMARGFLAG_NOSCREDUCE        "NoScalarReduce"
+//static const char* GMARGFLAG_STOP_MAJOR = "DS";
+//static const char* GMARGFLAG_STOP_MINOR = "Ds";
+static const char* GMARGFLAG_STOP_STRING = "DS";
+static const char* GMARGFLAG_REPRODUCE = "Dr";
+static const char* GMARGFLAG_PRINTRW = "Dw";
+static const char* GMARGFLAG_PRINTBB = "Db";
+static const char* GMARGFLAG_FLIP_REVERSE = "FlipRev";
+static const char* GMARGFLAG_FLIP_PULL = "FlipPull";
+static const char* GMARGFLAG_FLIP_BFSUP = "FlipUp";
+
+static const char* GMARGFLAG_MERGE_BB = "GPSMerge";
+static const char* GMARGFLAG_MERGE_BB_INTRA = "GPSMergeIntra";
+//static const char* GMARGFLAG_DUMPIR = "Dd";
+//static const char* GMARGFLAG_NOMERGE = "NoMerge";
+//static const char* GMARGFLAG_NOSCREDUCE = "NoScalarReduce";
 
 // Add compiler options here
 static struct GM_comp_args GM_compiler_options[] = { { GMARGFLAG_HELP, GMARG_NULL, "Print help messages", NULL }, { GMARGFLAG_VERSION, GMARG_NULL,

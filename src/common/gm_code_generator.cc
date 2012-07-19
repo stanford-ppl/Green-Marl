@@ -48,8 +48,8 @@ void gm_code_generator::generate_expr(ast_expr*e) {
     }
 }
 
-#define LP "("
-#define RP ")"
+static const char* LP = "(";
+static const char* RP = ")";
 void gm_code_generator::generate_expr_type_conversion(ast_expr * e) {
     bool no_lp1 = (e->get_up_op() == NULL);
     bool need_lp2 = e->get_left_op()->is_builtin();

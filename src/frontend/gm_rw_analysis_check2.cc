@@ -26,7 +26,7 @@ extern temp_map_t Default_DriverMap;
 extern void traverse_expr_for_readset_adding(ast_expr* e, gm_rwinfo_map& rset, temp_map_t& DrvMap = Default_DriverMap);
 
 // Type of conflicts
-enum
+enum gm_conflict_t
 {
     RW_CONFLICT,   // Read-Write conflict   (warning)
     WW_CONFLICT,   // Write-Write conflict  (warning)

@@ -53,7 +53,7 @@ struct gm_gps_congruent_msg_class
     }
 };
 
-enum
+enum gm_gps_comm_t
 {
     GPS_COMM_NESTED,           // communication for nested loop
     GPS_COMM_RANDOM_WRITE,     // communication due to random write

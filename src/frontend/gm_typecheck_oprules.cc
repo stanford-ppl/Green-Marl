@@ -12,7 +12,7 @@
 // CLASS NUMERIC OP
 
 //------------------------------------------------------------------------
-enum
+enum gm_operator_t
 {
     INT_OP,        // %
     NUMERIC_OP,    // +,-,*,/, Max, Min
@@ -23,20 +23,20 @@ enum
     ASSIGN_OP,        // =
 };
 
-enum
+enum gm_operator_type_class_t
 {
     T_INT, T_BOOL, T_NUMERIC, T_NUMERIC_INF,    // NUMERIC + INF
     T_COMPATIBLE,
 };
 
-enum
+enum gm_operator_result_t
 {
     RESULT_COERCION,        // coercion
     RESULT_LEFT,
     RESULT_BOOL
 };
 
-enum
+enum gm_operator_coercion_t
 {
     COERCION_ALL,          // coercion
     COERCION_RIGHT,        // coercion

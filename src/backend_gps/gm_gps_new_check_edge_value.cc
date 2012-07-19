@@ -67,8 +67,9 @@
 //     GPS_FLAG_EDGE_DEFINING_WRITING:<where:>assign, <what:>if this assignment is defining en edge (as inner.ToEdge())
 //------------------------------------------------------------------------------------
 
-#define SENDING     1
-#define WRITING     2
+static const int SENDING = 1;
+static const int WRITING = 2;
+
 // return: is_error
 static bool manage_edge_prop_access_state(ast_foreach* fe, gm_symtab_entry* e, int op) {
     assert((op==SENDING) || (op==WRITING));
