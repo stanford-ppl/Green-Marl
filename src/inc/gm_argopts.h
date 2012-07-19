@@ -29,7 +29,7 @@ static const char* GMARGFLAG_TARGET = "t";
 static const char* GMARGFLAG_OUTDIR = "o";
 static const char* GMARGFLAG_OPT_LEV = "O";
 static const char* GMARGFLAG_VERB_LEV = "V";
-#define GMARGFLAG_OPT_
+
 //static const char* GMARGFLAG_STOP_MAJOR = "DS";
 //static const char* GMARGFLAG_STOP_MINOR = "Ds";
 static const char* GMARGFLAG_STOP_STRING = "DS";
