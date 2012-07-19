@@ -5,8 +5,8 @@
 #include "gm_typecheck.h"
 #include "gm_traverse.h"
 
-#define GM_FIX_SYMTAB   true
-#define GM_NOFIX_SYMTAB false
+static const bool GM_FIX_SYMTAB = true;
+static const bool GM_NOFIX_SYMTAB = false;
 
 //-----------------------------------------------
 // helper functions for code transformation

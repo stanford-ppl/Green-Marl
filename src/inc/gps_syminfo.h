@@ -22,7 +22,7 @@ enum gm_gps_symbol_usage_location_t
 };
 
 // symbol usage info
-#define GPS_TAG_BB_USAGE            "GPS_TAG_BB"
+static const char* GPS_TAG_BB_USAGE = "GPS_TAG_BB";
 
 class gps_syminfo : public ast_extra_info
 {
