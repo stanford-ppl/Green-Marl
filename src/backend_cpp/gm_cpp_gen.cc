@@ -358,7 +358,7 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
 
 void gm_cpp_gen::generate_sent_foreach(ast_foreach* f) {
 
-    int ptr, indent;
+    int ptr;
     bool need_init_before = get_lib()->need_up_initializer(f);
 
     if (need_init_before) {
@@ -1027,7 +1027,6 @@ void gm_cpp_gen::generate_expr_inf(ast_expr *e) {
     char* temp = temp_str;
     assert(e->get_opclass() == GMEXPR_INF);
     int t = e->get_type_summary();
-    char* str;
     switch (t) {
         case GMTYPE_INF:
         case GMTYPE_INF_INT:
@@ -1106,8 +1105,8 @@ void gm_cpp_gen::generate_expr_builtin(ast_expr* ee) {
 
     assert(def != NULL);
     int method_id = def->get_method_id();
-    bool add_thread_id = false;
     if (driver == NULL) {
+        bool add_thread_id = false;
         const char* func_name = get_function_name(method_id, add_thread_id);
         Body.push(func_name);
         Body.push('(');

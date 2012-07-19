@@ -402,7 +402,6 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gi
 }
 
 void gm_giraphlib::generate_master_class_details(std::set<gm_symtab_entry*>& prop, gm_code_writer& Body) {
-    char temp[1024];
     std::set<gm_symtab_entry*>::iterator I;
 
     Body.pushln("@Override");

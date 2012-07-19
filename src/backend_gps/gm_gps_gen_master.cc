@@ -17,7 +17,6 @@ void gm_gps_gen::write_headers() {
 
 void gm_gps_gen::begin_class() {
     ast_procdef* proc = FE.get_current_proc();
-    char temp[1024];
     Body.push("public class ");
     Body.push(proc->get_procname()->get_genname());
     Body.push("{");
@@ -190,7 +189,6 @@ void gm_gps_gen::do_generate_shared_variables_keys() {
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
     std::set<gm_symtab_entry*>::iterator I;
 
-    char temp[256];
     for (I = scalar.begin(); I != scalar.end(); I++) {
         gm_symtab_entry* sym = *I;
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
