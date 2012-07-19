@@ -28,9 +28,10 @@ typedef gm_gps_basic_block gps_bb;
 //   <after merge>
 //       [(PAR1 Receive) -> (PAR1 SentBlock :: PAR2 SentBlock)] ==> [ (SEQ1) -> (SEQ2) ]
 //------------------------------------------------------------------
-#define FOR_PAR1    0
-#define FOR_SEQ1    1
-#define FOR_PAR2    2
+static const int FOR_PAR1 = 0;
+static const int FOR_SEQ1 = 1;
+static const int FOR_PAR2 = 2;
+
 class check_usage_t : public gps_apply_bb_ast
 {
 public:

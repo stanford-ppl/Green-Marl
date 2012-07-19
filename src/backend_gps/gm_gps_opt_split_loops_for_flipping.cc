@@ -358,9 +358,9 @@ static void add_scalar_rw(ast_sent* s, std::set<gm_symtab_entry*>& TARGET) {
     }
 }
 
-#define USED_BY_WHO         "gm_split_used_by_who"
-#define USED_BY_OLDER       1
-#define USED_BY_YOUNGER     2
+static const char* USED_BY_WHO = "gm_split_used_by_who";
+static const int USED_BY_OLDER = 1;
+static const int USED_BY_YOUNGER = 2;
 
 static void ensure_no_dependency_via_scala(std::list<ast_node*>& frame, std::map<ast_sentblock*, std::list<ast_sent*> >& elder,
 std::map<ast_sentblock*, std::list<ast_sent*> >& younger) {

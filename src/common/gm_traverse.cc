@@ -2,8 +2,8 @@
 #include "gm_typecheck.h"
 #include "gm_misc.h"
 
-#define POST_APPLY     true
-#define PRE_APPLY      false
+static const bool POST_APPLY = true;
+static const bool PRE_APPLY = false;
 
 void ast_procdef::traverse(gm_apply*a, bool is_post, bool is_pre) {
     bool for_symtab = a->is_for_symtab();

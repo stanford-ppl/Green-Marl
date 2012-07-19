@@ -80,12 +80,12 @@ private:
 // For compiler debug,
 // mark begining/end of compiler stage (major or minor).
 // All numbering should start from 1. (not from 0)
-#define GMSTAGE_PARSE        1
-#define GMSTAGE_FRONTEND     2
-#define GMSTAGE_INDEPENDENT_OPT   3
-#define GMSTAGE_BACKEND_OPT  4
-#define GMSTAGE_LIBRARY_OPT  5
-#define GMSTAGE_CODEGEN      6
+static const int GMSTAGE_PARSE = 1;
+static const int GMSTAGE_FRONTEND = 2;
+static const int GMSTAGE_INDEPENDENT_OPT = 3;
+static const int GMSTAGE_BACKEND_OPT = 4;
+static const int GMSTAGE_LIBRARY_OPT = 5;
+static const int GMSTAGE_CODEGEN = 6;
 
 extern void gm_begin_major_compiler_stage(int major_no, const char* desc);
 extern void gm_end_major_compiler_stage();

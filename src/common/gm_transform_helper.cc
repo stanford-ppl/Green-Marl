@@ -220,7 +220,7 @@ void gm_make_it_belong_to_sentblock_nested(ast_sent *s, bool need_fix_symtab) {
     gm_make_it_belong_to_sentblock_main(s, true, need_fix_symtab);
 }
 
-enum
+enum gm_insert_location_t
 {
     GM_INSERT_BEGIN, GM_INSERT_END, GM_INSERT_BEFORE, GM_INSERT_AFTER,
 };
