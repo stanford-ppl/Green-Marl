@@ -4,8 +4,7 @@
 #include <list>
 #include <map>
 
-#define STR(X)                          #X
-#define AUX_INFO(X,Y)			TO_STR(X)":"STR(Y)
+#define AUX_INFO(X,Y)			TO_STR(X)":"TO_STR(Y)
 
 static const int GM_BLTIN_MUTATE_GROW = 1;
 static const int GM_BLTIN_MUTATE_SHRINK = 2;
@@ -207,6 +206,5 @@ private:
 };
 
 #undef AUX_INFO
-#undef STR
 
 extern gm_builtin_manager BUILT_IN;
