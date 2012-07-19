@@ -224,7 +224,7 @@ void gm_cpp_gen::generate_idlist(ast_idlist* idl) {
 
 void gm_cpp_gen::generate_idlist_primitive(ast_idlist* idList) {
     int length = idList->get_length();
-    for(int i = 0; i < length; i++) {
+    for (int i = 0; i < length; i++) {
         ast_id* id = idList->get_item(i);
         generate_lhs_id(id);
         generate_lhs_default(id->getTypeSummary());
@@ -234,23 +234,23 @@ void gm_cpp_gen::generate_idlist_primitive(ast_idlist* idList) {
 
 void gm_cpp_gen::generate_lhs_default(int type) {
     switch (type) {
-                case GMTYPE_BYTE:
-                case GMTYPE_SHORT:
-                case GMTYPE_INT:
-                case GMTYPE_LONG:
-                    Body.push_spc(" = 0");
-                    break;
-                case GMTYPE_FLOAT:
-                case GMTYPE_DOUBLE:
-                    Body.push_spc(" = 0.0");
-                    break;
-                case GMTYPE_BOOL:
-                    Body.push_spc(" = false");
-                    break;
-                default:
-                    assert(false);
-                    return;
-            }
+        case GMTYPE_BYTE:
+        case GMTYPE_SHORT:
+        case GMTYPE_INT:
+        case GMTYPE_LONG:
+            Body.push_spc(" = 0");
+            break;
+        case GMTYPE_FLOAT:
+        case GMTYPE_DOUBLE:
+            Body.push_spc(" = 0.0");
+            break;
+        case GMTYPE_BOOL:
+            Body.push_spc(" = false");
+            break;
+        default:
+            assert(false);
+            return;
+    }
 }
 
 void gm_cpp_gen::generate_lhs_id(ast_id* id) {
@@ -385,18 +385,14 @@ void gm_cpp_gen::generate_sent_foreach(ast_foreach* f) {
         }
         Body.pushln("}");
 
-    } else {
-        if (f->get_body()->get_nodetype() != AST_SENTBLOCK) {
-            Body.push_indent();
-        }
+    } else if (f->get_body()->get_nodetype() == AST_SENTBLOCK) {
         generate_sent(f->get_body());
-        if (f->get_body()->get_nodetype() != AST_SENTBLOCK) {
-            Body.pop_indent();
-            Body.NL();
-        }
+    } else {
+        Body.push_indent();
+        generate_sent(f->get_body());
+        Body.pop_indent();
+        Body.NL();
     }
-
-    return;
 }
 
 void gm_cpp_gen::generate_sent_call(ast_call* c) {
@@ -470,7 +466,7 @@ void gm_cpp_gen::declare_prop_def(ast_typedecl* t, ast_id * id) {
 void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
     ast_typedecl* t = v->get_type();
 
-    if (t->is_queue()) {
+    if (t->is_collection_of_collection()) {
         Body.push(get_type_string(t));
         ast_typedecl* targetType = t->get_target_type();
         Body.push("<");

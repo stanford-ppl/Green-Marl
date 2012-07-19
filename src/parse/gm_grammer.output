@@ -83,8 +83,8 @@ Grammar
    40         | T_NSEQ
    41         | T_NORDER '(' id ')'
    42         | T_NORDER
-   43         | T_QUEUE '<' set_type '>' '(' id ')'
-   44         | T_QUEUE '<' set_type '>'
+   43         | T_COLLECTION '<' set_type '>' '(' id ')'
+   44         | T_COLLECTION '<' set_type '>'
 
    45 property: T_NODEPROP '<' prim_type '>' '(' id ')'
    46         | T_NODEPROP '<' nodeedge_type '>' '(' id ')'
@@ -343,7 +343,7 @@ T_NSET (265) 37 38
 T_NORDER (266) 41 42
 T_NSEQ (267) 39 40
 T_ITEMS (268) 97
-T_QUEUE (269) 43 44
+T_COLLECTION (269) 43 44
 T_DFS (270) 99
 T_POST (271) 102 103
 T_INT (272) 26
@@ -712,34 +712,34 @@ state 16
    60 sent_block: sb_begin sent_list . sb_end
    64 sent_list: sent_list . sent
 
-    T_GRAPH     shift, and go to state 23
-    T_NODE      shift, and go to state 24
-    T_NODEPROP  shift, and go to state 25
-    T_EDGE      shift, and go to state 26
-    T_EDGEPROP  shift, and go to state 27
-    T_NSET      shift, and go to state 28
-    T_NORDER    shift, and go to state 29
-    T_NSEQ      shift, and go to state 30
-    T_QUEUE     shift, and go to state 31
-    T_DFS       shift, and go to state 32
-    T_INT       shift, and go to state 33
-    T_FLOAT     shift, and go to state 34
-    T_BOOL      shift, and go to state 35
-    T_DOUBLE    shift, and go to state 36
-    T_LONG      shift, and go to state 37
-    T_RETURN    shift, and go to state 38
-    T_BFS       shift, and go to state 39
-    T_FOREACH   shift, and go to state 40
-    T_FOR       shift, and go to state 41
-    T_IF        shift, and go to state 42
-    T_DO        shift, and go to state 43
-    T_WHILE     shift, and go to state 44
-    ID          shift, and go to state 8
-    '<'         shift, and go to state 45
-    ';'         shift, and go to state 46
-    '{'         shift, and go to state 11
-    '}'         shift, and go to state 47
-    '['         shift, and go to state 48
+    T_GRAPH       shift, and go to state 23
+    T_NODE        shift, and go to state 24
+    T_NODEPROP    shift, and go to state 25
+    T_EDGE        shift, and go to state 26
+    T_EDGEPROP    shift, and go to state 27
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_DFS         shift, and go to state 32
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
+    T_RETURN      shift, and go to state 38
+    T_BFS         shift, and go to state 39
+    T_FOREACH     shift, and go to state 40
+    T_FOR         shift, and go to state 41
+    T_IF          shift, and go to state 42
+    T_DO          shift, and go to state 43
+    T_WHILE       shift, and go to state 44
+    ID            shift, and go to state 8
+    '<'           shift, and go to state 45
+    ';'           shift, and go to state 46
+    '{'           shift, and go to state 11
+    '}'           shift, and go to state 47
+    '['           shift, and go to state 48
 
     typedecl                   go to state 49
     graph_type                 go to state 50
@@ -910,8 +910,8 @@ state 30
 
 state 31
 
-   43 set_type: T_QUEUE . '<' set_type '>' '(' id ')'
-   44         | T_QUEUE . '<' set_type '>'
+   43 set_type: T_COLLECTION . '<' set_type '>' '(' id ')'
+   44         | T_COLLECTION . '<' set_type '>'
 
     '<'  shift, and go to state 93
 
@@ -1388,20 +1388,20 @@ state 84
 
    18 arg_decl: arg_target ':' . typedecl
 
-    T_GRAPH     shift, and go to state 23
-    T_NODE      shift, and go to state 24
-    T_NODEPROP  shift, and go to state 25
-    T_EDGE      shift, and go to state 170
-    T_EDGEPROP  shift, and go to state 27
-    T_NSET      shift, and go to state 28
-    T_NORDER    shift, and go to state 29
-    T_NSEQ      shift, and go to state 30
-    T_QUEUE     shift, and go to state 31
-    T_INT       shift, and go to state 33
-    T_FLOAT     shift, and go to state 34
-    T_BOOL      shift, and go to state 35
-    T_DOUBLE    shift, and go to state 36
-    T_LONG      shift, and go to state 37
+    T_GRAPH       shift, and go to state 23
+    T_NODE        shift, and go to state 24
+    T_NODEPROP    shift, and go to state 25
+    T_EDGE        shift, and go to state 170
+    T_EDGEPROP    shift, and go to state 27
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
 
     typedecl       go to state 171
     graph_type     go to state 50
@@ -1440,17 +1440,17 @@ state 87
    49         | T_NODEPROP '<' . nodeedge_type '>'
    50         | T_NODEPROP '<' . set_type '>'
 
-    T_NODE    shift, and go to state 24
-    T_EDGE    shift, and go to state 170
-    T_NSET    shift, and go to state 28
-    T_NORDER  shift, and go to state 29
-    T_NSEQ    shift, and go to state 30
-    T_QUEUE   shift, and go to state 31
-    T_INT     shift, and go to state 33
-    T_FLOAT   shift, and go to state 34
-    T_BOOL    shift, and go to state 35
-    T_DOUBLE  shift, and go to state 36
-    T_LONG    shift, and go to state 37
+    T_NODE        shift, and go to state 24
+    T_EDGE        shift, and go to state 170
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
 
     prim_type      go to state 174
     nodeedge_type  go to state 175
@@ -1478,17 +1478,17 @@ state 89
    55         | T_EDGEPROP '<' . nodeedge_type '>'
    56         | T_EDGEPROP '<' . set_type '>'
 
-    T_NODE    shift, and go to state 24
-    T_EDGE    shift, and go to state 170
-    T_NSET    shift, and go to state 28
-    T_NORDER  shift, and go to state 29
-    T_NSEQ    shift, and go to state 30
-    T_QUEUE   shift, and go to state 31
-    T_INT     shift, and go to state 33
-    T_FLOAT   shift, and go to state 34
-    T_BOOL    shift, and go to state 35
-    T_DOUBLE  shift, and go to state 36
-    T_LONG    shift, and go to state 37
+    T_NODE        shift, and go to state 24
+    T_EDGE        shift, and go to state 170
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
 
     prim_type      go to state 178
     nodeedge_type  go to state 179
@@ -1526,13 +1526,13 @@ state 92
 
 state 93
 
-   43 set_type: T_QUEUE '<' . set_type '>' '(' id ')'
-   44         | T_QUEUE '<' . set_type '>'
+   43 set_type: T_COLLECTION '<' . set_type '>' '(' id ')'
+   44         | T_COLLECTION '<' . set_type '>'
 
-    T_NSET    shift, and go to state 28
-    T_NORDER  shift, and go to state 29
-    T_NSEQ    shift, and go to state 30
-    T_QUEUE   shift, and go to state 31
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
 
     set_type  go to state 184
 
@@ -2588,8 +2588,8 @@ state 183
 
 state 184
 
-   43 set_type: T_QUEUE '<' set_type . '>' '(' id ')'
-   44         | T_QUEUE '<' set_type . '>'
+   43 set_type: T_COLLECTION '<' set_type . '>' '(' id ')'
+   44         | T_COLLECTION '<' set_type . '>'
 
     '>'  shift, and go to state 256
 
@@ -3436,33 +3436,33 @@ state 216
 
    84 sent_foreach: T_FOREACH foreach_header foreach_filter . sent
 
-    T_GRAPH     shift, and go to state 23
-    T_NODE      shift, and go to state 24
-    T_NODEPROP  shift, and go to state 25
-    T_EDGE      shift, and go to state 26
-    T_EDGEPROP  shift, and go to state 27
-    T_NSET      shift, and go to state 28
-    T_NORDER    shift, and go to state 29
-    T_NSEQ      shift, and go to state 30
-    T_QUEUE     shift, and go to state 31
-    T_DFS       shift, and go to state 32
-    T_INT       shift, and go to state 33
-    T_FLOAT     shift, and go to state 34
-    T_BOOL      shift, and go to state 35
-    T_DOUBLE    shift, and go to state 36
-    T_LONG      shift, and go to state 37
-    T_RETURN    shift, and go to state 38
-    T_BFS       shift, and go to state 39
-    T_FOREACH   shift, and go to state 40
-    T_FOR       shift, and go to state 41
-    T_IF        shift, and go to state 42
-    T_DO        shift, and go to state 43
-    T_WHILE     shift, and go to state 44
-    ID          shift, and go to state 8
-    '<'         shift, and go to state 45
-    ';'         shift, and go to state 46
-    '{'         shift, and go to state 11
-    '['         shift, and go to state 48
+    T_GRAPH       shift, and go to state 23
+    T_NODE        shift, and go to state 24
+    T_NODEPROP    shift, and go to state 25
+    T_EDGE        shift, and go to state 26
+    T_EDGEPROP    shift, and go to state 27
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_DFS         shift, and go to state 32
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
+    T_RETURN      shift, and go to state 38
+    T_BFS         shift, and go to state 39
+    T_FOREACH     shift, and go to state 40
+    T_FOR         shift, and go to state 41
+    T_IF          shift, and go to state 42
+    T_DO          shift, and go to state 43
+    T_WHILE       shift, and go to state 44
+    ID            shift, and go to state 8
+    '<'           shift, and go to state 45
+    ';'           shift, and go to state 46
+    '{'           shift, and go to state 11
+    '['           shift, and go to state 48
 
     typedecl                   go to state 49
     graph_type                 go to state 50
@@ -3502,33 +3502,33 @@ state 217
 
    85 sent_foreach: T_FOR foreach_header foreach_filter . sent
 
-    T_GRAPH     shift, and go to state 23
-    T_NODE      shift, and go to state 24
-    T_NODEPROP  shift, and go to state 25
-    T_EDGE      shift, and go to state 26
-    T_EDGEPROP  shift, and go to state 27
-    T_NSET      shift, and go to state 28
-    T_NORDER    shift, and go to state 29
-    T_NSEQ      shift, and go to state 30
-    T_QUEUE     shift, and go to state 31
-    T_DFS       shift, and go to state 32
-    T_INT       shift, and go to state 33
-    T_FLOAT     shift, and go to state 34
-    T_BOOL      shift, and go to state 35
-    T_DOUBLE    shift, and go to state 36
-    T_LONG      shift, and go to state 37
-    T_RETURN    shift, and go to state 38
-    T_BFS       shift, and go to state 39
-    T_FOREACH   shift, and go to state 40
-    T_FOR       shift, and go to state 41
-    T_IF        shift, and go to state 42
-    T_DO        shift, and go to state 43
-    T_WHILE     shift, and go to state 44
-    ID          shift, and go to state 8
-    '<'         shift, and go to state 45
-    ';'         shift, and go to state 46
-    '{'         shift, and go to state 11
-    '['         shift, and go to state 48
+    T_GRAPH       shift, and go to state 23
+    T_NODE        shift, and go to state 24
+    T_NODEPROP    shift, and go to state 25
+    T_EDGE        shift, and go to state 26
+    T_EDGEPROP    shift, and go to state 27
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_DFS         shift, and go to state 32
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
+    T_RETURN      shift, and go to state 38
+    T_BFS         shift, and go to state 39
+    T_FOREACH     shift, and go to state 40
+    T_FOR         shift, and go to state 41
+    T_IF          shift, and go to state 42
+    T_DO          shift, and go to state 43
+    T_WHILE       shift, and go to state 44
+    ID            shift, and go to state 8
+    '<'           shift, and go to state 45
+    ';'           shift, and go to state 46
+    '{'           shift, and go to state 11
+    '['           shift, and go to state 48
 
     typedecl                   go to state 49
     graph_type                 go to state 50
@@ -4054,8 +4054,8 @@ state 255
 
 state 256
 
-   43 set_type: T_QUEUE '<' set_type '>' . '(' id ')'
-   44         | T_QUEUE '<' set_type '>' .
+   43 set_type: T_COLLECTION '<' set_type '>' . '(' id ')'
+   44         | T_COLLECTION '<' set_type '>' .
 
     '('  shift, and go to state 316
 
@@ -4673,33 +4673,33 @@ state 288
   140 sent_if: T_IF '(' bool_expr ')' . sent
   141        | T_IF '(' bool_expr ')' . sent T_ELSE sent
 
-    T_GRAPH     shift, and go to state 23
-    T_NODE      shift, and go to state 24
-    T_NODEPROP  shift, and go to state 25
-    T_EDGE      shift, and go to state 26
-    T_EDGEPROP  shift, and go to state 27
-    T_NSET      shift, and go to state 28
-    T_NORDER    shift, and go to state 29
-    T_NSEQ      shift, and go to state 30
-    T_QUEUE     shift, and go to state 31
-    T_DFS       shift, and go to state 32
-    T_INT       shift, and go to state 33
-    T_FLOAT     shift, and go to state 34
-    T_BOOL      shift, and go to state 35
-    T_DOUBLE    shift, and go to state 36
-    T_LONG      shift, and go to state 37
-    T_RETURN    shift, and go to state 38
-    T_BFS       shift, and go to state 39
-    T_FOREACH   shift, and go to state 40
-    T_FOR       shift, and go to state 41
-    T_IF        shift, and go to state 42
-    T_DO        shift, and go to state 43
-    T_WHILE     shift, and go to state 44
-    ID          shift, and go to state 8
-    '<'         shift, and go to state 45
-    ';'         shift, and go to state 46
-    '{'         shift, and go to state 11
-    '['         shift, and go to state 48
+    T_GRAPH       shift, and go to state 23
+    T_NODE        shift, and go to state 24
+    T_NODEPROP    shift, and go to state 25
+    T_EDGE        shift, and go to state 26
+    T_EDGEPROP    shift, and go to state 27
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_DFS         shift, and go to state 32
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
+    T_RETURN      shift, and go to state 38
+    T_BFS         shift, and go to state 39
+    T_FOREACH     shift, and go to state 40
+    T_FOR         shift, and go to state 41
+    T_IF          shift, and go to state 42
+    T_DO          shift, and go to state 43
+    T_WHILE       shift, and go to state 44
+    ID            shift, and go to state 8
+    '<'           shift, and go to state 45
+    ';'           shift, and go to state 46
+    '{'           shift, and go to state 11
+    '['           shift, and go to state 48
 
     typedecl                   go to state 49
     graph_type                 go to state 50
@@ -5036,7 +5036,7 @@ state 315
 
 state 316
 
-   43 set_type: T_QUEUE '<' set_type '>' '(' . id ')'
+   43 set_type: T_COLLECTION '<' set_type '>' '(' . id ')'
 
     ID  shift, and go to state 8
 
@@ -5367,7 +5367,7 @@ state 346
 
 state 347
 
-   43 set_type: T_QUEUE '<' set_type '>' '(' id . ')'
+   43 set_type: T_COLLECTION '<' set_type '>' '(' id . ')'
 
     ')'  shift, and go to state 370
 
@@ -5505,33 +5505,33 @@ state 360
 
   141 sent_if: T_IF '(' bool_expr ')' sent T_ELSE . sent
 
-    T_GRAPH     shift, and go to state 23
-    T_NODE      shift, and go to state 24
-    T_NODEPROP  shift, and go to state 25
-    T_EDGE      shift, and go to state 26
-    T_EDGEPROP  shift, and go to state 27
-    T_NSET      shift, and go to state 28
-    T_NORDER    shift, and go to state 29
-    T_NSEQ      shift, and go to state 30
-    T_QUEUE     shift, and go to state 31
-    T_DFS       shift, and go to state 32
-    T_INT       shift, and go to state 33
-    T_FLOAT     shift, and go to state 34
-    T_BOOL      shift, and go to state 35
-    T_DOUBLE    shift, and go to state 36
-    T_LONG      shift, and go to state 37
-    T_RETURN    shift, and go to state 38
-    T_BFS       shift, and go to state 39
-    T_FOREACH   shift, and go to state 40
-    T_FOR       shift, and go to state 41
-    T_IF        shift, and go to state 42
-    T_DO        shift, and go to state 43
-    T_WHILE     shift, and go to state 44
-    ID          shift, and go to state 8
-    '<'         shift, and go to state 45
-    ';'         shift, and go to state 46
-    '{'         shift, and go to state 11
-    '['         shift, and go to state 48
+    T_GRAPH       shift, and go to state 23
+    T_NODE        shift, and go to state 24
+    T_NODEPROP    shift, and go to state 25
+    T_EDGE        shift, and go to state 26
+    T_EDGEPROP    shift, and go to state 27
+    T_NSET        shift, and go to state 28
+    T_NORDER      shift, and go to state 29
+    T_NSEQ        shift, and go to state 30
+    T_COLLECTION  shift, and go to state 31
+    T_DFS         shift, and go to state 32
+    T_INT         shift, and go to state 33
+    T_FLOAT       shift, and go to state 34
+    T_BOOL        shift, and go to state 35
+    T_DOUBLE      shift, and go to state 36
+    T_LONG        shift, and go to state 37
+    T_RETURN      shift, and go to state 38
+    T_BFS         shift, and go to state 39
+    T_FOREACH     shift, and go to state 40
+    T_FOR         shift, and go to state 41
+    T_IF          shift, and go to state 42
+    T_DO          shift, and go to state 43
+    T_WHILE       shift, and go to state 44
+    ID            shift, and go to state 8
+    '<'           shift, and go to state 45
+    ';'           shift, and go to state 46
+    '{'           shift, and go to state 11
+    '['           shift, and go to state 48
 
     typedecl                   go to state 49
     graph_type                 go to state 50
@@ -5632,7 +5632,7 @@ state 369
 
 state 370
 
-   43 set_type: T_QUEUE '<' set_type '>' '(' id ')' .
+   43 set_type: T_COLLECTION '<' set_type '>' '(' id ')' .
 
     $default  reduce using rule 43 (set_type)
 

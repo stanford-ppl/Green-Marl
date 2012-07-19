@@ -36,31 +36,37 @@ public:
             Q.push_back(e);
         }
     }
+
     void push_front(T e) {
         if (!_gm_get_bit(bitmap, e)) {
             _gm_set_bit(bitmap, e);
             Q.push_front(e);
         }
     }
+
     void pop_back() {
         T e = Q.back();
         _gm_clear_bit(bitmap, e);
         Q.pop_back();
     }
+
     void pop_front() {
         T e = Q.front();
         _gm_clear_bit(bitmap, e);
         Q.pop_front();
     }
+
     void clear() {
         Q.clear();
 #pragma omp parallel for
         for (int i = 0; i < (max_sz + 7) / 8; i++)
             bitmap[i] = 0;
     }
-    void get_size() {
-        Q.get_size();
+
+    size_t get_size() {
+        return Q.size();
     }
+
     bool is_in(T e) {
         return (_gm_get_bit(bitmap, e) == 1);
     }
@@ -125,7 +131,7 @@ public:
     {
     public:
         par_iter(typename std::list<T>::iterator I, typename std::list<T>::iterator E) :
-                ITER(I), END_ITER(E), is_small(true) {
+                ITER(I), END_ITER(E), is_small(true), bitmap(NULL) {
         }
         par_iter(unsigned char* B, T I, T E) :
                 bitmap(B), ITER(I), END_ITER(E), is_small(false) {
@@ -189,7 +195,7 @@ public:
     }
 
 private:
-    gm_order() {
+    gm_order() : max_sz(-1), max_thread(-1), bitmap(NULL), local_Q_front(NULL), local_Q_back(NULL) {
     } // initialize without size is prohibited
 
     typename std::list<T> Q;
