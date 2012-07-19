@@ -9,6 +9,7 @@ obj/*
 test.gm
 test_main.cc
 
+test/cpp_be/output
 test/gps/output
 test/gps/.classpath
 test/gps/.project
