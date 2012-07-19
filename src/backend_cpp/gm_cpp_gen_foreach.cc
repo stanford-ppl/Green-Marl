@@ -93,11 +93,10 @@ void gm_cpplib::generate_down_initializer(ast_foreach* f, gm_code_writer& Body) 
         assert(f->find_info(CPPBE_INFO_COLLECTION_ITERATOR) != NULL);
         const char* lst_iter_name = f->find_info_string(CPPBE_INFO_COLLECTION_ITERATOR);
         const char* type_name;
-        if(gm_is_queue_type(source->getTypeSummary())) {
+        if(gm_is_queue_type(source->getTypeSummary()))
             type_name = get_type_string(source->getTargetTypeInfo());
-        } else {
+        else
             type_name = source->getTypeInfo()->is_node_collection() ? NODE_T : EDGE_T;
-        }
 
         sprintf(str_buf, "%s %s = %s.get_next();", type_name, f->get_iterator()->get_genname(), lst_iter_name);
         Body.pushln(str_buf);
