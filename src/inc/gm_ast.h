@@ -671,7 +671,7 @@ public:
 
     static ast_typedecl* new_queue(ast_id* targetGraph, ast_typedecl* collectionType) {
         ast_typedecl* typeDecl = new ast_typedecl();
-        typeDecl->type_id = GMTYPE_QUEUE;
+        typeDecl->type_id = GMTYPE_COLLECTION;
         typeDecl->target_type = collectionType;
         if (targetGraph == NULL) return typeDecl; //no graph defined for this queue - we will handle this later (typecheck step 1)
         typeDecl->target_graph = targetGraph;
@@ -779,8 +779,8 @@ public:
         return gm_is_collection_type(type_id);
     }
 
-    bool is_queue() {
-        return gm_is_queue_type(type_id);
+    bool is_collection_of_collection() {
+        return gm_is_collection_of_collection_type(type_id);
     }
 
     bool is_node_collection() {
@@ -886,7 +886,7 @@ public:
             assert(target_collection->getTypeInfo() != NULL);
             assert(target_collection->getTypeInfo()->get_target_graph_sym() != NULL);
             return target_collection->getTypeInfo()->get_target_graph_sym();
-        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator() || is_queue()) {
+        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator() || is_collection_of_collection()) {
             assert(target_graph != NULL);
             assert(target_graph->getSymInfo() != NULL);
             return target_graph->getSymInfo();
@@ -931,7 +931,7 @@ public:
     }
 
     int getTargetTypeSummary() {
-        assert(is_property() || is_queue());
+        assert(is_property() || is_collection_of_collection());
         assert(target_type != NULL);
         return target_type->getTypeSummary();
     }
@@ -1456,7 +1456,10 @@ public:
     } // set by type checker
 
     gm_symtab_entry* get_bound_graph() {
-        return bound_graph_sym;
+        if (bound_graph_sym == NULL && is_id())
+            return id1->getTypeInfo()->get_target_graph_sym();
+        else
+            return bound_graph_sym;
     }
     void set_bound_graph(gm_symtab_entry*e) {
         bound_graph_sym = e;
@@ -2218,7 +2221,7 @@ public:
         iter_type = i;
     } // GM_ITERATORS
 
-      // should be same to get_iterator()->get_type_summary()
+    // should be same to get_iterator()->get_type_summary()
     ast_id* get_source2() {
         return source2;
     }
@@ -2244,8 +2247,8 @@ public:
     }
 
     virtual bool is_under_parallel_execution() {
-            return is_parallel();
-        }
+        return is_parallel();
+    }
 
     // For is sequential while FOREACH is parallel.
     // Optimization may override parallel execution with sequential.

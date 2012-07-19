@@ -51,18 +51,20 @@ const char* gm_cpplib::get_type_string(int type) {
             return "ERROR";
         }
     } else if (gm_is_collection_type(type)) {
-        assert(gm_is_node_collection_type(type));
+        assert(gm_is_node_collection_type(type) || gm_is_collection_of_collection_type(type));
         if (gm_is_set_collection_type(type))
             return SET_T;
         else if (gm_is_order_collection_type(type))
             return ORDER_T;
         else if (gm_is_sequence_collection_type(type))
             return SEQ_T;
+        else if (gm_is_collection_of_collection_type(type))
+            return QUEUE_T;
         else {
             assert(false);
             return "ERROR";
         }
-    } else if (gm_is_queue_type(type)) {
+    } else if (gm_is_collection_of_collection_type(type)) {
         return QUEUE_T;
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));
@@ -96,22 +98,22 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     Body->push("(");
 
     ast_typedecl* t = i->getTypeInfo();
-    if (t->is_set_collection() || t->is_order_collection() || t->is_queue()) {
+    if (t->is_set_collection() || t->is_order_collection() || t->is_collection_of_collection()) {
         // total size;
         assert(t->get_target_graph_id() != NULL);
-        if (!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
+        if (!t->is_collection_of_collection()) Body->push(t->get_target_graph_id()->get_genname());
         if (t->is_node_collection())
             Body->push("."NUM_NODES"()");
         else if (t->is_edge_collection())
             Body->push("."NUM_EDGES"()");
-        else if (t->is_queue())
+        else if (t->is_collection_of_collection())
             assert(true);
         else
             assert(false);
     }
     if (t->is_order_collection()) Body->push(", ");
 
-    if (t->is_order_collection() || t->is_sequence_collection() || t->is_queue()) {
+    if (t->is_order_collection() || t->is_sequence_collection() || t->is_collection_of_collection()) {
         Body->push(MAX_THREADS"()");
     }
 
@@ -155,6 +157,8 @@ const char* gm_cpplib::get_function_name_nset(int methodId, bool in_parallel) {
             return "intersect";
         case GM_BLTIN_SET_SUBSET:
             return "is_subset";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
@@ -171,6 +175,8 @@ const char* gm_cpplib::get_function_name_nseq(int methodId) {
             return "pop_front";
         case GM_BLTIN_SET_REMOVE_BACK:
             return "pop_back";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
@@ -189,6 +195,8 @@ const char* gm_cpplib::get_function_name_norder(int methodId) {
             return "pop_back";
         case GM_BLTIN_SET_HAS:
             return "is_in";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
