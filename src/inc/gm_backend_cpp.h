@@ -58,7 +58,7 @@ public:
 private:
     virtual void generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr, gm_code_writer& body);
     const char* get_function_name_graph(int methodId);
-    const char* get_function_name_nset(int methodId);
+    const char* get_function_name_nset(int methodId, bool in_parallel = false);
     const char* get_function_name_nseq(int methodId);
     const char* get_function_name_norder(int methodId);
     void add_arguments_and_thread(gm_code_writer& body, ast_expr_builtin* builtinExpr, bool addThreadId);
@@ -216,6 +216,8 @@ protected:
 
 private:
     const char* get_function_name(int methodId, bool& addThreadId);
+    void generate_idlist_primitive(ast_idlist* idList);
+    void generate_lhs_default(int type);
 };
 
 extern gm_cpp_gen CPP_BE;

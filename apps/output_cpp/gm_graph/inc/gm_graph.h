@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <map>
 #include <vector>
+#include <stdlib.h>
 #include "gm_graph_typedef.h"
 
 typedef node_t node_id;
@@ -80,6 +81,14 @@ public:
 
     bool is_neighbor(node_t src, node_t to); // need semi sorting
 
+    bool has_edge_to(node_t source, node_t to) {
+        edge_t current = begin[source];
+        edge_t end = begin[source + 1];
+        while(current < end)
+            if(node_idx[current++] == to) return true;
+        return false;
+    }
+
 public:
     node_t num_nodes() {
         return _numNodes;
@@ -127,15 +136,21 @@ public:
     //-------------------------------------------------------
     node_id add_node();                             // returns ID of a node
     edge_id add_edge(node_id n, node_id m);         // add an edge n->m
+
     bool is_node(node_id n) {
         return (n < _numNodes);
     } // what if after
+
     bool is_edge(edge_id n) {
         return (n < _numEdges);
     }
+
     bool has_edge(node_id from, node_id to);
     edge_t get_num_edges(node_id from, node_id to);   // how many edges between two nodes
-    edge_t get_num_edges(node_id from);               // how many edges from this node
+
+    edge_t get_num_edges(node_id from) {               // how many edges from this node
+        return begin[from + 1] - begin[from];
+    }
 
     //------------------------------------------------------------
     // Methods to be implemented for deletion
@@ -178,6 +193,20 @@ public:
     }
 
     void clear_graph();                         // invalidate everything and make the graph empty
+
+    //returns one of the outgoing neighbors of 'node' - by random choice
+    // if 'node' does not have a neighbor, 'node' is returned
+    node_t pick_random_out_neighbor(node_t node) {
+        edge_t outCount = get_num_edges(node);
+        if (outCount == 0)
+            return node;
+        else
+            return node_idx[begin[node]] + (rand() % outCount); //TODO make 64bit compatible
+    }
+
+    node_t pick_random_node() {
+        return rand() % num_nodes(); //TODO make 64bit compatible
+    }
 
 private:
 

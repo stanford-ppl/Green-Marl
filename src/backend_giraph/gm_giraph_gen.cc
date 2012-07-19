@@ -43,7 +43,6 @@ void gm_giraph_gen::write_headers() {
 
 void gm_giraph_gen::begin_class() {
     ast_procdef* proc = FE.get_current_proc();
-    char temp[1024];
     Body.push("public class ");
     Body.push(proc->get_procname()->get_genname());
     Body.push(" implements Tool {");

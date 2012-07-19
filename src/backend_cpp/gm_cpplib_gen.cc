@@ -62,6 +62,8 @@ const char* gm_cpplib::get_type_string(int type) {
             assert(false);
             return "ERROR";
         }
+    } else if (gm_is_queue_type(type)) {
+        return QUEUE_T;
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));
         assert(false);
@@ -94,20 +96,22 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     Body->push("(");
 
     ast_typedecl* t = i->getTypeInfo();
-    if (t->is_set_collection() || t->is_order_collection()) {
+    if (t->is_set_collection() || t->is_order_collection() || t->is_queue()) {
         // total size;
         assert(t->get_target_graph_id() != NULL);
-        Body->push(t->get_target_graph_id()->get_genname());
+        if (!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
         if (t->is_node_collection())
             Body->push("."NUM_NODES"()");
         else if (t->is_edge_collection())
             Body->push("."NUM_EDGES"()");
+        else if (t->is_queue())
+            assert(true);
         else
             assert(false);
     }
     if (t->is_order_collection()) Body->push(", ");
 
-    if ((t->is_order_collection() || t->is_sequence_collection())) {
+    if (t->is_order_collection() || t->is_sequence_collection() || t->is_queue()) {
         Body->push(MAX_THREADS"()");
     }
 
@@ -135,14 +139,14 @@ void gm_cpplib::generate_expr_nil(ast_expr* e, gm_code_writer& Body) {
     }
 }
 
-const char* gm_cpplib::get_function_name_nset(int methodId) {
+const char* gm_cpplib::get_function_name_nset(int methodId, bool in_parallel) {
     switch (methodId) {
         case GM_BLTIN_SET_HAS:
             return "is_in";
         case GM_BLTIN_SET_REMOVE:
-            return "remove";
+            return in_parallel ? "remove_par" : "remove_seq";
         case GM_BLTIN_SET_ADD:
-            return "add";
+            return in_parallel ? "add_par" : "add_seq";
         case GM_BLTIN_SET_UNION:
             return "union_";
         case GM_BLTIN_SET_COMPLEMENT:
@@ -197,6 +201,8 @@ const char* gm_cpplib::get_function_name_graph(int methodId) {
             return NUM_NODES;
         case GM_BLTIN_GRAPH_NUM_EDGES:
             return NUM_EDGES;
+        case GM_BLTIN_GRAPH_RAND_NODE:
+            return RANDOM_NODE;
         default:
             assert(false);
             return "ERROR";
@@ -227,7 +233,7 @@ void gm_cpplib::generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr,
     const char* functionName;
     switch (sourceType) {
         case GMTYPE_NSET:
-            functionName = get_function_name_nset(methodId);
+            functionName = get_function_name_nset(methodId, parallelExecution);
             break;
         case GMTYPE_NSEQ:
             functionName = get_function_name_nseq(methodId);
@@ -290,6 +296,19 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     sprintf(str_buf, ",%s)", i->get_genname());
                     Body.push(str_buf);
                     break;
+                case GM_BLTIN_NODE_HAS_EDGE_TO:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
+                    sprintf(str_buf, "%s.has_edge_to(", i->getTypeInfo()->get_target_graph_id()->get_genname());
+                    Body.push(str_buf);
+                    main->generate_expr(e->get_args().front());
+                    sprintf(str_buf, ",%s)", i->get_genname());
+                    Body.push(str_buf);
+                    break;
+                case GM_BLTIN_NODE_RAND_NBR:
+                    assert(i->getTypeInfo()->get_target_graph_id() != NULL);
+                    sprintf(str_buf, "%s.pick_random_out_neighbor(%s)", i->getTypeInfo()->get_target_graph_id()->get_genname(), i->get_genname());
+                    Body.push(str_buf);
+                    break;
                 default:
                     assert(false);
                     break;
@@ -330,7 +349,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             Body.push(str_buf);
             return;
         case GMTYPE_NSET:
-            func_name = get_function_name_nset(method_id);
+            func_name = get_function_name_nset(method_id, under_parallel);
             break;
         case GMTYPE_NORDER:
             func_name = get_function_name_norder(method_id);

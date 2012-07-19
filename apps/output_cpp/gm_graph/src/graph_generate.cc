@@ -17,11 +17,11 @@ gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed) {
     node_t* src = new node_t[M];
     node_t* dest = new node_t[M];
     edge_t* degree = new edge_t[N];
-    memset(degree, 0, sizeof(node_t) * N);
+    memset(degree, 0, sizeof(edge_t) * N);
 
     for (edge_t i = 0; i < M; i++) {
-        src[i] = rand() % N;
-        dest[i] = rand() % N;
+        src[i] = rand() % N;  //TODO 64-bit ?
+        dest[i] = rand() % N; //TODO 64-bit ?
 
         degree[src[i]]++;
     }
@@ -94,7 +94,7 @@ gm_graph* create_RMAT_graph(node_t N, edge_t M, long rseed, double a, double b, 
     node_t* src = new node_t[M];
     node_t* dest = new node_t[M];
     edge_t* degree = new edge_t[N];
-    memset(degree, 0, sizeof(node_t) * N);
+    memset(degree, 0, sizeof(edge_t) * N);
 
     node_t SCALE = (node_t) log2((double) N);
 

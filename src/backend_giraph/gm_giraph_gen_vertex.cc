@@ -155,7 +155,6 @@ void gm_giraph_gen::do_generate_message_class() {
     Body.pushln("// Message Data ");
     Body.pushln("//----------------------------------------------");
 
-    char temp[1024];
     ast_procdef* proc = FE.get_current_proc();
     assert(proc != NULL);
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
@@ -207,7 +206,6 @@ void gm_giraph_gen::do_generate_vertex_class() {
 
 void gm_giraph_gen::do_generate_vertex_states() {
     char temp[1024];
-    const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
     Body.NL();
     Body.pushln("@Override");
     Body.pushln("public void compute(Iterator<MessageData> _msgs) {");

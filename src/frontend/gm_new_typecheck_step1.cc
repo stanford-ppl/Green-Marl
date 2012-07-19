@@ -109,7 +109,7 @@ private:
             ast_id* source = fe->get_source();
             gm_symtab_entry* tabEntry = curr_field->find_symbol(source);
             int targetType = tabEntry->getType()->getTargetTypeSummary();
-            int newIterType =mapTargetToIterType(targetType);
+            int newIterType = mapTargetToIterType(targetType);
             fe->set_iter_type(newIterType);
             return newIterType;
         } else {
@@ -297,7 +297,7 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
             gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, (ast_id*) type, "", "");
             return false;
         }
-    } else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator()) {
+    } else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator() || type->is_queue()) {
         bool is_okay = gm_check_graph_is_defined(type, SYM_V);
         if (!is_okay) return is_okay;
     } else if (type->is_property()) {
@@ -360,7 +360,8 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
 bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable, gm_symtab* SYM_ALT) {
 
     if (!type->is_well_defined()) {
-        assert(!type->is_property()); // if so SYM is FIELD actually.
+        assert(!type->is_property());
+        // if so SYM is FIELD actually.
         if (SYM_ALT != NULL) {
             if (!gm_check_type_is_well_defined(type, SYM_ALT)) return false;
         } else if (!gm_check_type_is_well_defined(type, SYM)) {

@@ -488,7 +488,7 @@ public:
         }
         //context.clear();
         ptr = 0;
-        if ((num_nodes / 100) > context.capacity()) context.reserve(num_nodes / 100);
+        if ((uint64_t)(num_nodes / 100) > context.capacity()) context.reserve(num_nodes / 100);
         is_small = true;
         is_small = false;
         small_set_ptr = 0;
@@ -560,7 +560,7 @@ public:
         curr_idx = 0;
         context[ptr] = P;
         ptr++;
-        if (ptr > context.capacity()) context.resize(ptr * 2);
+        if ((uint64_t)ptr > context.capacity()) context.resize(ptr * 2);
     }
 
     inline void next_child() {
