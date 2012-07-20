@@ -288,7 +288,9 @@ bool gm_check_graph_is_defined(ast_typedecl* type, gm_symtab* symTab) {
 //     - connect nbr_id with the symbol
 //     - copy graph_id from collection_id
 //------------------------------------------------
-bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
+bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V);
+
+bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V, int targetType) {
     if (type->is_primitive() || type->is_void()) {
         //nothing to do
     } else if (type->is_graph()) {
@@ -297,7 +299,7 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
             gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, (ast_id*) type, "", "");
             return false;
         }
-    } else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator() || type->is_queue()) {
+    } else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator() || type->is_collection_of_collection()) {
         bool is_okay = gm_check_graph_is_defined(type, SYM_V);
         if (!is_okay) return is_okay;
     } else if (type->is_property()) {
@@ -319,7 +321,15 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
         if (!is_okay) return false;
 
         // update collection iter type
-        if (type->is_unknown_collection_iterator()) type->setTypeSummary(gm_get_natural_collection_iterator(col->getTypeSummary()));
+        if (type->is_unknown_collection_iterator()) {
+            int iterType = (GMTYPE_T)gm_get_natural_collection_iterator(col->getTypeSummary());
+
+            if (iterType == GMTYPE_ITER_UNDERSPECIFIED && targetType != GMTYPE_INVALID) {
+                iterType = gm_get_specified_collection_iterator(targetType);
+            }
+
+            type->setTypeSummary(iterType);
+        }
 
         // copy graph_id
         type->set_target_graph_id(col->getTypeInfo()->get_target_graph_id()->copy(true));
@@ -349,6 +359,10 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
     return true;
 }
 
+bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
+    return gm_check_type_is_well_defined(type, SYM_V, GMTYPE_INVALID);
+}
+
 //---------------------
 // (This function can be used after type-checking)
 // add a (copy of) symbol and (copy of) type into a symtab, error if symbol is duplicated
@@ -357,14 +371,14 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
 //
 // The name is added to the current procedure vocaburary 
 //---------------------
-bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable, gm_symtab* SYM_ALT) {
+bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable, gm_symtab* SYM_ALT, int targetType) {
 
     if (!type->is_well_defined()) {
         assert(!type->is_property());
         // if so SYM is FIELD actually.
         if (SYM_ALT != NULL) {
-            if (!gm_check_type_is_well_defined(type, SYM_ALT)) return false;
-        } else if (!gm_check_type_is_well_defined(type, SYM)) {
+            if (!gm_check_type_is_well_defined(type, SYM_ALT, targetType)) return false;
+        } else if (!gm_check_type_is_well_defined(type, SYM, targetType)) {
             return false;
         }
     }
@@ -379,8 +393,12 @@ bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_r
     return is_okay;
 }
 
+bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable, gm_symtab* SYM_ALT) {
+    return gm_declare_symbol(SYM, id, type, is_readable, is_writeable, SYM_ALT, GMTYPE_INVALID);
+}
+
 bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable) {
-    return gm_declare_symbol(SYM, id, type, is_readable, is_writeable, NULL);
+    return gm_declare_symbol(SYM, id, type, is_readable, is_writeable, NULL, GMTYPE_INVALID);
 }
 
 // symbol checking for foreach and in-place reduction
@@ -443,6 +461,8 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src
 
     if (!is_okay) return false;
 
+
+
     //--------------------------------------
     // create iterator
     //--------------------------------------
@@ -456,8 +476,11 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src
     } else {
         type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
     }
+
     if (gm_is_iteration_on_property(iter_type))
         is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, curr_field);
+    else if(src->getTypeInfo()->is_collection_of_collection())
+        is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, NULL, src->getTargetTypeSummary());
     else
         is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE);
 

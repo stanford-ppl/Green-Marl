@@ -9,10 +9,11 @@ Procedure test_collection_of_collection_functions(G:Graph)
     N_O o;
     
     c1.PushBack(s);
-  	//c1.PushFront(s);
-    c2.PushBack(sq);
-    //c2.PushFront(sq);
     c3.PushBack(o);
+    c2.PushBack(sq);
+    
+    //c1.PushFront(s);
+    //c2.PushFront(sq);
     //c3.PushFront(o);
-
+    
 }
