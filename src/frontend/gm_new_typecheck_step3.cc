@@ -306,7 +306,7 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
         bool warning;
         int coerced_type;
         bool isCompatible;
-        if (gm_is_queue_type(b->get_source_type()))
+        if (gm_is_collection_of_collection_type(b->get_source_type()))
             isCompatible = gm_is_compatible_type_collection_of_collection(b->get_driver()->getTargetTypeSummary(), currentType, def->get_method_id());
         else
             isCompatible = gm_is_compatible_type_for_assign(def_type, currentType, coerced_type, warning);

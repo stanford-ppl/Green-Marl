@@ -49,7 +49,7 @@
      T_NORDER = 266,
      T_NSEQ = 267,
      T_ITEMS = 268,
-     T_QUEUE = 269,
+     T_COLLECTION = 269,
      T_DFS = 270,
      T_POST = 271,
      T_INT = 272,

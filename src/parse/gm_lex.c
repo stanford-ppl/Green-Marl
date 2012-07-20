@@ -1154,7 +1154,7 @@ YY_RULE_SETUP
 case 39:
 YY_RULE_SETUP
 #line 100 "parse/gm_lex.l"
-{MarkToken(); return T_QUEUE;}
+{MarkToken(); return T_COLLECTION;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
