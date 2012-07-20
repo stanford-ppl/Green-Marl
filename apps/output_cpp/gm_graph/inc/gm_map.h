@@ -6,6 +6,8 @@
 
 using namespace std;
 
+/*don't trust Eclipse - trust your compiler */
+
 //map-interface
 template<class Key, class Value>
 class gm_map
@@ -172,8 +174,10 @@ private:
 public:
     gm_map_impl(int size) : size_(size), data(new Value[size]), valid(new bool[size]) {
         #pragma omp parallel for
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < size; i++) {
             data[i] = defaultValue;
+            valid[i] = false;
+        }
     }
 
     ~gm_map_impl() {
@@ -198,7 +202,7 @@ public:
     }
 
     bool hasMaxValue(const Key key) {
-        if(size() == 0) return true;
+        if(size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         bool result = true;
         #pragma omp parallel for
@@ -208,7 +212,7 @@ public:
     }
 
     bool hasMinValue(const Key key) {
-        if(size() == 0) return true;
+        if(size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         bool result = true;
         #pragma omp parallel for
@@ -224,37 +228,52 @@ public:
         while(!valid[key]) key++;
         value = data + key;
         //#pragma omp parallel for
-        for (Key current = key + 1; current < size(); current++)
-            if (valid[current] && *value < data[current]) value = data + current;
+        for (Key i = key + 1; i < size(); i++) {
+            if (valid[i] && *value < data[i]) {
+                key = i;
+                value = data + i;
+            }
+        }
         return key;
     }
 
     Key getMinKey() {
         assert(size() > 0);
-        Value value = data[0];
-        bool result = true;
-        #pragma omp parallel for
-        for (int i = 1; i < size(); i++)
-            if (valid[i] && value < data[i]) result = false;
-        return result;
+        Value value;
+        Key key = 0;
+        while(!valid[key]) key++;
+        value = data[key];
+        //#pragma omp parallel for
+        for (Key i = key + 1; i < size(); i++) {
+            if (valid[i] && value > data[i]) {
+                key = i;
+                value = data[i];
+            }
+        }
+        return key;
     }
 
     Value getMaxValue() {
-//        assert(size() > 0);
-        Value value = data[0];
-//        bool result = true;
-//        #pragma omp parallel for
-//        for (int i = 1; i < size(); i++)
-//            if (valid[i] && value < data[i]) result = false;
+        assert(size() > 0);
+        Value value;
+        Key key = 0;
+        while(!valid[key]) key++;
+        value = data[key];
+        //#pragma omp parallel for
+        for (Key i = key + 1; i < size(); i++)
+            if (valid[i] && value < data[i]) value = data[i];
         return value;
     }
 
     Value getMinValue() {
-//        assert(size() > 0);
-        Value value = data[0];
-//        #pragma omp parallel for
-//        for (int i = 1; i < size(); i++)
-//            if (valid[i] && value < data[i]) ;
+        assert(size() > 0);
+        Value value;
+        Key key = 0;
+        while(!valid[key]) key++;
+        value = data[key];
+        //#pragma omp parallel for
+        for (Key i = key + 1; i < size(); i++)
+            if (valid[i] && value > data[i]) value = data[i];
         return value;
     }
 
