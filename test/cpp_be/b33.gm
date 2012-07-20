@@ -1,8 +1,8 @@
 Procedure test_collection_of_collection_functions(G:Graph)
 {
-    Queue<N_S> c1;
-    Queue<Node_Sequence> c2;
-    Queue<N_O> c3;
+    Collection<N_S> c1;
+    Collection<Node_Sequence> c2;
+    Collection<N_O> c3;
 
     N_S s;
     Node_Sequence sq;
