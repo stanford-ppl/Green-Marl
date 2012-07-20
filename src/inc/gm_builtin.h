@@ -6,9 +6,9 @@
 
 #define AUX_INFO(X,Y)			TO_STR(X)":"TO_STR(Y)
 
-static const int GM_BLTIN_MUTATE_GROW = 1;
-static const int GM_BLTIN_MUTATE_SHRINK = 2;
-static const bool GM_BLTIN_FLAG_TRUE = true;
+#define GM_BLTIN_MUTATE_GROW 1
+#define GM_BLTIN_MUTATE_SHRINK 2
+#define GM_BLTIN_FLAG_TRUE true
 
 DEF_STRING(GM_BLTIN_INFO_USE_REVERSE);
 DEF_STRING(GM_BLTIN_INFO_CHECK_NBR);
