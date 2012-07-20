@@ -410,18 +410,23 @@ inline static bool gm_is_numeric_op(int i) {
     return (i == GMOP_MULT) || (i == GMOP_DIV) || (i == GMOP_MOD) || (i == GMOP_ADD) || (i == GMOP_SUB) || (i == GMOP_NEG) || (i == GMOP_ABS) || (i == GMOP_MAX)
             || (i == GMOP_MIN);
 }
+
 inline static bool gm_is_boolean_op(int i) {
     return (i == GMOP_NOT) || (i == GMOP_AND) || (i == GMOP_OR);
 }
+
 inline static bool gm_is_eq_op(int i) {
     return (i == GMOP_EQ) || (i == GMOP_NEQ);
 }
+
 inline static bool gm_is_less_op(int i) {
     return (i == GMOP_GT) || (i == GMOP_LT) || (i == GMOP_GE) || (i == GMOP_LE);
 }
+
 inline static bool gm_is_eq_or_less_op(int i) {
     return gm_is_eq_op(i) || gm_is_less_op(i);
 }
+
 inline static bool gm_is_ternary_op(int i) {
     return (i == GMOP_TER);
 }
@@ -439,7 +444,12 @@ inline bool gm_is_compatible_type_for_assign(int t_lhs, int t_rhs, int& t_new_rh
 
 enum GM_REDUCE_T
 {
-    GMREDUCE_INVALID = 0, GMREDUCE_PLUS = 1, GMREDUCE_MULT, GMREDUCE_MIN, GMREDUCE_MAX, GMREDUCE_AND,     // logical AND
+    GMREDUCE_INVALID = 0,
+    GMREDUCE_PLUS = 1,
+    GMREDUCE_MULT,
+    GMREDUCE_MIN,
+    GMREDUCE_MAX,
+    GMREDUCE_AND,     // logical AND
     GMREDUCE_OR,      // logical OR
     GMREDUCE_AVG,     // average (syntactic sugar)
     GMREDUCE_DEFER,  // deferred assignment is not a reduce op. but shares a lot of properies
@@ -451,9 +461,11 @@ inline static bool gm_is_strict_reduce_op(int t) {
     return (t == GMREDUCE_PLUS) || (t == GMREDUCE_MULT) || (t == GMREDUCE_MIN) || (t == GMREDUCE_MAX) || (t == GMREDUCE_AND) || (t == GMREDUCE_OR)
             || (t == GMREDUCE_AVG);
 }
+
 inline static bool gm_is_numeric_reduce_op(int t) {
     return (t == GMREDUCE_PLUS) || (t == GMREDUCE_MULT) || (t == GMREDUCE_MIN) || (t == GMREDUCE_MAX) || (t == GMREDUCE_AVG);
 }
+
 inline static bool gm_is_boolean_reduce_op(int t) {
     return (t == GMREDUCE_AND) || (t == GMREDUCE_OR);
 }
@@ -470,42 +482,55 @@ inline static bool gm_is_iteration_on_property(int iterType) {
 inline static bool gm_is_iteration_on_set(int itype) {
     return (itype == GMTYPE_NODEITER_SET) || (itype == GMTYPE_EDGEITER_SET);
 }
+
 inline static bool gm_is_iteration_on_order(int itype) {
     return (itype == GMTYPE_NODEITER_ORDER) || (itype == GMTYPE_EDGEITER_ORDER);
 }
+
 inline static bool gm_is_iteration_on_sequence(int itype) {
     return (itype == GMTYPE_NODEITER_SEQ) || (itype == GMTYPE_EDGEITER_SEQ);
 }
+
 inline static bool gm_is_iteration_on_all_graph(int itype) {
     return gm_is_all_graph_iter_type(itype);
 }
+
 inline static bool gm_is_iteration_on_out_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_NBRS) || (itype == GMTYPE_NODEITER_NBRS);
 }
+
 inline static bool gm_is_iteration_on_in_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_IN_NBRS) || (itype == GMTYPE_NODEITER_IN_NBRS);
 }
+
 inline static bool gm_is_iteration_on_up_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_UP_NBRS) || (itype == GMTYPE_NODEITER_UP_NBRS);
 }
+
 inline static bool gm_is_iteration_on_down_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_DOWN_NBRS) || (itype == GMTYPE_NODEITER_DOWN_NBRS);
 }
+
 inline static bool gm_is_iteration_use_reverse(int itype) {
     return gm_is_iteration_on_in_neighbors(itype) || gm_is_iteration_on_up_neighbors(itype);
 }
+
 inline static bool gm_is_iteration_bfs(int itype) {
     return (itype == GMTYPE_EDGEITER_BFS) || (itype == GMTYPE_NODEITER_BFS);
 }
+
 inline static bool gm_is_iteration_on_nodes(int itype) {
     return gm_is_node_iter_type(itype);
 }
+
 inline static bool gm_is_iteration_on_edges(int itype) {
     return gm_is_edge_iter_type(itype);
 }
+
 inline static bool gm_is_iteration_on_updown_levels(int itype) {
     return gm_is_iteration_on_up_neighbors(itype) || gm_is_iteration_on_down_neighbors(itype);
 }
+
 inline static bool gm_is_iteration_on_neighbors_compatible(int itype) {
     return gm_is_any_nbr_node_iter_type(itype);
 }

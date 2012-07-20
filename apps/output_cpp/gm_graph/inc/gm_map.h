@@ -14,24 +14,60 @@ public:
     virtual ~gm_map() {
     };
 
+    virtual bool hasKey(const Key key) = 0;
+
+    /**
+     * Return the value that has been set for the key - if none has been specified, the defaultValue is returned
+     */
     virtual Value getValue(const Key key) = 0;
     virtual void setValue(const Key key, Value value) = 0;
 
+    /**
+     * Returns true if the key corresponds to the highest value in the map.
+     * If there has no value been set in the map, false is returned
+     */
     virtual bool hasMaxValue(const Key key) = 0;
+
+    /**
+     * Returns true if the key corresponds to the lowest value in the map.
+     * If there has no value been set in the map, false is returned
+     */
     virtual bool hasMinValue(const Key key) = 0;
+
+    /**
+     * Returns the key that corresponds to the highest value in the map.
+     * If there has no value been set in the map, the behavior is unspecified.
+     */
     virtual Key getMaxKey() = 0;
+
+    /**
+     * Returns the key that corresponds to the lowest value in the map.
+     * If there has no value been set in the map, the behavior is unspecified.
+     */
     virtual Key getMinKey() = 0;
+
+    /**
+     * Returns the highest value in the map.
+     * If there has no value been set in the map, the behavior is unspecified.
+     */
+    virtual Value getMaxValue() = 0;
+
+    /**
+     * Returns the lowest value in the map.
+     * If there has no value been set in the map, the behavior is unspecified.
+     */
+    virtual Value getMinValue() = 0;
+
+    virtual size_t size() = 0;
 };
 
-
-template<class Key, class Value, bool>
+template<class Key, class Value, bool, Value defaultValue>
 class gm_map_impl: public gm_map<Key, Value>
 {
 };
 
-
-template<class Key, class Value>
-class gm_map_impl<Key, Value, true> : public gm_map<Key, Value>
+template<class Key, class Value, Value defaultValue>
+class gm_map_impl<Key, Value, true, defaultValue> : public gm_map<Key, Value>
 {
 private:
     map<Key, Value> data;
@@ -41,11 +77,15 @@ public:
     ~gm_map_impl() {
     }
 
-    gm_map_impl() {
+    bool hasKey(const Key key) {
+        return data.find(key) != data.end();
     }
 
     Value getValue(const Key key) {
-        return data[key];
+        if(hasKey(key))
+            return data[key];
+        else
+            return defaultValue;
     }
 
     void setValue(const Key key, Value value) {
@@ -53,100 +93,173 @@ public:
     }
 
     bool hasMaxValue(const Key key) {
-        Value value = getValue(key);
+        if(size() == 0 || !hasKey(key)) return false;
+        Value value = data[key];
         for (Iterator iter = data.begin(); iter != data.end(); iter++)
-            if (value < (*iter).second) return false;
+            if (value < iter->second) return false;
         return true;
     }
 
     bool hasMinValue(const Key key) {
-        Value value = getValue(key);
+        if(size() == 0 || !hasKey(key)) return false;
+        Value value = data[key];
         for (Iterator iter = data.begin(); iter != data.end(); iter++)
-            if (value > (*iter).second) return false;
+            if (value > iter->second) return false;
         return true;
     }
 
     Key getMaxKey() {
-        assert(data.size() > 0);
-        Value value = (*data.begin()).second;
+        assert(size() > 0);
         Iterator iter = data.begin();
+        Key key = iter->first;
+        Value value = iter->second;
         for (iter++; iter != data.end(); iter++)
-            if (value < (*iter).second) value = (*iter).second;
-        return value;
+            if (value < iter->second) {
+                key = iter->first;
+                value = iter->second;
+            }
+        return key;
     }
 
     Key getMinKey() {
-        assert(data.size() > 0);
-        Value value = (*data.begin()).second;
+        assert(size() > 0);
         Iterator iter = data.begin();
+        Key key = iter->first;
+        Value value = iter->second;
         for (iter++; iter != data.end(); iter++)
-            if (value > (*iter).second) value = (*iter).second;
+            if (value > iter->second) {
+                key = iter->first;
+                value = iter->second;
+            }
+        return key;
+    }
+
+    Value getMaxValue() {
+        assert(size() > 0);
+        Iterator iter = data.begin();
+        Value value = iter->second;
+        for (iter++; iter != data.end(); iter++)
+            if (value < iter->second) {
+                value = iter->second;
+            }
         return value;
+    }
+
+    Value getMinValue() {
+        assert(size() > 0);
+        Iterator iter = data.begin();
+        Value value = iter->second;
+        for (iter++; iter != data.end(); iter++)
+            if (value > iter->second) {
+                value = iter->second;
+            }
+        return value;
+    }
+
+    size_t size() {
+        return data.size();
     }
 };
 
-
-template<class Key, class Value>
-class gm_map_impl<Key, Value, false> : public gm_map<Key, Value>
+template<class Key, class Value, Value defaultValue>
+class gm_map_impl<Key, Value, false, defaultValue> : public gm_map<Key, Value>
 {
 private:
-    int size;
-    Value* data;
+    const int size_;
+    Value* const data;
+    bool * const valid;
 
 public:
-    gm_map_impl(int size) : size(size) {
-        data = new Value[size];
+    gm_map_impl(int size) : size_(size), data(new Value[size]), valid(new bool[size]) {
         #pragma omp parallel for
-        for(int i = 0; i < size; i++)
-            data[i] = 0;
+        for (int i = 0; i < size; i++)
+            data[i] = defaultValue;
     }
 
     ~gm_map_impl() {
         delete[] data;
+        delete[] valid;
+    }
+
+    bool hasKey(const Key key) {
+        return valid[key];
     }
 
     Value getValue(const Key key) {
-        return data[key];
+        if(hasKey(key))
+            return data[key];
+        else
+            return defaultValue;
     }
 
     void setValue(const Key key, Value value) {
         data[key] = value;
+        valid[key] = true;
     }
 
     bool hasMaxValue(const Key key) {
-        Value value = getValue(key);
+        if(size() == 0) return true;
+        Value value = data[key];
         bool result = true;
         #pragma omp parallel for
-        for(int i = 0; i < size; i++)
-            if(value < data[i]) result = false;
+        for (int i = 0; i < size(); i++)
+            if (valid[i] && value < data[i]) result = false;
         return result;
     }
 
     bool hasMinValue(const Key key) {
-        Value value = getValue(key);
+        if(size() == 0) return true;
+        Value value = data[key];
         bool result = true;
         #pragma omp parallel for
-        for(int i = 0; i < size; i++)
-            if(value > data[i]) result = false;
+        for (int i = 0; i < size(); i++)
+            if (valid[i] && value > data[i]) result = false;
         return result;
     }
 
     Key getMaxKey() {
-        Value value = data[0];
-        bool result = true;
-        #pragma omp parallel for
-        for(int i = 1; i < size; i++)
-            if(value < data[i]) result = false;
-        return result;
+        assert(size() > 0);
+        Value* value;
+        Key key = 0;
+        while(!valid[key]) key++;
+        value = data + key;
+        //#pragma omp parallel for
+        for (Key current = key + 1; current < size(); current++)
+            if (valid[current] && *value < data[current]) value = data + current;
+        return key;
     }
 
     Key getMinKey() {
+        assert(size() > 0);
         Value value = data[0];
         bool result = true;
         #pragma omp parallel for
-        for(int i = 1; i < size; i++)
-            if(value < data[i]) result = false;
+        for (int i = 1; i < size(); i++)
+            if (valid[i] && value < data[i]) result = false;
         return result;
+    }
+
+    Value getMaxValue() {
+//        assert(size() > 0);
+        Value value = data[0];
+//        bool result = true;
+//        #pragma omp parallel for
+//        for (int i = 1; i < size(); i++)
+//            if (valid[i] && value < data[i]) result = false;
+        return value;
+    }
+
+    Value getMinValue() {
+//        assert(size() > 0);
+        Value value = data[0];
+//        #pragma omp parallel for
+//        for (int i = 1; i < size(); i++)
+//            if (valid[i] && value < data[i]) ;
+        return value;
+    }
+
+    size_t size() {
+        return size_;
     }
 
 };
