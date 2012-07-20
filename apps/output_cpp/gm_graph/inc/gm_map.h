@@ -14,7 +14,8 @@ class gm_map
 {
 public:
     virtual ~gm_map() {
-    };
+    }
+    ;
 
     virtual bool hasKey(const Key key) = 0;
 
@@ -84,7 +85,7 @@ public:
     }
 
     Value getValue(const Key key) {
-        if(hasKey(key))
+        if (hasKey(key))
             return data[key];
         else
             return defaultValue;
@@ -95,7 +96,7 @@ public:
     }
 
     bool hasMaxValue(const Key key) {
-        if(size() == 0 || !hasKey(key)) return false;
+        if (size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         for (Iterator iter = data.begin(); iter != data.end(); iter++)
             if (value < iter->second) return false;
@@ -103,7 +104,7 @@ public:
     }
 
     bool hasMinValue(const Key key) {
-        if(size() == 0 || !hasKey(key)) return false;
+        if (size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         for (Iterator iter = data.begin(); iter != data.end(); iter++)
             if (value > iter->second) return false;
@@ -161,6 +162,7 @@ public:
     size_t size() {
         return data.size();
     }
+
 };
 
 template<class Key, class Value, Value defaultValue>
@@ -172,8 +174,9 @@ private:
     bool * const valid;
 
 public:
-    gm_map_impl(int size) : size_(size), data(new Value[size]), valid(new bool[size]) {
-        #pragma omp parallel for
+    gm_map_impl(int size) :
+            size_(size), data(new Value[size]), valid(new bool[size]) {
+#pragma omp parallel for
         for (int i = 0; i < size; i++) {
             data[i] = defaultValue;
             valid[i] = false;
@@ -190,7 +193,7 @@ public:
     }
 
     Value getValue(const Key key) {
-        if(hasKey(key))
+        if (hasKey(key))
             return data[key];
         else
             return defaultValue;
@@ -202,7 +205,7 @@ public:
     }
 
     bool hasMaxValue(const Key key) {
-        if(size() == 0 || !hasKey(key)) return false;
+        if (size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         bool result = true;
         #pragma omp parallel for
@@ -212,7 +215,7 @@ public:
     }
 
     bool hasMinValue(const Key key) {
-        if(size() == 0 || !hasKey(key)) return false;
+        if (size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         bool result = true;
         #pragma omp parallel for
@@ -225,7 +228,8 @@ public:
         assert(size() > 0);
         Value* value;
         Key key = 0;
-        while(!valid[key]) key++;
+        while (!valid[key])
+            key++;
         value = data + key;
         //#pragma omp parallel for
         for (Key i = key + 1; i < size(); i++) {
@@ -241,7 +245,8 @@ public:
         assert(size() > 0);
         Value value;
         Key key = 0;
-        while(!valid[key]) key++;
+        while (!valid[key])
+            key++;
         value = data[key];
         //#pragma omp parallel for
         for (Key i = key + 1; i < size(); i++) {
@@ -257,11 +262,24 @@ public:
         assert(size() > 0);
         Value value;
         Key key = 0;
-        while(!valid[key]) key++;
+        while (!valid[key])
+            key++;
         value = data[key];
-        //#pragma omp parallel for
-        for (Key i = key + 1; i < size(); i++)
-            if (valid[i] && value < data[i]) value = data[i];
+
+
+//            #pragma omp parallel for
+//            for (Key i = key + 1; i < size(); i++) {
+//                if (valid[i] && value < data[i]) {
+//                    #pragma omp critical
+//                    if (value < data[i]) value = data[i];
+//                }
+//            }
+
+            for (Key i = key + 1; i < size(); i++) {
+                if (valid[i] && value < data[i]) value = data[i];
+            }
+
+
         return value;
     }
 
@@ -269,7 +287,8 @@ public:
         assert(size() > 0);
         Value value;
         Key key = 0;
-        while(!valid[key]) key++;
+        while (!valid[key])
+            key++;
         value = data[key];
         //#pragma omp parallel for
         for (Key i = key + 1; i < size(); i++)
