@@ -176,7 +176,7 @@ private:
     bool * const valid;
 
     template<class Function>
-    inline Value getValue_generic(Function func, Value initialValue) {
+    inline Value getValue_generic(Function func, const Value initialValue) {
         assert(size() > 0);
 
         Value value = initialValue;
@@ -203,7 +203,7 @@ private:
     }
 
     template<class Function>
-    inline Key getKey_generic(Function compare, Value initialValue) {
+    inline Key getKey_generic(Function compare, const Value initialValue) {
 
         assert(size() > 0);
 
@@ -236,7 +236,16 @@ private:
         return key;
     }
 
-
+    template<class Function>
+    inline bool hasKey_generic(Function compare, const Key key) {
+        if (size() == 0 || !hasKey(key)) return false;
+        Value value = data[key];
+        bool result = true;
+        #pragma omp parallel for
+        for (int i = 0; i < size(); i++)
+            if (valid[i] && compare(data[i], value)) result = false;
+        return result;
+    }
 
     static bool compare_smaller(Value a, Value b) {
         return a < b;
@@ -277,23 +286,11 @@ public:
     }
 
     bool hasMaxValue(const Key key) {
-        if (size() == 0 || !hasKey(key)) return false;
-        Value value = data[key];
-        bool result = true;
-        #pragma omp parallel for
-        for (int i = 0; i < size(); i++)
-            if (valid[i] && value < data[i]) result = false;
-        return result;
+        return hasKey_generic(&compare_greater, key);
     }
 
     bool hasMinValue(const Key key) {
-        if (size() == 0 || !hasKey(key)) return false;
-        Value value = data[key];
-        bool result = true;
-        #pragma omp parallel for
-        for (int i = 0; i < size(); i++)
-            if (valid[i] && value > data[i]) result = false;
-        return result;
+        return hasKey_generic(&compare_smaller, key);
     }
 
     Key getMaxKey() {
