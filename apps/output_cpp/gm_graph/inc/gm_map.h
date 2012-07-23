@@ -4,6 +4,7 @@
 #include <map>
 #include "gm_graph_typedef.h"
 #include "gm_limits.h"
+#include "gm_lock.h"
 
 using namespace std;
 
@@ -75,6 +76,7 @@ class gm_map_impl<Key, Value, true, defaultValue> : public gm_map<Key, Value>
 {
 private:
     map<Key, Value> data;
+    gm_spinlock_t lock;
     typedef typename map<Key, Value>::iterator Iterator;
 
 public:
@@ -93,7 +95,9 @@ public:
     }
 
     void setValue(const Key key, Value value) {
+        gm_spinlock_acquire(&lock);
         data[key] = value;
+        gm_spinlock_release(&lock);
     }
 
     bool hasMaxValue(const Key key) {
@@ -171,7 +175,7 @@ template<class Key, class Value, Value defaultValue>
 class gm_map_impl<Key, Value, false, defaultValue> : public gm_map<Key, Value>
 {
 private:
-    const int size_;
+    const size_t size_;
     Value* const data;
     bool * const valid;
 
