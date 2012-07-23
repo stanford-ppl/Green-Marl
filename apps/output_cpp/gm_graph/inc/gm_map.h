@@ -66,13 +66,8 @@ public:
     virtual size_t size() = 0;
 };
 
-template<class Key, class Value, bool, Value defaultValue>
-class gm_map_impl: public gm_map<Key, Value>
-{
-};
-
 template<class Key, class Value, Value defaultValue>
-class gm_map_impl<Key, Value, true, defaultValue> : public gm_map<Key, Value>
+class gm_map_small : public gm_map<Key, Value>
 {
 private:
     map<Key, Value> data;
@@ -80,7 +75,7 @@ private:
     typedef typename map<Key, Value>::iterator Iterator;
 
 public:
-    ~gm_map_impl() {
+    ~gm_map_small() {
     }
 
     bool hasKey(const Key key) {
@@ -172,7 +167,7 @@ public:
 
 
 template<class Key, class Value, Value defaultValue>
-class gm_map_impl<Key, Value, false, defaultValue> : public gm_map<Key, Value>
+class gm_map_large : public gm_map<Key, Value>
 {
 private:
     const size_t size_;
@@ -260,7 +255,7 @@ private:
     }
 
 public:
-    gm_map_impl(int size) :
+    gm_map_large(int size) :
             size_(size), data(new Value[size]), valid(new bool[size]) {
         #pragma omp parallel for
         for (int i = 0; i < size; i++) {
@@ -268,7 +263,7 @@ public:
         }
     }
 
-    ~gm_map_impl() {
+    ~gm_map_large() {
         delete[] data;
         delete[] valid;
     }
