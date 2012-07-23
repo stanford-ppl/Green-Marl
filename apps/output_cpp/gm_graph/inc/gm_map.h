@@ -3,6 +3,7 @@
 
 #include <map>
 #include "gm_graph_typedef.h"
+#include "gm_limits.h"
 
 using namespace std;
 
@@ -165,33 +166,6 @@ public:
 
 };
 
-#include <limits.h>
-
-template<class Type>
-Type gm_get_min();
-
-template<class Type>
-Type gm_get_max();
-
-template<>
-inline int32_t gm_get_min() {
-    return INT_MIN;
-}
-
-template<>
-inline int32_t gm_get_max() {
-    return INT_MAX;
-}
-
-template<>
-inline int64_t gm_get_min() {
-    return LONG_MIN;
-}
-
-template<>
-inline int64_t gm_get_max() {
-    return LONG_MAX;
-}
 
 template<class Key, class Value, Value defaultValue>
 class gm_map_impl<Key, Value, false, defaultValue> : public gm_map<Key, Value>
@@ -202,7 +176,7 @@ private:
     bool * const valid;
 
     template<class Function>
-    Value getValue_generic(Function func, Value initialValue) {
+    inline Value getValue_generic(Function func, Value initialValue) {
         assert(size() > 0);
 
         Value value = initialValue;
@@ -226,6 +200,50 @@ private:
             }
         }
         return value;
+    }
+
+    template<class Function>
+    inline Key getKey_generic(Function compare, Value initialValue) {
+
+        assert(size() > 0);
+
+        Value value = initialValue;
+        Key key = 0;
+
+        #pragma omp parallel
+        {
+            Value value_private = value;
+            Key key_private = key;
+
+            #pragma omp for nowait
+            for (Key i = 0; i < size(); i++) {
+                if (valid[i] && compare(data[i], value_private)) {
+                    value_private = data[i];
+                    key_private = i;
+                }
+            }
+            // reduction
+            if(compare(value_private, value)) {
+                #pragma omp critical
+                {
+                    if(compare(value_private, value)) {
+                        value = value_private;
+                        key = key_private;
+                    }
+                }
+            }
+        }
+        return key;
+    }
+
+
+
+    static bool compare_smaller(Value a, Value b) {
+        return a < b;
+    }
+
+    static bool compare_greater(Value a, Value b) {
+        return a > b;
     }
 
 public:
@@ -279,80 +297,11 @@ public:
     }
 
     Key getMaxKey() {
-        assert(size() > 0);
-
-        Value maxValue = gm_get_min<Value>();
-        Key key = 0;
-        #pragma omp parallel
-        {
-            Value maxValue_private = maxValue;
-            Key key_private = key;
-
-            #pragma omp for nowait
-            for (Key i = 0; i < size(); i++) {
-                if (valid[i] && maxValue_private < data[i]) {
-                    maxValue_private = data[i];
-                    key_private = i;
-                }
-            }
-            // reduction
-            {
-                Value maxValue_old;
-                Value maxValue_new;
-                Key key_old;
-                Key key_new;
-                do {
-                    key_old = key;
-                    maxValue_old = maxValue;
-                    if(maxValue_old < maxValue_private) {
-                        maxValue_new = maxValue_private;
-                        key_new = key_private;
-                    } else {
-                        break;
-                    }
-                } while (!_gm_atomic_compare_and_swap(&(maxValue), maxValue_old, maxValue_new) || !_gm_atomic_compare_and_swap(&(key), key_old, key_new));
-            }
-        }
-        return key;
+        return getKey_generic(&compare_greater, gm_get_min<Value>());
     }
 
     Key getMinKey() {
-        assert(size() > 0);
-
-        Value minValue = gm_get_max<Value>();
-        Key key = 0;
-        #pragma omp parallel
-        {
-            Value minValue_private = minValue;
-            Key key_private = key;
-
-            #pragma omp for nowait
-            for (Key i = 0; i < size(); i++) {
-                if (valid[i] && minValue_private > data[i]) {
-                    minValue_private = data[i];
-                    key_private = i;
-                }
-            }
-            // reduction
-            {
-                Value minValue_old;
-                Value minValue_new;
-                Key key_old;
-                Key key_new;
-                do {
-                    key_old = key;
-                    minValue_old = minValue;
-                    if(minValue_old > minValue_private) {
-                        minValue_new = minValue_private;
-                        key_new = key_private;
-                    } else {
-                        break;
-                    }
-                } while (!_gm_atomic_compare_and_swap(&(minValue), minValue_old, minValue_new) || !_gm_atomic_compare_and_swap(&(key), key_old, key_new));
-            }
-        }
-        printf("minKey: %d\n", key);
-        return key;
+        return getKey_generic(&compare_smaller, gm_get_max<Value>());
     }
 
     Value getMaxValue() {
