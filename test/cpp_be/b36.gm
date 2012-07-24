@@ -3,7 +3,7 @@ Procedure test_size(G:Graph)
     N_O o;
     N_S s;
     Node_Seq seq;
-    Queue<N_S> q;
+    Collection<N_S> q;
     
     Int i1 = o.Size();
     Int i2 = s.Size();

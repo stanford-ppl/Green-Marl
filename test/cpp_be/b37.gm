@@ -3,9 +3,9 @@ Procedure test_collection_iteration(G:Graph)
     N_O o;
     N_S s;
     Node_Seq seq;
-    Queue<N_S> q1;
-    Queue<N_O> q2;
-    Queue<Node_Seq> q3;
+    Collection<N_S> q1;
+    Collection<N_O> q2;
+    Collection<Node_Seq> q3;
     
     For(x: q1.Items) {
     	s = x;
@@ -16,7 +16,7 @@ Procedure test_collection_iteration(G:Graph)
     }
     
     For(x: q3.Items) {
-	seq = x;
+		seq = x;
     }
     
 }
