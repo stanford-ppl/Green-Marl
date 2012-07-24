@@ -19,5 +19,6 @@
 #include "gm_seq.h"
 #include "gm_order.h"
 #include "gm_collection.h"
+#include "gm_map.h"
 
 #endif
