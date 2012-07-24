@@ -64,6 +64,9 @@ public:
     virtual Value getMinValue() = 0;
 
     virtual size_t size() = 0;
+
+    virtual void clear() = 0;
+
 };
 
 template<class Key, class Value, Value defaultValue>
@@ -75,6 +78,10 @@ private:
     typedef typename map<Key, Value>::iterator Iterator;
 
 public:
+    gm_map_small() : lock(0) {
+
+    }
+
     ~gm_map_small() {
     }
 
@@ -161,6 +168,10 @@ public:
 
     size_t size() {
         return data.size();
+    }
+
+    void clear() {
+        data.clear();
     }
 
 };
@@ -255,7 +266,7 @@ private:
     }
 
 public:
-    gm_map_large(int size) :
+    gm_map_large(size_t size) :
             size_(size), data(new Value[size]), valid(new bool[size]) {
         #pragma omp parallel for
         for (int i = 0; i < size; i++) {
@@ -310,6 +321,13 @@ public:
 
     size_t size() {
         return size_;
+    }
+
+    void clear() {
+        #pragma omp parallel for
+        for (Key key = 0; key < size(); key++) {
+            valid[key] = false;
+        }
     }
 
 };
