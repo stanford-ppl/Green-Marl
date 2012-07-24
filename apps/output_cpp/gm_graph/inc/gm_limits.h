@@ -1,10 +1,3 @@
-/*
- * gm_limits.h
- *
- *  Created on: Jul 23, 2012
- *      Author: sevenich
- */
-
 #ifndef GM_LIMITS_H_
 #define GM_LIMITS_H_
 
