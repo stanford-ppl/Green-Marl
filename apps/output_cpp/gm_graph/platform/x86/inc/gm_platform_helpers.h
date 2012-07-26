@@ -26,4 +26,9 @@
 
 #define _gm_pause() asm volatile ("pause" ::: "memory")
 
+#define _gm_atomic_fetch_and_or_char(ptr, val) __sync_fetch_and_or(ptr, val)
+#define _gm_atomic_fetch_and_and_char(ptr, val)  __sync_fetch_and_and(ptr, val)
+#define _gm_atomic_fetch_and_add_int32(ptr, val) __sync_fetch_and_add(ptr, val)
+#define _gm_atomic_cas_int32(ptr, oldval, newval)  __sync_bool_compare_and_swap(ptr, oldval, newval)
+#define _gm_atomic_cas_int64(ptr, oldval, newval)  __sync_bool_compare_and_swap(ptr, oldval, newval)
 #endif
