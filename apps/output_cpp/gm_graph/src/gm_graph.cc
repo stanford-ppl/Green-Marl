@@ -183,7 +183,7 @@ void gm_graph::make_reverse_edges() {
     for (node_t i = 0; i < n_nodes; i++) {
         for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
             node_t dest = node_idx[e];
-            edge_t location = __sync_fetch_and_add(&(r_begin[dest]), 1);
+            edge_t location = _gm_atomic_fetch_and_add_edge(&(r_begin[dest]), 1);
             loc[e] = location;
         }
     }

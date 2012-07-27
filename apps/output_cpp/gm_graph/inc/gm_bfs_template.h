@@ -91,8 +91,8 @@ public:
         level_count.push_back(curr_count);
         level_start_ptr.push_back(global_curr_level);
 
-        bool is_finished = false;
-        while (!is_finished) {
+        bool is_done = false;
+        while (!is_done) {
             switch (state) {
                 case ST_SMALL: {
                     for (node_t i = 0; i < curr_count; i++) {
@@ -165,7 +165,7 @@ public:
             } // end of switch
 
             do_end_of_level_fw();
-            is_finished = get_next_state();
+            is_done = get_next_state();
         } // end of while
     }
 
@@ -286,22 +286,34 @@ private:
             down_edge_array = new unsigned char[G.num_edges()];
         }
 
-#pragma omp parallel if (use_multithread)
-        {
+	if (use_multithread) {
+#pragma omp parallel 
+	  {
 #pragma omp for nowait
-            for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
-                visited_bitmap[i] = 0;
-
+	      for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
+		  visited_bitmap[i] = 0;
+	    
 #pragma omp for nowait
-            for (node_t i = 0; i < G.num_nodes(); i++)
-                visited_level[i] = __INVALID_LEVEL;
-
-            if (save_child) {
+	      for (node_t i = 0; i < G.num_nodes(); i++)
+		  visited_level[i] = __INVALID_LEVEL;
+	      
+	      if (save_child) {
 #pragma omp for nowait
-                for (edge_t i = 0; i < G.num_edges(); i++)
-                    down_edge_array[i] = 0;
-            }
-        }
+		  for (edge_t i = 0; i < G.num_edges(); i++)
+		      down_edge_array[i] = 0;
+	      }
+	  }
+	}
+	else {
+	    for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
+		visited_bitmap[i] = 0;
+	    for (node_t i = 0; i < G.num_nodes(); i++)
+		visited_level[i] = __INVALID_LEVEL;
+	    if (save_child) {
+		for (edge_t i = 0; i < G.num_edges(); i++)
+		    down_edge_array[i] = 0;
+	    }
+	}
 
         typename std::map<node_t, level_t>::iterator II;
         for (II = small_visited.begin(); II != small_visited.end(); II++) {
@@ -358,7 +370,7 @@ private:
         node_t local_cnt = thread_local_next_level[tid].size();
         //copy curr_cnt to next_cnt
         if (local_cnt > 0) {
-            node_t old_idx = _gm_atomic_add(&next_count, local_cnt);
+            node_t old_idx = _gm_atomic_fetch_and_add_node(&next_count, local_cnt);
             memcpy(&(global_next_level[old_idx]), &(thread_local_next_level[tid][0]), local_cnt * sizeof(node_t));
         }
         thread_local_next_level[tid].clear();
@@ -405,7 +417,7 @@ private:
     }
 
     void finish_thread_rd(node_t local_cnt) {
-        _gm_atomic_add(&next_count, local_cnt);
+	_gm_atomic_fetch_and_add_node(&next_count, local_cnt);
     }
 
 public:
