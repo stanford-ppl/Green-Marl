@@ -78,37 +78,6 @@ public:
 
     }
 
-#define ST_QUE_LOOP							\
-    for (node_t i = 0; i < curr_count; i++) {				\
-	node_t t = global_curr_level[i];				\
-	iterate_neighbor_que(t, tid);					\
-	visit_fw(t);							\
-    }
-
-#define ST_Q2R_LOOP							\
-    for (node_t i = 0; i < curr_count; i++) {				\
-	node_t t = global_curr_level[i];				\
-	iterate_neighbor_rd(t, local_cnt);				\
-	visit_fw(t);							\
-    }
-
-#define ST_RD_LOOP							\
-    for (node_t t = 0; t < G.num_nodes(); t++) {			\
-	if (visited_level[t] == curr_level) {				\
-	    iterate_neighbor_rd(t, local_cnt);				\
-	    visit_fw(t);						\
-	}								\
-    }
-
-#define ST_R2Q_LOOP							\
-    for (node_t t = 0; t < G.num_nodes(); t++) {			\
-	if (visited_level[t] == curr_level) {				\
-	    iterate_neighbor_que(t, tid);				\
-	    visit_fw(t);						\
-	}								\
-    }
-
-    
     void do_bfs_forward() {
         //---------------------------------
         // prepare root node
@@ -135,83 +104,68 @@ public:
                     break;
                 }
                 case ST_QUE: {
-		    // not all compilers support the #pragma omp parallel if (...) ...
-		    if (use_multithread) {
-#pragma omp parallel 
-			{
-			    int tid = omp_get_thread_num();
+#pragma omp parallel if (use_multithread)
+                    {
+                        int tid = omp_get_thread_num();
 #pragma omp for nowait
-			    ST_QUE_LOOP;
-			    finish_thread_que(tid);
-			}
-		    }
-		    else {
-			int tid = omp_get_thread_num();
-			ST_QUE_LOOP;
-			finish_thread_que(tid);
-		    }
+                        for (node_t i = 0; i < curr_count; i++) {
+                            node_t t = global_curr_level[i];
+                            iterate_neighbor_que(t, tid);
+                            visit_fw(t);
+                        }
+                        finish_thread_que(tid);
+                    }
                     break;
                 }
                 case ST_Q2R: {
-		    // not all compilers support the #pragma omp parallel if (...) ...
-		    if (use_multithread) {
-#pragma omp parallel 
-			{
-			    node_t local_cnt = 0;
+#pragma omp parallel if (use_multithread)
+                    {
+                        node_t local_cnt = 0;
 #pragma omp for nowait
-			    ST_Q2R_LOOP;
-			    finish_thread_rd(local_cnt);
-			}
-		    }
-		    else {
-			node_t local_cnt = 0;
-			ST_Q2R_LOOP;
-			finish_thread_rd(local_cnt);
-		    }
+                        for (node_t i = 0; i < curr_count; i++) {
+                            node_t t = global_curr_level[i];
+                            iterate_neighbor_rd(t, local_cnt);
+                            visit_fw(t);
+                        }
+                        finish_thread_rd(local_cnt);
+                    }
                     break;
                 }
 
                 case ST_RD: {
-		    // not all compilers support the #pragma omp parallel if (...) ...
-		    if (use_multithread) {
-#pragma omp parallel 
-			{
-			    node_t local_cnt = 0;
+#pragma omp parallel if (use_multithread)
+                    {
+                        node_t local_cnt = 0;
 #pragma omp for nowait
-			    ST_RD_LOOP;
-			    finish_thread_rd(local_cnt);
-			}
-		    }
-		    else {
-			node_t local_cnt = 0;
-			ST_RD_LOOP;
-			finish_thread_rd(local_cnt);
-			
-		    }
+                        for (node_t t = 0; t < G.num_nodes(); t++) {
+                            if (visited_level[t] == curr_level) {
+                                iterate_neighbor_rd(t, local_cnt);
+                                visit_fw(t);
+                            }
+                        }
+                        finish_thread_rd(local_cnt);
+                    }
                     break;
                 }
                 case ST_R2Q: {
-		    // not all compilers support the #pragma omp parallel if (...) ...
-		    if (use_multithread) {
-#pragma omp parallel 
-			{
-			    int tid = omp_get_thread_num();
+#pragma omp parallel if (use_multithread)
+                    {
+                        int tid = omp_get_thread_num();
 #pragma omp for nowait
-			    ST_R2Q_LOOP;
-			    finish_thread_que(tid);
-			}
-		    }
-		    else {
-			int tid = omp_get_thread_num();
-			ST_R2Q_LOOP;
-			finish_thread_que(tid);
-		    }
+                        for (node_t t = 0; t < G.num_nodes(); t++) {
+                            if (visited_level[t] == curr_level) {
+                                iterate_neighbor_que(t, tid);
+                                visit_fw(t);
+                            }
+                        }
+                        finish_thread_que(tid);
+                    }
                     break;
                 }
             } // end of switch
 
             do_end_of_level_fw();
-            is_finished = get_next_state();
+            is_done = get_next_state();
         } // end of while
     }
 
@@ -324,21 +278,6 @@ private:
         down_edge_array[idx] = 1;
     }
 
-#define PREPARE_VISITED_BITMAP_LOOP				\
-    for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)	\
-	visited_bitmap[i] = 0;
-    
-
-#define PREPARE_VISITED_LEVEL_LOOP			\
-    for (node_t i = 0; i < G.num_nodes(); i++)		\
-	visited_level[i] = __INVALID_LEVEL;
-
-
-#define PREPARE_DOWN_EDGE_ARRAY_LOOP				\
-    for (edge_t i = 0; i < G.num_edges(); i++)			\
-	down_edge_array[i] = 0;
-    
-
     void prepare_que() {
         // create bitmap and edges
         visited_bitmap = new unsigned char[(G.num_nodes() + 7) / 8];
@@ -346,27 +285,35 @@ private:
         if (save_child) {
             down_edge_array = new unsigned char[G.num_edges()];
         }
-	// not all compilers support the #pragma omp parallel if (...) ...
+
 	if (use_multithread) {
 #pragma omp parallel 
-	    {
+	  {
 #pragma omp for nowait
-		PREPARE_VISITED_BITMAP_LOOP;
+	      for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
+		  visited_bitmap[i] = 0;
+	    
 #pragma omp for nowait
-		PREPARE_VISITED_LEVEL_LOOP;
-		if (save_child) {
+	      for (node_t i = 0; i < G.num_nodes(); i++)
+		  visited_level[i] = __INVALID_LEVEL;
+	      
+	      if (save_child) {
 #pragma omp for nowait
-		    PREPARE_DOWN_EDGE_ARRAY_LOOP;
-		}
-	    }
+		  for (edge_t i = 0; i < G.num_edges(); i++)
+		      down_edge_array[i] = 0;
+	      }
+	  }
 	}
 	else {
-	    PREPARE_VISITED_BITMAP_LOOP;
-	    PREPARE_VISITED_LEVEL_LOOP;
+	    for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
+		visited_bitmap[i] = 0;
+	    for (node_t i = 0; i < G.num_nodes(); i++)
+		visited_level[i] = __INVALID_LEVEL;
 	    if (save_child) {
-		PREPARE_DOWN_EDGE_ARRAY_LOOP;
+		for (edge_t i = 0; i < G.num_edges(); i++)
+		    down_edge_array[i] = 0;
 	    }
-        }
+	}
 
         typename std::map<node_t, level_t>::iterator II;
         for (II = small_visited.begin(); II != small_visited.end(); II++) {
@@ -474,20 +421,6 @@ private:
     }
 
 public:
-
-#define VISIT_NON_NULL_QUEUE_LOOP				\
-    for (node_t i = 0; i < G.num_nodes(); i++) {		\
-	if (visited_level[i] != curr_level) continue;		\
-	visit_rv(i);						\
-    }
-
-#define VISIT_NULL_QUEUE_LOOP				\
-    for (node_t i = 0; i < count; i++) {		\
-	node_t u = queue_ptr[i];			\
-	visit_rv(u);					\
-    }
- 
- 
     void do_bfs_reverse() {
         // This function should be called only after do_bfs_foward has finished.
         // assumption: small-world graph
@@ -496,29 +429,23 @@ public:
             node_t count = level_count[level];
             node_t* queue_ptr = level_start_ptr[level];
             if (queue_ptr == NULL) {
-		// not all compilers support the #pragma omp parallel if (...) ...
-		if (use_multithread) {
-#pragma omp parallel 
-		    {
+#pragma omp parallel if (use_multithread)
+                {
 #pragma omp for nowait
-			VISIT_NON_NULL_QUEUE_LOOP;
-		    }
-		}
-		else {
-		    VISIT_NON_NULL_QUEUE_LOOP;
-		}
+                    for (node_t i = 0; i < G.num_nodes(); i++) {
+                        if (visited_level[i] != curr_level) continue;
+                        visit_rv(i);
+                    }
+                }
             } else {
-		// not all compilers support the #pragma omp parallel if (...) ...
-		if (use_multithread) {
-#pragma omp parallel 
-		    {
+#pragma omp parallel if (use_multithread)
+                {
 #pragma omp for nowait
-			VISIT_NULL_QUEUE_LOOP;
-		    }
-		}
-		else {
-		    VISIT_NULL_QUEUE_LOOP;
-		}
+                    for (node_t i = 0; i < count; i++) {
+                        node_t u = queue_ptr[i];
+                        visit_rv(u);
+                    }
+                }
             }
 
             do_end_of_level_rv();
