@@ -91,8 +91,8 @@ public:
         level_count.push_back(curr_count);
         level_start_ptr.push_back(global_curr_level);
 
-        bool is_finished = false;
-        while (!is_finished) {
+        bool is_done = false;
+        while (!is_done) {
             switch (state) {
                 case ST_SMALL: {
                     for (node_t i = 0; i < curr_count; i++) {
