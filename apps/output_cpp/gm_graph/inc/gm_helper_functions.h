@@ -288,7 +288,7 @@ public:
     // under parallel execution
     inline void increase_next_count(int tid, int32_t local_cnt) {
         assert(tid < num_threads);
-        __sync_fetch_and_add(&cnt_next, local_cnt);
+        _gm_atomic_fetch_and_add_int32(&cnt_next, local_cnt);
     }
 
     inline void choose_method() {

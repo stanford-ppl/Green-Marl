@@ -20,6 +20,10 @@
 //       compare and swap; return true if successful
 //       T should be defined at least for following types:
 //          int32_t, int64_t, double, float
+//
+// The following atomic operations are not used at this point and will
+// be defined as needed.
+//
 //  unsigned char _gm_atomic_or(unsigned char* dest, unsigned char byte_val)
 //       atomic or; returns old_value
 //  unsigned char _gm_atomic_or(unsigned char* dest, unsigned char byte_val)
@@ -30,17 +34,12 @@
 //          (u)int32_t, (u)int16_t, (u)int8_t
 //---------------------------------------------------------
 
-#if __GNUC__
-
-#define _gm_atomic_add __sync_fetch_and_add
-#define _gm_atomic_or  __sync_fetch_and_or
-#define _gm_atomic_and __sync_fetch_and_and
-
-#else
-#error "GM_Graph library requires gcc for now" 
+#if !defined(__GNUC__) && !defined(__SUNPRO_CC)
+#error "GM_Graph library requires gcc or oracle studio for now" 
 #endif // no GNUC
+
 static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val) {
-    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+    return _gm_atomic_cas_int32(dest, old_val, new_val);
 }
 
 // It is not possible to use gcc's inherent CAS for double and float
@@ -51,13 +50,13 @@ static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float
 }
 
 static inline bool _gm_atomic_compare_and_swap(bool *dest, bool old_val, bool new_val) {
-    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+    return _gm_atomic_cas_bool(dest, old_val, new_val);
 }
 
-#if defined(__arch64__) || defined(__x86_64__)
+#if defined(__arch64__) || defined(__x86_64__) || defined(__SUNPRO_CC)
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val)
-{   return __sync_bool_compare_and_swap(dest, old_val, new_val);}
+{   return _gm_atomic_cas_int64(dest, old_val, new_val);}
 
 static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
 {

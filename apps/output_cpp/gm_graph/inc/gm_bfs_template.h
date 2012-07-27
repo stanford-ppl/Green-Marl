@@ -358,7 +358,7 @@ private:
         node_t local_cnt = thread_local_next_level[tid].size();
         //copy curr_cnt to next_cnt
         if (local_cnt > 0) {
-            node_t old_idx = _gm_atomic_add(&next_count, local_cnt);
+            node_t old_idx = _gm_atomic_fetch_and_add_node(&next_count, local_cnt);
             memcpy(&(global_next_level[old_idx]), &(thread_local_next_level[tid][0]), local_cnt * sizeof(node_t));
         }
         thread_local_next_level[tid].clear();
@@ -405,7 +405,7 @@ private:
     }
 
     void finish_thread_rd(node_t local_cnt) {
-        _gm_atomic_add(&next_count, local_cnt);
+	_gm_atomic_fetch_and_add_node(&next_count, local_cnt);
     }
 
 public:
