@@ -1,0 +1,22 @@
+Procedure test_collection_iteration(G:Graph)
+{
+    N_O o;
+    N_S s;
+    Node_Seq seq;
+    Collection<N_S> q1;
+    Collection<N_O> q2;
+    Collection<Node_Seq> q3;
+    
+    For(x: q1.Items) {
+    	s = x;
+    }
+    
+    For(x: q2.Items) {
+    	o = x;
+    }
+    
+    For(x: q3.Items) {
+		seq = x;
+    }
+    
+}

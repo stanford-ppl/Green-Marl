@@ -18,7 +18,7 @@ enum GMTYPE_T
     GMTYPE_ESET,
     GMTYPE_ESEQ,
     GMTYPE_EORDER,
-    GMTYPE_QUEUE,
+    GMTYPE_COLLECTION,
 
     // iterators
     GMTYPE_NODEITER_ALL = 100,
@@ -32,6 +32,10 @@ enum GMTYPE_T
     GMTYPE_NODEITER_ORDER,          // order
 
     GMTYPE_NODEITER_COMMON_NBRS,    // common neighbors
+
+    GMTYPE_COLLECTIONITER_SET,          // iterator over collection of collection
+    GMTYPE_COLLECTIONITER_ORDER,
+    GMTYPE_COLLECTIONITER_SEQ,
 
     GMTYPE_EDGEITER_ALL = 200,
     GMTYPE_EDGEITER_NBRS,
@@ -68,6 +72,7 @@ enum GMTYPE_T
     GMTYPE_UNKNOWN = 9999,  // expression whose type is not identified yet (variable before typechecking)
     GMTYPE_UNKNOWN_NUMERIC, // expression whose type should be numeric, size not determined yet
     GMTYPE_ITER_ANY,        // iterator to some collection. resolved after type checking
+    GMTYPE_ITER_UNDERSPECIFIED,
     GMTYPE_VOID,
     GMTYPE_INVALID = 99999,
 };
@@ -159,8 +164,25 @@ inline static bool gm_is_unknown_collection_iter_type(int i) {
     return (i == GMTYPE_ITER_ANY);
 }
 
+inline static bool gm_is_collection_of_set_iter_type(int i) {
+    return i == GMTYPE_COLLECTIONITER_SET;
+}
+
+inline static bool gm_is_collection_of_seq_iter_type(int i) {
+    return i == GMTYPE_COLLECTIONITER_SEQ;
+}
+
+inline static bool gm_is_collection_of_order_iter_type(int i) {
+    return i == GMTYPE_COLLECTIONITER_ORDER;
+}
+
+inline static bool gm_is_collection_of_collection_iter_type(int i) {
+    return gm_is_collection_of_set_iter_type(i) || gm_is_collection_of_order_iter_type(i) || gm_is_collection_of_seq_iter_type(i);
+}
+
 inline static bool gm_is_collection_iter_type(int i) {
-    return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) || gm_is_unknown_collection_iter_type(i);
+    return gm_is_node_collection_iter_type(i) || gm_is_edge_collection_iter_type(i) || gm_is_unknown_collection_iter_type(i)
+            || gm_is_collection_of_collection_iter_type(i);
 }
 
 inline static bool gm_is_property_iter_set_type(int i) {
@@ -278,12 +300,12 @@ inline static bool gm_is_sequence_collection_type(int i) {
     return gm_is_node_sequence_type(i) || gm_is_edge_sequence_type(i);
 }
 
-inline static bool gm_is_collection_type(int i) {
-    return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i);
+inline static bool gm_is_collection_of_collection_type(int type) {
+    return type == GMTYPE_COLLECTION;
 }
 
-inline static bool gm_is_queue_type(int type) {
-    return type == GMTYPE_QUEUE;
+inline static bool gm_is_collection_type(int i) {
+    return gm_is_node_collection_type(i) || gm_is_edge_collection_type(i) || gm_is_collection_of_collection_type(i);
 }
 
 inline static bool gm_is_sequential_collection_type(int i) {
@@ -305,16 +327,35 @@ inline int gm_get_natural_collection_iterator(int src_type) {
         return GMTYPE_NODEITER_SEQ;
     else if (src_type == GMTYPE_EORDER)
         return GMTYPE_NODEITER_ORDER;
+    else if (src_type == GMTYPE_COLLECTION)
+        return GMTYPE_ITER_UNDERSPECIFIED; //handle that later
     else {
         assert(false);
-        return 0;
+        return GMTYPE_INVALID;
+    }
+}
+
+inline int gm_get_specified_collection_iterator(int type) {
+    switch (type) {
+        case GMTYPE_NSET:
+        case GMTYPE_ESET:
+            return GMTYPE_COLLECTIONITER_SET;
+        case GMTYPE_NSEQ:
+        case GMTYPE_ESEQ:
+            return GMTYPE_COLLECTIONITER_SEQ;
+        case GMTYPE_NORDER:
+        case GMTYPE_EORDER:
+            return GMTYPE_COLLECTIONITER_ORDER;
+        default:
+            assert(false);
+            return GMTYPE_INVALID;
     }
 }
 
 // return true if this type has a target graph
 inline bool gm_has_target_graph_type(int t) {
     return gm_is_node_edge_compatible_type(t) || // any node-edge iterator (including collection iterator)
-            gm_is_collection_type(t) || gm_is_queue_type(t);
+            gm_is_collection_type(t) || gm_is_collection_of_collection_type(t);
 }
 
 inline static bool gm_is_same_type(int i1, int i2) {
@@ -326,7 +367,7 @@ inline static bool gm_is_same_node_or_edge_compatible_type(int i1, int i2) {
 }
 
 inline static bool gm_collection_of_collection_compatible_type(int def_src, int source_type) {
-    return gm_is_order_collection_type(def_src) && gm_is_queue_type(source_type);
+    return gm_is_order_collection_type(def_src) && gm_is_collection_of_collection_type(source_type);
 }
 
 enum GM_OPS_T
@@ -369,18 +410,23 @@ inline static bool gm_is_numeric_op(int i) {
     return (i == GMOP_MULT) || (i == GMOP_DIV) || (i == GMOP_MOD) || (i == GMOP_ADD) || (i == GMOP_SUB) || (i == GMOP_NEG) || (i == GMOP_ABS) || (i == GMOP_MAX)
             || (i == GMOP_MIN);
 }
+
 inline static bool gm_is_boolean_op(int i) {
     return (i == GMOP_NOT) || (i == GMOP_AND) || (i == GMOP_OR);
 }
+
 inline static bool gm_is_eq_op(int i) {
     return (i == GMOP_EQ) || (i == GMOP_NEQ);
 }
+
 inline static bool gm_is_less_op(int i) {
     return (i == GMOP_GT) || (i == GMOP_LT) || (i == GMOP_GE) || (i == GMOP_LE);
 }
+
 inline static bool gm_is_eq_or_less_op(int i) {
     return gm_is_eq_op(i) || gm_is_less_op(i);
 }
+
 inline static bool gm_is_ternary_op(int i) {
     return (i == GMOP_TER);
 }
@@ -398,7 +444,12 @@ inline bool gm_is_compatible_type_for_assign(int t_lhs, int t_rhs, int& t_new_rh
 
 enum GM_REDUCE_T
 {
-    GMREDUCE_INVALID = 0, GMREDUCE_PLUS = 1, GMREDUCE_MULT, GMREDUCE_MIN, GMREDUCE_MAX, GMREDUCE_AND,     // logical AND
+    GMREDUCE_INVALID = 0,
+    GMREDUCE_PLUS = 1,
+    GMREDUCE_MULT,
+    GMREDUCE_MIN,
+    GMREDUCE_MAX,
+    GMREDUCE_AND,     // logical AND
     GMREDUCE_OR,      // logical OR
     GMREDUCE_AVG,     // average (syntactic sugar)
     GMREDUCE_DEFER,  // deferred assignment is not a reduce op. but shares a lot of properies
@@ -410,9 +461,11 @@ inline static bool gm_is_strict_reduce_op(int t) {
     return (t == GMREDUCE_PLUS) || (t == GMREDUCE_MULT) || (t == GMREDUCE_MIN) || (t == GMREDUCE_MAX) || (t == GMREDUCE_AND) || (t == GMREDUCE_OR)
             || (t == GMREDUCE_AVG);
 }
+
 inline static bool gm_is_numeric_reduce_op(int t) {
     return (t == GMREDUCE_PLUS) || (t == GMREDUCE_MULT) || (t == GMREDUCE_MIN) || (t == GMREDUCE_MAX) || (t == GMREDUCE_AVG);
 }
+
 inline static bool gm_is_boolean_reduce_op(int t) {
     return (t == GMREDUCE_AND) || (t == GMREDUCE_OR);
 }
@@ -429,42 +482,55 @@ inline static bool gm_is_iteration_on_property(int iterType) {
 inline static bool gm_is_iteration_on_set(int itype) {
     return (itype == GMTYPE_NODEITER_SET) || (itype == GMTYPE_EDGEITER_SET);
 }
+
 inline static bool gm_is_iteration_on_order(int itype) {
     return (itype == GMTYPE_NODEITER_ORDER) || (itype == GMTYPE_EDGEITER_ORDER);
 }
+
 inline static bool gm_is_iteration_on_sequence(int itype) {
     return (itype == GMTYPE_NODEITER_SEQ) || (itype == GMTYPE_EDGEITER_SEQ);
 }
+
 inline static bool gm_is_iteration_on_all_graph(int itype) {
     return gm_is_all_graph_iter_type(itype);
 }
+
 inline static bool gm_is_iteration_on_out_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_NBRS) || (itype == GMTYPE_NODEITER_NBRS);
 }
+
 inline static bool gm_is_iteration_on_in_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_IN_NBRS) || (itype == GMTYPE_NODEITER_IN_NBRS);
 }
+
 inline static bool gm_is_iteration_on_up_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_UP_NBRS) || (itype == GMTYPE_NODEITER_UP_NBRS);
 }
+
 inline static bool gm_is_iteration_on_down_neighbors(int itype) {
     return (itype == GMTYPE_EDGEITER_DOWN_NBRS) || (itype == GMTYPE_NODEITER_DOWN_NBRS);
 }
+
 inline static bool gm_is_iteration_use_reverse(int itype) {
     return gm_is_iteration_on_in_neighbors(itype) || gm_is_iteration_on_up_neighbors(itype);
 }
+
 inline static bool gm_is_iteration_bfs(int itype) {
     return (itype == GMTYPE_EDGEITER_BFS) || (itype == GMTYPE_NODEITER_BFS);
 }
+
 inline static bool gm_is_iteration_on_nodes(int itype) {
     return gm_is_node_iter_type(itype);
 }
+
 inline static bool gm_is_iteration_on_edges(int itype) {
     return gm_is_edge_iter_type(itype);
 }
+
 inline static bool gm_is_iteration_on_updown_levels(int itype) {
     return gm_is_iteration_on_up_neighbors(itype) || gm_is_iteration_on_down_neighbors(itype);
 }
+
 inline static bool gm_is_iteration_on_neighbors_compatible(int itype) {
     return gm_is_any_nbr_node_iter_type(itype);
 }

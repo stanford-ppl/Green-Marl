@@ -57,7 +57,11 @@ void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body) {
         const char* prep_str = f->is_parallel() ? "prepare_par_iteration" : f->is_reverse_iteration() ? "prepare_rev_iteration" : "prepare_seq_iteration";
 
         // get a list
-        sprintf(str_buf, "%s::%s", get_type_string(source->getTypeInfo()), iter_type_str);
+        const char* typeString = NULL;
+        if(gm_is_collection_of_collection_type(source->getTypeSummary()))
+            sprintf(str_buf, "%s<%s>::%s", get_type_string(source->getTypeInfo()), get_type_string(source->getTargetTypeInfo()), iter_type_str);
+        else
+            sprintf(str_buf, "%s::%s", get_type_string(source->getTypeInfo()), iter_type_str);
         Body.push(str_buf);
 
         const char* a_name = FE.voca_temp_name_and_add(f->get_iterator()->get_orgname(), "_I");
@@ -88,7 +92,11 @@ void gm_cpplib::generate_down_initializer(ast_foreach* f, gm_code_writer& Body) 
     if (gm_is_iteration_on_collection(iter_type)) {
         assert(f->find_info(CPPBE_INFO_COLLECTION_ITERATOR) != NULL);
         const char* lst_iter_name = f->find_info_string(CPPBE_INFO_COLLECTION_ITERATOR);
-        const char* type_name = source->getTypeInfo()->is_node_collection() ? NODE_T : EDGE_T;
+        const char* type_name;
+        if(gm_is_collection_of_collection_type(source->getTypeSummary()))
+            type_name = get_type_string(source->getTargetTypeInfo());
+        else
+            type_name = source->getTypeInfo()->is_node_collection() ? NODE_T : EDGE_T;
 
         sprintf(str_buf, "%s %s = %s.get_next();", type_name, f->get_iterator()->get_genname(), lst_iter_name);
         Body.pushln(str_buf);
@@ -177,7 +185,7 @@ void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body) {
     } else if (gm_is_iteration_on_collection(type)) {
 
         assert(!fe->is_parallel());
-        assert(gm_is_node_collection_iter_type(type));
+        assert(gm_is_node_collection_iter_type(type) || gm_is_collection_of_collection_iter_type(type));
 
         const char* iter_name = fe->find_info_string(CPPBE_INFO_COLLECTION_ITERATOR);
         sprintf(str_buf, "while (%s.has_next())", iter_name);

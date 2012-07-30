@@ -202,7 +202,6 @@ void gm_giraph_gen::do_generate_shared_variables_keys() {
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
     std::set<gm_symtab_entry*>::iterator I;
 
-    char temp[256];
     for (I = scalar.begin(); I != scalar.end(); I++) {
         gm_symtab_entry* sym = *I;
         gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);

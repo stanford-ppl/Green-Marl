@@ -15,7 +15,7 @@
 //     Mark each sentence: Sequential, Contains Vertex, Begin Vertex
 //  (2) make basic-blocks from this pre-processing result
 //----------------------------------------------------------------------
-enum
+enum gps_gps_sentence_t //TOOD new name?
 {
     GPS_TYPE_SEQ = 1, GPS_TYPE_CANBE_VERTEX, GPS_TYPE_BEGIN_VERTEX, GPS_TYPE_IN_VERTEX,
 };

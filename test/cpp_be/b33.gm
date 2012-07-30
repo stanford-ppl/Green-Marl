@@ -1,18 +1,19 @@
 Procedure test_collection_of_collection_functions(G:Graph)
 {
-    Queue<N_S> c1;
-    Queue<Node_Sequence> c2;
-    Queue<N_O> c3;
+    Collection<N_S> c1;
+    Collection<Node_Sequence> c2;
+    Collection<N_O> c3;
 
     N_S s;
     Node_Sequence sq;
     N_O o;
     
     c1.PushBack(s);
-  	//c1.PushFront(s);
-    c2.PushBack(sq);
-    //c2.PushFront(sq);
     c3.PushBack(o);
+    c2.PushBack(sq);
+    
+    //c1.PushFront(s);
+    //c2.PushFront(sq);
     //c3.PushFront(o);
-
+    
 }

@@ -30,7 +30,7 @@
 
  /*  Reserved Words */
 %token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP T_LOCAL
-%token T_NSET T_NORDER T_NSEQ T_ITEMS T_QUEUE
+%token T_NSET T_NORDER T_NSEQ T_ITEMS T_COLLECTION
 %token T_DFS T_POST 
 %token T_INT T_FLOAT T_BOOL T_DOUBLE  T_LONG
 %token T_RETURN
@@ -167,8 +167,8 @@
            |  T_NORDER '(' id ')'     { $$ = GM_settype_ref(GMTYPE_NORDER, $3);   GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            |  T_NORDER                { $$ = GM_settype_ref(GMTYPE_NORDER, NULL); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            
-           |  T_QUEUE '<' set_type '>' '(' id ')'	  { $$ = GM_queuetype_ref($3, $6); 	  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
-           |  T_QUEUE '<' set_type '>' 				  { $$ = GM_queuetype_ref($3, NULL);  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_COLLECTION '<' set_type '>' '(' id ')'	  { $$ = GM_queuetype_ref($3, $6); 	  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           |  T_COLLECTION '<' set_type '>'				  { $$ = GM_queuetype_ref($3, NULL);  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            
 
   property : T_NODEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}

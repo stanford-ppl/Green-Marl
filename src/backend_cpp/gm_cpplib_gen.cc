@@ -51,18 +51,20 @@ const char* gm_cpplib::get_type_string(int type) {
             return "ERROR";
         }
     } else if (gm_is_collection_type(type)) {
-        assert(gm_is_node_collection_type(type));
+        assert(gm_is_node_collection_type(type) || gm_is_collection_of_collection_type(type));
         if (gm_is_set_collection_type(type))
             return SET_T;
         else if (gm_is_order_collection_type(type))
             return ORDER_T;
         else if (gm_is_sequence_collection_type(type))
             return SEQ_T;
+        else if (gm_is_collection_of_collection_type(type))
+            return QUEUE_T;
         else {
             assert(false);
             return "ERROR";
         }
-    } else if (gm_is_queue_type(type)) {
+    } else if (gm_is_collection_of_collection_type(type)) {
         return QUEUE_T;
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));
@@ -96,23 +98,30 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     Body->push("(");
 
     ast_typedecl* t = i->getTypeInfo();
-    if (t->is_set_collection() || t->is_order_collection() || t->is_queue()) {
+    if (t->is_set_collection() || t->is_order_collection() || t->is_collection_of_collection()) {
         // total size;
         assert(t->get_target_graph_id() != NULL);
-        if (!t->is_queue()) Body->push(t->get_target_graph_id()->get_genname());
-        if (t->is_node_collection())
-            Body->push("."NUM_NODES"()");
-        else if (t->is_edge_collection())
-            Body->push("."NUM_EDGES"()");
-        else if (t->is_queue())
+
+        if (!t->is_collection_of_collection()) Body->push(t->get_target_graph_id()->get_genname());
+        if (t->is_node_collection()) {
+            Body->push(".");
+            Body->push(NUM_NODES);
+            Body->push("()");
+        } else if (t->is_edge_collection()) {
+            Body->push(".");
+            Body->push(NUM_EDGES);
+            Body->push("()");
+        } else if (t->is_collection_of_collection()) {
             assert(true);
-        else
+        } else {
             assert(false);
+        }
     }
     if (t->is_order_collection()) Body->push(", ");
 
-    if (t->is_order_collection() || t->is_sequence_collection() || t->is_queue()) {
-        Body->push(MAX_THREADS"()");
+    if (t->is_order_collection() || t->is_sequence_collection() || t->is_collection_of_collection()) {
+        Body->push(MAX_THREADS);
+        Body->push("()");
     }
 
     Body->pushln(");");
@@ -139,14 +148,14 @@ void gm_cpplib::generate_expr_nil(ast_expr* e, gm_code_writer& Body) {
     }
 }
 
-const char* gm_cpplib::get_function_name_nset(int methodId) {
+const char* gm_cpplib::get_function_name_nset(int methodId, bool in_parallel) {
     switch (methodId) {
         case GM_BLTIN_SET_HAS:
             return "is_in";
         case GM_BLTIN_SET_REMOVE:
-            return "remove";
+            return in_parallel ? "remove_par" : "remove_seq";
         case GM_BLTIN_SET_ADD:
-            return "add";
+            return in_parallel ? "add_par" : "add_seq";
         case GM_BLTIN_SET_UNION:
             return "union_";
         case GM_BLTIN_SET_COMPLEMENT:
@@ -155,6 +164,8 @@ const char* gm_cpplib::get_function_name_nset(int methodId) {
             return "intersect";
         case GM_BLTIN_SET_SUBSET:
             return "is_subset";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
@@ -171,6 +182,8 @@ const char* gm_cpplib::get_function_name_nseq(int methodId) {
             return "pop_front";
         case GM_BLTIN_SET_REMOVE_BACK:
             return "pop_back";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
@@ -189,6 +202,8 @@ const char* gm_cpplib::get_function_name_norder(int methodId) {
             return "pop_back";
         case GM_BLTIN_SET_HAS:
             return "is_in";
+        case GM_BLTIN_SET_SIZE:
+            return "get_size";
         default:
             assert(false);
             return "ERROR";
@@ -202,7 +217,7 @@ const char* gm_cpplib::get_function_name_graph(int methodId) {
         case GM_BLTIN_GRAPH_NUM_EDGES:
             return NUM_EDGES;
         case GM_BLTIN_GRAPH_RAND_NODE:
-            return "pick_random_node";
+            return RANDOM_NODE;
         default:
             assert(false);
             return "ERROR";
@@ -233,7 +248,7 @@ void gm_cpplib::generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr,
     const char* functionName;
     switch (sourceType) {
         case GMTYPE_NSET:
-            functionName = get_function_name_nset(methodId);
+            functionName = get_function_name_nset(methodId, parallelExecution);
             break;
         case GMTYPE_NSEQ:
             functionName = get_function_name_nseq(methodId);
@@ -349,7 +364,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             Body.push(str_buf);
             return;
         case GMTYPE_NSET:
-            func_name = get_function_name_nset(method_id);
+            func_name = get_function_name_nset(method_id, under_parallel);
             break;
         case GMTYPE_NORDER:
             func_name = get_function_name_norder(method_id);

@@ -4,11 +4,13 @@ bin/*
 obj/*
 .cproject
 .project
+.settings
 *.aterm
 
 test.gm
 test_main.cc
 
+test/cpp_be/output
 test/gps/output
 test/gps/.classpath
 test/gps/.project
@@ -23,8 +25,8 @@ test/giraph/bin
 src/parse/gm_grammer.output
 src/parse/gm_grammer.tab.c
 
-apps/output_cpp/generated/*.h
-apps/output_cpp/generated/*.cc
+apps/output_cpp/generated
 apps/output_cpp/gm_graph/src/*.o
-apps/output_cpp/bin/*
-apps/output_cpp/gm_graph/lib/*
+apps/output_cpp/bin
+apps/output_cpp/gm_graph/lib
+apps/output_gps/generated

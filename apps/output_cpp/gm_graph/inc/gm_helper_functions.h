@@ -45,7 +45,7 @@ static inline bool _gm_set_bit_atomic(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char or_val = 0x1 << bit_loc;
-    unsigned char old_val = __sync_fetch_and_or(&BitMap[bit_pos], or_val);
+    unsigned char old_val = _gm_atomic_fetch_and_or_char(&BitMap[bit_pos], or_val);
     if (((old_val >> bit_loc) & 0x01) == 0) return true;
     return false;
 }
@@ -63,7 +63,7 @@ static inline bool _gm_clear_bit_atomic(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char and_val = ~(0x1 << bit_loc);
-    unsigned char old_val = __sync_fetch_and_and(&BitMap[bit_pos], and_val);
+    unsigned char old_val = _gm_atomic_fetch_and_and_char(&BitMap[bit_pos], and_val);
     if (((old_val >> bit_loc) & 0x01) == 1) return true; // Am I the one who cleared the bit?
     return false;
 }
@@ -281,14 +281,14 @@ public:
     }
     inline void copy_local_q(int tid, int32_t local_cnt) {
         assert(tid < num_threads);
-        int idx = __sync_fetch_and_add(&cnt_next, local_cnt);
+        int idx = _gm_atomic_fetch_and_add_int32(&cnt_next, local_cnt);
         memcpy(&(next_Q[idx]), local_Q[tid], local_cnt * sizeof(node_t));
     }
 
     // under parallel execution
     inline void increase_next_count(int tid, int32_t local_cnt) {
         assert(tid < num_threads);
-        __sync_fetch_and_add(&cnt_next, local_cnt);
+        _gm_atomic_fetch_and_add_int32(&cnt_next, local_cnt);
     }
 
     inline void choose_method() {
@@ -615,29 +615,12 @@ public:
 // CAS implementation
 //---------------------------------------------------------
 static inline bool _gm_CAS(int32_t *dest, int32_t old_val, int32_t new_val) {
-    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+    return _gm_atomic_cas_int32(dest, old_val, new_val);
 }
 static inline bool _gm_CAS(int64_t *dest, int64_t old_val, int64_t new_val) {
-    return __sync_bool_compare_and_swap(dest, old_val, new_val);
+    return _gm_atomic_cas_int64(dest, old_val, new_val);
 }
 
-/*
- static inline bool _gm_CAS(double  *dest, double* old_valp,  double* new_valp)
- {
- uint64_t* D = reinterpret_cast<uint64_t*> (dest); // double is 64bit. right?
- uint64_t* O = reinterpret_cast<uint64_t*> (old_valp); // double is 64bit. right?
- uint64_t* P = reinterpret_cast<uint64_t*> (new_valp); // double is 64bit. right?
- return __sync_bool_compare_and_swap(D, *O, *P);
- }
-
- static inline bool _gm_CAS(float   *dest, float*  old_valp,  float* new_valp)
- {
- uint32_t* D = reinterpret_cast<uint32_t*> (dest); // double is 64bit. right?
- uint32_t* O = reinterpret_cast<uint32_t*> (old_valp); // double is 64bit. right?
- uint32_t* P = reinterpret_cast<uint32_t*> (new_valp); // double is 64bit. right?
- return __sync_bool_compare_and_swap(D, *O, *P);
- }
- */
 static inline bool _gm_CAS(double *dest, double old_val, double new_val) {
     return _gm_CAS_asm(dest, old_val, new_val);
 }

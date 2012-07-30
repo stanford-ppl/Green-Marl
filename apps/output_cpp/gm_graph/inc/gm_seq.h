@@ -30,20 +30,25 @@ public:
     void push_back(T e) {
         Q.push_back(e);
     }
+
     void push_front(T e) {
         Q.push_front(e);
     }
+
     void pop_back() {
         Q.pop_back();
     }
+
     void pop_front() {
         Q.pop_front();
     }
+
     void clear() {
         Q.clear();
     }
-    void get_size() {
-        Q.size();
+
+    int get_size() {
+        return Q.size();
     }
 
     // for parallel execution
@@ -88,8 +93,7 @@ public:
     };                                      
 
     ITERATOR_CLASS(seq_iter, std::list<T>::iterator)
-    ;ITERATOR_CLASS(rev_iter, std::list<T>::reverse_iterator)
-    ;
+    ITERATOR_CLASS(rev_iter, std::list<T>::reverse_iterator)
 
 #undef ITERATOR_CLASS
     typedef seq_iter par_iter; // type-alias
@@ -106,6 +110,7 @@ public:
     // [xxx] to be implemented
     par_iter prepare_par_iteration(int thread_id, int max_threads) {
         assert(false);
+        return NULL;
     }
 
 private:

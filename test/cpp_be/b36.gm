@@ -1,0 +1,12 @@
+Procedure test_size(G:Graph)
+{
+    N_O o;
+    N_S s;
+    Node_Seq seq;
+    Collection<N_S> q;
+    
+    Int i1 = o.Size();
+    Int i2 = s.Size();
+    Int i3 = q.Size();
+    Int i4 = seq.Size();
+}

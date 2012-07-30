@@ -141,12 +141,15 @@ bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
     int sourceType = builtinExpr->get_source_type();
     switch(sourceType) {
         case GMTYPE_PROPERTYITER_SET:
+        case GMTYPE_COLLECTIONITER_SET:
             sourceType = GMTYPE_NSET;
             break;
         case GMTYPE_PROPERTYITER_SEQ:
+        case GMTYPE_COLLECTIONITER_SEQ:
             sourceType = GMTYPE_NSEQ;
             break;
         case GMTYPE_PROPERTYITER_ORDER:
+        case GMTYPE_COLLECTIONITER_ORDER:
             sourceType = GMTYPE_NORDER;
             break;
         default:

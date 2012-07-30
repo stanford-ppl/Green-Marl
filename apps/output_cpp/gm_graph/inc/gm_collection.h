@@ -49,6 +49,31 @@ public:
         return data.size();
     }
 
+    class seq_iter
+    {
+    private:
+        typedef typename list<T>::iterator Iterator;
+        Iterator iter;
+        const Iterator end;
+
+    public:
+        bool has_next() {
+            return iter != end;
+        }
+
+        T get_next() {
+            return *(iter++);
+        }
+
+        seq_iter(Iterator iter_, const Iterator end_iter) : iter(iter_), end(end_iter) {
+        }
+
+    };
+
+    seq_iter prepare_seq_iteration() {
+        return seq_iter(data.begin(), data.end());
+    }
+
 };
 
 #endif /* GM_COLLECTION_H_ */

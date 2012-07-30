@@ -8,7 +8,7 @@
 #include "gm_rw_analysis.h"
 #include <list>
 
-enum
+enum gm_gps_bbtype_t
 {
     GM_GPS_BBTYPE_SEQ,
     GM_GPS_BBTYPE_IF_COND,

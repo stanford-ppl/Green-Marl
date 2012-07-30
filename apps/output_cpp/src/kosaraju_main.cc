@@ -7,8 +7,11 @@ public:
     int* membership;
     int  num_membership;
 
-    my_main()
-    {
+    virtual ~my_main() {
+        delete[] membership;
+    }
+
+    my_main() : membership(NULL), num_membership(0) {
     }
 
     virtual bool prepare() {
@@ -25,7 +28,6 @@ public:
 
     virtual bool post_process() {
         printf("num_membership = %d\n", num_membership);
-        delete[] membership;
         return true;
     }
 };

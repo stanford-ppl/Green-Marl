@@ -25,7 +25,7 @@ static inline bool _gm_set_bit_atomic(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char or_val = 0x1 << bit_loc;
-    unsigned char old_val = _gm_atomic_or(&BitMap[bit_pos], or_val);
+    unsigned char old_val = _gm_atomic_fetch_and_or_char(&BitMap[bit_pos], or_val);
     if (((old_val >> bit_loc) & 0x01) == 0) return true;
     return false;
 }
@@ -43,7 +43,7 @@ static inline bool _gm_clear_bit_atomic(unsigned char* BitMap, int n) {
     int bit_pos = n / 8;
     int bit_loc = n % 8;
     unsigned char and_val = ~(0x1 << bit_loc);
-    unsigned char old_val = _gm_atomic_and(&BitMap[bit_pos], and_val);
+    unsigned char old_val = _gm_atomic_fetch_and_and_char(&BitMap[bit_pos], and_val);
     if (((old_val >> bit_loc) & 0x01) == 1) return true; // Am I the one who cleared the bit?
     return false;
 }
