@@ -2,7 +2,7 @@ Procedure TriangleCounting(G: Graph): Int
 {
 	Int T;
 	Foreach(v: G.Nodes) 
-	    	Foreach(u: v.Nbrs)(u > v)
+    	Foreach(u: v.Nbrs)(u > v)
 			Foreach(w: u.Nbrs) (w > u)
     			If (v.HasEdgeTo(w)) 
        				T += 1;
@@ -12,7 +12,7 @@ Procedure TriangleCounting(G: Graph): Int
 Procedure PotentialFriends(G: Graph, potFriend: N_P<Node_Set>(G))
 {
 	Foreach(v: G.Nodes) 
-    		Foreach(u: v.Nbrs)(u > v)
+   		Foreach(u: v.Nbrs)(u > v)
 			Foreach(w: u.Nbrs) (w > u)
 				If (!v.HasEdgeTo(w)) 
 					v.potFriend.Add(w);  

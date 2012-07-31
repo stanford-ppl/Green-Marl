@@ -261,12 +261,12 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
                 break;
         }
 
-        bool need_count_for_avg = false;
         if (is_avg) {
             rtype = GMREDUCE_PLUS; // Need sum
 
             need_count_for_avg = true;
             if (target->get_filter() == NULL) {
+                
                 int iter_type = target->get_iter_type();
                 int src_type = target->get_source()->getTypeInfo()->getTypeSummary();
                 if (find_count_function(src_type, iter_type) == GM_BLTIN_END)
@@ -274,6 +274,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
                 else
                     need_count_for_avg = false;
             }
+
         }
 
         // 1.2 initial value
@@ -325,11 +326,13 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
         bound_id = old_iter->copy(false); // dummy value;
     }
 
+
     if (!has_nested) {
         r_assign = ast_assign::new_assign_scala(lhs_id, body, GMASSIGN_REDUCE, bound_id, rtype);
         foreach_body = r_assign;
 
         if (need_count_for_avg) {
+            
             ast_sentblock* sb = ast_sentblock::new_sentblock();
             ast_id* lhs_id = cnt_symbol->getId()->copy(true);  // symInfo is correct for LHS
             bound_id2 = old_iter->copy(false);              // symInfo not available yet

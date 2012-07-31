@@ -181,7 +181,7 @@ const char* gm_get_reduce_string(int rop_type) {
 }
 const char* gm_get_reduce_expr_string(int rop_type) {
     const char* opstr = (rop_type == GMREDUCE_PLUS) ? "Sum" : (rop_type == GMREDUCE_MULT) ? "Product" : (rop_type == GMREDUCE_MIN) ? "Min" :
-                        (rop_type == GMREDUCE_MAX) ? "Max" : (rop_type == GMREDUCE_AND) ? "All" : (rop_type == GMREDUCE_OR) ? "Exist" : "??";
+                        (rop_type == GMREDUCE_MAX) ? "Max" : (rop_type == GMREDUCE_AND) ? "All" : (rop_type == GMREDUCE_OR) ? "Exist" : (rop_type == GMREDUCE_AVG) ? "Avg" : "??";
     return opstr;
 }
 
