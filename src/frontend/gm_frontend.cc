@@ -263,6 +263,11 @@ ast_node* GM_queuetype_ref(ast_node* collectionType, ast_node* id) {
     return ast_typedecl::new_queue((ast_id*) id, (ast_typedecl*) collectionType);
 }
 
+ast_node* GM_maptype_ref(ast_node* keyType, ast_node* valueType) {
+    assert(false);
+    return NULL;
+}
+
 ast_node* GM_nodeprop_ref(ast_node* typedecl, ast_node* id) {
     assert(typedecl->get_nodetype() == AST_TYPEDECL);
     if (id == NULL) return ast_typedecl::new_nodeprop((ast_typedecl*) typedecl, NULL);

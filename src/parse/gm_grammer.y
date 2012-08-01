@@ -31,6 +31,7 @@
  /*  Reserved Words */
 %token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP T_LOCAL
 %token T_NSET T_NORDER T_NSEQ T_ITEMS T_COLLECTION
+%token T_MAP
 %token T_DFS T_POST 
 %token T_INT T_FLOAT T_BOOL T_DOUBLE  T_LONG
 %token T_RETURN
@@ -66,7 +67,7 @@
 %type <pair> bfs_reverse bfs_filters dfs_post
 %type <ival> from_or_semi
 %type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
-%type <ptr> edge_type node_type nodeedge_type set_type optional_bind
+%type <ptr> edge_type node_type nodeedge_type set_type optional_bind key_type value_type map_type
 %type <ptr> scala field
 %type <ptr> sent_argminmax_assignment
 %type <pair>  iterator1
@@ -134,6 +135,7 @@
             | property                 { $$ = $1;}
             | nodeedge_type            { $$ = $1;}
             | set_type                 { $$ = $1;}
+            | map_type				   { $$ = $1;}
 
 
   graph_type : T_GRAPH               { $$ = GM_graphtype_ref(GMTYPE_GRAPH); 
@@ -169,6 +171,14 @@
            
            |  T_COLLECTION '<' set_type '>' '(' id ')'	  { $$ = GM_queuetype_ref($3, $6); 	  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
            |  T_COLLECTION '<' set_type '>'				  { $$ = GM_queuetype_ref($3, NULL);  GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+           
+  key_type : nodeedge_type	{ $$ = $1; }
+  		   | prim_type		{ $$ = $1; }
+  		   
+  value_type : nodeedge_type { $$ = $1; }
+  			 | prim_type	 { $$ = $1; }
+           
+  map_type :  T_MAP '<' key_type ',' value_type '>' { $$ = GM_maptype_ref($3, $5); GM_set_lineinfo($$,@1.first_line, @1.first_column); }
            
 
   property : T_NODEPROP '<' prim_type '>'     '(' id ')'  { $$ = GM_nodeprop_ref($3, $6 ); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
