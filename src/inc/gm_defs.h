@@ -19,6 +19,7 @@ enum GMTYPE_T
     GMTYPE_ESEQ,
     GMTYPE_EORDER,
     GMTYPE_COLLECTION,
+    GMTYPE_MAP,
 
     // iterators
     GMTYPE_NODEITER_ALL = 100,
@@ -533,6 +534,14 @@ inline static bool gm_is_iteration_on_updown_levels(int itype) {
 
 inline static bool gm_is_iteration_on_neighbors_compatible(int itype) {
     return gm_is_any_nbr_node_iter_type(itype);
+}
+
+inline static bool gm_can_be_key_type(GMTYPE_T type) {
+    return gm_is_prim_type(type) || gm_is_nodeedge_type(type);
+}
+
+inline static bool gm_can_be_value_type(GMTYPE_T type) {
+    return gm_is_prim_type(type) || gm_is_nodeedge_type(type);
 }
 
 enum GM_ACCESS_T

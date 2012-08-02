@@ -568,7 +568,7 @@ private:
 
 class ast_typedecl: public ast_node
 {  // property or type
-private:
+protected:
     ast_typedecl() :
             ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), target_collection(NULL), target_nbr(NULL), target_nbr2(NULL), _well_defined(false), type_id(
                     0) {
@@ -734,7 +734,7 @@ public:
         return t;
     }
 
-    int get_typeid() {
+    virtual int get_typeid() {
         return type_id;
     }
 
@@ -875,6 +875,10 @@ public:
         return gm_is_sequential_collection_type(type_id);
     }
 
+    virtual bool is_map() {
+        return false;
+    }
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
 
@@ -921,7 +925,7 @@ public:
         return target_type;
     }
 
-    int getTypeSummary() {  // same as get type id
+    virtual int getTypeSummary() {  // same as get type id
         return type_id;
     }
 
@@ -965,6 +969,61 @@ private:
     ast_id* target_nbr;         // for nbr-iterator
     ast_id* target_nbr2;        // for common neighbor iterator
     bool _well_defined;
+};
+
+
+class ast_maptypedecl : public ast_typedecl {
+
+private:
+    ast_typedecl* keyType;
+    ast_typedecl* valueType;
+
+    ast_maptypedecl() : ast_typedecl(), keyType(NULL), valueType(NULL) {
+    }
+
+
+public:
+
+    static ast_maptypedecl* new_map(ast_typedecl* keyType, ast_typedecl* valueType) {
+        ast_maptypedecl* newMap = new ast_maptypedecl();
+        newMap->keyType = keyType;
+        newMap->valueType = valueType;
+        return newMap;
+    }
+
+    void set_key_type(ast_typedecl* newKeyType) {
+        assert(gm_can_be_key_type((GMTYPE_T)newKeyType->getTypeSummary()));
+        keyType = newKeyType;
+    }
+
+    void set_value_type(ast_typedecl* newValueType) {
+        assert(gm_can_be_key_type((GMTYPE_T)newValueType->getTypeSummary()));
+        valueType = newValueType;
+    }
+
+    bool is_map() {
+        return true;
+    }
+
+    int get_typeid() {
+        return (int) GMTYPE_MAP;
+    }
+
+    int getTypeSummary() {
+        return get_typeid();
+    }
+
+    int getKeyTypeSummary() {
+        assert(keyType != NULL);
+        return keyType->getTypeSummary();
+    }
+
+    int getValueTypeSummary() {
+            assert(valueType != NULL);
+            return valueType->getTypeSummary();
+    }
+
+
 };
 
 //==========================================================================
