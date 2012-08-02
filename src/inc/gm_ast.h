@@ -17,6 +17,7 @@ enum AST_NODE_TYPE
 {
     AST_ID,       // 
     AST_FIELD,    // A.B
+    AST_MAPACCESS,// A[B]
     AST_IDLIST,   // A, B, C, 
     AST_TYPEDECL, // INT
     AST_ARGDECL,  // a,b : B
@@ -25,6 +26,7 @@ enum AST_NODE_TYPE
     AST_EXPR_RDC,       // c + 3
     AST_EXPR_BUILTIN,   // c + 3
     AST_EXPR_FOREIGN,  // Foreign Expression
+    AST_EXPR_MAPACCESS,
     AST_SENT,     // 
     AST_SENTBLOCK, // { ... }
     AST_ASSIGN,   // C =D
@@ -421,6 +423,7 @@ public:
 
 };
 
+
 class ast_idlist: public ast_node
 {
 public:
@@ -478,6 +481,7 @@ public:
         delete first;
         delete second;
     }
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
 
@@ -485,6 +489,7 @@ private:
     ast_field() :
             ast_node(AST_FIELD), first(NULL), second(NULL), rarrow(false) {
     }
+
     ast_field(ast_id* l, ast_id* f) :
             ast_node(AST_FIELD), first(l), second(f), rarrow(false) {
         first->set_parent(this);
@@ -492,6 +497,7 @@ private:
         this->line = first->get_line();
         this->col = first->get_col();
     }
+
 public:
     static ast_field* new_field(ast_id* l, ast_id* f, bool is_r_arrow = false) {
         ast_field* af = new ast_field(l, f);
@@ -986,6 +992,11 @@ private:
 
 public:
 
+    ~ast_maptypedecl() {
+        delete keyType;
+        delete valueType;
+    }
+
     static ast_maptypedecl* new_map(ast_typedecl* keyType, ast_typedecl* valueType) {
         ast_maptypedecl* newMap = new ast_maptypedecl();
         newMap->type_id = GMTYPE_MAP;
@@ -1462,7 +1473,6 @@ protected:
                     GMTYPE_UNKNOWN), bound_graph_sym(NULL) {
     }
 
-protected:
     GMEXPR_CLASS expr_class;  // GMEXPR_...
     ast_expr* left;
     ast_expr* right;
@@ -1485,47 +1495,65 @@ public:
     bool is_biop() {
         return (expr_class == GMEXPR_BIOP) || (expr_class == GMEXPR_LBIOP);
     }
+
     bool is_uop() {
         return (expr_class == GMEXPR_UOP) || (expr_class == GMEXPR_LUOP);
     }
+
     bool is_comp() {
         return (expr_class == GMEXPR_COMP);
     }
+
     bool is_id() {
         return expr_class == GMEXPR_ID;
     }
+
     bool is_nil() {
         return expr_class == GMEXPR_NIL;
     }
+
     bool is_field() {
         return expr_class == GMEXPR_FIELD;
     }
+
     bool is_int_literal() {
         return expr_class == GMEXPR_IVAL;
     }
+
     bool is_float_literal() {
         return expr_class == GMEXPR_FVAL;
     }
+
     bool is_boolean_literal() {
         return expr_class == GMEXPR_BVAL;
     }
+
     bool is_inf() {
         return expr_class == GMEXPR_INF;
     }
+
     bool is_literal() {
         return is_int_literal() || is_float_literal() || is_boolean_literal() || is_inf();
     }
+
     bool is_reduction() {
         return expr_class == GMEXPR_REDUCE;
     }
+
     bool is_builtin() {
         return expr_class == GMEXPR_BUILTIN || expr_class == GMEXPR_BUILTIN_FIELD;
     }
+
     bool is_terop() {
         return expr_class == GMEXPR_TER;
     }
+
     bool is_foreign() {
         return expr_class == GMEXPR_FOREIGN;
+    }
+
+    virtual bool is_mapaccess() {
+        return false;
     }
 
     //-----------------------------------------------
@@ -1534,6 +1562,7 @@ public:
     int get_type_summary() {
         return type_of_expression;
     }
+
     void set_type_summary(int t) {
         type_of_expression = t;
     } // set by type checker
@@ -1544,6 +1573,7 @@ public:
         else
             return bound_graph_sym;
     }
+
     void set_bound_graph(gm_symtab_entry*e) {
         bound_graph_sym = e;
     }
@@ -1664,6 +1694,83 @@ public:
 
 protected:
     gm_symtab_entry* bound_graph_sym; // used only during typecheck
+};
+
+
+class ast_mapaccess : public ast_node
+{
+private:
+    ast_id* mapId;
+    ast_expr* keyExpr;
+
+    ast_mapaccess() : ast_node(AST_MAPACCESS), mapId(NULL), keyExpr(NULL) {
+    }
+
+    ast_mapaccess(ast_id* map, ast_expr* key) : ast_node(AST_MAPACCESS), mapId(map), keyExpr(key) {
+    }
+
+public:
+    ~ast_mapaccess() {
+        delete mapId;
+        delete keyExpr;
+    }
+
+    virtual void dump_tree(int i) {}//TODO
+    virtual void reproduce(int i) {}//TODO
+
+    ast_mapaccess* copy(bool cp_sym = false) {
+        ast_mapaccess* clone = new ast_mapaccess();
+        clone->mapId = mapId->copy(cp_sym);
+        clone->keyExpr = keyExpr->copy(cp_sym);
+        return clone;
+    }
+
+    ast_id* get_map_id() {
+        assert(mapId != NULL);
+        return mapId;
+    }
+
+    ast_expr* get_key_expr() {
+        assert(keyExpr != NULL);
+        return keyExpr;
+    }
+
+    static ast_mapaccess* new_mapaccess(ast_id* map, ast_expr* key) {
+        ast_mapaccess* newMapAccess = new ast_mapaccess(map, key);
+        return newMapAccess;
+    }
+
+};
+
+class ast_expr_mapaccess : public ast_expr
+{
+private:
+    ast_mapaccess* mapAccess;
+
+    ast_expr_mapaccess() : ast_expr(), mapAccess(NULL) {
+        set_nodetype(AST_EXPR_MAPACCESS);
+    }
+
+    ast_expr_mapaccess(ast_mapaccess* mapAccess) : ast_expr(), mapAccess(mapAccess) {
+        set_nodetype(AST_EXPR_MAPACCESS);
+    }
+
+public:
+    ~ast_expr_mapaccess() {
+        delete mapAccess;
+    }
+
+    ast_expr_mapaccess* copy(bool cp_sym = false) {
+        ast_expr_mapaccess* clone = new ast_expr_mapaccess();
+        clone->mapAccess = mapAccess->copy(cp_sym);
+        return clone;
+    }
+
+    static ast_expr_mapaccess* new_expr_mapaccess(ast_mapaccess* mapAccess) {
+        ast_expr_mapaccess* newMapAccess = new ast_expr_mapaccess(mapAccess);
+        return newMapAccess;
+    }
+
 };
 
 class ast_expr_foreign: public ast_expr

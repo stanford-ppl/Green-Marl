@@ -91,6 +91,13 @@ ast_node* GM_expr_field_access(ast_node* field) {
     return n;
 }
 
+ast_node* GM_expr_map_access(ast_node* mapAccess) {
+    assert(mapAccess != NULL);
+    printf("Test: %d\n", mapAccess->get_nodetype());
+    assert(mapAccess->get_nodetype() == AST_MAPACCESS);
+    return ast_expr_mapaccess::new_expr_mapaccess((ast_mapaccess*)mapAccess);
+}
+
 ast_node* GM_expr_ival(long lval, int l, int c) {
     ast_node* n = ast_expr::new_ival_expr(lval);
     n->set_line(l);
@@ -337,6 +344,14 @@ ast_node* GM_field(ast_node* id1, ast_node* id2, bool is_rarrow) {
     assert(id1->get_nodetype() == AST_ID);
     assert(id2->get_nodetype() == AST_ID);
     return ast_field::new_field((ast_id*) id1, (ast_id*) id2, is_rarrow);
+}
+
+ast_node* GM_map_access(ast_node* mapId, ast_node* keyExpr) {
+    assert(mapId != NULL);
+    assert(keyExpr != NULL);
+    assert(mapId->get_nodetype() == AST_ID);
+    assert(keyExpr->get_nodetype() == AST_EXPR);
+    return ast_mapaccess::new_mapaccess((ast_id*)mapId, (ast_expr*)keyExpr);
 }
 
 void GM_add_id_comma_list(ast_node* id) {

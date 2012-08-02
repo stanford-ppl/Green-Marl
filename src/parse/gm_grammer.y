@@ -68,7 +68,7 @@
 %type <ival> from_or_semi
 %type <ptr> arg_decl typedecl property prim_type graph_type arg_target var_target
 %type <ptr> edge_type node_type nodeedge_type set_type optional_bind key_type value_type map_type
-%type <ptr> scala field
+%type <ptr> scala field map_access
 %type <ptr> sent_argminmax_assignment
 %type <pair>  iterator1
 %type <ival> reduce_eq
@@ -380,6 +380,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
             | field                        {$$ = GM_expr_field_access($1);}
             | built_in                     {$$ = $1;}
             | expr_user                    {$$ = $1;}
+            | map_access				   { $$ = GM_expr_map_access($1); }
 
    /* cannot be distinguished by the syntax, until type is available. due to vars */
    bool_expr : expr                    {$$ = $1; }
@@ -401,6 +402,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
 
   lhs : scala                             { $$ = $1; }
       | field                             { $$ = $1; }
+      | map_access						  { $$ = $1; }
 
   lhs_list : lhs                         { $$ = GM_single_lhs_list($1);}
            | lhs ',' lhs_list            { $$ = GM_add_lhs_list_front($1, $3);}
@@ -409,6 +411,8 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
  field : id '.' id                       { $$ = GM_field($1, $3, false); }
        /*| id T_RARROW id                  { $$ = GM_field($1, $3, true);  }*/
        | T_EDGE '('id ')' '.' id            { $$ = GM_field($3, $6, true);  }
+       
+  map_access: id '[' expr ']'			{ $$ = GM_map_access($1, $3); }
 
   built_in : id '.' id arg_list            { $$ = GM_expr_builtin_expr($1, $3, $4);}
            | id arg_list                   { $$ = GM_expr_builtin_expr(NULL, $1, $2);}
