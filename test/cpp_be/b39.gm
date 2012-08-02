@@ -1,0 +1,10 @@
+Procedure test_map_declaration_multiple_graphs(G:Graph)
+{
+	Graph G2;
+    Map<Node(G), Node(G)> map1;
+    Map<Node(G), Node(G2)> map2;
+    Map<Node(G2), Node(G2)> map3;
+    Map<Edge(G), Node(G)> map4;
+    Map<Edge(G), Node(G2)> map5;
+    Map<Edge(G), Edge(G2)> map6;
+}

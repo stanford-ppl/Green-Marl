@@ -962,7 +962,6 @@ public:
 
 private:
     // defined in gm_frontend_api.h
-    int type_id;
     ast_typedecl* target_type;  // for property
     ast_id* target_graph;       // for property, node, edge, set
     ast_id* target_collection;  // for set-iterator set
@@ -970,6 +969,7 @@ private:
     ast_id* target_nbr2;        // for common neighbor iterator
 
 protected:
+    int type_id;
     bool _well_defined;
 };
 
@@ -988,6 +988,7 @@ public:
 
     static ast_maptypedecl* new_map(ast_typedecl* keyType, ast_typedecl* valueType) {
         ast_maptypedecl* newMap = new ast_maptypedecl();
+        newMap->type_id = GMTYPE_MAP;
         newMap->keyType = keyType;
         newMap->valueType = valueType;
         keyType->set_parent(newMap);
@@ -997,6 +998,7 @@ public:
 
     ast_typedecl* copy() {
         ast_maptypedecl* clone = new ast_maptypedecl();
+        clone->type_id = type_id;
         clone->keyType = (keyType == NULL) ? NULL : keyType->copy();
         clone->valueType = (valueType == NULL) ? NULL : valueType->copy();
         clone->line = line;
@@ -1008,6 +1010,14 @@ public:
     void set_key_type(ast_typedecl* newKeyType) {
         assert(gm_can_be_key_type((GMTYPE_T)newKeyType->getTypeSummary()));
         keyType = newKeyType;
+    }
+
+    ast_typedecl* get_key_type() {
+        return keyType;
+    }
+
+    ast_typedecl* get_value_type() {
+        return valueType;
     }
 
     void set_value_type(ast_typedecl* newValueType) {

@@ -126,7 +126,8 @@ const char* gm_get_type_string(int t) {
             return "Collection::I";
         case GMTYPE_VOID:
             return "Void";
-
+        case GMTYPE_MAP:
+            return "Map";
         default: /*printf("%d\n",t); assert(false);*/
             return "Unknown";
     }

@@ -168,7 +168,7 @@ void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
 
     switch (mapType) {
         case MEDIUM:
-            Body->pushln("( gm_rt_get_num_threads() );");
+            Body->pushln("(gm_rt_get_num_threads());");
             break;
         case SMALL:
         case LARGE:

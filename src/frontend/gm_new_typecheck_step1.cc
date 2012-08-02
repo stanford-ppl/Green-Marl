@@ -65,6 +65,7 @@ public:
 
         //printf("push\n");
     }
+
     virtual void end_context(ast_node * n) {
         assert(n->has_scope());
         curr_sym = var_syms.back();
@@ -80,6 +81,7 @@ public:
     void set_okay(bool b) {
         _is_okay = _is_okay && b;
     }
+
     bool is_okay() {
         return _is_okay;
     }
@@ -345,11 +347,16 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V, int tar
         ast_id* node = type->get_target_nbr_id();
         assert(node != NULL);
         bool is_okay = gm_check_target_is_defined(node, SYM_V, SHOULD_BE_A_NODE_COMPATIBLE);
-        if (!is_okay) return is_okay;
+        if (!is_okay) return false;
 
         // copy graph_id
         //printf("copying graph id = %s\n", node->getTypeInfo()->get_target_graph_id()->get_orgname());
         type->set_target_graph_id(node->getTypeInfo()->get_target_graph_id()->copy(true));
+    } else if (type->is_map()) {
+        ast_maptypedecl* mapType = (ast_maptypedecl*) type;
+        bool keyIsWellDefined = gm_check_graph_is_defined(mapType->get_key_type(), SYM_V);
+        bool valueIsWellDefined = gm_check_graph_is_defined(mapType->get_value_type(), SYM_V);
+        return keyIsWellDefined && valueIsWellDefined;
     } else {
         printf("%s", gm_get_type_string(type->getTypeSummary()));
         assert(false);
