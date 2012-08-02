@@ -576,7 +576,7 @@ protected:
 
 public:
     // give a deep copy
-    ast_typedecl* copy() {
+    virtual ast_typedecl* copy() {
         ast_typedecl *p = new ast_typedecl();
         p->type_id = this->type_id;
         p->target_type = (this->target_type == NULL) ? NULL : this->target_type->copy();
@@ -968,6 +968,8 @@ private:
     ast_id* target_collection;  // for set-iterator set
     ast_id* target_nbr;         // for nbr-iterator
     ast_id* target_nbr2;        // for common neighbor iterator
+
+protected:
     bool _well_defined;
 };
 
@@ -989,6 +991,16 @@ public:
         newMap->keyType = keyType;
         newMap->valueType = valueType;
         return newMap;
+    }
+
+    ast_typedecl* copy() {
+        ast_maptypedecl* clone = new ast_maptypedecl();
+        clone->keyType = (keyType == NULL) ? NULL : keyType->copy();
+        clone->valueType = (valueType == NULL) ? NULL : valueType->copy();
+        clone->line = line;
+        clone->col = col;
+        clone->_well_defined = this->_well_defined;
+        return NULL;
     }
 
     void set_key_type(ast_typedecl* newKeyType) {
