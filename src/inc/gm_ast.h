@@ -990,6 +990,8 @@ public:
         ast_maptypedecl* newMap = new ast_maptypedecl();
         newMap->keyType = keyType;
         newMap->valueType = valueType;
+        keyType->set_parent(newMap);
+        valueType->set_parent(newMap);
         return newMap;
     }
 
@@ -1000,7 +1002,7 @@ public:
         clone->line = line;
         clone->col = col;
         clone->_well_defined = this->_well_defined;
-        return NULL;
+        return clone;
     }
 
     void set_key_type(ast_typedecl* newKeyType) {

@@ -479,6 +479,14 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
         return;
     }
 
+    if (t->is_map()) {
+        ast_maptypedecl* map = (ast_maptypedecl*)t;
+        ast_idlist* idl = v->get_idlist();
+        assert(idl->get_length() == 1);
+        get_lib()->add_map_def(map, idl->get_item(0));
+        return;
+    }
+
     Body.push_spc(get_type_string(t));
 
     if (t->is_property()) {

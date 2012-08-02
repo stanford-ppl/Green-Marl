@@ -313,6 +313,10 @@ inline static bool gm_is_sequential_collection_type(int i) {
     return gm_is_sequence_collection_type(i) || gm_is_order_collection_type(i);
 }
 
+inline static bool gm_is_map_type(int i) {
+    return i == GMTYPE_MAP;
+}
+
 // node set -> nodeset iter
 // edge set -> edgeset iter ...
 inline int gm_get_natural_collection_iterator(int src_type) {
