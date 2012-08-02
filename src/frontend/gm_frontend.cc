@@ -263,10 +263,16 @@ ast_node* GM_queuetype_ref(ast_node* collectionType, ast_node* id) {
     return ast_typedecl::new_queue((ast_id*) id, (ast_typedecl*) collectionType);
 }
 
-ast_node* GM_maptype_ref(ast_node* keyType, ast_node* valueType) {
-    assert(keyType != NULL && gm_can_be_key_type((GMTYPE_T)keyType->get_nodetype()));
-    assert(valueType != NULL && gm_can_be_value_type((GMTYPE_T)valueType->get_nodetype()));
-    return ast_maptypedecl::new_map((ast_typedecl*)keyType, (ast_typedecl*)valueType);
+ast_node* GM_maptype_ref(ast_node* key, ast_node* value) {
+    assert(key != NULL);
+    assert(value != NULL);
+    assert(key->get_nodetype() == AST_TYPEDECL);
+    assert(value->get_nodetype() == AST_TYPEDECL);
+    ast_typedecl* keyType = (ast_typedecl*)key;
+    ast_typedecl* valueType = (ast_typedecl*)value;
+    assert(gm_can_be_key_type((GMTYPE_T)keyType->getTypeSummary()));
+    assert(gm_can_be_value_type((GMTYPE_T)valueType->getTypeSummary()));
+    return ast_maptypedecl::new_map(keyType, valueType);
 }
 
 ast_node* GM_nodeprop_ref(ast_node* typedecl, ast_node* id) {
