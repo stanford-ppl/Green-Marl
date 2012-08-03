@@ -208,6 +208,8 @@ bool gm_typechecker_stage_3::check_mapaccess(ast_expr_mapaccess* mapAccessExpr) 
         int line =  mapAccessExpr->get_line();
         int column =  mapAccessExpr->get_col();
         gm_type_error(GM_ERROR_KEY_MISSMATCH, line, column, gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+    } else if(warning) {
+        printf("warning: implicit type conversion %s->%s\n", gm_get_type_string(keyType), gm_get_type_string(keyExprType));
     }
     return isOkay;
 }
