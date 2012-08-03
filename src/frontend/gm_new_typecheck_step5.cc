@@ -149,10 +149,16 @@ public:
         }
 
         if (gm_has_target_graph_type(summary_lhs)) {
-            gm_symtab_entry* r_sym = rhs->get_bound_graph();
+            gm_symtab_entry* r_sym;
+            if (rhs->is_mapaccess()) {
+                ast_mapaccess* mapAccess = ((ast_expr_mapaccess*) rhs)->get_mapaccess();
+                r_sym = mapAccess->get_bound_graph_for_value();
+            } else {
+                r_sym = rhs->get_bound_graph();
+            }
             assert(l_sym != NULL);
             if (r_sym == NULL) {
-                 assert(gm_is_nil_type(summary_rhs) || gm_is_foreign_expr_type(summary_rhs));
+                assert(gm_is_nil_type(summary_rhs) || gm_is_foreign_expr_type(summary_rhs));
             } else {
                 if (l_sym != r_sym) {
                     gm_type_error(GM_ERROR_TARGET_MISMATCH, l, c);

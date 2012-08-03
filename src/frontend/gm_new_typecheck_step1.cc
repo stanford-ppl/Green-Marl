@@ -743,13 +743,28 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
 bool gm_typechecker_stage_1::apply(ast_expr* p) {
     bool is_okay = true;
     switch (p->get_opclass()) {
-        case GMEXPR_ID:
-        case GMEXPR_MAPACCESS: {
+        case GMEXPR_ID: {
             is_okay = find_symbol_id(p->get_id());
             break;
         }
         case GMEXPR_FIELD: {
             is_okay = find_symbol_field(p->get_field());
+            break;
+        }
+        case GMEXPR_MAPACCESS: {
+            is_okay = find_symbol_id(p->get_id());
+            ast_mapaccess* mapAccess = ((ast_expr_mapaccess*)p)->get_mapaccess();
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            ast_typedecl* keyType = mapDecl->get_key_type();
+            ast_typedecl* valueType = mapDecl->get_value_type();
+            if(gm_has_target_graph_type(keyType->getTypeSummary())) {
+                gm_symtab_entry* keyGraph = keyType->get_target_graph_sym();
+                mapAccess->set_bound_graoh_for_key(keyGraph);
+            }
+            if(gm_has_target_graph_type(valueType->getTypeSummary())) {
+                gm_symtab_entry* valueGraph = valueType->get_target_graph_sym();
+                mapAccess->set_bound_graoh_for_value(valueGraph);
+            }
             break;
         }
         case GMEXPR_REDUCE: {

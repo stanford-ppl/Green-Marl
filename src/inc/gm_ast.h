@@ -17,7 +17,7 @@ enum AST_NODE_TYPE
 {
     AST_ID,       // 
     AST_FIELD,    // A.B
-    AST_MAPACCESS,// A[B]
+    AST_MAPACCESS,    // A[B]
     AST_IDLIST,   // A, B, C, 
     AST_TYPEDECL, // INT
     AST_ARGDECL,  // a,b : B
@@ -422,7 +422,6 @@ public:
     void use_names_from_symbol(); // gm_typecheck.cc
 
 };
-
 
 class ast_idlist: public ast_node
 {
@@ -979,16 +978,16 @@ protected:
     bool _well_defined;
 };
 
-
-class ast_maptypedecl : public ast_typedecl {
+class ast_maptypedecl: public ast_typedecl
+{
 
 private:
     ast_typedecl* keyType;
     ast_typedecl* valueType;
 
-    ast_maptypedecl() : ast_typedecl(), keyType(NULL), valueType(NULL) {
+    ast_maptypedecl() :
+            ast_typedecl(), keyType(NULL), valueType(NULL) {
     }
-
 
 public:
 
@@ -1054,10 +1053,9 @@ public:
     }
 
     int getValueTypeSummary() {
-            assert(valueType != NULL);
-            return valueType->getTypeSummary();
+        assert(valueType != NULL);
+        return valueType->getTypeSummary();
     }
-
 
 };
 
@@ -1698,17 +1696,21 @@ protected:
     gm_symtab_entry* bound_graph_sym; // used only during typecheck
 };
 
-
-class ast_mapaccess : public ast_node
+class ast_mapaccess: public ast_node
 {
 private:
     ast_id* mapId;
     ast_expr* keyExpr;
 
-    ast_mapaccess() : ast_node(AST_MAPACCESS), mapId(NULL), keyExpr(NULL) {
+    gm_symtab_entry* keyGraph;
+    gm_symtab_entry* valueGraph;
+
+    ast_mapaccess() :
+            ast_node(AST_MAPACCESS), mapId(NULL), keyExpr(NULL), keyGraph(NULL), valueGraph(NULL) {
     }
 
-    ast_mapaccess(ast_id* map, ast_expr* key) : ast_node(AST_MAPACCESS), mapId(map), keyExpr(key) {
+    ast_mapaccess(ast_id* map, ast_expr* key) :
+            ast_node(AST_MAPACCESS), mapId(map), keyExpr(key), keyGraph(NULL), valueGraph(NULL) {
     }
 
 public:
@@ -1717,8 +1719,10 @@ public:
         delete keyExpr;
     }
 
-    virtual void dump_tree(int i) {}//TODO
-    virtual void reproduce(int i) {}//TODO
+    virtual void dump_tree(int i) {
+    } //TODO
+    virtual void reproduce(int i) {
+    } //TODO
 
     ast_mapaccess* copy(bool cp_sym = false) {
         ast_mapaccess* clone = new ast_mapaccess();
@@ -1737,6 +1741,22 @@ public:
         return keyExpr;
     }
 
+    gm_symtab_entry* get_bound_graph_for_key() {
+        return keyGraph;
+    }
+
+    void set_bound_graoh_for_key(gm_symtab_entry* graphEntry) {
+        keyGraph = graphEntry;
+    }
+
+    gm_symtab_entry* get_bound_graph_for_value() {
+        return valueGraph;
+    }
+
+    void set_bound_graoh_for_value(gm_symtab_entry* graphEntry) {
+        valueGraph = graphEntry;
+    }
+
     static ast_mapaccess* new_mapaccess(ast_id* map, ast_expr* key) {
         ast_mapaccess* newMapAccess = new ast_mapaccess(map, key);
         assert(newMapAccess->keyExpr != NULL);
@@ -1745,16 +1765,18 @@ public:
 
 };
 
-class ast_expr_mapaccess : public ast_expr
+class ast_expr_mapaccess: public ast_expr
 {
 private:
     ast_mapaccess* mapAccess;
 
-    ast_expr_mapaccess() : ast_expr(), mapAccess(NULL) {
+    ast_expr_mapaccess() :
+            ast_expr(), mapAccess(NULL) {
         set_nodetype(AST_EXPR_MAPACCESS);
     }
 
-    ast_expr_mapaccess(ast_mapaccess* mapAccess, int line, int column) : ast_expr(), mapAccess(mapAccess) {
+    ast_expr_mapaccess(ast_mapaccess* mapAccess, int line, int column) :
+            ast_expr(), mapAccess(mapAccess) {
         set_nodetype(AST_EXPR_MAPACCESS);
         set_line(line);
         set_col(column);

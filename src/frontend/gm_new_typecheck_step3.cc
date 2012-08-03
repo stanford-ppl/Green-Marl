@@ -39,7 +39,7 @@ public:
                         assert(g != NULL);
                         e->set_bound_graph(g);
                     } else if (t->is_map()) {
-                        ast_maptypedecl* mapDecl = (ast_maptypedecl*)t;
+                        ast_maptypedecl* mapDecl = (ast_maptypedecl*) t;
                         e->set_type_summary(mapDecl->getValueTypeSummary());
                     }
                 }
@@ -187,7 +187,7 @@ static bool check_special_case_inside_group_assign(ast_id* l_id, int alt_type_l,
 bool gm_typechecker_stage_3::check_mapaccess(ast_expr_mapaccess* mapAccessExpr) {
     mapAccessExpr->set_type_summary(mapAccessExpr->get_id()->getTypeSummary());
     ast_typedecl* t = mapAccessExpr->get_id()->getTypeInfo();
-    ast_maptypedecl* mapDecl = (ast_maptypedecl*)t;
+    ast_maptypedecl* mapDecl = (ast_maptypedecl*) t;
     mapAccessExpr->set_type_summary(mapDecl->getValueTypeSummary());
 
     //check if key-type and key-expression-type are compatible
@@ -198,19 +198,34 @@ bool gm_typechecker_stage_3::check_mapaccess(ast_expr_mapaccess* mapAccessExpr) 
     gm_symtab_entry* mapEntry = mapAccess->get_map_id()->getSymInfo();
     assert(mapEntry != NULL);
     assert(mapEntry->getType()->is_map());
-    ast_maptypedecl* mapTypeDecl = (ast_maptypedecl*)mapEntry->getType();
+    ast_maptypedecl* mapTypeDecl = (ast_maptypedecl*) mapEntry->getType();
     int keyType = mapTypeDecl->getKeyTypeSummary();
 
     int dummy;
     bool warning;
     bool isOkay = gm_is_compatible_type_for_assign(keyType, keyExprType, dummy, warning);
-    if(!isOkay) {
-        int line =  mapAccessExpr->get_line();
-        int column =  mapAccessExpr->get_col();
+    int line = mapAccessExpr->get_line();
+    int column = mapAccessExpr->get_col();
+    if (!isOkay) {
         gm_type_error(GM_ERROR_KEY_MISSMATCH, line, column, gm_get_type_string(keyType), gm_get_type_string(keyExprType));
-    } else if(warning) {
+    } else if (warning) {
         printf("warning: implicit type conversion %s->%s\n", gm_get_type_string(keyType), gm_get_type_string(keyExprType));
     }
+
+    //check if target graphs for key are the same
+    if (gm_has_target_graph_type(keyType)) {
+        gm_symtab_entry* keyGraph = mapAccess->get_bound_graph_for_key();
+        gm_symtab_entry* keyExprGraph = keyExpr->get_bound_graph();
+        if (keyExprGraph == NULL) {
+            assert(gm_is_nil_type(keyExprType) || gm_is_foreign_expr_type(keyExprType));
+        } else {
+            if (keyGraph != keyExprGraph) {
+                gm_type_error(GM_ERROR_TARGET_MISMATCH, line, column);
+                isOkay = false;
+            }
+        }
+    }
+
     return isOkay;
 }
 
