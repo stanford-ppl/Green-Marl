@@ -63,7 +63,7 @@ extern ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int ite
 extern ast_node* GM_expr_ternary(ast_node* cond, ast_node* left, ast_node* right, int l, int c);
 extern ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l);
 extern ast_node* GM_expr_builtin_field_expr(ast_node* id, ast_node* id2, expr_list* list);
-extern ast_node* GM_expr_map_access(ast_node* mapAccess);
+extern ast_node* GM_expr_map_access(ast_node* mapAccess, int line, int column);
 
 extern void GM_start_sentblock();
 extern ast_node* GM_finish_sentblock();

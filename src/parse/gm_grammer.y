@@ -380,7 +380,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
             | field                        {$$ = GM_expr_field_access($1);}
             | built_in                     {$$ = $1;}
             | expr_user                    {$$ = $1;}
-            | map_access				   { $$ = GM_expr_map_access($1); }
+            | map_access				   { $$ = GM_expr_map_access($1, @1.first_line, @1.first_column); }
 
    /* cannot be distinguished by the syntax, until type is available. due to vars */
    bool_expr : expr                    {$$ = $1; }

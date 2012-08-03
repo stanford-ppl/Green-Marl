@@ -110,9 +110,7 @@ public:
                 okay = true;
                 break;
             case GMEXPR_MAPACCESS: {
-                ast_expr_mapaccess* mapAccessExpr = (ast_expr_mapaccess*)e;
-                mapAccessExpr->set_type_summary(GMTYPE_INT); //TODO
-                okay = true;
+                okay = check_mapaccess((ast_expr_mapaccess*) e);
             }
                 break;
             default:
@@ -141,6 +139,7 @@ private:
     bool check_ter(ast_expr* e);
     bool check_builtin(ast_expr_builtin* e);
     bool check_arguments(ast_expr_builtin* b);
+    bool check_mapaccess(ast_expr_mapaccess* mapAccessExpr);
 
 public:
     // expression, dest-type
@@ -183,6 +182,34 @@ static bool check_special_case_inside_group_assign(ast_id* l_id, int alt_type_l,
     if (l_id->getTypeInfo()->is_collection() && (l_id->getTypeInfo()->get_target_graph_sym() != r->get_bound_graph())) return false;
 
     return true;
+}
+
+bool gm_typechecker_stage_3::check_mapaccess(ast_expr_mapaccess* mapAccessExpr) {
+    mapAccessExpr->set_type_summary(mapAccessExpr->get_id()->getTypeSummary());
+    ast_typedecl* t = mapAccessExpr->get_id()->getTypeInfo();
+    ast_maptypedecl* mapDecl = (ast_maptypedecl*)t;
+    mapAccessExpr->set_type_summary(mapDecl->getValueTypeSummary());
+
+    //check if key-type and key-expression-type are compatible
+    ast_mapaccess* mapAccess = mapAccessExpr->get_mapaccess();
+    ast_expr* keyExpr = mapAccess->get_key_expr();
+    int keyExprType = keyExpr->get_type_summary();
+
+    gm_symtab_entry* mapEntry = mapAccess->get_map_id()->getSymInfo();
+    assert(mapEntry != NULL);
+    assert(mapEntry->getType()->is_map());
+    ast_maptypedecl* mapTypeDecl = (ast_maptypedecl*)mapEntry->getType();
+    int keyType = mapTypeDecl->getKeyTypeSummary();
+
+    int dummy;
+    bool warning;
+    bool isOkay = gm_is_compatible_type_for_assign(keyType, keyExprType, dummy, warning);
+    if(!isOkay) {
+        int line =  mapAccessExpr->get_line();
+        int column =  mapAccessExpr->get_col();
+        gm_type_error(GM_ERROR_KEY_MISSMATCH, line, column, gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+    }
+    return isOkay;
 }
 
 // comparison (eq, neq and less)

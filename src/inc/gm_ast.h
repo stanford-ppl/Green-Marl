@@ -1709,7 +1709,6 @@ private:
     }
 
     ast_mapaccess(ast_id* map, ast_expr* key) : ast_node(AST_MAPACCESS), mapId(map), keyExpr(key) {
-        assert(key != NULL);
     }
 
 public:
@@ -1755,8 +1754,10 @@ private:
         set_nodetype(AST_EXPR_MAPACCESS);
     }
 
-    ast_expr_mapaccess(ast_mapaccess* mapAccess) : ast_expr(), mapAccess(mapAccess) {
+    ast_expr_mapaccess(ast_mapaccess* mapAccess, int line, int column) : ast_expr(), mapAccess(mapAccess) {
         set_nodetype(AST_EXPR_MAPACCESS);
+        set_line(line);
+        set_col(column);
     }
 
 public:
@@ -1791,8 +1792,8 @@ public:
         return mapAccess;
     }
 
-    static ast_expr_mapaccess* new_expr_mapaccess(ast_mapaccess* mapAccess) {
-        ast_expr_mapaccess* newMapAccess = new ast_expr_mapaccess(mapAccess);
+    static ast_expr_mapaccess* new_expr_mapaccess(ast_mapaccess* mapAccess, int line, int column) {
+        ast_expr_mapaccess* newMapAccess = new ast_expr_mapaccess(mapAccess, line, column);
         return newMapAccess;
     }
 

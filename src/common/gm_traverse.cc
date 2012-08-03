@@ -825,6 +825,13 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre) {
                 }
             }
             break;
+        case GMEXPR_MAPACCESS: {
+            ast_mapaccess* mapAccess = ((ast_expr_mapaccess*)this)->get_mapaccess();
+            a->set_for_rhs(true);
+            mapAccess->get_key_expr()->traverse(a, is_post, is_pre);
+            a->set_for_rhs(for_rhs);
+        }
+            break;
         case GMEXPR_UOP:
         case GMEXPR_LUOP:
             get_left_op()->traverse(a, is_post, is_pre);
@@ -846,7 +853,6 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre) {
         case GMEXPR_BVAL:
         case GMEXPR_INF:
         case GMEXPR_NIL:
-        case GMEXPR_MAPACCESS: //TODO
             break;
 
         case GMEXPR_BUILTIN:

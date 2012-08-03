@@ -743,7 +743,8 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
 bool gm_typechecker_stage_1::apply(ast_expr* p) {
     bool is_okay = true;
     switch (p->get_opclass()) {
-        case GMEXPR_ID: {
+        case GMEXPR_ID:
+        case GMEXPR_MAPACCESS: {
             is_okay = find_symbol_id(p->get_id());
             break;
         }
@@ -792,18 +793,6 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
                     is_okay = b && is_okay;
                 }
             }
-            break;
-        }
-        case GMEXPR_MAPACCESS: {
-            //check if key-type and key-expression-type are compatible
-            ast_expr_mapaccess* mapAccessExpr = (ast_expr_mapaccess*)p;
-            ast_mapaccess* mapAccess = mapAccessExpr->get_mapaccess();
-            int keyExprType = mapAccessExpr->get_mapaccess()->get_key_expr()->get_type_summary();
-            gm_symtab_entry* mapEntry = curr_sym->find_symbol(mapAccess->get_map_id());
-            assert(mapEntry != NULL);
-            int keyType = mapEntry->getType()->getTypeSummary();
-            printf("%d\tvs\t%d\n", keyType, keyExprType);
-            //assert(keyType == keyExprType);
             break;
         }
         default:

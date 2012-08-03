@@ -91,10 +91,10 @@ ast_node* GM_expr_field_access(ast_node* field) {
     return n;
 }
 
-ast_node* GM_expr_map_access(ast_node* mapAccess) {
+ast_node* GM_expr_map_access(ast_node* mapAccess, int line, int column) {
     assert(mapAccess != NULL);
     assert(mapAccess->get_nodetype() == AST_MAPACCESS);
-    return ast_expr_mapaccess::new_expr_mapaccess((ast_mapaccess*)mapAccess);
+    return ast_expr_mapaccess::new_expr_mapaccess((ast_mapaccess*)mapAccess, line, column);
 }
 
 ast_node* GM_expr_ival(long lval, int l, int c) {
