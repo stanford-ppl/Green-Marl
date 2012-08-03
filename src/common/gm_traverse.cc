@@ -846,6 +846,7 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre) {
         case GMEXPR_BVAL:
         case GMEXPR_INF:
         case GMEXPR_NIL:
+        case GMEXPR_MAPACCESS: //TODO
             break;
 
         case GMEXPR_BUILTIN:

@@ -344,6 +344,8 @@ void traverse_expr_for_readset_adding(ast_expr* e, gm_rwinfo_map& rset, temp_map
         case GMEXPR_FIELD:
             traverse_expr_for_readset_adding_field(e, rset, DrvMap);
             break;
+        case GMEXPR_MAPACCESS:
+            break; //TODO?
         case GMEXPR_UOP:
         case GMEXPR_LUOP:
             traverse_expr_for_readset_adding(e->get_left_op(), rset, DrvMap);

@@ -176,7 +176,6 @@ public:
             okay = check_assign_lhs_rhs(a->get_lhs_field(), a->get_rhs(), l, c);
             summary_lhs = a->get_lhs_field()->get_second()->getTargetTypeSummary();
         }
-
         // check body of reduce
         if (a->is_reduce_assign()) {
 

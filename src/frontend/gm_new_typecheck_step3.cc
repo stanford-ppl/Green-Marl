@@ -38,6 +38,9 @@ public:
                         gm_symtab_entry * g = t->get_target_graph_sym();
                         assert(g != NULL);
                         e->set_bound_graph(g);
+                    } else if (t->is_map()) {
+                        ast_maptypedecl* mapDecl = (ast_maptypedecl*)t;
+                        e->set_type_summary(mapDecl->getValueTypeSummary());
                     }
                 }
                 break;
@@ -105,6 +108,12 @@ public:
             case GMEXPR_FOREIGN:
                 e->set_type_summary(GMTYPE_FOREIGN_EXPR);
                 okay = true;
+                break;
+            case GMEXPR_MAPACCESS: {
+                ast_expr_mapaccess* mapAccessExpr = (ast_expr_mapaccess*)e;
+                mapAccessExpr->set_type_summary(GMTYPE_INT); //TODO
+                okay = true;
+            }
                 break;
             default:
                 assert(false);

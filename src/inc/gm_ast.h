@@ -1303,6 +1303,7 @@ enum GMEXPR_CLASS
     GMEXPR_BUILTIN_FIELD, //builtin ops on property entries
     GMEXPR_TER,      // ternary operation
     GMEXPR_FOREIGN,
+    GMEXPR_MAPACCESS,
 // foreign expression
 };
 
@@ -1593,7 +1594,8 @@ public:
     bool is_plus_inf() {
         return is_inf() && plus_inf;
     } // true o
-    ast_id* get_id() {
+
+    virtual ast_id* get_id() {
         return id1;
     }
 
@@ -1601,11 +1603,11 @@ public:
         return field;
     }
 
-    GMEXPR_CLASS get_opclass() {
+    virtual GMEXPR_CLASS get_opclass() {
         return expr_class;
     }
 
-    int get_optype() {
+    virtual int get_optype() {
         return op_type;
     }
 
@@ -1707,6 +1709,7 @@ private:
     }
 
     ast_mapaccess(ast_id* map, ast_expr* key) : ast_node(AST_MAPACCESS), mapId(map), keyExpr(key) {
+        assert(key != NULL);
     }
 
 public:
@@ -1737,6 +1740,7 @@ public:
 
     static ast_mapaccess* new_mapaccess(ast_id* map, ast_expr* key) {
         ast_mapaccess* newMapAccess = new ast_mapaccess(map, key);
+        assert(newMapAccess->keyExpr != NULL);
         return newMapAccess;
     }
 
@@ -1764,6 +1768,27 @@ public:
         ast_expr_mapaccess* clone = new ast_expr_mapaccess();
         clone->mapAccess = mapAccess->copy(cp_sym);
         return clone;
+    }
+
+    bool is_mapaccess() {
+        return true;
+    }
+
+    int get_optype() {
+        return (int) GMEXPR_MAPACCESS;
+    }
+
+    GMEXPR_CLASS get_opclass() {
+        return GMEXPR_MAPACCESS;
+    }
+
+    ast_id* get_id() {
+        return mapAccess->get_map_id();
+    }
+
+    ast_mapaccess* get_mapaccess() {
+        assert(mapAccess != NULL);
+        return mapAccess;
     }
 
     static ast_expr_mapaccess* new_expr_mapaccess(ast_mapaccess* mapAccess) {

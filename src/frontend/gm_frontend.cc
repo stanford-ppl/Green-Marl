@@ -93,7 +93,6 @@ ast_node* GM_expr_field_access(ast_node* field) {
 
 ast_node* GM_expr_map_access(ast_node* mapAccess) {
     assert(mapAccess != NULL);
-    printf("Test: %d\n", mapAccess->get_nodetype());
     assert(mapAccess->get_nodetype() == AST_MAPACCESS);
     return ast_expr_mapaccess::new_expr_mapaccess((ast_mapaccess*)mapAccess);
 }
