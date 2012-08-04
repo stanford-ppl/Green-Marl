@@ -370,9 +370,10 @@ ast_node* GM_normal_assign(ast_node* lhs, ast_node* rhs) {
 
     if (lhs->get_nodetype() == AST_ID) {
         return ast_assign::new_assign_scala((ast_id*) lhs, (ast_expr*) rhs, GMASSIGN_NORMAL, NULL, GMREDUCE_NULL);
-
     } else if (lhs->get_nodetype() == AST_FIELD) {
         return ast_assign::new_assign_field((ast_field*) lhs, (ast_expr*) rhs, GMASSIGN_NORMAL, NULL, GMREDUCE_NULL);
+    } else if(lhs->get_nodetype() == AST_MAPACCESS) {
+        return ast_assign_mapentry::new_mapentry_assign((ast_mapaccess*)lhs, (ast_expr*)rhs);
     }
     assert(false);
     return NULL;

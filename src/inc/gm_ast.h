@@ -2115,10 +2115,13 @@ enum gm_assignment_t
 {
     GMASSIGN_NORMAL, GMASSIGN_REDUCE, GMASSIGN_DEFER, GMASSIGN_INVALID
 };
+
 enum gm_assignment_location_t
 {
-    GMASSIGN_LHS_SCALA, GMASSIGN_LHS_FIELD, GMASSIGN_LHS_END
+    GMASSIGN_LHS_SCALA, GMASSIGN_LHS_FIELD, GMASSIGN_LHS_MAP, GMASSIGN_LHS_END
 };
+
+class ast_assign_mapentry;
 
 class ast_assign: public ast_sent
 {
@@ -2171,15 +2174,19 @@ public:
     int get_assign_type() {
         return assign_type;
     }
-    int get_lhs_type() {
+
+    virtual int get_lhs_type() {
         return lhs_type;
     }
+
     int get_reduce_type() {
         return reduce_type;
     }
+
     void set_assign_type(int a) {
         assign_type = a;
     }
+
     void set_reduce_type(int a) {
         reduce_type = a;
     }
@@ -2187,28 +2194,40 @@ public:
     ast_id* get_lhs_scala() {
         return lhs_scala;
     }
+
     ast_field* get_lhs_field() {
         return lhs_field;
     }
+
     ast_expr* get_rhs() {
         return rhs;
     }
+
     ast_id* get_bound() {
         return bound;
     }
+
     void set_bound(ast_id* i) {
         bound = i;
         if (bound != NULL) i->set_parent(this);
     }
+
     bool is_reduce_assign() {
         return assign_type == GMASSIGN_REDUCE;
     }
+
     bool is_defer_assign() {
         return assign_type == GMASSIGN_DEFER;
     }
-    bool is_target_scalar() {
+
+    virtual bool is_target_scalar() {
         return get_lhs_type() == GMASSIGN_LHS_SCALA;
     }
+
+    virtual bool is_target_map_entry() {
+        return false;
+    }
+
     void set_rhs(ast_expr* r) {
         rhs = r;
         rhs->set_parent(this);
@@ -2246,23 +2265,80 @@ public:
         if (new_id != NULL) lhs_type = GMASSIGN_LHS_FIELD;
     }
 
-private:
+    virtual bool is_map_entry_assign() {
+        return false;
+    }
+
+    virtual ast_assign_mapentry* to_assign_mapentry() {
+        assert(false);
+        return NULL;
+    }
+
+protected:
     ast_assign() :
             ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false), lhs_type(0), assign_type(0), reduce_type(0) {
     }
 
+private:
     int assign_type; // normal, deferred, reduce
     int lhs_type; // scalar, field
     int reduce_type; // add, mult, min, max
     ast_id* lhs_scala;
     ast_field* lhs_field;
-    ast_expr* rhs;
+
     ast_id* bound;  // bounding iterator
 
     bool arg_minmax;
 
     std::list<ast_node*> l_list;
     std::list<ast_expr*> r_list;
+
+protected:
+    ast_expr* rhs;
+
+};
+
+class ast_assign_mapentry : public ast_assign {
+private:
+    ast_mapaccess* lhs;
+
+    ast_assign_mapentry(ast_mapaccess* lhs, ast_expr* rhs) : ast_assign(), lhs(lhs) {
+        this->rhs = rhs;
+    }
+
+public:
+    ~ast_assign_mapentry() {
+        delete lhs;
+    }
+
+    bool is_map_entry_assign() {
+        return true;
+    }
+
+    bool is_target_map_entry() {
+        return true;
+    }
+
+    bool is_target_scalar() {
+        return false;
+    }
+
+    virtual int get_lhs_type() {
+        return GMASSIGN_LHS_MAP;
+    }
+
+    ast_assign_mapentry* to_assign_mapentry() {
+        return this;
+    }
+
+    ast_mapaccess* get_lhs_mapaccess() {
+        return lhs;
+    }
+
+    static ast_assign_mapentry* new_mapentry_assign(ast_mapaccess* lhs, ast_expr* rhs) {
+        ast_assign_mapentry* newAssign = new ast_assign_mapentry(lhs, rhs);
+        return newAssign;
+    }
 
 };
 

@@ -517,6 +517,18 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
             Body.push(" ");
         }
         generate_lhs_id(a->get_lhs_scala());
+    } else if (a->is_target_map_entry()) {
+        ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+        ast_id* map = mapAccess->get_map_id();
+        ast_expr* key = mapAccess->get_key_expr();
+        char buffer[256];
+        sprintf(buffer, "%s.setValue(", map->get_genname());
+        Body.push(buffer);
+        generate_expr(key);
+        Body.push(", ");
+        generate_expr(a->get_rhs());
+        Body.pushln(");");
+        return;
     } else {
         generate_lhs_field(a->get_lhs_field());
     }

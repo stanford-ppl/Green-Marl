@@ -124,6 +124,12 @@ public:
                 gm_type_error(GM_ERROR_READONLY, l);
                 return false;
             }
+        } else if (lhs->get_nodetype() == AST_MAPACCESS) {
+            ast_mapaccess* mapAccess = (ast_mapaccess*)lhs;
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            summary_lhs = mapDecl->getValueTypeSummary();
+            //TODO graph stuff
+
         } else {
             // target type (e.g. N_P<Int> -> Int)
             ast_field* f = (ast_field*) lhs;
@@ -178,6 +184,11 @@ public:
         if (a->is_target_scalar()) {
             okay = check_assign_lhs_rhs(a->get_lhs_scala(), a->get_rhs(), l, c);
             summary_lhs = a->get_lhs_scala()->getTypeSummary();
+        } else if (a->is_target_map_entry()) {
+            ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+            okay = check_assign_lhs_rhs(mapAccess, a->get_rhs(), l, c);
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            summary_lhs = mapDecl->getValueTypeSummary();
         } else {
             okay = check_assign_lhs_rhs(a->get_lhs_field(), a->get_rhs(), l, c);
             summary_lhs = a->get_lhs_field()->get_second()->getTargetTypeSummary();

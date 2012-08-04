@@ -166,9 +166,7 @@ bool gm_check_target_graph(ast_id* id1, ast_id* id2) {
 }
 
 static bool gm_find_and_connect_symbol(ast_id* id, gm_symtab* begin, bool print_error = true) {
-    if(id == NULL) {
     assert(id != NULL);
-    }
     assert(id->get_orgname() != NULL);
 
     gm_symtab_entry* se = begin->find_symbol(id);
@@ -326,7 +324,7 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V, int tar
 
         // update collection iter type
         if (type->is_unknown_collection_iterator()) {
-            int iterType = (GMTYPE_T)gm_get_natural_collection_iterator(col->getTypeSummary());
+            int iterType = (GMTYPE_T) gm_get_natural_collection_iterator(col->getTypeSummary());
 
             if (iterType == GMTYPE_ITER_UNDERSPECIFIED && targetType != GMTYPE_INVALID) {
                 iterType = gm_get_specified_collection_iterator(targetType);
@@ -470,8 +468,6 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src
 
     if (!is_okay) return false;
 
-
-
     //--------------------------------------
     // create iterator
     //--------------------------------------
@@ -488,7 +484,7 @@ bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src
 
     if (gm_is_iteration_on_property(iter_type))
         is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, curr_field);
-    else if(src->getTypeInfo()->is_collection_of_collection())
+    else if (src->getTypeInfo()->is_collection_of_collection())
         is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, NULL, src->getTargetTypeSummary());
     else
         is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE);
@@ -630,6 +626,10 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
             if (a->is_target_scalar()) {
                 ast_id* id = a->get_lhs_scala();
                 is_okay = find_symbol_id(id);
+            } else if(a->is_target_map_entry()){
+                ast_assign_mapentry* mapAssign = (ast_assign_mapentry*)a;
+                ast_mapaccess* mapAccess = mapAssign->get_lhs_mapaccess();
+                is_okay = find_symbol_id(mapAccess->get_map_id());
             } else {
                 ast_field* f = a->get_lhs_field();
                 is_okay = find_symbol_field(f);
@@ -753,15 +753,15 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
         }
         case GMEXPR_MAPACCESS: {
             is_okay = find_symbol_id(p->get_id());
-            ast_mapaccess* mapAccess = ((ast_expr_mapaccess*)p)->get_mapaccess();
-            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            ast_mapaccess* mapAccess = ((ast_expr_mapaccess*) p)->get_mapaccess();
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*) mapAccess->get_map_id()->getTypeInfo();
             ast_typedecl* keyType = mapDecl->get_key_type();
             ast_typedecl* valueType = mapDecl->get_value_type();
-            if(gm_has_target_graph_type(keyType->getTypeSummary())) {
+            if (gm_has_target_graph_type(keyType->getTypeSummary())) {
                 gm_symtab_entry* keyGraph = keyType->get_target_graph_sym();
                 mapAccess->set_bound_graoh_for_key(keyGraph);
             }
-            if(gm_has_target_graph_type(valueType->getTypeSummary())) {
+            if (gm_has_target_graph_type(valueType->getTypeSummary())) {
                 gm_symtab_entry* valueGraph = valueType->get_target_graph_sym();
                 mapAccess->set_bound_graoh_for_value(valueGraph);
             }

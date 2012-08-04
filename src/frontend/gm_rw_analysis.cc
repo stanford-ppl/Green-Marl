@@ -507,6 +507,8 @@ bool gm_rw_analysis::apply_assign(ast_assign *a) {
     if (a->get_lhs_type() == GMASSIGN_LHS_SCALA) {
         target_sym = a->get_lhs_scala()->getSymInfo();
         new_entry = gm_rwinfo::new_scala_inst(a->get_lhs_scala(), bound_op, bound_sym);
+    } else if (a->get_lhs_type() == GMASSIGN_LHS_MAP) {
+        return true; //TODO
     } else {
         target_sym = a->get_lhs_field()->get_second()->getSymInfo();
         gm_symtab_entry* iter_sym = a->get_lhs_field()->get_first()->getSymInfo();
