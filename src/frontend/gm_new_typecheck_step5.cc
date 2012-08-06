@@ -129,6 +129,19 @@ public:
             ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
             l_sym = mapAccess->get_bound_graph_for_value();
             summary_lhs = mapDecl->getValueTypeSummary();
+
+            int keyType = mapDecl->getKeyTypeSummary();
+            int keyExprType = mapAccess->get_key_expr()->get_type_summary();
+            int dummy;
+            bool warning;
+            bool isOkay = gm_is_compatible_type_for_assign(keyType, keyExprType, dummy, warning);
+            if (!isOkay) {
+                gm_type_error(GM_ERROR_KEY_MISSMATCH, l, c, gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+                return false;
+            } else if (warning) {
+                printf("warning: implicit type conversion %s->%s\n", gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+            }
+
         } else {
             // target type (e.g. N_P<Int> -> Int)
             ast_field* f = (ast_field*) lhs;
