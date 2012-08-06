@@ -135,6 +135,20 @@ private:
                 return -1;
         }
     }
+
+    void checkAndSetBoundGraphsForMap(ast_mapaccess* mapAccess) {
+        ast_maptypedecl* mapDecl = (ast_maptypedecl*) mapAccess->get_map_id()->getTypeInfo();
+        ast_typedecl* keyType = mapDecl->get_key_type();
+        ast_typedecl* valueType = mapDecl->get_value_type();
+        if (gm_has_target_graph_type(keyType->getTypeSummary())) {
+            gm_symtab_entry* keyGraph = keyType->get_target_graph_sym();
+            mapAccess->set_bound_graph_for_key(keyGraph);
+        }
+        if (gm_has_target_graph_type(valueType->getTypeSummary())) {
+            gm_symtab_entry* valueGraph = valueType->get_target_graph_sym();
+            mapAccess->set_bound_graph_for_value(valueGraph);
+        }
+    }
 };
 
 // check id1 and id2 have same target graph symbol
@@ -630,6 +644,7 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
                 ast_assign_mapentry* mapAssign = (ast_assign_mapentry*)a;
                 ast_mapaccess* mapAccess = mapAssign->get_lhs_mapaccess();
                 is_okay = find_symbol_id(mapAccess->get_map_id());
+                checkAndSetBoundGraphsForMap(mapAccess);
             } else {
                 ast_field* f = a->get_lhs_field();
                 is_okay = find_symbol_field(f);
@@ -754,17 +769,7 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
         case GMEXPR_MAPACCESS: {
             is_okay = find_symbol_id(p->get_id());
             ast_mapaccess* mapAccess = ((ast_expr_mapaccess*) p)->get_mapaccess();
-            ast_maptypedecl* mapDecl = (ast_maptypedecl*) mapAccess->get_map_id()->getTypeInfo();
-            ast_typedecl* keyType = mapDecl->get_key_type();
-            ast_typedecl* valueType = mapDecl->get_value_type();
-            if (gm_has_target_graph_type(keyType->getTypeSummary())) {
-                gm_symtab_entry* keyGraph = keyType->get_target_graph_sym();
-                mapAccess->set_bound_graoh_for_key(keyGraph);
-            }
-            if (gm_has_target_graph_type(valueType->getTypeSummary())) {
-                gm_symtab_entry* valueGraph = valueType->get_target_graph_sym();
-                mapAccess->set_bound_graoh_for_value(valueGraph);
-            }
+            checkAndSetBoundGraphsForMap(mapAccess);
             break;
         }
         case GMEXPR_REDUCE: {

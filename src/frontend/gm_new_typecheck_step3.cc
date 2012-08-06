@@ -23,6 +23,18 @@ public:
     gm_typechecker_stage_3() {
         _is_okay = true;
         set_for_expr(true);
+        set_for_sent(true);
+    }
+
+    bool apply(ast_sent* s) {
+        if(s->get_nodetype() == AST_ASSIGN) {
+            ast_assign* a = (ast_assign*)s;
+            if(a->is_map_entry_assign()) {
+                ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+                return check_boundGraphsForKeyAndValue(mapAccess, a->get_line(), a->get_col());
+            }
+        }
+        return true;
     }
 
     // post apply
@@ -140,6 +152,7 @@ private:
     bool check_builtin(ast_expr_builtin* e);
     bool check_arguments(ast_expr_builtin* b);
     bool check_mapaccess(ast_expr_mapaccess* mapAccessExpr);
+    bool check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column);
 
 public:
     // expression, dest-type
@@ -212,22 +225,29 @@ bool gm_typechecker_stage_3::check_mapaccess(ast_expr_mapaccess* mapAccessExpr) 
         printf("warning: implicit type conversion %s->%s\n", gm_get_type_string(keyType), gm_get_type_string(keyExprType));
     }
 
+    isOkay &= check_boundGraphsForKeyAndValue(mapAccess, line, column);
+    return isOkay;
+}
+
+bool gm_typechecker_stage_3::check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column) {
     //check if target graphs for key are the same
+    int keyType = mapAccess->get_key_expr()->get_type_summary();
     if (gm_has_target_graph_type(keyType)) {
         gm_symtab_entry* keyGraph = mapAccess->get_bound_graph_for_key();
+        ast_expr* keyExpr = mapAccess->get_key_expr();
+        int keyExprType = keyExpr->get_type_summary();
         gm_symtab_entry* keyExprGraph = keyExpr->get_bound_graph();
         if (keyExprGraph == NULL) {
             assert(gm_is_nil_type(keyExprType) || gm_is_foreign_expr_type(keyExprType));
         } else {
             if (keyGraph != keyExprGraph) {
                 gm_type_error(GM_ERROR_TARGET_MISMATCH, line, column);
-                isOkay = false;
+                return false;
             }
         }
     }
-
-    return isOkay;
-}
+    return true;
+};
 
 // comparison (eq, neq and less)
 bool gm_typechecker_stage_3::check_binary(ast_expr* e) {

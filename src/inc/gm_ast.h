@@ -1745,7 +1745,7 @@ public:
         return keyGraph;
     }
 
-    void set_bound_graoh_for_key(gm_symtab_entry* graphEntry) {
+    void set_bound_graph_for_key(gm_symtab_entry* graphEntry) {
         keyGraph = graphEntry;
     }
 
@@ -1753,7 +1753,7 @@ public:
         return valueGraph;
     }
 
-    void set_bound_graoh_for_value(gm_symtab_entry* graphEntry) {
+    void set_bound_graph_for_value(gm_symtab_entry* graphEntry) {
         valueGraph = graphEntry;
     }
 

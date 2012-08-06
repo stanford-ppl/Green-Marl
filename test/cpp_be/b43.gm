@@ -1,0 +1,11 @@
+Procedure test_map_set_element_multiple_graphs(G:Graph)
+{
+	Graph G2;
+		
+	Map<Node(G), Node(G2)> map2;
+	Node(G) n;
+	Node(G2) m;
+	map2[n] = m;
+	
+	
+}

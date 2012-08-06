@@ -127,9 +127,8 @@ public:
         } else if (lhs->get_nodetype() == AST_MAPACCESS) {
             ast_mapaccess* mapAccess = (ast_mapaccess*)lhs;
             ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            l_sym = mapAccess->get_bound_graph_for_value();
             summary_lhs = mapDecl->getValueTypeSummary();
-            //TODO graph stuff
-
         } else {
             // target type (e.g. N_P<Int> -> Int)
             ast_field* f = (ast_field*) lhs;
@@ -162,15 +161,7 @@ public:
             } else {
                 r_sym = rhs->get_bound_graph();
             }
-            assert(l_sym != NULL);
-            if (r_sym == NULL) {
-                assert(gm_is_nil_type(summary_rhs) || gm_is_foreign_expr_type(summary_rhs));
-            } else {
-                if (l_sym != r_sym) {
-                    gm_type_error(GM_ERROR_TARGET_MISMATCH, l, c);
-                    return false;
-                }
-            }
+            return checkGraphs(l_sym,  r_sym, summary_rhs, l, c);
         }
 
         return true;
@@ -250,6 +241,19 @@ public:
 private:
     bool _is_okay;
     ast_typedecl* ret;
+
+    bool checkGraphs(gm_symtab_entry* l_sym, gm_symtab_entry* r_sym, int summary_rhs, int line, int column) {
+        assert(l_sym != NULL);
+        if (r_sym == NULL) {
+            assert(gm_is_nil_type(summary_rhs) || gm_is_foreign_expr_type(summary_rhs));
+        } else {
+            if (l_sym != r_sym) {
+                gm_type_error(GM_ERROR_TARGET_MISMATCH, line, column);
+                return false;
+            }
+        }
+        return true;
+    }
 
 public:
     std::map<ast_expr*, int> coercion_targets;
