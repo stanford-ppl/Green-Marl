@@ -27,9 +27,9 @@ public:
     }
 
     bool apply(ast_sent* s) {
-        if(s->get_nodetype() == AST_ASSIGN) {
-            ast_assign* a = (ast_assign*)s;
-            if(a->is_map_entry_assign()) {
+        if (s->get_nodetype() == AST_ASSIGN) {
+            ast_assign* a = (ast_assign*) s;
+            if (a->is_map_entry_assign()) {
                 ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
                 return check_boundGraphsForKeyAndValue(mapAccess, a->get_line(), a->get_col());
             }
@@ -150,6 +150,7 @@ private:
     bool check_binary(ast_expr* e);
     bool check_ter(ast_expr* e);
     bool check_builtin(ast_expr_builtin* e);
+    bool resolveGenericType(ast_expr_builtin* b);
     bool check_arguments(ast_expr_builtin* b);
     bool check_mapaccess(ast_expr_mapaccess* mapAccessExpr);
     bool check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column);
@@ -247,7 +248,8 @@ bool gm_typechecker_stage_3::check_boundGraphsForKeyAndValue(ast_mapaccess* mapA
         }
     }
     return true;
-};
+}
+;
 
 // comparison (eq, neq and less)
 bool gm_typechecker_stage_3::check_binary(ast_expr* e) {
@@ -402,6 +404,10 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
     bool okay = check_arguments(b);
     gm_builtin_def* def = b->get_builtin_def();
     int fun_ret_type = def->get_result_type_summary();
+
+    if (fun_ret_type == GMTYPE_GENERIC) {
+        return resolveGenericType(b);
+    }
     b->set_type_summary(fun_ret_type);
 
     if (gm_has_target_graph_type(fun_ret_type)) {
@@ -413,6 +419,33 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
     }
     //assert(!gm_has_target_graph_type(fun_ret_type));
     return okay;
+}
+
+bool gm_typechecker_stage_3::resolveGenericType(ast_expr_builtin* b) {
+    gm_builtin_def* def = b->get_builtin_def();
+    ast_id* driver = b->get_driver();
+    assert(driver->getTypeSummary() == GMTYPE_MAP);
+    ast_typedecl* typeDecl = driver->getTypeInfo();
+    assert(typeDecl->is_map());
+    ast_maptypedecl* mapTypeDecl = (ast_maptypedecl*) typeDecl;
+    int funcReturnType;
+    if (def->genericTypeIsKeyType())
+        funcReturnType = mapTypeDecl->getKeyTypeSummary();
+    else
+        funcReturnType = mapTypeDecl->getValueTypeSummary();
+
+    b->set_type_summary(funcReturnType);
+
+    if (gm_has_target_graph_type(funcReturnType)) {
+        gm_symtab_entry* graph;
+        if (def->genericTypeIsKeyType())
+            graph = mapTypeDecl->get_key_type()->get_target_graph_sym();
+        else
+            graph = mapTypeDecl->get_value_type()->get_target_graph_sym();
+        b->set_bound_graph(graph);
+    }
+
+    return true;
 }
 
 // type resolve for u-op
