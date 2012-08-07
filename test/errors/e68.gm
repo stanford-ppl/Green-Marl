@@ -1,0 +1,11 @@
+Procedure test_map_builtin_functions(G:Graph)
+{
+	Map<Int, Int> map;
+	
+	// everything below is a type conflict
+	Node x;
+	Bool b;
+	b = map.HasMaxValue(x);
+	b = map.HasMinValue(x);
+	b = map.HasKey(x);
+}
