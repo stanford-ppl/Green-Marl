@@ -75,6 +75,7 @@ enum GMTYPE_T
     GMTYPE_ITER_ANY,        // iterator to some collection. resolved after type checking
     GMTYPE_ITER_UNDERSPECIFIED,
     GMTYPE_VOID,
+    GMTYPE_GENERIC,
     GMTYPE_INVALID = 99999,
 };
 
