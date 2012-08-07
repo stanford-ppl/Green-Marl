@@ -18,7 +18,11 @@ endif
 ifdef HDFS
 # Make sure to compile hadoop with
 # ant -Dcompile.c++=true -Dlibhdfs=true compile-c++-libhdfs
-# Also make sure to set CLASSPATH to include hadoop-core-xxx.jar
+# Also make sure the following environment variables are set:
+# JAVA_HOME=/usr/java/jdk1.6.0_33
+# HADOOP_HOME=/home/janlugt/hadoop-0.20.2-cdh3u4
+# CLASSPATH=${CLASSPATH}:${HADOOP_HOME}/hadoop-core-0.20.2-cdh3u4.jar:${HADOOP_HOME}/lib/commons-logging-1.0.4.jar
+# LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 
 # Change this path to point to the location of libhdfs.so
 CFLAGS += -L$(HADOOP_HOME)/build/c++/lib

@@ -18,10 +18,6 @@ CFLAGS += -m64
 endif
 
 ifdef HDFS
-# Make sure to compile hadoop with
-# ant -Dcompile.c++=true -Dlibhdfs=true compile-c++-libhdfs
-# Also make sure to set CLASSPATH to include hadoop-core-xxx.jar
-
 # Change this path to point to the location of libhdfs.so
 CFLAGS += -L$(HADOOP_HOME)/build/c++/lib
 # Change this path to point to the location of libjvm.so
