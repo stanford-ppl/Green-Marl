@@ -2311,6 +2311,8 @@ public:
         delete lhs;
     }
 
+    void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
+
     bool is_map_entry_assign() {
         return true;
     }
