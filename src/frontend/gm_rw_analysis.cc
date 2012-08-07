@@ -17,7 +17,7 @@
 
 static bool merge_for_if_else(gm_rwinfo_map& Target, gm_rwinfo_map& S1, gm_rwinfo_map& S2, bool is_reduce);
 const char* gm_get_range_string(int access_range) {
-    return (access_range == GM_RANGE_LINEAR) ? "LINEAR" : (access_range == GM_RANGE_RANDOM) ? "RANDOM" : (access_range == GM_RANGE_LEVEL) ? "LEVEL" : 
+    return (access_range == GM_RANGE_LINEAR) ? "LINEAR" : (access_range == GM_RANGE_RANDOM) ? "RANDOM" : (access_range == GM_RANGE_LEVEL) ? "LEVEL" :
            (access_range == GM_RANGE_LEVEL_UP) ? "LEVEL_UP" : (access_range == GM_RANGE_LEVEL_DOWN) ? "LEVEL_DOWN" : "???";
 }
 
@@ -344,6 +344,11 @@ void traverse_expr_for_readset_adding(ast_expr* e, gm_rwinfo_map& rset, temp_map
         case GMEXPR_FIELD:
             traverse_expr_for_readset_adding_field(e, rset, DrvMap);
             break;
+        case GMEXPR_MAPACCESS: {
+            ast_mapaccess* mapAccess = ((ast_expr_mapaccess*) e)->get_mapaccess();
+            traverse_expr_for_readset_adding(mapAccess->get_key_expr(), rset, DrvMap);//TODO
+        }
+            break;
         case GMEXPR_UOP:
         case GMEXPR_LUOP:
             traverse_expr_for_readset_adding(e->get_left_op(), rset, DrvMap);
@@ -505,6 +510,10 @@ bool gm_rw_analysis::apply_assign(ast_assign *a) {
     if (a->get_lhs_type() == GMASSIGN_LHS_SCALA) {
         target_sym = a->get_lhs_scala()->getSymInfo();
         new_entry = gm_rwinfo::new_scala_inst(a->get_lhs_scala(), bound_op, bound_sym);
+    } else if (a->get_lhs_type() == GMASSIGN_LHS_MAP) {
+        ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+        target_sym = mapAccess->get_map_id()->getSymInfo();
+        new_entry = gm_rwinfo::new_scala_inst(mapAccess->get_map_id(), bound_op, bound_sym);//TODO
     } else {
         target_sym = a->get_lhs_field()->get_second()->getSymInfo();
         gm_symtab_entry* iter_sym = a->get_lhs_field()->get_first()->getSymInfo();
@@ -910,15 +919,15 @@ static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwin
             } else if (cp->driver == NULL) {
                 if (cp->access_range == GM_RANGE_SINGLE) {
                     // scalar, do nothing
-                } else if (is_parallel) {
-                    //printf("sym = %s!!! %p line:%d, col:%d\n", sym->getId()->get_genname(), e->driver, e->location->get_line(), e->location->get_col());
-                    cp->access_range = GM_RANGE_RANDOM;
-                    cp->driver = NULL;
-                }
             } else if (is_parallel) {
-                //cp->access_range = GM_RANGE_RANDOM;
-                //cp->driver = NULL;
+                //printf("sym = %s!!! %p line:%d, col:%d\n", sym->getId()->get_genname(), e->driver, e->location->get_line(), e->location->get_col());
+                cp->access_range = GM_RANGE_RANDOM;
+                cp->driver = NULL;
             }
+        } else if (is_parallel) {
+            //cp->access_range = GM_RANGE_RANDOM;
+            //cp->driver = NULL;
+        }
             is_okay = gm_add_rwinfo_to_set(T, sym, cp, false) && is_okay;
         }
     }
@@ -986,12 +995,11 @@ static bool cleanup_iterator_access_reduce(ast_id* iter, gm_rwinfo_map& D_temp, 
                 cp->driver = NULL;
                 cp->access_range = range;
             } else if (is_parallel) {
-                if (cp->driver == NULL){
+                if (cp->driver == NULL) {
                     if (cp->access_range != GM_RANGE_SINGLE) {
                         cp->access_range = GM_RANGE_RANDOM; // scalar access becomes random access
                     }
-                }
-                else if (!cp->driver->getType()->is_node_edge_iterator()) {
+                } else if (!cp->driver->getType()->is_node_edge_iterator()) {
                     cp->access_range = GM_RANGE_RANDOM;
                     cp->driver = NULL;
                 }
@@ -1064,7 +1072,6 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a) {
 
     //printf("R:");gm_print_rwinfo_set(R);
     //printf("done\n");
-
 
     return is_okay;
 }

@@ -19,6 +19,7 @@ enum GMTYPE_T
     GMTYPE_ESEQ,
     GMTYPE_EORDER,
     GMTYPE_COLLECTION,
+    GMTYPE_MAP,
 
     // iterators
     GMTYPE_NODEITER_ALL = 100,
@@ -74,6 +75,7 @@ enum GMTYPE_T
     GMTYPE_ITER_ANY,        // iterator to some collection. resolved after type checking
     GMTYPE_ITER_UNDERSPECIFIED,
     GMTYPE_VOID,
+    GMTYPE_GENERIC,
     GMTYPE_INVALID = 99999,
 };
 
@@ -312,6 +314,10 @@ inline static bool gm_is_sequential_collection_type(int i) {
     return gm_is_sequence_collection_type(i) || gm_is_order_collection_type(i);
 }
 
+inline static bool gm_is_map_type(int i) {
+    return i == GMTYPE_MAP;
+}
+
 // node set -> nodeset iter
 // edge set -> edgeset iter ...
 inline int gm_get_natural_collection_iterator(int src_type) {
@@ -533,6 +539,14 @@ inline static bool gm_is_iteration_on_updown_levels(int itype) {
 
 inline static bool gm_is_iteration_on_neighbors_compatible(int itype) {
     return gm_is_any_nbr_node_iter_type(itype);
+}
+
+inline static bool gm_can_be_key_type(GMTYPE_T type) {
+    return gm_is_prim_type(type) || gm_is_nodeedge_type(type);
+}
+
+inline static bool gm_can_be_value_type(GMTYPE_T type) {
+    return gm_is_prim_type(type) || gm_is_nodeedge_type(type);
 }
 
 enum GM_ACCESS_T

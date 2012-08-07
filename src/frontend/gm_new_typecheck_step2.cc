@@ -40,8 +40,8 @@ public:
         }
 
         if (s->get_nodetype() == AST_ASSIGN) {
-            ast_assign *a = (ast_assign*) s;
-            if (!a->is_target_scalar()) {
+            ast_assign* a = (ast_assign*) s;
+            if (!a->is_target_scalar() && !a->is_target_map_entry()) {
                 ast_field* f = a->get_lhs_field();
                 if (f->get_first()->getTypeInfo()->is_graph() || f->get_first()->getTypeInfo()->is_collection()) {
 
@@ -139,7 +139,7 @@ bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* 
 
 bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
     int sourceType = builtinExpr->get_source_type();
-    switch(sourceType) {
+    switch (sourceType) {
         case GMTYPE_PROPERTYITER_SET:
         case GMTYPE_COLLECTIONITER_SET:
             sourceType = GMTYPE_NSET;

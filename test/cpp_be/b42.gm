@@ -1,0 +1,12 @@
+Procedure test_map_set_element(G:Graph)
+{
+	Map<Int, Int> map1;
+	map1[0] = 42;
+	
+	Map<Node, Node> map2;
+	Node n;
+	Node m;
+	map2[n] = m;
+	
+	
+}

@@ -1,0 +1,4 @@
+Procedure test_map_declaration1(G:Graph)
+{
+    Map<Node, N_S> map1; //we only allow primitive types in maps
+}

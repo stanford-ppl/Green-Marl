@@ -36,6 +36,10 @@ public:
             int lhs_type;
             if (a->is_target_scalar()) {
                 lhs_type = a->get_lhs_scala()->getTypeSummary();
+            } else if (a->is_target_map_entry()) {
+                ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+                ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+                lhs_type = mapDecl->getValueTypeSummary();
             } else {
                 lhs_type = a->get_lhs_field()->getTargetTypeSummary();
             }

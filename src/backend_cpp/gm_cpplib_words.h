@@ -19,6 +19,7 @@ static const char* SET_T = "gm_node_set";
 static const char* ORDER_T = "gm_node_order";
 static const char* SEQ_T = "gm_node_seq";
 static const char* QUEUE_T = "gm_collection";
+static const char* MAP_T = "gm_map";
 static const char* PROP_OF_COL = "gm_property_of_collection";
 static const char* IS_IN = "is_in";
 static const char* MAX_SET_CNT = "max_size";

@@ -178,6 +178,7 @@ public:
         g->org_lhs = org;
         return g;
     }
+
     static gm_rwinfo* new_range_inst(int range, bool always, ast_id* loc) {
         gm_rwinfo *g = new gm_rwinfo();
         g->always = always;
