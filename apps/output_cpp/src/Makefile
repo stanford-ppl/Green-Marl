@@ -4,7 +4,7 @@ INCDIR = ../gm_graph/inc
 LIBDIR = ../gm_graph/lib
 BINDIR = ../bin
 LIB = gmgraph
-CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp  
+CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp
 LFLAGS = -L$(LIBDIR) -l$(LIB)
 INCFILES = $(shell ls $(INCDIR))
 H_FILES = $(addprefix $(INCDIR)/, $(INCFILES))
@@ -17,6 +17,18 @@ ifdef FORCE_64BIT
 CFLAGS += -m64
 endif
 
+ifdef HDFS
+# Change this path to point to the location of libhdfs.so
+CFLAGS += -L$(HADOOP_HOME)/build/c++/lib
+# Change this path to point to the location of libjvm.so
+CFLAGS += -L$(JAVA_HOME)/jre/lib/amd64/server
+# Change this path to point to the location of jni.h and jni_md.h
+CFLAGS += -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
+# Change this path to point to the location of hdfs.h
+CFLAGS += -I$(HADOOP_HOME)/src/c++/libhdfs/
+
+CFLAGS += -lhdfs -ljvm -D__HDFS__
+endif
 
 #include program list
 include ../../Programs.mk

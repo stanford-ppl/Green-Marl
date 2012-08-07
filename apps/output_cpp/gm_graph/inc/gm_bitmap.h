@@ -1,5 +1,5 @@
-#ifndef GM_BITMAP_H
-#define GM_BITMAP_H
+#ifndef GM_BITMAP_H_
+#define GM_BITMAP_H_
 
 #include <stdint.h>
 #include "gm_atomic_wrapper.h"

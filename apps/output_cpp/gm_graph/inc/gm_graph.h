@@ -1,12 +1,14 @@
-#ifndef GM_GRAPH_H
-#define GM_GRAPH_H
+#ifndef GM_GRAPH_H_
+#define GM_GRAPH_H_
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <map>
 #include <vector>
 #include <stdlib.h>
+#include <omp.h>
 #include "gm_graph_typedef.h"
+#include "gm_helper_functions.h"
 
 typedef node_t node_id;
 typedef edge_t edge_id;
@@ -60,6 +62,9 @@ struct edge_dest_t  // for flexible graph representation
 class gm_graph
 {
 
+// Give access to gm_graph_hdfs
+friend class gm_graph_hdfs;
+
 public:
     gm_graph();
     virtual ~gm_graph();
@@ -70,11 +75,11 @@ public:
     //-----------------------------------------------------
     edge_t* begin;             // O(N) array of edge_t
     node_t* node_idx;          // O(M) array of node_t (destination of each edge)
-    node_t* node_idx_src;     // O(M) array of node_t (source of each edge)
+    node_t* node_idx_src;      // O(M) array of node_t (source of each edge)
 
     edge_t* r_begin;           // O(N) array of edge_t
     node_t* r_node_idx;        // O(M) array of node_t (destination of each reverse edge)
-    node_t* r_node_idx_src;   // O(M) array of node_t (source of each reverse edge)
+    node_t* r_node_idx_src;    // O(M) array of node_t (source of each reverse edge)
 
     static const node_t NIL_NODE = (node_t) -1;
     static const edge_t NIL_EDGE = (edge_t) -1;
@@ -89,7 +94,6 @@ public:
         return false;
     }
 
-public:
     node_t num_nodes() {
         return _numNodes;
     }
@@ -128,7 +132,7 @@ public:
     // mathods to be called in frozen mode
     //-------------------------------------------------
     void make_reverse_edges();          // Freeze the graph first. Then build-up reverse edges
-    void do_semi_sort();             // Freeze thg graph first. Sort the edge-list as in the order of destination idx. 
+    void do_semi_sort();                // Freeze the graph first. Sort the edge-list as in the order of destination idx.
     void prepare_edge_source();         // Prepare source information of each node. (To support edge.From())
 
     //-------------------------------------------------------
@@ -172,9 +176,10 @@ public:
     // Read and Write the graph from/to a file, using a custom binary format
     // The graph will be frozen automatically.
     //--------------------------------------------------------------
-    void prepare_external_creation(node_t n, edge_t m);
-    bool store_binary(char* filename);          // attributes not saved
-    bool load_binary(char* filename);           // call this to an empty graph object
+    #define MAGIC_WORD	0x03939999
+    virtual void prepare_external_creation(node_t n, edge_t m);
+    virtual bool store_binary(char* filename);          // attributes not saved
+    virtual bool load_binary(char* filename);           // call this to an empty graph object
 
     //--------------------------------------------------------------
     // conversion between idx and id
