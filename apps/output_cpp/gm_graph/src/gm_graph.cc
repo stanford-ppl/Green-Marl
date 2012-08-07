@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <omp.h>
 #include "gm_graph.h"
-#include "gm_helper_functions.h"
 
 gm_graph::gm_graph() {
     begin = NULL;
@@ -422,7 +418,7 @@ void gm_graph::clear_graph() {
 //   [EdgeBegin      : Size(EDGE_T)*numNodes]
 //   [DestNode       : Size(NODE_T)*numEdges]
 //--------------------------------------------
-#define MAGIC_WORD	0x03939999
+
 bool gm_graph::store_binary(char* filename) {
     if (!_frozen) freeze();
 
