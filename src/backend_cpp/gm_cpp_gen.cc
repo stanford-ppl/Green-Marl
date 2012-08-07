@@ -522,7 +522,10 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
         ast_id* map = mapAccess->get_map_id();
         ast_expr* key = mapAccess->get_key_expr();
         char buffer[256];
-        sprintf(buffer, "%s.setValue(", map->get_genname());
+        if(a->is_under_parallel_execution())
+            sprintf(buffer, "%s.setValue_par(", map->get_genname());
+        else
+            sprintf(buffer, "%s.setValue_seq(", map->get_genname());
         Body.push(buffer);
         generate_expr(key);
         Body.push(", ");
