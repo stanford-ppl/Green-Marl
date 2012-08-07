@@ -4,12 +4,13 @@ import commands;
 import sys;
 import re;
 import os;
+import multiprocessing;
 
 s_path = sys.path[0];
 COMP_BINARY_PATH=s_path+"/../../bin/gm_comp";
 COMP_SRC_PATH=s_path+"/../../src";
 APPS_PATH=s_path+"/../../apps/";
-
+NUM_THREADS=multiprocessing.cpu_count();
 
 # PROCESS COMMAND LINE
 interactive = True;
@@ -71,7 +72,7 @@ def build_compiler():
     os.chdir(COMP_SRC_PATH);
     make_res = commands.getstatusoutput("make veryclean");
     assert make_res[0] == 0;
-    make_res = commands.getstatusoutput("make");
+    make_res = commands.getstatusoutput("make -j" + str(NUM_THREADS));
     if make_res[0] != 0:
         print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
         sys.exit(-1);

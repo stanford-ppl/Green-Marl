@@ -1,5 +1,5 @@
-#ifndef GM_H
-#define GM_H
+#ifndef GM_H_
+#define GM_H_
 #include <math.h>
 #include <stdlib.h>
 
@@ -10,6 +10,9 @@
 #include "gm_lock.h"
 #include "gm_bitmap.h"
 #include "gm_mem_helper.h"
+#ifdef __HDFS__
+  #include "gm_hdfs.h"
+#endif
 
 #include "gm_bfs_template.h"
 #include "gm_dfs_template.h"

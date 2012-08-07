@@ -10,7 +10,22 @@
 class main_t
 {
 protected:
+#ifdef __HDFS__
+    gm_graph_hdfs G;
+    gm_graph_hdfs& get_graph() {
+        return G;
+    }
+#else
     gm_graph G;
+    gm_graph& get_graph() {
+        return G;
+    }
+#endif
+
+    double time_to_exclude;
+    void add_time_to_exlude(double ms) {
+        time_to_exclude += ms;
+    }
 
 public:
     main_t() {
@@ -117,15 +132,6 @@ public:
     }
     virtual void print_arg_info() {
     }
-protected:
-    gm_graph& get_graph() {
-        return G;
-    }
-    void add_time_to_exlude(double ms) {
-        time_to_exclude += ms;
-    }
-    double time_to_exclude;
-
 };
 
 #endif

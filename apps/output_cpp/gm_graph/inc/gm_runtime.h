@@ -1,5 +1,12 @@
 #ifndef GM_RUNTIME_H
 #define GM_RUNTIME_H
+#include <assert.h>
+#include <omp.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include "gm_mem_helper.h"
+#include "gm_lock.h"
 
 //----------------------------------------------------
 // A thin layer over openmp 

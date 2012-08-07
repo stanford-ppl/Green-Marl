@@ -1,3 +1,5 @@
+#ifndef GM_DFS_TEMPLATE_H
+#define GM_DFS_TEMPLATE_H
 #include <omp.h>
 #include <string.h>
 #include <set>
@@ -12,8 +14,6 @@
 //  Thus, here we implement DFS withour recursion.
 //-----------------------------------------------
 
-#ifndef GM_DFS_TEMPLATE_H
-#define GM_DFS_TEMPLATE_H
 struct _dfs_state
 {
     _dfs_state(node_t N, edge_t I, edge_t E) :
