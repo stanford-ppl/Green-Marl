@@ -53,7 +53,7 @@ public:
     virtual bool apply(ast_sent *s) {
         if (s->get_nodetype() != AST_ASSIGN) return true;
         ast_assign* a = (ast_assign*) s;
-        if (a->is_target_scalar()) return true;
+        if (a->is_target_scalar() || a->is_target_map_entry()) return true;
 
         ast_field* lhs = a->get_lhs_field();
         assert(lhs != NULL);

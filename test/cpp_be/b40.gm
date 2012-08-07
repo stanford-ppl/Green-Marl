@@ -1,0 +1,11 @@
+Procedure test_map_get_element(G:Graph)
+{
+	Map<Int, Int> map1;
+	Int x = map1[0];
+	Int y = map1[x];
+	Int z = map1[1+1];
+	
+	Map<Node, Node> map2;
+	Node n;
+	Node m = map2[n];
+}

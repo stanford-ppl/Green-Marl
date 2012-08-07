@@ -1,0 +1,7 @@
+Procedure test_map_element_access_multiple_graphs(G:Graph)
+{
+	Graph G2;
+	Map<Node(G), Node(G)> map;
+	Node(G) n;
+	Node(G2) m = map[n]; //target graph mismatch
+}
