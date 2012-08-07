@@ -1,0 +1,9 @@
+Procedure test_map_foreign_coexistence(G:Graph)
+{
+	Map<Int, Int> map;
+	Int i;
+	[ i = 42 ];
+	map[i] = 23;
+	
+	
+}
