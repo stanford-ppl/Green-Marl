@@ -11,10 +11,23 @@ void gm_code_generator::generate_expr_list(std::list<ast_expr*>& L) {
     }
 }
 
+void gm_code_generator::generate_mapaccess(ast_expr_mapaccess* e) {
+    ast_mapaccess* mapAccess = e->get_mapaccess();
+    ast_id* map = mapAccess->get_map_id();
+    ast_expr* key = mapAccess->get_key_expr();
+    char buffer[256];
+    sprintf(buffer, "%s.getValue(", map->get_genname());
+    _Body.push(buffer);
+    generate_expr(key);
+    _Body.push(")");
+}
+
 extern void gm_flush_reproduce();
 
 void gm_code_generator::generate_expr(ast_expr*e) {
-    if (e->is_inf())
+    if(e->is_mapaccess())
+        generate_mapaccess((ast_expr_mapaccess*)e);
+    else if (e->is_inf())
         generate_expr_inf(e);
     else if (e->is_literal())
         generate_expr_val(e);

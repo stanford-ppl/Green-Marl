@@ -23,6 +23,18 @@ public:
     gm_typechecker_stage_3() {
         _is_okay = true;
         set_for_expr(true);
+        set_for_sent(true);
+    }
+
+    bool apply(ast_sent* s) {
+        if(s->get_nodetype() == AST_ASSIGN) {
+            ast_assign* a = (ast_assign*)s;
+            if(a->is_map_entry_assign()) {
+                ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+                return check_boundGraphsForKeyAndValue(mapAccess, a->get_line(), a->get_col());
+            }
+        }
+        return true;
     }
 
     // post apply
@@ -38,6 +50,9 @@ public:
                         gm_symtab_entry * g = t->get_target_graph_sym();
                         assert(g != NULL);
                         e->set_bound_graph(g);
+                    } else if (t->is_map()) {
+                        ast_maptypedecl* mapDecl = (ast_maptypedecl*) t;
+                        e->set_type_summary(mapDecl->getValueTypeSummary());
                     }
                 }
                 break;
@@ -106,6 +121,10 @@ public:
                 e->set_type_summary(GMTYPE_FOREIGN_EXPR);
                 okay = true;
                 break;
+            case GMEXPR_MAPACCESS: {
+                okay = check_mapaccess((ast_expr_mapaccess*) e);
+            }
+                break;
             default:
                 assert(false);
                 break;
@@ -132,6 +151,8 @@ private:
     bool check_ter(ast_expr* e);
     bool check_builtin(ast_expr_builtin* e);
     bool check_arguments(ast_expr_builtin* b);
+    bool check_mapaccess(ast_expr_mapaccess* mapAccessExpr);
+    bool check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column);
 
 public:
     // expression, dest-type
@@ -175,6 +196,58 @@ static bool check_special_case_inside_group_assign(ast_id* l_id, int alt_type_l,
 
     return true;
 }
+
+bool gm_typechecker_stage_3::check_mapaccess(ast_expr_mapaccess* mapAccessExpr) {
+    mapAccessExpr->set_type_summary(mapAccessExpr->get_id()->getTypeSummary());
+    ast_typedecl* t = mapAccessExpr->get_id()->getTypeInfo();
+    ast_maptypedecl* mapDecl = (ast_maptypedecl*) t;
+    mapAccessExpr->set_type_summary(mapDecl->getValueTypeSummary());
+
+    //check if key-type and key-expression-type are compatible
+    ast_mapaccess* mapAccess = mapAccessExpr->get_mapaccess();
+    ast_expr* keyExpr = mapAccess->get_key_expr();
+    int keyExprType = keyExpr->get_type_summary();
+
+    gm_symtab_entry* mapEntry = mapAccess->get_map_id()->getSymInfo();
+    assert(mapEntry != NULL);
+    assert(mapEntry->getType()->is_map());
+    ast_maptypedecl* mapTypeDecl = (ast_maptypedecl*) mapEntry->getType();
+    int keyType = mapTypeDecl->getKeyTypeSummary();
+
+    int dummy;
+    bool warning;
+    bool isOkay = gm_is_compatible_type_for_assign(keyType, keyExprType, dummy, warning);
+    int line = mapAccessExpr->get_line();
+    int column = mapAccessExpr->get_col();
+    if (!isOkay) {
+        gm_type_error(GM_ERROR_KEY_MISSMATCH, line, column, gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+    } else if (warning) {
+        printf("warning: implicit type conversion %s->%s\n", gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+    }
+
+    isOkay &= check_boundGraphsForKeyAndValue(mapAccess, line, column);
+    return isOkay;
+}
+
+bool gm_typechecker_stage_3::check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column) {
+    //check if target graphs for key are the same
+    int keyType = mapAccess->get_key_expr()->get_type_summary();
+    if (gm_has_target_graph_type(keyType)) {
+        gm_symtab_entry* keyGraph = mapAccess->get_bound_graph_for_key();
+        ast_expr* keyExpr = mapAccess->get_key_expr();
+        int keyExprType = keyExpr->get_type_summary();
+        gm_symtab_entry* keyExprGraph = keyExpr->get_bound_graph();
+        if (keyExprGraph == NULL) {
+            assert(gm_is_nil_type(keyExprType) || gm_is_foreign_expr_type(keyExprType));
+        } else {
+            if (keyGraph != keyExprGraph) {
+                gm_type_error(GM_ERROR_TARGET_MISMATCH, line, column);
+                return false;
+            }
+        }
+    }
+    return true;
+};
 
 // comparison (eq, neq and less)
 bool gm_typechecker_stage_3::check_binary(ast_expr* e) {

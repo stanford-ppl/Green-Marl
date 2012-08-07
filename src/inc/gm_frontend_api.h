@@ -63,6 +63,7 @@ extern ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int ite
 extern ast_node* GM_expr_ternary(ast_node* cond, ast_node* left, ast_node* right, int l, int c);
 extern ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l);
 extern ast_node* GM_expr_builtin_field_expr(ast_node* id, ast_node* id2, expr_list* list);
+extern ast_node* GM_expr_map_access(ast_node* mapAccess, int line, int column);
 
 extern void GM_start_sentblock();
 extern ast_node* GM_finish_sentblock();
@@ -94,9 +95,11 @@ extern ast_node* GM_edgetype_ref(ast_node* id);
 
 extern ast_node* GM_settype_ref(int set_type_id, ast_node* id);
 extern ast_node* GM_queuetype_ref(ast_node* collectionType, ast_node* id);
+extern ast_node* GM_maptype_ref(ast_node* keyType, ast_node* valueType);
 
 extern ast_node* GM_id(char* orgname, int line, int col);
 extern ast_node* GM_field(ast_node* id, ast_node* field, bool is_rarrow);
+extern ast_node* GM_map_access(ast_node* mapId, ast_node* keyExpr);
 
 extern void GM_add_id_comma_list(ast_node* id);
 extern ast_node* GM_finish_id_comma_list();

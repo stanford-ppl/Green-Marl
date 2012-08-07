@@ -66,6 +66,8 @@ const char* gm_cpplib::get_type_string(int type) {
         }
     } else if (gm_is_collection_of_collection_type(type)) {
         return QUEUE_T;
+    } else if (gm_is_map_type(type)) {
+        return MAP_T;
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));
         assert(false);
@@ -127,6 +129,53 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     Body->pushln(");");
 
     return false;
+}
+
+
+void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
+
+    const int SMALL = 0;
+    const int MEDIUM = 1;
+    const int LARGE = 2;
+
+    int mapType = MEDIUM; //TODO: implement compiler optimization to figure out what is best here
+    int keyType = map->getKeyTypeSummary();
+    int valueType = map->getValueTypeSummary();
+
+    if (mapType == MEDIUM)
+        Body->push("gm_map_medium");
+    else
+        assert(false);
+
+    Body->push("<");
+    Body->push(getTypeString(keyType));
+    Body->push(", ");
+    Body->push(getTypeString(valueType));
+    Body->push(", ");
+
+    if (gm_is_prim_type(valueType))
+        Body->push("0");
+    else if (gm_is_node_type(valueType))
+        Body->push("gm_graph::NIL_NODE");
+    else if (gm_is_edge_type(valueType))
+            Body->push("gm_graph::NIL_EDGE");
+    else
+        assert(false);
+    //we only support primitives, nodes and edges in maps (yet)
+
+    Body->push("> ");
+    Body->push(mapId->get_genname());
+
+    switch (mapType) {
+        case MEDIUM:
+            Body->pushln("(gm_rt_get_num_threads());");
+            break;
+        case SMALL:
+        case LARGE:
+        default:
+            assert(false);
+            break;
+    }
 }
 
 void gm_cpplib::generate_sent_nop(ast_nop *f) {

@@ -124,6 +124,24 @@ public:
                 gm_type_error(GM_ERROR_READONLY, l);
                 return false;
             }
+        } else if (lhs->get_nodetype() == AST_MAPACCESS) {
+            ast_mapaccess* mapAccess = (ast_mapaccess*)lhs;
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            l_sym = mapAccess->get_bound_graph_for_value();
+            summary_lhs = mapDecl->getValueTypeSummary();
+
+            int keyType = mapDecl->getKeyTypeSummary();
+            int keyExprType = mapAccess->get_key_expr()->get_type_summary();
+            int dummy;
+            bool warning;
+            bool isOkay = gm_is_compatible_type_for_assign(keyType, keyExprType, dummy, warning);
+            if (!isOkay) {
+                gm_type_error(GM_ERROR_KEY_MISSMATCH, l, c, gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+                return false;
+            } else if (warning) {
+                printf("warning: implicit type conversion %s->%s\n", gm_get_type_string(keyType), gm_get_type_string(keyExprType));
+            }
+
         } else {
             // target type (e.g. N_P<Int> -> Int)
             ast_field* f = (ast_field*) lhs;
@@ -149,16 +167,14 @@ public:
         }
 
         if (gm_has_target_graph_type(summary_lhs)) {
-            gm_symtab_entry* r_sym = rhs->get_bound_graph();
-            assert(l_sym != NULL);
-            if (r_sym == NULL) {
-                 assert(gm_is_nil_type(summary_rhs) || gm_is_foreign_expr_type(summary_rhs));
+            gm_symtab_entry* r_sym;
+            if (rhs->is_mapaccess()) {
+                ast_mapaccess* mapAccess = ((ast_expr_mapaccess*) rhs)->get_mapaccess();
+                r_sym = mapAccess->get_bound_graph_for_value();
             } else {
-                if (l_sym != r_sym) {
-                    gm_type_error(GM_ERROR_TARGET_MISMATCH, l, c);
-                    return false;
-                }
+                r_sym = rhs->get_bound_graph();
             }
+            return checkGraphs(l_sym,  r_sym, summary_rhs, l, c);
         }
 
         return true;
@@ -172,11 +188,15 @@ public:
         if (a->is_target_scalar()) {
             okay = check_assign_lhs_rhs(a->get_lhs_scala(), a->get_rhs(), l, c);
             summary_lhs = a->get_lhs_scala()->getTypeSummary();
+        } else if (a->is_target_map_entry()) {
+            ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+            okay = check_assign_lhs_rhs(mapAccess, a->get_rhs(), l, c);
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            summary_lhs = mapDecl->getValueTypeSummary();
         } else {
             okay = check_assign_lhs_rhs(a->get_lhs_field(), a->get_rhs(), l, c);
             summary_lhs = a->get_lhs_field()->get_second()->getTargetTypeSummary();
         }
-
         // check body of reduce
         if (a->is_reduce_assign()) {
 
@@ -234,6 +254,19 @@ public:
 private:
     bool _is_okay;
     ast_typedecl* ret;
+
+    bool checkGraphs(gm_symtab_entry* l_sym, gm_symtab_entry* r_sym, int summary_rhs, int line, int column) {
+        assert(l_sym != NULL);
+        if (r_sym == NULL) {
+            assert(gm_is_nil_type(summary_rhs) || gm_is_foreign_expr_type(summary_rhs));
+        } else {
+            if (l_sym != r_sym) {
+                gm_type_error(GM_ERROR_TARGET_MISMATCH, line, column);
+                return false;
+            }
+        }
+        return true;
+    }
 
 public:
     std::map<ast_expr*, int> coercion_targets;
