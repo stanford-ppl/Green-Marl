@@ -150,7 +150,8 @@ private:
     bool check_binary(ast_expr* e);
     bool check_ter(ast_expr* e);
     bool check_builtin(ast_expr_builtin* e);
-    bool resolveGenericType(ast_expr_builtin* b);
+    bool resolveGenericOutputType(ast_expr_builtin* b);
+    int resolveGenericInputType(ast_expr_builtin* b, int argPosition);
     bool check_arguments(ast_expr_builtin* b);
     bool check_mapaccess(ast_expr_mapaccess* mapAccessExpr);
     bool check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column);
@@ -362,6 +363,19 @@ static bool gm_is_compatible_type_collection_of_collection(int shouldbeType, int
     return true;
 }
 
+int gm_typechecker_stage_3::resolveGenericInputType(ast_expr_builtin* b, int argPosition) {
+
+    gm_builtin_def* def = b->get_builtin_def();
+    ast_id* driver = b->get_driver();
+    assert(driver->getTypeSummary() == GMTYPE_MAP); // we only support maps atm
+    ast_typedecl* typeDecl = driver->getTypeInfo();
+    ast_maptypedecl* mapTypeDecl = (ast_maptypedecl*) typeDecl;
+    if (def->genericArgumentTypeIsKeyType(argPosition))
+        return mapTypeDecl->getKeyTypeSummary();
+    else
+        return mapTypeDecl->getValueTypeSummary();
+}
+
 bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
 
     bool okay = true;
@@ -374,7 +388,9 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
         ast_expr* e = *iter;
         int currentType = e->get_type_summary();
         int def_type = def->get_arg_type(position);
-        if (gm_is_unknown_type(currentType)) {
+        if(def_type == GMTYPE_GENERIC) {
+            def_type = (int)resolveGenericInputType(b, position);
+        } else if (gm_is_unknown_type(currentType)) {
             okay = false;
             continue;
         }
@@ -406,7 +422,7 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
     int fun_ret_type = def->get_result_type_summary();
 
     if (fun_ret_type == GMTYPE_GENERIC) {
-        return resolveGenericType(b);
+        return resolveGenericOutputType(b);
     }
     b->set_type_summary(fun_ret_type);
 
@@ -421,7 +437,7 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
     return okay;
 }
 
-bool gm_typechecker_stage_3::resolveGenericType(ast_expr_builtin* b) {
+bool gm_typechecker_stage_3::resolveGenericOutputType(ast_expr_builtin* b) {
     gm_builtin_def* def = b->get_builtin_def();
     ast_id* driver = b->get_driver();
     assert(driver->getTypeSummary() == GMTYPE_MAP);

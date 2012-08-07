@@ -178,6 +178,19 @@ public:
         return arg_types[i];
     }
 
+    bool genericArgumentTypeIsKeyType(int position) {
+        assert(position == 0); //we only support maps yet
+        switch(method_id) {
+            case GM_BLTIN_MAP_HAS_MAX_VALUE:
+            case GM_BLTIN_MAP_HAS_MIN_VALUE:
+            case GM_BLTIN_MAP_HAS_KEY:
+                return true;
+            default:
+                assert(false); //if you called it with the wrong method_id, then your code must be wrong...
+                return false;
+        }
+    }
+
     int get_method_id() {
         return method_id;
     }
