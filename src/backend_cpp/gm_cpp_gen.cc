@@ -479,6 +479,14 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
         return;
     }
 
+    if (t->is_map()) {
+        ast_maptypedecl* map = (ast_maptypedecl*)t;
+        ast_idlist* idl = v->get_idlist();
+        assert(idl->get_length() == 1);
+        get_lib()->add_map_def(map, idl->get_item(0));
+        return;
+    }
+
     Body.push_spc(get_type_string(t));
 
     if (t->is_property()) {
@@ -509,6 +517,18 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
             Body.push(" ");
         }
         generate_lhs_id(a->get_lhs_scala());
+    } else if (a->is_target_map_entry()) {
+        ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+        ast_id* map = mapAccess->get_map_id();
+        ast_expr* key = mapAccess->get_key_expr();
+        char buffer[256];
+        sprintf(buffer, "%s.setValue(", map->get_genname());
+        Body.push(buffer);
+        generate_expr(key);
+        Body.push(", ");
+        generate_expr(a->get_rhs());
+        Body.pushln(");");
+        return;
     } else {
         generate_lhs_field(a->get_lhs_field());
     }

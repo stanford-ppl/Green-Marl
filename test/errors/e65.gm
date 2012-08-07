@@ -1,0 +1,5 @@
+Procedure test_map_set_element(G:Graph)
+{
+	Map<Node, Int> map;
+	map[0] = 23; //type mismatch for key
+}

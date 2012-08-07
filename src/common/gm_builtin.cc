@@ -46,6 +46,10 @@ static int gm_get_type_from_string(const char* s) {
         return GMTYPE_VOID;
     else if (gm_is_same_string(s, "Bool"))
         return GMTYPE_BOOL;
+    else if (gm_is_same_string(s, "Map"))
+        return GMTYPE_MAP;
+    else if (gm_is_same_string(s, "Generic"))
+        return GMTYPE_GENERIC;
     else {
         assert(false);
         return 0;

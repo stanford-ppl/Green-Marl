@@ -237,6 +237,8 @@ public:
         return gm_need_paranthesis(optype, up_optype, is_right);
     }
 
+    virtual void generate_mapaccess(ast_expr_mapaccess* e);
+
     virtual void generate_lhs_id(ast_id* i) =0;
     virtual void generate_lhs_field(ast_field* i) =0;
     virtual void generate_sent_nop(ast_nop* n) =0;

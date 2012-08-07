@@ -1,0 +1,6 @@
+Procedure test_map_element_access(G:Graph)
+{
+	N_S index;
+	Map<Int, Long> map;
+	Long x = map[index]; //type mismatch
+}
