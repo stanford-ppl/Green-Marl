@@ -904,14 +904,15 @@ static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwin
         for (ii = l->begin(); ii != l->end(); ii++) {
             gm_rwinfo* e = *ii;
             gm_rwinfo* cp = e->copy();
-            if (cp->driver != NULL)
-            /*
-             printf("cp->driver = %s %p, iter_sym = %s %p\n",
-             cp->driver->getId()->get_genname(),
-             cp->driver,
-             iter_sym->getId()->get_genname(),
-             iter_sym);
-             */
+            if (cp->driver != NULL) {
+                /*
+                printf("cp->driver = %s %p, iter_sym = %s %p\n", 
+                        cp->driver->getId()->get_genname(),
+                        cp->driver,
+                        iter_sym->getId()->get_genname(),
+                        iter_sym);
+                */
+            }
             if (cp->driver == iter_sym) { // replace access from this iterator
                 cp->driver = NULL;
                 cp->access_range = range;
