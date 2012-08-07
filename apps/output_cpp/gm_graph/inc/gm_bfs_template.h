@@ -1,3 +1,5 @@
+#ifndef GM_BFS_TEMPLATE_H
+#define GM_BFS_TEMPLATE_H
 #include <omp.h>
 #include <string.h>
 #include <map>
@@ -6,8 +8,6 @@
 #include "gm_graph.h"
 #include "gm_atomic_wrapper.h"
 #include "gm_bitmap.h"
-#ifndef GM_BFS_TEMPLATE_H
-#define GM_BFS_TEMPLATE_H
 
 // todo: consideration for non small-world graph
 template<typename level_t, bool use_multithread, bool has_navigator, bool use_reverse_edge, bool save_child>
@@ -200,6 +200,7 @@ private:
                 break;
             case ST_R2Q:
                 next_state = ST_QUE;
+                break;
         }
 
         finish_level(state);
