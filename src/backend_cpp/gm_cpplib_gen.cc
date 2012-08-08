@@ -259,6 +259,71 @@ const char* gm_cpplib::get_function_name_norder(int methodId) {
     }
 }
 
+const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
+
+    switch (methodId) {
+        case GM_BLTIN_MAP_SIZE:
+            return "size";
+        case GM_BLTIN_MAP_CLEAR:
+            return "clear";
+        case GM_BLTIN_MAP_HAS_MAX_VALUE:
+        case GM_BLTIN_MAP_HAS_MIN_VALUE:
+        case GM_BLTIN_MAP_HAS_KEY:
+        case GM_BLTIN_MAP_GET_MAX_KEY:
+        case GM_BLTIN_MAP_GET_MIN_KEY:
+        case GM_BLTIN_MAP_GET_MAX_VALUE:
+        case GM_BLTIN_MAP_GET_MIN_VALUE: {
+            if(in_parallel)
+                // if it is in parallel we do not have to use the inherent
+                // parallelism of the map so this is not a bug!!!
+                return get_function_name_map_seq(methodId);
+            else
+                return get_function_name_map_par(methodId);
+        }
+        default:
+            assert(false);
+            return "ERROR";
+    }
+}
+
+const char* gm_cpplib::get_function_name_map_seq(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_MAP_HAS_MAX_VALUE:
+            return "hasMaxValue";
+        case GM_BLTIN_MAP_HAS_MIN_VALUE:
+            return "hasMinValue";
+        case GM_BLTIN_MAP_HAS_KEY:
+            return "hasKey";
+        case GM_BLTIN_MAP_GET_MAX_KEY:
+            return "getMaxKey";
+        case GM_BLTIN_MAP_GET_MIN_KEY:
+            return "getMinKey";
+        case GM_BLTIN_MAP_GET_MAX_VALUE:
+            return "getMaxValue";
+        case GM_BLTIN_MAP_GET_MIN_VALUE:
+            return "getMinValue";
+    }
+}
+
+const char* gm_cpplib::get_function_name_map_par(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_MAP_HAS_MAX_VALUE:
+            return "hasMaxValue_par";
+        case GM_BLTIN_MAP_HAS_MIN_VALUE:
+            return "hasMinValue_par";
+        case GM_BLTIN_MAP_HAS_KEY:
+            return "hasKey_par";
+        case GM_BLTIN_MAP_GET_MAX_KEY:
+            return "getMaxKey_par";
+        case GM_BLTIN_MAP_GET_MIN_KEY:
+            return "getMinKey_par";
+        case GM_BLTIN_MAP_GET_MAX_VALUE:
+            return "getMaxValue_par";
+        case GM_BLTIN_MAP_GET_MIN_VALUE:
+            return "getMinValue_par";
+    }
+}
+
 const char* gm_cpplib::get_function_name_graph(int methodId) {
     switch (methodId) {
         case GM_BLTIN_GRAPH_NUM_NODES:
@@ -420,6 +485,9 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             break;
         case GMTYPE_NSEQ:
             func_name = get_function_name_nseq(method_id);
+            break;
+        case GMTYPE_MAP:
+            func_name = get_function_name_map(method_id);
             break;
         default:
             assert(false);

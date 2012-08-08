@@ -255,7 +255,7 @@ void gm_code_generator::generate_sent(ast_sent* s) {
             break;
         case AST_ASSIGN: {
             ast_assign* a = (ast_assign*) s;
-            if (a->is_reduce_assign()) {
+            if (a->is_reduce_assign() && !a->is_target_map_entry()) {
                 generate_sent_reduce_assign(a);
             } else if (a->is_defer_assign()) {
                 generate_sent_defer_assign(a);

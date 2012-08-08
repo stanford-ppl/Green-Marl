@@ -2024,6 +2024,7 @@ public:
         delete src2;
         delete_symtabs();
     }
+
     static ast_expr_reduce*
     new_reduce_expr(int optype, ast_id* iter, ast_id* src, int iter_op, ast_expr* body, ast_expr* filter = NULL) {
         ast_expr_reduce *e = new ast_expr_reduce();
@@ -2057,40 +2058,51 @@ public:
     int get_iter_type() {
         return iter_type;
     }
+
     void set_iter_type(int i) {
         iter_type = i;
     }
+
     int get_reduce_type() {
         return reduce_type;
     }
+
     ast_id* get_source() {
         return src;
     }
+
     ast_id* get_iterator() {
         return iter;
     }
+
     ast_expr* get_filter() {
         return filter;
     }
+
     ast_expr* get_body() {
         return body;
     }
+
     ast_id* get_source2() {
         return src2;
     }
+
 
     void set_source2(ast_id* i) {
         src2 = i;
         if (i != NULL) i->set_parent(this);
     }
+
     void set_filter(ast_expr* e) {
         filter = e;
         if (e != NULL) e->set_parent(this);
     }
+
     void set_body(ast_expr* e) {
         body = e;
         if (e != NULL) e->set_parent(this);
     }
+
     virtual ast_expr* copy(bool cp_syminfo = false);
 
 private:
@@ -2099,6 +2111,7 @@ private:
         set_nodetype(AST_EXPR_RDC);
         create_symtabs();
     }
+
     ast_id* iter;
     ast_id* src;
     ast_id* src2;
@@ -2150,6 +2163,7 @@ public:
         A->reduce_type = reduce_type; // reduce or defer type
         return A;
     }
+
     static ast_assign* new_assign_field(ast_field* id, ast_expr* r, int assign_type = GMASSIGN_NORMAL, ast_id* itor = NULL, int reduce_type = GMREDUCE_NULL) {
         // assign to property
         ast_assign* A = new ast_assign();
@@ -2306,6 +2320,12 @@ private:
         this->rhs = rhs;
     }
 
+    ast_assign_mapentry(ast_mapaccess* lhs, ast_expr* rhs, int reduceType) : ast_assign(), lhs(lhs) {
+        this->rhs = rhs;
+        set_reduce_type(reduceType);
+        set_assign_type(GMASSIGN_REDUCE);
+    }
+
 public:
     ~ast_assign_mapentry() {
         delete lhs;
@@ -2339,6 +2359,11 @@ public:
 
     static ast_assign_mapentry* new_mapentry_assign(ast_mapaccess* lhs, ast_expr* rhs) {
         ast_assign_mapentry* newAssign = new ast_assign_mapentry(lhs, rhs);
+        return newAssign;
+    }
+
+    static ast_assign_mapentry* new_mapentry_reduce_assign(ast_mapaccess* lhs, ast_expr* rhs, int reduceType) {
+        ast_assign_mapentry* newAssign = new ast_assign_mapentry(lhs, rhs, reduceType);
         return newAssign;
     }
 

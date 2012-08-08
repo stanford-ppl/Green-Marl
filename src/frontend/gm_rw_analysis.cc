@@ -494,7 +494,7 @@ bool gm_rw_analysis::apply_assign(ast_assign *a) {
     gm_rwinfo_map& D = sets->reduce_set;
 
     // (1) LHS
-    bool is_reduce = (a->is_reduce_assign() || a->is_defer_assign());
+    bool is_reduce = (a->is_reduce_assign() || a->is_defer_assign()) && !a->is_map_entry_assign();
     gm_symtab_entry* bound_sym = NULL;
     int bound_op = GMREDUCE_NULL;
     if (is_reduce) {

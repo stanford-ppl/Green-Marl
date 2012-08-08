@@ -65,6 +65,9 @@ private:
     const char* get_function_name_nset(int methodId, bool in_parallel = false);
     const char* get_function_name_nseq(int methodId);
     const char* get_function_name_norder(int methodId);
+    const char* get_function_name_map(int methodId, bool in_parallel = false);
+    const char* get_function_name_map_seq(int methodId);
+    const char* get_function_name_map_par(int methodId);
     void add_arguments_and_thread(gm_code_writer& body, ast_expr_builtin* builtinExpr, bool addThreadId);
 
     static const char* get_primitive_type_string(int type_id) {
@@ -221,6 +224,7 @@ public:
     virtual void generate_sent_return(ast_return *r);
     virtual void generate_sent_call(ast_call* c);
     virtual void generate_sent_assign(ast_assign* a);
+    virtual const char* get_function_name_map_reduce_assign(int reduceType);
 
     virtual void generate_sent_block_enter(ast_sentblock *b);
     virtual void generate_sent_block_exit(ast_sentblock* b);

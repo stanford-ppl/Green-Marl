@@ -291,6 +291,7 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
 }
 
 void ast_assign_mapentry::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
+
     if (is_pre) {
         a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr());
     }

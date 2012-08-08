@@ -1,0 +1,19 @@
+Procedure test_map_builtin_function(G:Graph)
+{
+	Map<Int, Int> map;
+	
+	Int s = map.Size();
+	map.Clear();
+	
+	Int x;
+	x = map.GetMaxKey();
+	x = map.GetMinKey();
+	x = map.GetMaxValue();
+	x = map.GetMinValue();
+	
+	Bool b;
+	b = map.HasMaxValue(x);
+	b = map.HasMinValue(x);
+	b = map.HasKey(x);
+	
+}

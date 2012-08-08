@@ -260,6 +260,7 @@ ast_id* gm_get_default_graph(gm_symtab* symTab) {
             if (entryType->is_graph()) {
                 foundCount++;
                 if (foundCount > 1) {
+                    printf("FUU\n");
                     gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
                     return NULL;
                 }
@@ -368,9 +369,12 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V, int tar
         type->set_target_graph_id(node->getTypeInfo()->get_target_graph_id()->copy(true));
     } else if (type->is_map()) {
         ast_maptypedecl* mapType = (ast_maptypedecl*) type;
-        bool keyIsWellDefined = gm_check_graph_is_defined(mapType->get_key_type(), SYM_V);
-        bool valueIsWellDefined = gm_check_graph_is_defined(mapType->get_value_type(), SYM_V);
-        return keyIsWellDefined && valueIsWellDefined;
+        if(gm_has_target_graph_type(mapType->getKeyTypeSummary())) {
+            if(!gm_check_graph_is_defined(mapType->get_key_type(), SYM_V)) return false;
+        }
+        if(gm_has_target_graph_type(mapType->getValueTypeSummary())) {
+            if(!gm_check_graph_is_defined(mapType->get_value_type(), SYM_V)) return false;
+        }
     } else {
         printf("%s", gm_get_type_string(type->getTypeSummary()));
         assert(false);
