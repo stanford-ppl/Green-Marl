@@ -1,0 +1,9 @@
+Procedure test_map_builtin_function_multiple_graphs(G:Graph)
+{
+	Map<Int, Int> map;
+	
+	Foreach(x: G.Nodes) {
+		map[0] += 1; //should compile to an atomic add
+	}
+	
+}

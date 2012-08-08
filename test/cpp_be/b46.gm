@@ -1,4 +1,4 @@
-Procedure test_map_foreign_builtin_function_multiple_graphs(G:Graph)
+Procedure test_map_builtin_function_multiple_graphs(G:Graph)
 {
 	Graph G2;
 	Map<Node(G), Node(G2)> map;

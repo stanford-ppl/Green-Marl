@@ -224,6 +224,7 @@ public:
     virtual void generate_sent_return(ast_return *r);
     virtual void generate_sent_call(ast_call* c);
     virtual void generate_sent_assign(ast_assign* a);
+    virtual const char* get_function_name_map_reduce_assign(int reduceType);
 
     virtual void generate_sent_block_enter(ast_sentblock *b);
     virtual void generate_sent_block_exit(ast_sentblock* b);

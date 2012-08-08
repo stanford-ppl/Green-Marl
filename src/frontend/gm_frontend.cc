@@ -384,9 +384,10 @@ ast_node* GM_reduce_assign(ast_node* lhs, ast_node* rhs, ast_node* id, int reduc
 
     if (lhs->get_nodetype() == AST_ID) {
         return ast_assign::new_assign_scala((ast_id*) lhs, (ast_expr*) rhs, GMASSIGN_REDUCE, (ast_id*) id, reduce_type);
-
     } else if (lhs->get_nodetype() == AST_FIELD) {
         return ast_assign::new_assign_field((ast_field*) lhs, (ast_expr*) rhs, GMASSIGN_REDUCE, (ast_id*) id, reduce_type);
+    } else if (lhs->get_nodetype() == AST_MAPACCESS) {
+        return ast_assign_mapentry::new_mapentry_reduce_assign((ast_mapaccess*)lhs, (ast_expr*)rhs, reduce_type);
     } else {
         assert(false);
         return NULL;
