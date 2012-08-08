@@ -1,0 +1,24 @@
+Procedure communities(G: Graph, Comm : N_P<Node>) 
+{	
+   	Foreach(x: G.Nodes) 
+      x.Comm = x;
+
+   	Bool finished = True;
+   	Do {
+       	finished = True;
+       	// Propagate and change community
+       	Foreach(x: G.Nodes) {
+       		Map<Node, Int> T;
+       		
+       		Foreach(y: x.Nbrs) {
+       			Node source = y.Comm;
+       			T[source] += 1;
+       		}
+       		
+       		If (!T.HasMaxValue(x.Comm)) {
+       			x.Comm = T.GetMaxKey();
+       			finished = False;
+       		}
+       	}
+    } While (!finished);
+}
