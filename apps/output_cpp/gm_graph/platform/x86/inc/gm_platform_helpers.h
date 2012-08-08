@@ -39,4 +39,20 @@
 #define _gm_atomic_fetch_and_add_edge(ptr, val) __sync_fetch_and_add(ptr, val)
 #define _gm_atomic_fetch_and_add_node(ptr, val) __sync_fetch_and_add(ptr, val)
 
+#ifdef GM_NODE64
+#define htonnode(n) ((node_t)__builtin_bswap64((node_t)n))
+#define ntohnode(n) ((node_t)__builtin_bswap64((node_t)n))
+#else
+#define htonnode(n) ((node_t)__builtin_bswap32((node_t)n))
+#define ntohnode(n) ((node_t)__builtin_bswap32((node_t)n))
+#endif
+
+#ifdef GM_EDGE64
+#define htonedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
+#define ntohedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
+#else
+#define htonedge(n) ((edge_t)__builtin_bswap32((edge_t)n))
+#define ntohedge(n) ((edge_t)__builtin_bswap32((edge_t)n))
+#endif
+
 #endif
