@@ -8,8 +8,6 @@
 
 using namespace std;
 
-/*don't trust Eclipse - trust your compiler */
-
 //map-interface
 template<class Key, class Value>
 class gm_map
