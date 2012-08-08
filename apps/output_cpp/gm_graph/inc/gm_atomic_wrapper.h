@@ -1,17 +1,17 @@
-#ifndef GM_ATOMIC_WRAP_H
-#define GM_ATOMIC_WRAP_H
+#ifndef GM_ATOMIC_WRAP_H_
+#define GM_ATOMIC_WRAP_H_
 #include <stdlib.h>
 #include <stdint.h>
 #if defined(__x86_64__) || defined(__i386__)
-#include "../platform/x86/inc/gm_platform_helpers.h"
+  #include "../platform/x86/inc/gm_platform_helpers.h"
 #else
-#if defined(__sparc)
-#if defined (__ORACLE__)
-#include "../platform/sparc/inc/gm_platform_helpers.h"
-#endif
-#else
-#error "We need x86 (32bit or 64bit) or Sparc environment" 
-#endif
+  #if defined(__sparc)
+    #if defined (__ORACLE__)
+      #include "../platform/sparc/inc/gm_platform_helpers.h"
+    #endif
+  #else
+    #error "We need x86 (32bit or 64bit) or Sparc environment"
+  #endif
 #endif
 //---------------------------------------------------------
 // A thin layer of atomic operations
@@ -67,6 +67,9 @@ static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, dou
 #else
 
 #include "gm_lock.h"
+
+static void gm_spinlock_acquire_for_ptr(void* ptr);
+static void gm_spinlock_release_for_ptr(void* ptr);
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val) {
 #warning "atomic operation performance for 64bit data can be slow on 32-bit environment. (Consider using 64-bit environment.)"
