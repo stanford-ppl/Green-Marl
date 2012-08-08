@@ -18,12 +18,12 @@ typedef volatile int32_t gm_spinlock_t;
 
 // return true if quired
 static inline bool gm_spinlock_try_acquire(gm_spinlock_t* ptr) {
-    int ret = __sync_lock_test_and_set(ptr, 1);
+    int ret = _gm_atomic_swap_int32(ptr, 1);
     return (ret == 0); // 0 means success
 }
 
 static inline void gm_spinlock_acquire(gm_spinlock_t* ptr) {
-    while (__sync_lock_test_and_set(ptr, 1)) {
+    while (_gm_atomic_swap_int32(ptr, 1)) {
         while (*ptr == 1)            // spin on local cache, until the pointer is updated by remote cpu
         {
             // pause (let other hw-threads to proceed)
@@ -37,7 +37,7 @@ static inline void gm_spinlock_acquire(gm_spinlock_t* ptr) {
 }
 
 static inline void gm_spinlock_release(gm_spinlock_t* ptr) {
-    __sync_synchronize();
+    _gm_full_barrier();
     // half-barrier:
     // make sure that all the prior writes are now visible to everybody else in the world
 
