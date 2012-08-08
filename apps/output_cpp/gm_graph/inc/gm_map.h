@@ -94,6 +94,20 @@ public:
         return getMinValue();
     }
 
+    /**
+     * Adds the value of summand to the value mapped to key and returns the result.
+     * This operation is atomic. If no value if mapped to key, key is mapped to summand
+     * and summand is returned.
+     */
+    virtual Value changeValueAtomicAdd(const Key key, const Value summand) = 0;
+
+    /**
+     * This operation is equivalent to 'changeValueAtomicAdd(key, -1 * subtrahend)'
+     */
+    virtual Value changeValueAtomicSubtract(const Key key, const Value subtrahend) {
+        return changeValueAtomicAdd(key, -1 * subtrahend);
+    }
+
     virtual size_t size() = 0;
 
     virtual void clear() = 0;
@@ -127,7 +141,7 @@ private:
     typedef typename map<Key, Value>::iterator Iterator;
 
     template<class Function>
-    inline Value getValue_generic(Function compare) {
+    Value getValue_generic(Function compare) {
         assert(size() > 0);
         Iterator iter = data.begin();
         Value value = iter->second;
@@ -140,7 +154,7 @@ private:
     }
 
     template<class Function>
-    inline Key getKey_generic(Function compare) {
+    Key getKey_generic(Function compare) {
         assert(size() > 0);
         Iterator iter = data.begin();
         Key key = iter->first;
@@ -155,7 +169,7 @@ private:
     }
 
     template<class Function>
-    inline bool hasValue_generic(Function compare, const Key key) {
+    bool hasValue_generic(Function compare, const Key key) {
         if (size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         bool result = true;
@@ -217,6 +231,15 @@ public:
         return getValue_generic(&gm_map<Key, Value>::compare_smaller);
     }
 
+    Value changeValueAtomicAdd(const Key key, const Value summand) {
+        Value newValue = summand;
+        gm_spinlock_acquire(&lock);
+        if(hasValue(key)) newValue += data[key];
+        data[key] = summand;
+        gm_spinlock_release(&lock);
+        return newValue;
+    }
+
     size_t size() {
         return data.size();
     }
@@ -237,7 +260,7 @@ private:
     bool * const valid;
 
     template<class Function>
-    inline Value getValue_generic_seq(Function func, const Value initialValue) {
+    Value getValue_generic_seq(Function func, const Value initialValue) {
         assert(size() > 0);
 
         Value value = initialValue;
@@ -264,7 +287,7 @@ private:
     }
 
     template<class Function>
-    inline Value getValue_generic_par(Function func, const Value initialValue) {
+    Value getValue_generic_par(Function func, const Value initialValue) {
         assert(size() > 0);
 
         Value value = initialValue;
@@ -275,7 +298,7 @@ private:
     }
 
     template<class Function>
-    inline Key getKey_generic_par(Function compare, const Value initialValue) {
+    Key getKey_generic_par(Function compare, const Value initialValue) {
 
         assert(size() > 0);
 
@@ -292,7 +315,7 @@ private:
     }
 
     template<class Function>
-    inline Key getKey_generic_seq(Function compare, const Value initialValue) {
+    Key getKey_generic_seq(Function compare, const Value initialValue) {
 
         assert(size() > 0);
 
@@ -326,7 +349,7 @@ private:
     }
 
     template<class Function>
-    inline bool hasValue_generic_seq(Function compare, const Key key) {
+    bool hasValue_generic_seq(Function compare, const Key key) {
         if (size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         bool result = true;
@@ -337,7 +360,7 @@ private:
     }
 
     template<class Function>
-    inline bool hasValue_generic_par(Function compare, const Key key) {
+    bool hasValue_generic_par(Function compare, const Key key) {
         if (size() == 0 || !hasKey(key)) return false;
         Value value = data[key];
         for (int i = 0; i < size_; i++)
@@ -374,8 +397,8 @@ public:
     }
 
     void setValue_seq(const Key key, Value value) {
-            data[key] = value;
-            valid[key] = true;
+        data[key] = value;
+        valid[key] = true;
     }
 
     bool hasMaxValue(const Key key) {
@@ -426,6 +449,20 @@ public:
         return getValue_generic_par(&gm_map<Key, Value>::min, gm_get_max<Value>());
     }
 
+    Value changeValueAtomicAdd(const Key key, const Value summand) {
+
+        Value oldValue;
+        Value newValue;
+
+        do {
+            oldValue = data[key];
+            newValue = valid[key] ? (oldValue + summand) : summand;
+        } while (_gm_atomic_compare_and_swap(data + key, oldValue, newValue) == false);
+
+        valid[key] = true;
+        return newValue;
+    }
+
     size_t size() {
         size_t result = 0;
         for(int i = 0; i < size_; i++)
@@ -454,7 +491,7 @@ private:
     const unsigned bitmask;
 
     template<class FunctionCompare, class FunctionMinMax>
-    inline Value getValue_generic_par(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
+    Value getValue_generic_par(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
         assert(size() > 0);
 
         Value value = initialValue;
@@ -471,7 +508,7 @@ private:
     }
 
     template<class FunctionCompare, class FunctionMinMax>
-    inline Value getValue_generic_seq(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
+    Value getValue_generic_seq(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
         assert(size() > 0);
 
         Value value = initialValue;
@@ -498,7 +535,7 @@ private:
     }
 
     template<class Function>
-    inline Value getValueAtPosition_generic(int position, Function compare) {
+    Value getValueAtPosition_generic(int position, Function compare) {
         Iterator iter = innerMaps[position].begin();
         Value value = iter->second;
         for (iter++; iter != innerMaps[position].end(); iter++) {
@@ -510,7 +547,7 @@ private:
     }
 
     template<class Function>
-    inline Key getKey_generic_seq(Function compare, const Value initialValue) {
+    Key getKey_generic_seq(Function compare, const Value initialValue) {
         assert(size() > 0);
         Key key = 0;
         Value value = initialValue;
@@ -534,7 +571,7 @@ private:
     }
 
     template<class Function>
-    inline Key getKey_generic_par(Function compare, const Value initialValue) {
+    Key getKey_generic_par(Function compare, const Value initialValue) {
         assert(size() > 0);
         Key key = 0;
         Value value = initialValue;
@@ -553,7 +590,7 @@ private:
     }
 
     template<class Function>
-    inline Iterator getKeyAtPosition_generic(int position, Function compare) {
+    Iterator getKeyAtPosition_generic(int position, Function compare) {
         Iterator iter = innerMaps[position].begin();
         Iterator currentBest = iter;
         for (iter++; iter != innerMaps[position].end(); iter++) {
@@ -565,7 +602,7 @@ private:
     }
 
     template<class Function>
-    inline bool hasValue_generic_par(Function compare, const Key key) {
+    bool hasValue_generic_par(Function compare, const Key key) {
 
         Value reference = getValueFromPosition(key % innerSize, key);
 
@@ -580,7 +617,7 @@ private:
     }
 
     template<class Function>
-    inline bool hasValue_generic_seq(Function compare, const Key key) {
+    bool hasValue_generic_seq(Function compare, const Key key) {
         bool result = true;
         Value reference = getValueFromPosition(key & bitmask, key);
         #pragma omp parallel for
@@ -592,7 +629,7 @@ private:
     }
 
     template<class Function>
-    inline bool hasValueAtPosition_generic(int position, Function compare, const Value reference) {
+    bool hasValueAtPosition_generic(int position, Function compare, const Value reference) {
         map<Key, Value>& currentMap = innerMaps[position];
         if (currentMap.size() == 0) return false;
         for (Iterator iter = currentMap.begin(); iter != currentMap.end(); iter++) {
@@ -600,11 +637,11 @@ private:
         }
     }
 
-    inline bool positionHasKey(int position, const Key key) {
+    bool positionHasKey(int position, const Key key) {
         return innerMaps[position].find(key) != innerMaps[position].end();
     }
 
-    inline Value getValueFromPosition(int position, const Key key) {
+    Value getValueFromPosition(int position, const Key key) {
         Iterator iter = innerMaps[position].find(key);
         if(iter != innerMaps[position].end())
             return iter->second;
@@ -701,6 +738,16 @@ public:
 
     Value getMinValue_par() {
         return getValue_generic_par(&gm_map<Key, Value>::compare_smaller, &gm_map<Key, Value>::min, gm_get_max<Value>());
+    }
+
+    Value changeValueAtomicAdd(const Key key, const Value summand) {
+        int position = key & bitmask;
+        gm_spinlock_acquire(locks + position);
+        Value newValue = summand;
+        if(positionHasKey(position, key)) newValue += getValueFromPosition(position, key);
+        setValueAtPosition(position, key, newValue);
+        gm_spinlock_release(locks + position);
+        return newValue;
     }
 
     size_t size() {

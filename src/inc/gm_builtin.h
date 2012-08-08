@@ -168,16 +168,33 @@ public:
     int get_source_type_summary() {
         return src_type;
     }
+
     int get_result_type_summary() {
         return res_type;
     }
+
     int get_arg_type(int i) {
         assert(i<num_args);
         return arg_types[i];
     }
+
+    bool genericArgumentTypeIsKeyType(int position) {
+        assert(position == 0); //we only support maps yet
+        switch(method_id) {
+            case GM_BLTIN_MAP_HAS_MAX_VALUE:
+            case GM_BLTIN_MAP_HAS_MIN_VALUE:
+            case GM_BLTIN_MAP_HAS_KEY:
+                return true;
+            default:
+                assert(false); //if you called it with the wrong method_id, then your code must be wrong...
+                return false;
+        }
+    }
+
     int get_method_id() {
         return method_id;
     }
+
     const char* get_orgname() {
         return orgname;
     }
@@ -185,8 +202,23 @@ public:
     bool is_synonym_def() {
         return synonym;
     }
+
     gm_builtin_def* get_org_def() {
         return org_def;
+    }
+
+    bool genericTypeIsKeyType() {
+        switch(method_id) {
+            case GM_BLTIN_MAP_GET_MAX_KEY:
+            case GM_BLTIN_MAP_GET_MIN_KEY:
+                return true;
+            case GM_BLTIN_MAP_GET_MAX_VALUE:
+            case GM_BLTIN_MAP_GET_MIN_VALUE:
+                return false;
+            default:
+                assert(false); //if you called it with the wrong method_id, then your code must be wrong...
+                return false;
+        }
     }
 
     void add_info_int(const char* key, int v);
