@@ -457,7 +457,7 @@ public:
         do {
             oldValue = data[key];
             newValue = valid[key] ? (oldValue + summand) : summand;
-        } while (_gm_atomic_compare_and_swap(&(data + key), oldValue, newValue) == false);
+        } while (_gm_atomic_compare_and_swap(data + key, oldValue, newValue) == false);
 
         valid[key] = true;
         return newValue;
