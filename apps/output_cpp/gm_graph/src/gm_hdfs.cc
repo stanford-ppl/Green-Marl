@@ -4,31 +4,31 @@
 bool gm_graph_hdfs::load_binary(char* filename) {
     clear_graph();
     int32_t key;
-    int i, exists;
+    int i;
     hdfsFS fs;
     hdfsFile f;
 
-	fs = hdfsConnectNewInstance("default", 0);
-	if(!fs) {
+	fs = hdfsConnect(HDFS_NAMENODE, HDFS_PORT);
+	if(fs == NULL) {
 		fprintf(stderr, "Failed to connect to hdfs.\n");
 		goto error_return_noclose;
 	}
 
-	exists = hdfsExists(fs, filename);
-	if (exists) {
+	i = hdfsExists(fs, filename);
+	if (i != 0) {
 		fprintf(stderr, "Failed to validate existence of %s\n", filename);
 		goto error_return_noclose;
 	}
 
 	f = hdfsOpenFile(fs, filename, O_RDONLY, 0, 0, 0);
-	if (!f) {
+	if (f == NULL) {
 		fprintf(stderr, "Failed to open %s for reading.\n", filename);
 		goto error_return_noclose;
 	}
 
     // write it 4B wise?
 	i = hdfsRead(fs, f, &key, 4); //TODO should this be 4 or 1?
-    if ((i != 1) || (key != MAGIC_WORD)) {
+    if ((i != 4) || (key != MAGIC_WORD)) {
         fprintf(stderr, "wrong file format, KEY mismatch: %d, %x\n", i, key);
         goto error_return;
     }
@@ -51,12 +51,12 @@ bool gm_graph_hdfs::load_binary(char* filename) {
     node_t N;
     edge_t M;
 	i = hdfsRead(fs, f, &N, sizeof(node_t));
-    if (i != 1) {
+    if (i != sizeof(node_t)) {
         fprintf(stderr, "Error reading numNodes from file \n");
         goto error_return;
     }
 	i = hdfsRead(fs, f, &M, sizeof(edge_t));
-    if (i != 1) {
+    if (i != sizeof(edge_t)) {
         fprintf(stderr, "Error reading numEdges from file \n");
         goto error_return;
     }
@@ -66,7 +66,7 @@ bool gm_graph_hdfs::load_binary(char* filename) {
     for (node_t i = 0; i < N + 1; i++) {
         edge_t key;
         int k = hdfsRead(fs, f, &key, sizeof(edge_t));
-        if ((k != 1)) {
+        if ((k != sizeof(edge_t))) {
             fprintf(stderr, "Error reading node begin array\n");
             goto error_return;
         }
@@ -76,8 +76,7 @@ bool gm_graph_hdfs::load_binary(char* filename) {
     for (edge_t i = 0; i < M; i++) {
         node_t key;
     	int k = hdfsRead(fs, f, &key, sizeof(node_t));
-
-        if ((k != 1)) {
+        if ((k != sizeof(node_t))) {
             fprintf(stderr, "Error reading edge-end array\n");
             goto error_return;
         }
