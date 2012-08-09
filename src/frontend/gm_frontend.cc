@@ -91,6 +91,12 @@ ast_node* GM_expr_field_access(ast_node* field) {
     return n;
 }
 
+ast_node* GM_expr_map_access(ast_node* mapAccess, int line, int column) {
+    assert(mapAccess != NULL);
+    assert(mapAccess->get_nodetype() == AST_MAPACCESS);
+    return ast_expr_mapaccess::new_expr_mapaccess((ast_mapaccess*)mapAccess, line, column);
+}
+
 ast_node* GM_expr_ival(long lval, int l, int c) {
     ast_node* n = ast_expr::new_ival_expr(lval);
     n->set_line(l);
@@ -263,12 +269,25 @@ ast_node* GM_queuetype_ref(ast_node* collectionType, ast_node* id) {
     return ast_typedecl::new_queue((ast_id*) id, (ast_typedecl*) collectionType);
 }
 
+ast_node* GM_maptype_ref(ast_node* key, ast_node* value) {
+    assert(key != NULL);
+    assert(value != NULL);
+    assert(key->get_nodetype() == AST_TYPEDECL);
+    assert(value->get_nodetype() == AST_TYPEDECL);
+    ast_typedecl* keyType = (ast_typedecl*)key;
+    ast_typedecl* valueType = (ast_typedecl*)value;
+    assert(gm_can_be_key_type((GMTYPE_T)keyType->getTypeSummary()));
+    assert(gm_can_be_value_type((GMTYPE_T)valueType->getTypeSummary()));
+    return ast_maptypedecl::new_map(keyType, valueType);
+}
+
 ast_node* GM_nodeprop_ref(ast_node* typedecl, ast_node* id) {
     assert(typedecl->get_nodetype() == AST_TYPEDECL);
     if (id == NULL) return ast_typedecl::new_nodeprop((ast_typedecl*) typedecl, NULL);
     assert(id->get_nodetype() == AST_ID);
     return ast_typedecl::new_nodeprop((ast_typedecl*) typedecl, (ast_id*) id);
 }
+
 ast_node* GM_edgeprop_ref(ast_node* typedecl, ast_node* id) {
     assert(typedecl->get_nodetype() == AST_TYPEDECL);
     if (id == NULL) return ast_typedecl::new_edgeprop((ast_typedecl*) typedecl, NULL);
@@ -326,6 +345,14 @@ ast_node* GM_field(ast_node* id1, ast_node* id2, bool is_rarrow) {
     return ast_field::new_field((ast_id*) id1, (ast_id*) id2, is_rarrow);
 }
 
+ast_node* GM_map_access(ast_node* mapId, ast_node* keyExpr) {
+    assert(mapId != NULL);
+    assert(keyExpr != NULL);
+    assert(mapId->get_nodetype() == AST_ID);
+    assert(keyExpr->get_nodetype() == AST_EXPR);
+    return ast_mapaccess::new_mapaccess((ast_id*)mapId, (ast_expr*)keyExpr);
+}
+
 void GM_add_id_comma_list(ast_node* id) {
     assert(id->get_nodetype() == AST_ID);
     ast_idlist* idlist = FE.get_current_idlist();
@@ -343,9 +370,10 @@ ast_node* GM_normal_assign(ast_node* lhs, ast_node* rhs) {
 
     if (lhs->get_nodetype() == AST_ID) {
         return ast_assign::new_assign_scala((ast_id*) lhs, (ast_expr*) rhs, GMASSIGN_NORMAL, NULL, GMREDUCE_NULL);
-
     } else if (lhs->get_nodetype() == AST_FIELD) {
         return ast_assign::new_assign_field((ast_field*) lhs, (ast_expr*) rhs, GMASSIGN_NORMAL, NULL, GMREDUCE_NULL);
+    } else if(lhs->get_nodetype() == AST_MAPACCESS) {
+        return ast_assign_mapentry::new_mapentry_assign((ast_mapaccess*)lhs, (ast_expr*)rhs);
     }
     assert(false);
     return NULL;
@@ -356,9 +384,10 @@ ast_node* GM_reduce_assign(ast_node* lhs, ast_node* rhs, ast_node* id, int reduc
 
     if (lhs->get_nodetype() == AST_ID) {
         return ast_assign::new_assign_scala((ast_id*) lhs, (ast_expr*) rhs, GMASSIGN_REDUCE, (ast_id*) id, reduce_type);
-
     } else if (lhs->get_nodetype() == AST_FIELD) {
         return ast_assign::new_assign_field((ast_field*) lhs, (ast_expr*) rhs, GMASSIGN_REDUCE, (ast_id*) id, reduce_type);
+    } else if (lhs->get_nodetype() == AST_MAPACCESS) {
+        return ast_assign_mapentry::new_mapentry_reduce_assign((ast_mapaccess*)lhs, (ast_expr*)rhs, reduce_type);
     } else {
         assert(false);
         return NULL;

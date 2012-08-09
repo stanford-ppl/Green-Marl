@@ -1,8 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <omp.h>
 #include "gm_graph.h"
-#include "gm_helper_functions.h"
+#include <arpa/inet.h>
 
 gm_graph::gm_graph() {
     begin = NULL;
@@ -422,7 +419,7 @@ void gm_graph::clear_graph() {
 //   [EdgeBegin      : Size(EDGE_T)*numNodes]
 //   [DestNode       : Size(NODE_T)*numEdges]
 //--------------------------------------------
-#define MAGIC_WORD	0x03939999
+
 bool gm_graph::store_binary(char* filename) {
     if (!_frozen) freeze();
 
@@ -433,24 +430,28 @@ bool gm_graph::store_binary(char* filename) {
     }
 
     // write it 4B wise?
-    uint32_t key = MAGIC_WORD;
+    uint32_t key = htonl(MAGIC_WORD);
     fwrite(&key, 4, 1, f);
 
-    key = sizeof(node_t);
+    key = htonl(sizeof(node_t));
     fwrite(&key, 4, 1, f);  // node_t size (in 4B)
-    key = sizeof(edge_t);
+    key = htonl(sizeof(edge_t));
     fwrite(&key, 4, 1, f);  // edge_t size (in 4B)
 
-    fwrite(&(this->_numNodes), sizeof(node_t), 1, f);
+    node_t num_nodes = htonnode(this->_numNodes);
+    fwrite(&num_nodes, sizeof(node_t), 1, f);
 
-    fwrite(&(this->_numEdges), sizeof(edge_t), 1, f);
+    node_t num_edges = htonedge(this->_numEdges);
+    fwrite(&(num_edges), sizeof(edge_t), 1, f);
 
     for (node_t i = 0; i < _numNodes + 1; i++) {
-        fwrite(&(this->begin[i]), sizeof(edge_t), 1, f);
+        edge_t e = htonedge(this->begin[i]);
+        fwrite(&e, sizeof(edge_t), 1, f);
     }
 
     for (edge_t i = 0; i < _numEdges; i++) {
-        fwrite(&(this->node_idx[i]), sizeof(node_t), 1, f);
+        node_t n = htonnode(this->node_idx[i]);
+        fwrite(&n, sizeof(node_t), 1, f);
     }
 
     fclose(f);
@@ -470,18 +471,21 @@ bool gm_graph::load_binary(char* filename) {
 
     // write it 4B wise?
     i = fread(&key, 4, 1, f);
+    key = ntohl(key);
     if ((i != 1) || (key != MAGIC_WORD)) {
         fprintf(stderr, "wrong file format, KEY mismatch: %d, %x\n", i, key);
         goto error_return;
     }
 
     i = fread(&key, 4, 1, f); // index size (4B)
+    key = ntohl(key);
     if (key != sizeof(node_t)) {
         fprintf(stderr, "node_t size mismatch:%d (expect %ld)\n", key, sizeof(node_t));
         goto error_return;
     }
 
     i = fread(&key, 4, 1, f); // index size (4B)
+    key = ntohl(key);
     if (key != sizeof(edge_t)) {
         fprintf(stderr, "edge_t size mismatch:%d (expect %ld)\n", key, sizeof(edge_t));
         goto error_return;
@@ -493,11 +497,13 @@ bool gm_graph::load_binary(char* filename) {
     node_t N;
     edge_t M;
     i = fread(&N, sizeof(node_t), 1, f);
+    N = ntohnode(N);
     if (i != 1) {
         fprintf(stderr, "Error reading numNodes from file \n");
         goto error_return;
     }
     i = fread(&M, sizeof(edge_t), 1, f);
+    M = ntohedge(M);
     if (i != 1) {
         fprintf(stderr, "Error reading numEdges from file \n");
         goto error_return;
@@ -508,6 +514,7 @@ bool gm_graph::load_binary(char* filename) {
     for (node_t i = 0; i < N + 1; i++) {
         edge_t key;
         int k = fread(&key, sizeof(edge_t), 1, f);
+        key = ntohedge(key);
         if ((k != 1)) {
             fprintf(stderr, "Error reading node begin array\n");
             goto error_return;
@@ -518,6 +525,7 @@ bool gm_graph::load_binary(char* filename) {
     for (edge_t i = 0; i < M; i++) {
         node_t key;
         int k = fread(&key, sizeof(node_t), 1, f);
+        key = ntohnode(key);
         if ((k != 1)) {
             fprintf(stderr, "Error reading edge-end array\n");
             goto error_return;

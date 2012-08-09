@@ -39,7 +39,7 @@ public:
             condition_stack.push_back(s);
         } else if (s->get_nodetype() == AST_ASSIGN) {
             ast_assign* a = (ast_assign*) s;
-            if (!a->is_target_scalar()) {
+            if (!a->is_target_scalar() && !a->is_target_map_entry()) {
                 ast_field* f = a->get_lhs_field();
                 if (a->is_reduce_assign()) {  // this is read & write
                     property_is_read(f->get_second()->getSymInfo(), f->get_first()->getSymInfo(), true);

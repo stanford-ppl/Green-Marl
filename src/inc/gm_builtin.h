@@ -61,6 +61,16 @@ enum gm_method_id_t
     GM_BLTIN_SET_SUBSET,
     GM_BLTIN_SET_SIZE,
 
+    GM_BLTIN_MAP_SIZE,          // returns the number of mappings in the map
+    GM_BLTIN_MAP_HAS_MAX_VALUE, // checks if the key is mapped to the biggest value
+    GM_BLTIN_MAP_HAS_MIN_VALUE, // checks if the key is mapped to the smallest value
+    GM_BLTIN_MAP_HAS_KEY,       // checks if there is a mapping for the key in the map
+    GM_BLTIN_MAP_GET_MAX_KEY,   // returns the key that is mapped to the biggest value
+    GM_BLTIN_MAP_GET_MIN_KEY,   // returns the key that is mapped to the smallest value
+    GM_BLTIN_MAP_GET_MAX_VALUE, // returns the biggest value in the map
+    GM_BLTIN_MAP_GET_MIN_VALUE, // returns the smallest value in the map
+    GM_BLTIN_MAP_CLEAR,         // clears the whole map
+
     GM_BLTIN_END
 };
 
@@ -129,6 +139,18 @@ const gm_builtin_desc_t GM_builtins[] = {
         { "_:Log:Double:1:Double", GM_BLTIN_TOP_LOG, "" },  // returns log(d)  // base-e
         { "_:Exp:Double:1:Double", GM_BLTIN_TOP_EXP, "" },  // returns e^d
         { "_:Pow:Double:2:Double:Double", GM_BLTIN_TOP_POW, "" },  // returns a^b
+
+        // Map
+        { "Map:Size:Int:0",                 GM_BLTIN_MAP_SIZE,          "" },
+        { "Map:Clear:Void:0",               GM_BLTIN_MAP_CLEAR,         "" },
+        { "Map:HasKey:Bool:1:Generic",      GM_BLTIN_MAP_HAS_KEY,       "" },
+        { "Map:HasMaxValue:Bool:1:Generic", GM_BLTIN_MAP_HAS_MAX_VALUE, "" },
+        { "Map:HasMinValue:Bool:1:Generic", GM_BLTIN_MAP_HAS_MIN_VALUE, "" },
+        { "Map:GetMaxKey:Generic:0:",       GM_BLTIN_MAP_GET_MAX_KEY,   "" },
+        { "Map:GetMinKey:Generic:0:",       GM_BLTIN_MAP_GET_MIN_KEY,   "" },
+        { "Map:GetMaxValue:Generic:0:",     GM_BLTIN_MAP_GET_MAX_VALUE, "" },
+        { "Map:GetMinValue:Generic:0:",     GM_BLTIN_MAP_GET_MIN_VALUE, "" },
+
         };
 
 class gm_builtin_def
@@ -146,16 +168,33 @@ public:
     int get_source_type_summary() {
         return src_type;
     }
+
     int get_result_type_summary() {
         return res_type;
     }
+
     int get_arg_type(int i) {
         assert(i<num_args);
         return arg_types[i];
     }
+
+    bool genericArgumentTypeIsKeyType(int position) {
+        assert(position == 0); //we only support maps yet
+        switch(method_id) {
+            case GM_BLTIN_MAP_HAS_MAX_VALUE:
+            case GM_BLTIN_MAP_HAS_MIN_VALUE:
+            case GM_BLTIN_MAP_HAS_KEY:
+                return true;
+            default:
+                assert(false); //if you called it with the wrong method_id, then your code must be wrong...
+                return false;
+        }
+    }
+
     int get_method_id() {
         return method_id;
     }
+
     const char* get_orgname() {
         return orgname;
     }
@@ -163,8 +202,23 @@ public:
     bool is_synonym_def() {
         return synonym;
     }
+
     gm_builtin_def* get_org_def() {
         return org_def;
+    }
+
+    bool genericTypeIsKeyType() {
+        switch(method_id) {
+            case GM_BLTIN_MAP_GET_MAX_KEY:
+            case GM_BLTIN_MAP_GET_MIN_KEY:
+                return true;
+            case GM_BLTIN_MAP_GET_MAX_VALUE:
+            case GM_BLTIN_MAP_GET_MIN_VALUE:
+                return false;
+            default:
+                assert(false); //if you called it with the wrong method_id, then your code must be wrong...
+                return false;
+        }
     }
 
     void add_info_int(const char* key, int v);

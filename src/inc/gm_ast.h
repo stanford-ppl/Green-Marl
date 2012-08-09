@@ -17,6 +17,7 @@ enum AST_NODE_TYPE
 {
     AST_ID,       // 
     AST_FIELD,    // A.B
+    AST_MAPACCESS,    // A[B]
     AST_IDLIST,   // A, B, C, 
     AST_TYPEDECL, // INT
     AST_ARGDECL,  // a,b : B
@@ -25,6 +26,7 @@ enum AST_NODE_TYPE
     AST_EXPR_RDC,       // c + 3
     AST_EXPR_BUILTIN,   // c + 3
     AST_EXPR_FOREIGN,  // Foreign Expression
+    AST_EXPR_MAPACCESS,
     AST_SENT,     // 
     AST_SENTBLOCK, // { ... }
     AST_ASSIGN,   // C =D
@@ -478,6 +480,7 @@ public:
         delete first;
         delete second;
     }
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
 
@@ -485,6 +488,7 @@ private:
     ast_field() :
             ast_node(AST_FIELD), first(NULL), second(NULL), rarrow(false) {
     }
+
     ast_field(ast_id* l, ast_id* f) :
             ast_node(AST_FIELD), first(l), second(f), rarrow(false) {
         first->set_parent(this);
@@ -492,6 +496,7 @@ private:
         this->line = first->get_line();
         this->col = first->get_col();
     }
+
 public:
     static ast_field* new_field(ast_id* l, ast_id* f, bool is_r_arrow = false) {
         ast_field* af = new ast_field(l, f);
@@ -568,7 +573,7 @@ private:
 
 class ast_typedecl: public ast_node
 {  // property or type
-private:
+protected:
     ast_typedecl() :
             ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), target_collection(NULL), target_nbr(NULL), target_nbr2(NULL), _well_defined(false), type_id(
                     0) {
@@ -576,7 +581,7 @@ private:
 
 public:
     // give a deep copy
-    ast_typedecl* copy() {
+    virtual ast_typedecl* copy() {
         ast_typedecl *p = new ast_typedecl();
         p->type_id = this->type_id;
         p->target_type = (this->target_type == NULL) ? NULL : this->target_type->copy();
@@ -734,7 +739,7 @@ public:
         return t;
     }
 
-    int get_typeid() {
+    virtual int get_typeid() {
         return type_id;
     }
 
@@ -875,6 +880,10 @@ public:
         return gm_is_sequential_collection_type(type_id);
     }
 
+    virtual bool is_map() {
+        return false;
+    }
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
 
@@ -921,7 +930,7 @@ public:
         return target_type;
     }
 
-    int getTypeSummary() {  // same as get type id
+    virtual int getTypeSummary() {  // same as get type id
         return type_id;
     }
 
@@ -958,13 +967,96 @@ public:
 
 private:
     // defined in gm_frontend_api.h
-    int type_id;
     ast_typedecl* target_type;  // for property
     ast_id* target_graph;       // for property, node, edge, set
     ast_id* target_collection;  // for set-iterator set
     ast_id* target_nbr;         // for nbr-iterator
     ast_id* target_nbr2;        // for common neighbor iterator
+
+protected:
+    int type_id;
     bool _well_defined;
+};
+
+class ast_maptypedecl: public ast_typedecl
+{
+
+private:
+    ast_typedecl* keyType;
+    ast_typedecl* valueType;
+
+    ast_maptypedecl() :
+            ast_typedecl(), keyType(NULL), valueType(NULL) {
+    }
+
+public:
+
+    ~ast_maptypedecl() {
+        delete keyType;
+        delete valueType;
+    }
+
+    static ast_maptypedecl* new_map(ast_typedecl* keyType, ast_typedecl* valueType) {
+        ast_maptypedecl* newMap = new ast_maptypedecl();
+        newMap->type_id = GMTYPE_MAP;
+        newMap->keyType = keyType;
+        newMap->valueType = valueType;
+        keyType->set_parent(newMap);
+        valueType->set_parent(newMap);
+        return newMap;
+    }
+
+    ast_typedecl* copy() {
+        ast_maptypedecl* clone = new ast_maptypedecl();
+        clone->type_id = type_id;
+        clone->keyType = (keyType == NULL) ? NULL : keyType->copy();
+        clone->valueType = (valueType == NULL) ? NULL : valueType->copy();
+        clone->line = line;
+        clone->col = col;
+        clone->_well_defined = this->_well_defined;
+        return clone;
+    }
+
+    void set_key_type(ast_typedecl* newKeyType) {
+        assert(gm_can_be_key_type((GMTYPE_T)newKeyType->getTypeSummary()));
+        keyType = newKeyType;
+    }
+
+    ast_typedecl* get_key_type() {
+        return keyType;
+    }
+
+    ast_typedecl* get_value_type() {
+        return valueType;
+    }
+
+    void set_value_type(ast_typedecl* newValueType) {
+        assert(gm_can_be_key_type((GMTYPE_T)newValueType->getTypeSummary()));
+        valueType = newValueType;
+    }
+
+    bool is_map() {
+        return true;
+    }
+
+    int get_typeid() {
+        return (int) GMTYPE_MAP;
+    }
+
+    int getTypeSummary() {
+        return get_typeid();
+    }
+
+    int getKeyTypeSummary() {
+        assert(keyType != NULL);
+        return keyType->getTypeSummary();
+    }
+
+    int getValueTypeSummary() {
+        assert(valueType != NULL);
+        return valueType->getTypeSummary();
+    }
+
 };
 
 //==========================================================================
@@ -1209,6 +1301,7 @@ enum GMEXPR_CLASS
     GMEXPR_BUILTIN_FIELD, //builtin ops on property entries
     GMEXPR_TER,      // ternary operation
     GMEXPR_FOREIGN,
+    GMEXPR_MAPACCESS,
 // foreign expression
 };
 
@@ -1379,7 +1472,6 @@ protected:
                     GMTYPE_UNKNOWN), bound_graph_sym(NULL) {
     }
 
-protected:
     GMEXPR_CLASS expr_class;  // GMEXPR_...
     ast_expr* left;
     ast_expr* right;
@@ -1402,47 +1494,65 @@ public:
     bool is_biop() {
         return (expr_class == GMEXPR_BIOP) || (expr_class == GMEXPR_LBIOP);
     }
+
     bool is_uop() {
         return (expr_class == GMEXPR_UOP) || (expr_class == GMEXPR_LUOP);
     }
+
     bool is_comp() {
         return (expr_class == GMEXPR_COMP);
     }
+
     bool is_id() {
         return expr_class == GMEXPR_ID;
     }
+
     bool is_nil() {
         return expr_class == GMEXPR_NIL;
     }
+
     bool is_field() {
         return expr_class == GMEXPR_FIELD;
     }
+
     bool is_int_literal() {
         return expr_class == GMEXPR_IVAL;
     }
+
     bool is_float_literal() {
         return expr_class == GMEXPR_FVAL;
     }
+
     bool is_boolean_literal() {
         return expr_class == GMEXPR_BVAL;
     }
+
     bool is_inf() {
         return expr_class == GMEXPR_INF;
     }
+
     bool is_literal() {
         return is_int_literal() || is_float_literal() || is_boolean_literal() || is_inf();
     }
+
     bool is_reduction() {
         return expr_class == GMEXPR_REDUCE;
     }
+
     bool is_builtin() {
         return expr_class == GMEXPR_BUILTIN || expr_class == GMEXPR_BUILTIN_FIELD;
     }
+
     bool is_terop() {
         return expr_class == GMEXPR_TER;
     }
+
     bool is_foreign() {
         return expr_class == GMEXPR_FOREIGN;
+    }
+
+    virtual bool is_mapaccess() {
+        return false;
     }
 
     //-----------------------------------------------
@@ -1451,6 +1561,7 @@ public:
     int get_type_summary() {
         return type_of_expression;
     }
+
     void set_type_summary(int t) {
         type_of_expression = t;
     } // set by type checker
@@ -1461,6 +1572,7 @@ public:
         else
             return bound_graph_sym;
     }
+
     void set_bound_graph(gm_symtab_entry*e) {
         bound_graph_sym = e;
     }
@@ -1480,7 +1592,8 @@ public:
     bool is_plus_inf() {
         return is_inf() && plus_inf;
     } // true o
-    ast_id* get_id() {
+
+    virtual ast_id* get_id() {
         return id1;
     }
 
@@ -1488,11 +1601,11 @@ public:
         return field;
     }
 
-    GMEXPR_CLASS get_opclass() {
+    virtual GMEXPR_CLASS get_opclass() {
         return expr_class;
     }
 
-    int get_optype() {
+    virtual int get_optype() {
         return op_type;
     }
 
@@ -1581,6 +1694,131 @@ public:
 
 protected:
     gm_symtab_entry* bound_graph_sym; // used only during typecheck
+};
+
+class ast_mapaccess: public ast_node
+{
+private:
+    ast_id* mapId;
+    ast_expr* keyExpr;
+
+    gm_symtab_entry* keyGraph;
+    gm_symtab_entry* valueGraph;
+
+    ast_mapaccess() :
+            ast_node(AST_MAPACCESS), mapId(NULL), keyExpr(NULL), keyGraph(NULL), valueGraph(NULL) {
+    }
+
+    ast_mapaccess(ast_id* map, ast_expr* key) :
+            ast_node(AST_MAPACCESS), mapId(map), keyExpr(key), keyGraph(NULL), valueGraph(NULL) {
+    }
+
+public:
+    ~ast_mapaccess() {
+        delete mapId;
+        delete keyExpr;
+    }
+
+    virtual void dump_tree(int i) {
+    } //TODO
+    virtual void reproduce(int i) {
+    } //TODO
+
+    ast_mapaccess* copy(bool cp_sym = false) {
+        ast_mapaccess* clone = new ast_mapaccess();
+        clone->mapId = mapId->copy(cp_sym);
+        clone->keyExpr = keyExpr->copy(cp_sym);
+        return clone;
+    }
+
+    ast_id* get_map_id() {
+        assert(mapId != NULL);
+        return mapId;
+    }
+
+    ast_expr* get_key_expr() {
+        assert(keyExpr != NULL);
+        return keyExpr;
+    }
+
+    gm_symtab_entry* get_bound_graph_for_key() {
+        return keyGraph;
+    }
+
+    void set_bound_graph_for_key(gm_symtab_entry* graphEntry) {
+        keyGraph = graphEntry;
+    }
+
+    gm_symtab_entry* get_bound_graph_for_value() {
+        return valueGraph;
+    }
+
+    void set_bound_graph_for_value(gm_symtab_entry* graphEntry) {
+        valueGraph = graphEntry;
+    }
+
+    static ast_mapaccess* new_mapaccess(ast_id* map, ast_expr* key) {
+        ast_mapaccess* newMapAccess = new ast_mapaccess(map, key);
+        assert(newMapAccess->keyExpr != NULL);
+        return newMapAccess;
+    }
+
+};
+
+class ast_expr_mapaccess: public ast_expr
+{
+private:
+    ast_mapaccess* mapAccess;
+
+    ast_expr_mapaccess() :
+            ast_expr(), mapAccess(NULL) {
+        set_nodetype(AST_EXPR_MAPACCESS);
+    }
+
+    ast_expr_mapaccess(ast_mapaccess* mapAccess, int line, int column) :
+            ast_expr(), mapAccess(mapAccess) {
+        set_nodetype(AST_EXPR_MAPACCESS);
+        set_line(line);
+        set_col(column);
+    }
+
+public:
+    ~ast_expr_mapaccess() {
+        delete mapAccess;
+    }
+
+    ast_expr_mapaccess* copy(bool cp_sym = false) {
+        ast_expr_mapaccess* clone = new ast_expr_mapaccess();
+        clone->mapAccess = mapAccess->copy(cp_sym);
+        return clone;
+    }
+
+    bool is_mapaccess() {
+        return true;
+    }
+
+    int get_optype() {
+        return (int) GMEXPR_MAPACCESS;
+    }
+
+    GMEXPR_CLASS get_opclass() {
+        return GMEXPR_MAPACCESS;
+    }
+
+    ast_id* get_id() {
+        return mapAccess->get_map_id();
+    }
+
+    ast_mapaccess* get_mapaccess() {
+        assert(mapAccess != NULL);
+        return mapAccess;
+    }
+
+    static ast_expr_mapaccess* new_expr_mapaccess(ast_mapaccess* mapAccess, int line, int column) {
+        ast_expr_mapaccess* newMapAccess = new ast_expr_mapaccess(mapAccess, line, column);
+        return newMapAccess;
+    }
+
 };
 
 class ast_expr_foreign: public ast_expr
@@ -1786,6 +2024,7 @@ public:
         delete src2;
         delete_symtabs();
     }
+
     static ast_expr_reduce*
     new_reduce_expr(int optype, ast_id* iter, ast_id* src, int iter_op, ast_expr* body, ast_expr* filter = NULL) {
         ast_expr_reduce *e = new ast_expr_reduce();
@@ -1819,40 +2058,51 @@ public:
     int get_iter_type() {
         return iter_type;
     }
+
     void set_iter_type(int i) {
         iter_type = i;
     }
+
     int get_reduce_type() {
         return reduce_type;
     }
+
     ast_id* get_source() {
         return src;
     }
+
     ast_id* get_iterator() {
         return iter;
     }
+
     ast_expr* get_filter() {
         return filter;
     }
+
     ast_expr* get_body() {
         return body;
     }
+
     ast_id* get_source2() {
         return src2;
     }
+
 
     void set_source2(ast_id* i) {
         src2 = i;
         if (i != NULL) i->set_parent(this);
     }
+
     void set_filter(ast_expr* e) {
         filter = e;
         if (e != NULL) e->set_parent(this);
     }
+
     void set_body(ast_expr* e) {
         body = e;
         if (e != NULL) e->set_parent(this);
     }
+
     virtual ast_expr* copy(bool cp_syminfo = false);
 
 private:
@@ -1861,6 +2111,7 @@ private:
         set_nodetype(AST_EXPR_RDC);
         create_symtabs();
     }
+
     ast_id* iter;
     ast_id* src;
     ast_id* src2;
@@ -1877,10 +2128,13 @@ enum gm_assignment_t
 {
     GMASSIGN_NORMAL, GMASSIGN_REDUCE, GMASSIGN_DEFER, GMASSIGN_INVALID
 };
+
 enum gm_assignment_location_t
 {
-    GMASSIGN_LHS_SCALA, GMASSIGN_LHS_FIELD, GMASSIGN_LHS_END
+    GMASSIGN_LHS_SCALA, GMASSIGN_LHS_FIELD, GMASSIGN_LHS_MAP, GMASSIGN_LHS_END
 };
+
+class ast_assign_mapentry;
 
 class ast_assign: public ast_sent
 {
@@ -1909,6 +2163,7 @@ public:
         A->reduce_type = reduce_type; // reduce or defer type
         return A;
     }
+
     static ast_assign* new_assign_field(ast_field* id, ast_expr* r, int assign_type = GMASSIGN_NORMAL, ast_id* itor = NULL, int reduce_type = GMREDUCE_NULL) {
         // assign to property
         ast_assign* A = new ast_assign();
@@ -1933,15 +2188,19 @@ public:
     int get_assign_type() {
         return assign_type;
     }
-    int get_lhs_type() {
+
+    virtual int get_lhs_type() {
         return lhs_type;
     }
+
     int get_reduce_type() {
         return reduce_type;
     }
+
     void set_assign_type(int a) {
         assign_type = a;
     }
+
     void set_reduce_type(int a) {
         reduce_type = a;
     }
@@ -1949,28 +2208,40 @@ public:
     ast_id* get_lhs_scala() {
         return lhs_scala;
     }
+
     ast_field* get_lhs_field() {
         return lhs_field;
     }
+
     ast_expr* get_rhs() {
         return rhs;
     }
+
     ast_id* get_bound() {
         return bound;
     }
+
     void set_bound(ast_id* i) {
         bound = i;
         if (bound != NULL) i->set_parent(this);
     }
+
     bool is_reduce_assign() {
         return assign_type == GMASSIGN_REDUCE;
     }
+
     bool is_defer_assign() {
         return assign_type == GMASSIGN_DEFER;
     }
-    bool is_target_scalar() {
+
+    virtual bool is_target_scalar() {
         return get_lhs_type() == GMASSIGN_LHS_SCALA;
     }
+
+    virtual bool is_target_map_entry() {
+        return false;
+    }
+
     void set_rhs(ast_expr* r) {
         rhs = r;
         rhs->set_parent(this);
@@ -2008,23 +2279,93 @@ public:
         if (new_id != NULL) lhs_type = GMASSIGN_LHS_FIELD;
     }
 
-private:
+    virtual bool is_map_entry_assign() {
+        return false;
+    }
+
+    virtual ast_assign_mapentry* to_assign_mapentry() {
+        assert(false);
+        return NULL;
+    }
+
+protected:
     ast_assign() :
             ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false), lhs_type(0), assign_type(0), reduce_type(0) {
     }
 
+private:
     int assign_type; // normal, deferred, reduce
     int lhs_type; // scalar, field
     int reduce_type; // add, mult, min, max
     ast_id* lhs_scala;
     ast_field* lhs_field;
-    ast_expr* rhs;
+
     ast_id* bound;  // bounding iterator
 
     bool arg_minmax;
 
     std::list<ast_node*> l_list;
     std::list<ast_expr*> r_list;
+
+protected:
+    ast_expr* rhs;
+
+};
+
+class ast_assign_mapentry : public ast_assign {
+private:
+    ast_mapaccess* lhs;
+
+    ast_assign_mapentry(ast_mapaccess* lhs, ast_expr* rhs) : ast_assign(), lhs(lhs) {
+        this->rhs = rhs;
+    }
+
+    ast_assign_mapentry(ast_mapaccess* lhs, ast_expr* rhs, int reduceType) : ast_assign(), lhs(lhs) {
+        this->rhs = rhs;
+        set_reduce_type(reduceType);
+        set_assign_type(GMASSIGN_REDUCE);
+    }
+
+public:
+    ~ast_assign_mapentry() {
+        delete lhs;
+    }
+
+    void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
+
+    bool is_map_entry_assign() {
+        return true;
+    }
+
+    bool is_target_map_entry() {
+        return true;
+    }
+
+    bool is_target_scalar() {
+        return false;
+    }
+
+    virtual int get_lhs_type() {
+        return GMASSIGN_LHS_MAP;
+    }
+
+    ast_assign_mapentry* to_assign_mapentry() {
+        return this;
+    }
+
+    ast_mapaccess* get_lhs_mapaccess() {
+        return lhs;
+    }
+
+    static ast_assign_mapentry* new_mapentry_assign(ast_mapaccess* lhs, ast_expr* rhs) {
+        ast_assign_mapentry* newAssign = new ast_assign_mapentry(lhs, rhs);
+        return newAssign;
+    }
+
+    static ast_assign_mapentry* new_mapentry_reduce_assign(ast_mapaccess* lhs, ast_expr* rhs, int reduceType) {
+        ast_assign_mapentry* newAssign = new ast_assign_mapentry(lhs, rhs, reduceType);
+        return newAssign;
+    }
 
 };
 

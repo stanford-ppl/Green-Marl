@@ -1,0 +1,22 @@
+Procedure test_map_builtin_function_multiple_graphs(G:Graph)
+{
+	Graph G2;
+	Map<Node(G), Node(G2)> map;
+	
+	Int s = map.Size();
+	map.Clear();
+	
+	Node(G) n;
+	n = map.GetMaxKey();
+	n = map.GetMinKey();
+	
+	Bool b;
+	b = map.HasMaxValue(n);
+	b = map.HasMinValue(n);
+	b = map.HasKey(n);
+	
+	Node(G2) m;
+	m = map.GetMaxValue();
+	m = map.GetMinValue();
+	
+}

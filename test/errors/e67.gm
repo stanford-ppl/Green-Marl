@@ -1,0 +1,18 @@
+Procedure test_map_builtin_functions_multiple_graphs(G:Graph)
+{
+	Graph G2;
+	Map<Node(G), Node(G2)> map;
+	
+	// everything below is a type conflict due to conflicting graph-bindings
+	Node(G) x;
+	Node(G2) y;
+	y = map.GetMaxKey();
+	y = map.GetMinKey();
+	x = map.GetMaxValue();
+	x = map.GetMinValue();
+	
+	Bool b;
+	b = map.HasMaxValue(y);
+	b = map.HasMinValue(y);
+	b = map.HasKey(y);
+}

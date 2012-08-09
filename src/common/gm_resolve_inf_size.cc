@@ -28,6 +28,7 @@ bool gm_resolve_size_of_inf_expr(ast_expr* e, int dest_type) {
         case GMEXPR_BVAL:
         case GMEXPR_INF:
         case GMEXPR_NIL:
+        case GMEXPR_MAPACCESS:
             break;
 
         case GMEXPR_UOP:

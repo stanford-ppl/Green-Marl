@@ -66,6 +66,8 @@ const char* gm_cpplib::get_type_string(int type) {
         }
     } else if (gm_is_collection_of_collection_type(type)) {
         return QUEUE_T;
+    } else if (gm_is_map_type(type)) {
+        return MAP_T;
     } else {
         printf("type = %d %s\n", type, gm_get_type_string(type));
         assert(false);
@@ -127,6 +129,53 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     Body->pushln(");");
 
     return false;
+}
+
+
+void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
+
+    const int SMALL = 0;
+    const int MEDIUM = 1;
+    const int LARGE = 2;
+
+    int mapType = MEDIUM; //TODO: implement compiler optimization to figure out what is best here
+    int keyType = map->getKeyTypeSummary();
+    int valueType = map->getValueTypeSummary();
+
+    if (mapType == MEDIUM)
+        Body->push("gm_map_medium");
+    else
+        assert(false);
+
+    Body->push("<");
+    Body->push(getTypeString(keyType));
+    Body->push(", ");
+    Body->push(getTypeString(valueType));
+    Body->push(", ");
+
+    if (gm_is_prim_type(valueType))
+        Body->push("0");
+    else if (gm_is_node_type(valueType))
+        Body->push("gm_graph::NIL_NODE");
+    else if (gm_is_edge_type(valueType))
+            Body->push("gm_graph::NIL_EDGE");
+    else
+        assert(false);
+    //we only support primitives, nodes and edges in maps (yet)
+
+    Body->push("> ");
+    Body->push(mapId->get_genname());
+
+    switch (mapType) {
+        case MEDIUM:
+            Body->pushln("(gm_rt_get_num_threads());");
+            break;
+        case SMALL:
+        case LARGE:
+        default:
+            assert(false);
+            break;
+    }
 }
 
 void gm_cpplib::generate_sent_nop(ast_nop *f) {
@@ -207,6 +256,71 @@ const char* gm_cpplib::get_function_name_norder(int methodId) {
         default:
             assert(false);
             return "ERROR";
+    }
+}
+
+const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
+
+    switch (methodId) {
+        case GM_BLTIN_MAP_SIZE:
+            return "size";
+        case GM_BLTIN_MAP_CLEAR:
+            return "clear";
+        case GM_BLTIN_MAP_HAS_MAX_VALUE:
+        case GM_BLTIN_MAP_HAS_MIN_VALUE:
+        case GM_BLTIN_MAP_HAS_KEY:
+        case GM_BLTIN_MAP_GET_MAX_KEY:
+        case GM_BLTIN_MAP_GET_MIN_KEY:
+        case GM_BLTIN_MAP_GET_MAX_VALUE:
+        case GM_BLTIN_MAP_GET_MIN_VALUE: {
+            if(in_parallel)
+                // if it is in parallel we do not have to use the inherent
+                // parallelism of the map so this is not a bug!!!
+                return get_function_name_map_seq(methodId);
+            else
+                return get_function_name_map_par(methodId);
+        }
+        default:
+            assert(false);
+            return "ERROR";
+    }
+}
+
+const char* gm_cpplib::get_function_name_map_seq(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_MAP_HAS_MAX_VALUE:
+            return "hasMaxValue";
+        case GM_BLTIN_MAP_HAS_MIN_VALUE:
+            return "hasMinValue";
+        case GM_BLTIN_MAP_HAS_KEY:
+            return "hasKey";
+        case GM_BLTIN_MAP_GET_MAX_KEY:
+            return "getMaxKey";
+        case GM_BLTIN_MAP_GET_MIN_KEY:
+            return "getMinKey";
+        case GM_BLTIN_MAP_GET_MAX_VALUE:
+            return "getMaxValue";
+        case GM_BLTIN_MAP_GET_MIN_VALUE:
+            return "getMinValue";
+    }
+}
+
+const char* gm_cpplib::get_function_name_map_par(int methodId) {
+    switch (methodId) {
+        case GM_BLTIN_MAP_HAS_MAX_VALUE:
+            return "hasMaxValue_par";
+        case GM_BLTIN_MAP_HAS_MIN_VALUE:
+            return "hasMinValue_par";
+        case GM_BLTIN_MAP_HAS_KEY:
+            return "hasKey_par";
+        case GM_BLTIN_MAP_GET_MAX_KEY:
+            return "getMaxKey_par";
+        case GM_BLTIN_MAP_GET_MIN_KEY:
+            return "getMinKey_par";
+        case GM_BLTIN_MAP_GET_MAX_VALUE:
+            return "getMaxValue_par";
+        case GM_BLTIN_MAP_GET_MIN_VALUE:
+            return "getMinValue_par";
     }
 }
 
@@ -371,6 +485,9 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
             break;
         case GMTYPE_NSEQ:
             func_name = get_function_name_nseq(method_id);
+            break;
+        case GMTYPE_MAP:
+            func_name = get_function_name_map(method_id);
             break;
         default:
             assert(false);

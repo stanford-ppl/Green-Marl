@@ -107,7 +107,6 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
         case GM_ERROR_INCONSISTENT_ARGMAX:
             printf("LHS list of argmiax assignment is not consistent; They should be all scalar or have same driver\n");
             break;
-
         case GM_ERROR_NESTED_BFS:
             printf("Currently, nested bfs/dfs is not supported\n");
             break;
@@ -146,6 +145,9 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
             break;
         case GM_ERROR_COMPARE_MISMATCH:
             printf("Typemismatch in Comparison. LHS:%s, RHS:%s \n", str1, str2);
+            break;
+        case GM_ERROR_KEY_MISSMATCH:
+            printf("Type mismatch for map-key. Expected %s, but was %s\n", str1, str2);
             break;
         case GM_ERROR_NEED_BOOLEAN:
             printf("Need boolean expression.\n");

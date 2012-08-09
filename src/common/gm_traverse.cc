@@ -290,8 +290,26 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
     }
 }
 
-void ast_assign::traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
+void ast_assign_mapentry::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
+
+    if (is_pre) {
+        a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr());
+    }
+
+    get_rhs()->traverse(a, is_post, is_pre);
+
+    if (is_post) {
+            a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr());
+    }
+}
+
+void ast_assign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
     bool for_id = a->is_for_id();
+
+    if (is_map_entry_assign()) {
+        printf("traversexxx\n");
+        a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr());
+    }
 
     if (is_pre) {
         if (for_id) {
@@ -824,6 +842,13 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre) {
                         a->apply_rhs(get_field());
                 }
             }
+            break;
+        case GMEXPR_MAPACCESS: {
+            ast_mapaccess* mapAccess = ((ast_expr_mapaccess*) this)->get_mapaccess();
+            a->set_for_rhs(true);
+            mapAccess->get_key_expr()->traverse(a, is_post, is_pre);
+            a->set_for_rhs(for_rhs);
+        }
             break;
         case GMEXPR_UOP:
         case GMEXPR_LUOP:

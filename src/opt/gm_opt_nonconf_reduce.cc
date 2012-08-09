@@ -27,6 +27,9 @@ public:
         if (s->get_nodetype() == AST_ASSIGN) {
             ast_assign* a = (ast_assign*) s;
             if (a->is_reduce_assign()) {
+
+                if(a->is_target_map_entry()) return true;
+
                 assert(a->get_bound() != NULL);
                 gm_symtab_entry* bound = a->get_bound()->getSymInfo();
 
@@ -116,7 +119,7 @@ public:
         ast_assign* a = (ast_assign*) s;
         if (!a->is_reduce_assign())
             return true;
-        if (a->is_target_scalar()) 
+        if (a->is_target_scalar() || a->is_target_map_entry())
             return true;
 
         assert(a->get_bound() != NULL);

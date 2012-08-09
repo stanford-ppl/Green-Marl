@@ -6,7 +6,6 @@
 #include "gm_set.h"
 #include "gm_lock.h"
 
-
 class gm_complex_data_type
 {
 

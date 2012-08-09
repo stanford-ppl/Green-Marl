@@ -1,0 +1,5 @@
+Procedure test_map_declaration2(G:Graph)
+{
+	Graph G2;
+    Map<Node, Node> map1; //you have to specify to which graph each node-type belongs
+}
