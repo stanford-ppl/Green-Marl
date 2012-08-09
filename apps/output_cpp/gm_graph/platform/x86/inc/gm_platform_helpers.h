@@ -2,7 +2,9 @@
 #define GM_PLATFORM_HELPERS
 
 #if defined(__arch64__) || defined(__x86_64__) 
-// implementation for 64bit environment
+//-------------------------------------------------------------
+// General CAS implementation for 64bit environment
+//-------------------------------------------------------------
 #define _gm_CAS_asm(ptr, oldval, newval) \
     ({ \
       __typeof__(ptr) ___p = (ptr); \
@@ -30,10 +32,11 @@
 #define _gm_CAS_asm_64(ptr, oldval, newval) _gm_CAS_asm(ptr, oldval, newval)
 
 #elif defined(__i386__)
-// implementation for 32bit environment
-//
-// CAS for 64 bit
+//-------------------------------------------------------------
+// General CAS implementation for 32bit environment
+//-------------------------------------------------------------
 
+// DWord CAS
 static inline bool
 _gm_i386_casX(volatile unsigned long long* addr,
      unsigned long expected_high, unsigned long expected_low,
@@ -68,7 +71,6 @@ static inline bool _gm_i386_casX(volatile unsigned long long* addr,
     _gm_i386_casX(ptr, &oldVal, &newVal); \
     })
 
-
 static inline unsigned long
 _gm_i386_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
 {
@@ -88,23 +90,41 @@ _gm_i386_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
     volatile unsigned long*  ptr  = reinterpret_cast<volatile unsigned long*>(dest);\
     _gm_i386_cas(ptr, &oldVal, &newVal); \
     })
-
-#endif // end of 32bit
+#else // end of 32bit x86
+#error "Unsupported x86 platform"
+#endif 
 
 #define _gm_pause() asm volatile ("pause" ::: "memory")
-
-//-----------------------------------------------------------------
-// atomic mapping to GCC
-//-----------------------------------------------------------------
 
 #define _gm_atomic_fetch_and_or_char(ptr, val) __sync_fetch_and_or(ptr, val)
 #define _gm_atomic_fetch_and_and_char(ptr, val)  __sync_fetch_and_and(ptr, val)
 #define _gm_atomic_fetch_and_add_int32(ptr, val) __sync_fetch_and_add(ptr, val)
 #define _gm_atomic_fetch_and_add_int64(ptr, val) __sync_fetch_and_add(ptr, val)
+
 #define _gm_atomic_cas_bool(ptr, oldval, newval)  __sync_bool_compare_and_swap(ptr, oldval, newval)
 #define _gm_atomic_cas_int32(ptr, oldval, newval)  __sync_bool_compare_and_swap(ptr, oldval, newval)
-#define _gm_atomic_cas_int64(ptr, oldval, newval)  __sync_bool_compare_and_swap(ptr, oldval, newval)
 #define _gm_atomic_swap_int32(ptr, newval) __sync_lock_test_and_set(ptr, newval)
+
+#if defined(__arch64__) || defined(__x86_64__) 
+#define _gm_atomic_cas_int64(ptr, oldval, newval)  __sync_bool_compare_and_swap(ptr, oldval, newval)
+
+// In my expriements, somehow gcc's builtint CAS was not working correctly for float/double type,
+// even after re-interpretinc cas. So we're using general CAS routine.
+#define _gm_atomic_cas_double(ptr, oldval, newval) _gm_CAS_asm_64(ptr,oldval,newval)
+#define _gm_atomic_cas_float(ptr, oldval, newval) _gm_CAS_asm_32(ptr,oldval,newval)
+
+#elif defined(__i386__)
+
+#define _gm_atomic_cas_int64(ptr, oldval, newval)  _gm_CAS_asm_64(ptr,oldval,newval)
+
+// In my expriements, somehow gcc's builtint CAS was not working correctly for float/double type,
+// even after re-interpreting cast. So we're using general CAS routine.
+#define _gm_atomic_cas_double(ptr, oldval, newval) _gm_CAS_asm_64(ptr,oldval,newval)
+#define _gm_atomic_cas_float(ptr, oldval, newval) _gm_CAS_asm_32(ptr,oldval,newval)
+
+#endif
+
+
 #define _gm_full_barrier() __sync_synchronize()
 
 #define _gm_atomic_fetch_and_add_edge(ptr, val) __sync_fetch_and_add(ptr, val)

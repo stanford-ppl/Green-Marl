@@ -1,7 +1,6 @@
 #ifndef GM_HELPER_FUNCTIONS
 #define GM_HELPER_FUNCTIONS
 
-
 //----------------------------------------------------
 // This File is not used anymore
 //----------------------------------------------------
@@ -13,8 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-<<<<<<< HEAD
-=======
 #include "gm_bitmap.h"
 
 #if defined(__x86_64__) || defined(__i386__)
