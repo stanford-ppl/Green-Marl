@@ -5,7 +5,7 @@ ifndef PROGS
   ifeq ($(TARGET), giraph)
     PROGS= pagerank avg_teen_cnt conduct hop_dist sssp random_bipartite_matching bc_random
   else
-    PROGS= sssp_path randomnodesampling trianglecounting pagerank avg_teen_cnt conduct bc kosaraju adamicAdar v_cover sssp #random_bipartite_matching
+    PROGS= randomnodesampling trianglecounting pagerank avg_teen_cnt conduct bc kosaraju adamicAdar v_cover sssp #random_bipartite_matching sssp_path
   endif
  endif
 endif
