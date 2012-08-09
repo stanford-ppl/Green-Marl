@@ -6,6 +6,7 @@
 #include "gm_graph.h"
 #include "gm_atomic_wrapper.h"
 #include "gm_bitmap.h"
+
 #ifndef GM_BFS_TEMPLATE_H
 #define GM_BFS_TEMPLATE_H
 

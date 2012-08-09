@@ -1,8 +1,14 @@
 #ifndef GM_H
 #define GM_H
+
 #include <math.h>
 #include <stdlib.h>
 
+//------------------------------------------------------------
+// This is the root header for external applications.
+// This header includes all the 'modules' in gm_graph lib
+//------------------------------------------------------------
+#include "gm_internal.h"
 #include "gm_graph_typedef.h"
 #include "gm_graph.h"
 #include "gm_runtime.h"

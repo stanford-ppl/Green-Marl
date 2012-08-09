@@ -1,18 +1,8 @@
 #ifndef GM_LOCK_H
 #define GM_LOCK_H
 #include <stdint.h>
-#include "gm_graph.h"
-#if defined(__x86_64__) || defined(__i386__)
-#include "../platform/x86/inc/gm_platform_helpers.h"
-#else
-#if defined(__sparc)
-#if defined (__ORACLE__)
-#include "../platform/sparc/inc/gm_platform_helpers.h"
-#endif
-#else
-#error "We need x86 (32bit or 64bit) or Sparc environment" 
-#endif
-#endif
+#include "gm_internal.h"
+
 
 typedef volatile int32_t gm_spinlock_t;
 

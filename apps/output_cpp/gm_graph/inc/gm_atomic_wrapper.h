@@ -2,17 +2,15 @@
 #define GM_ATOMIC_WRAP_H
 #include <stdlib.h>
 #include <stdint.h>
-#if defined(__x86_64__) || defined(__i386__)
-#include "../platform/x86/inc/gm_platform_helpers.h"
-#else
-#if defined(__sparc)
-#if defined (__ORACLE__)
-#include "../platform/sparc/inc/gm_platform_helpers.h"
-#endif
-#else
-#error "We need x86 (32bit or 64bit) or Sparc environment" 
-#endif
-#endif
+
+#include "gm_internal.h"
+
+// The following check is required because we use __compare_and_swap
+// which is a gcc-specific builtin 
+#if !defined(__GNUC__) && !defined(__SUNPRO_CC)
+#error "GM_Graph library requires gcc or oracle studio for now" 
+#endif // no GNUC
+
 //---------------------------------------------------------
 // A thin layer of atomic operations
 //---------------------------------------------------------
@@ -34,19 +32,19 @@
 //          (u)int32_t, (u)int16_t, (u)int8_t
 //---------------------------------------------------------
 
-#if !defined(__GNUC__) && !defined(__SUNPRO_CC)
-#error "GM_Graph library requires gcc or oracle studio for now" 
-#endif // no GNUC
-
 static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, int32_t new_val) {
     return _gm_atomic_cas_int32(dest, old_val, new_val);
 }
 
-// It is not possible to use gcc's inherent CAS for double and float
-// (Reinterpret_cast does not work here)
+//----------------------------------------------------------------- 
+// In some experiments, somehow gcc's builtin CAS failed to bring 
+// atomicity for float type (on x86_64);  
+// Note that gcc's builtin is only defined for int and long long, but 
+// reinterpret_cast did not work correctly.
+// We add our own asm implementation for CAS. (This is a work-around te
+//----------------------------------------------------------------- 
 static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float new_val) {
-    unsigned char c = _gm_CAS_asm(dest, old_val, new_val);
-    return (c == 1);
+    return _gm_CAS_asm_32(dest, old_val, new_val);
 }
 
 static inline bool _gm_atomic_compare_and_swap(bool *dest, bool old_val, bool new_val) {
@@ -60,12 +58,39 @@ static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, i
 
 static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val)
 {
-    unsigned char c = _gm_CAS_asm(dest, old_val, new_val);
-    return (c==1);
+    return _gm_CAS_asm_64(dest, old_val, new_val);
+}
+
+#elif defined(__i386__)
+
+//-------------------------------------------------------------
+// 64bit compare-and-swap on 32bit x86 machine
+//-------------------------------------------------------------
+
+static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val) 
+{
+    return _gm_CAS_asm_64(dest, old_val, new_val);
+}
+//    const unsigned long long    oldVal = reinterpret_cast<const unsigned long long>(old_val);
+//    const unsigned long long    newVal = reinterpret_cast<const unsigned long long>(new_val);
+//    volatile unsigned long long*  ptr  = reinterpret_cast<volatile unsigned long long*>(dest);
+
+//    return _gm_CAS_asm(ptr, oldval, newval);
+//}
+
+static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, double new_val) 
+{
+//    const unsigned long long    oldVal = reinterpret_cast<const unsigned long long>(old_val);
+//    const unsigned long long    newVal = reinterpret_cast<const unsigned long long>(new_val);
+//    volatile unsigned long long*  ptr  = reinterpret_cast<volatile unsigned long long*>(dest);
+    return _gm_CAS_asm_64(ptr, oldval, newval);
 }
 
 #else
 
+#error "Unsupported architecture"
+
+/*
 #include "gm_lock.h"
 
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val) {
@@ -100,7 +125,8 @@ static inline bool _gm_atomic_compare_and_swap(double *dest, double old_val, dou
     gm_spinlock_release_for_ptr(dest);
     return ret;
 }
+*/
 
-#endif
+#endif // end of else
 
 #endif // end of file

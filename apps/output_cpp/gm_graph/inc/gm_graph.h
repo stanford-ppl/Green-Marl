@@ -6,7 +6,7 @@
 #include <map>
 #include <vector>
 #include <stdlib.h>
-#include "gm_graph_typedef.h"
+#include "gm_internal.h"
 
 typedef node_t node_id;
 typedef edge_t edge_id;
