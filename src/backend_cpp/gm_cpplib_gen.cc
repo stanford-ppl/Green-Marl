@@ -140,8 +140,7 @@ const char* gm_cpplib::getMapTypeString(int type) {
 }
 
 const char* gm_cpplib::getMapDefaultValueForType(int type) {
-    if(gm_is_float_type(type))
-        return "0.0";
+    if (gm_is_float_type(type)) return "0.0";
     if (gm_is_integer_type(type))
         return "0";
     else if (gm_is_node_type(type))
@@ -280,7 +279,7 @@ const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
         case GM_BLTIN_MAP_GET_MIN_KEY:
         case GM_BLTIN_MAP_GET_MAX_VALUE:
         case GM_BLTIN_MAP_GET_MIN_VALUE: {
-            if(in_parallel)
+            if (in_parallel)
                 // if it is in parallel we do not have to use the inherent
                 // parallelism of the map so this is not a bug!!!
                 return get_function_name_map_seq(methodId);

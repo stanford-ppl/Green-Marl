@@ -55,8 +55,6 @@ public:
     virtual void generate_down_initializer(ast_foreach* fe, gm_code_writer& Body);
     virtual void generate_foreach_header(ast_foreach* fe, gm_code_writer& Body);
 
-
-
 private:
     //map sizes
     static const int SMALL = 0;
@@ -100,7 +98,7 @@ private:
 
     static const char* getTypeString(int type) {
         if (gm_is_prim_type(type))
-            return  get_primitive_type_string(type);
+            return get_primitive_type_string(type);
         else if (gm_is_node_type(type))
             return NODE_T;
         else if (gm_is_edge_type(type))
