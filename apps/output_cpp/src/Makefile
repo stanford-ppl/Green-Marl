@@ -30,9 +30,9 @@ ifdef HDFS
   CFLAGS += -lhdfs -ljvm -D__HDFS__
 endif
 
-#ifdef AVRO
+ifdef AVRO
   CFLAGS += -lavrocpp
-#endif
+endif
 
 #include program list
 include ../../Programs.mk

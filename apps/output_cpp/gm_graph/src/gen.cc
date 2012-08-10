@@ -85,8 +85,7 @@ int main(int argc, char** argv) {
     printf("saving to file = %s\n", argv[3]);
     fflush (stdout);
     gettimeofday(&T1, NULL);
-    //g->store_binary(argv[3]);
-    g->store_avro(argv[3]);
+    g->store_binary(argv[3]);
     gettimeofday(&T2, NULL);
     printf("storing time (ms) = %lf\n", ((T2.tv_sec) - (T1.tv_sec)) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
 
