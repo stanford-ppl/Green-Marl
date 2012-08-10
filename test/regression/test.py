@@ -78,11 +78,11 @@ def build_compiler():
         sys.exit(-1);
     assert os.path.isfile(COMP_BINARY_PATH)
 
-build_compiler();
+#build_compiler();
 
 # BUILD AND RUN THE APPS
 
-APP_EXCLUSIONS=[ "b2_main.cc", "Makefile", "common_main.cc", "common_main.h", "randomnodesampling_main.cc"];
+APP_EXCLUSIONS=[ "b2_main.cc", "Makefile", "common_main.cc", "common_main.h", "randomnodesampling_main.cc", "random_bipartite_matching_main.cc", "sssp_path_main.cc"];
 
 def get_apps_names(apps_out_dir):
     main_names = os.listdir(APPS_PATH+apps_out_dir+"/src/");
@@ -105,6 +105,7 @@ def build_and_run_apps(apps_out_dir, run_apps):
         assert graph_res[0] == 0;
         apps_names = get_apps_names(apps_out_dir);
         for app in apps_names:
+            print "TESTING APP "+app;
             assert os.path.isfile(APPS_PATH+apps_out_dir+"/generated/"+app)
             assert os.path.isfile(APPS_PATH+apps_out_dir+"/bin/"+(re.split("\.", app)[0]));
             app_res = commands.getstatusoutput("./bin/"+(re.split("\.", app)[0])+" data/__regressions_graph__.bin 1");
