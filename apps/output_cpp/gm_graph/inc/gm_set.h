@@ -2,7 +2,7 @@
 #define GM_SET_H
 
 #include <set>
-#include "gm_graph_typedef.h"
+#include "gm_internal.h"
 #include "gm_lock.h"
 
 template<typename T>

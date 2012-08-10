@@ -1,18 +1,7 @@
 #ifndef GM_LOCK_H_
 #define GM_LOCK_H_
 #include <stdint.h>
-#include "gm_graph.h"
-#if defined(__x86_64__) || defined(__i386__)
-  #include "../platform/x86/inc/gm_platform_helpers.h"
-#else
-  #if defined(__sparc)
-    #if defined (__ORACLE__)
-      #include "../platform/sparc/inc/gm_platform_helpers.h"
-    #endif
-  #else
-    #error "We need x86 (32bit or 64bit) or Sparc environment"
-  #endif
-#endif
+#include "gm_internal.h"
 
 typedef volatile int32_t gm_spinlock_t;
 
@@ -58,32 +47,32 @@ extern gm_spinlock_t gm_spinlock_tab[];
 extern void gm_spinlock_table_init();
 
 // [Assumption] spinlock should not be nested.
-static void gm_spinlock_acquire_for_ptr(void* ptr) {
+static inline void gm_spinlock_acquire_for_ptr(void* ptr) {
     uint32_t entry_idx = (uint32_t)(((uintptr_t) ptr) & (GM_SPINLOCK_TAB_ENTRY - 1));
     uint32_t tab_idx = entry_idx * GM_CACHELINE;
     gm_spinlock_acquire(&gm_spinlock_tab[tab_idx]);
 }
-static void gm_spinlock_release_for_ptr(void* ptr) {
+static inline void gm_spinlock_release_for_ptr(void* ptr) {
     uint32_t entry_idx = (uint32_t)(((uintptr_t) ptr) & (GM_SPINLOCK_TAB_ENTRY - 1));
     uint32_t tab_idx = entry_idx * GM_CACHELINE;
     gm_spinlock_release(&gm_spinlock_tab[tab_idx]);
 }
-static void gm_spinlock_acquire_for_node(node_t ptr) {
+static inline void gm_spinlock_acquire_for_node(node_t ptr) {
     uint32_t entry_idx = (uint32_t)(ptr & (GM_SPINLOCK_TAB_ENTRY - 1));
     uint32_t tab_idx = entry_idx * GM_CACHELINE;
     gm_spinlock_acquire(&gm_spinlock_tab[tab_idx]);
 }
-static void gm_spinlock_release_for_node(node_t ptr) {
+static inline void gm_spinlock_release_for_node(node_t ptr) {
     uint32_t entry_idx = (uint32_t)(ptr & (GM_SPINLOCK_TAB_ENTRY - 1));
     uint32_t tab_idx = entry_idx * GM_CACHELINE;
     gm_spinlock_release(&gm_spinlock_tab[tab_idx]);
 }
-static void gm_spinlock_acquire_for_edge(edge_t ptr) {
+static inline void gm_spinlock_acquire_for_edge(edge_t ptr) {
     uint32_t entry_idx = (uint32_t)(ptr & (GM_SPINLOCK_TAB_ENTRY - 1));
     uint32_t tab_idx = entry_idx * GM_CACHELINE;
     gm_spinlock_acquire(&gm_spinlock_tab[tab_idx]);
 }
-static void gm_spinlock_release_for_edge(edge_t ptr) {
+static inline void gm_spinlock_release_for_edge(edge_t ptr) {
     uint32_t entry_idx = (uint32_t)(ptr & (GM_SPINLOCK_TAB_ENTRY - 1));
     uint32_t tab_idx = entry_idx * GM_CACHELINE;
     gm_spinlock_release(&gm_spinlock_tab[tab_idx]);

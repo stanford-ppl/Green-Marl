@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <list>
-#include "gm_graph_typedef.h"
+#include "gm_internal.h"
 #include "gm_runtime.h"
 
 template<typename T>

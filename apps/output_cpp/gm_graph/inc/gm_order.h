@@ -2,7 +2,7 @@
 #define GM_ORDER_H
 
 #include <list>
-#include "gm_graph_typedef.h"
+#include "gm_internal.h"
 #include "gm_bitmap.h"
 
 template<typename T>

@@ -1,5 +1,11 @@
 #ifndef GM_HELPER_FUNCTIONS
 #define GM_HELPER_FUNCTIONS
+
+//----------------------------------------------------
+// This File is not used anymore
+//----------------------------------------------------
+#if 0
+
 #include <list>
 #include <vector>
 #include <assert.h>
@@ -19,6 +25,7 @@
     #error "We need x86 (32bit or 64bit) or Sparc environment"
   #endif
 #endif
+>>>>>>> 4e9a9bd128759e49b69c3a32e01bb5590fb9a423
 
 extern void _gm_init_locktable();
 extern void _gm_lock_addr(void*p);
@@ -644,4 +651,5 @@ static inline bool _gm_CAS(float *dest, float old_val, float new_val) {
     _gm_unlock_addrs(addrs, 4); \
 }
 
+#endif
 #endif

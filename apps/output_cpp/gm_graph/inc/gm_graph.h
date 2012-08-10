@@ -7,7 +7,8 @@
 #include <vector>
 #include <stdlib.h>
 #include <omp.h>
-#include "gm_graph_typedef.h"
+
+#include "gm_internal.h"
 #include "gm_helper_functions.h"
 
 typedef node_t node_id;

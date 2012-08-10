@@ -2,7 +2,7 @@
 #define GM_MAP_H_
 
 #include <map>
-#include "gm_graph_typedef.h"
+#include "gm_internal.h"
 #include "gm_limits.h"
 #include "gm_lock.h"
 
