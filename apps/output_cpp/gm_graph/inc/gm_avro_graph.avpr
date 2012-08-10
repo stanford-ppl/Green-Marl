@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "edgelist",
+  "fields": [
+    {
+      "name": "source",
+      "type": "int"
+    }, {
+      "name": "dests",
+      "type": {
+        "type": "array",
+        "items": "int"
+      }
+    }
+  ]
+}

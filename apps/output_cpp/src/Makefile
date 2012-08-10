@@ -10,30 +10,34 @@ INCFILES = $(shell ls $(INCDIR))
 H_FILES = $(addprefix $(INCDIR)/, $(INCFILES))
 
 ifdef ORACLE
-CFLAGS += -D__ORACLE__
+  CFLAGS += -D__ORACLE__
 endif
 
 ifdef FORCE_64BIT
-CFLAGS += -m64
+  CFLAGS += -m64
 endif
 
 ifdef HDFS
-# Change this path to point to the location of libhdfs.so
-CFLAGS += -L$(HADOOP_HOME)/build/c++/lib
-# Change this path to point to the location of libjvm.so
-CFLAGS += -L$(JAVA_HOME)/jre/lib/amd64/server
-# Change this path to point to the location of jni.h and jni_md.h
-CFLAGS += -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
-# Change this path to point to the location of hdfs.h
-CFLAGS += -I$(HADOOP_HOME)/src/c++/libhdfs/
+  # Change this path to point to the location of libhdfs.so
+  CFLAGS += -L$(HADOOP_HOME)/c++/lib
+  # Change this path to point to the location of libjvm.so
+  CFLAGS += -L$(JAVA_HOME)/jre/lib/amd64/server
+  # Change this path to point to the location of jni.h and jni_md.h
+  CFLAGS += -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
+  # Change this path to point to the location of hdfs.h
+  CFLAGS += -I$(HADOOP_HOME)/src/c++/libhdfs/
 
-CFLAGS += -lhdfs -ljvm -D__HDFS__
+  CFLAGS += -lhdfs -ljvm -D__HDFS__
 endif
+
+#ifdef AVRO
+  CFLAGS += -lavrocpp
+#endif
 
 #include program list
 include ../../Programs.mk
 ifndef PROGS
-PROGS = pagerank 
+  PROGS = pagerank 
 endif
 
 OUT = $(addprefix $(BINDIR)/, $(PROGS))
