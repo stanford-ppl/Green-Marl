@@ -1,5 +1,10 @@
 #ifndef GM_GRAPH_H_
 #define GM_GRAPH_H_
+#ifdef __AVRO__
+  #include "gm_avro_graph.h"
+  #include <avro/Decoder.hh>
+  #include <avro/Encoder.hh>
+#endif
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -19,7 +24,7 @@ typedef edge_t edge_id;
 // 1. IDX vs ID
 //
 // node_t(edge_t) is used to represent both node(edge) ID and node(edge) IDX. 
-// ID is used to indicate a speicific node(edge) in flexible format
+// ID is used to indicate a specific node(edge) in flexible format
 // IDX is to represent the position of node(edge) in the compact form.
 //
 // As for node, node ID is same to node IDX.
@@ -129,14 +134,14 @@ public:
     } // [XXX] to be added
 
     //-------------------------------------------------
-    // mathods to be called in frozen mode
+    // methods to be called in frozen mode
     //-------------------------------------------------
     void make_reverse_edges();          // Freeze the graph first. Then build-up reverse edges
     void do_semi_sort();                // Freeze the graph first. Sort the edge-list as in the order of destination idx.
     void prepare_edge_source();         // Prepare source information of each node. (To support edge.From())
 
     //-------------------------------------------------------
-    // Interrface for flexible graph creation
+    // Interface for flexible graph creation
     //-------------------------------------------------------
     node_id add_node();                             // returns ID of a node
     edge_id add_edge(node_id n, node_id m);         // add an edge n->m
@@ -180,6 +185,10 @@ public:
     virtual void prepare_external_creation(node_t n, edge_t m);
     virtual bool store_binary(char* filename);          // attributes not saved
     virtual bool load_binary(char* filename);           // call this to an empty graph object
+#ifdef __AVRO__
+    virtual bool store_avro(char* filename);
+    virtual bool load_avro(char* filename);
+#endif
 
     //--------------------------------------------------------------
     // conversion between idx and id

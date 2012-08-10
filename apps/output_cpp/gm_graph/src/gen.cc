@@ -43,10 +43,10 @@ int main(int argc, char** argv) {
     //-----------------------------
     if (argc < 5) {
         printf("%s <Num Node> <Num Edge> <out filename> <0~1>\n", argv[0]);
-        printf("\t 0: uniform random (multigprah)\n");
-        printf("\t 1: uniform random alternative (multigprah)\n");
+        printf("\t 0: uniform random (multigraph)\n");
+        printf("\t 1: uniform random alternative (multigraph)\n");
         printf("\t 2: uniform random \n");
-        //        printf("\t 3: RMAT random (mu\n");
+        //        printf("\t 3: RMAT random (multigraph)\n");
         exit(0);
     }
 
@@ -85,7 +85,8 @@ int main(int argc, char** argv) {
     printf("saving to file = %s\n", argv[3]);
     fflush (stdout);
     gettimeofday(&T1, NULL);
-    g->store_binary(argv[3]);
+    //g->store_binary(argv[3]);
+    g->store_avro(argv[3]);
     gettimeofday(&T2, NULL);
     printf("storing time (ms) = %lf\n", ((T2.tv_sec) - (T1.tv_sec)) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
 
