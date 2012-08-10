@@ -78,7 +78,7 @@ def build_compiler():
         sys.exit(-1);
     assert os.path.isfile(COMP_BINARY_PATH)
 
-#build_compiler();
+build_compiler();
 
 # BUILD AND RUN THE APPS
 
