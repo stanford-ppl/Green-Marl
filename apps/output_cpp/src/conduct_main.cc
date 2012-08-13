@@ -1,5 +1,6 @@
 #include "common_main.h"
 #include "conduct.h"
+#include "gm_rand.h"
 
 class my_main: public main_t
 {
@@ -12,13 +13,14 @@ public:
     //--------------------------------------------------------
     virtual bool prepare() {
         membership = new int32_t[G.num_nodes()];
+	gm_rand32 xorshift_rng;
         for (int i = 0; i < G.num_nodes(); i++) {
-            float f = drand48();
-            if (f < 0.1)
+	    int32_t r = xorshift_rng.rand() % 100;
+            if (r < 10)
                 membership[i] = 0;  // 10%
-            else if (f < (0.1 + 0.2))
+            else if (r < (10 + 20))
                 membership[i] = 1;  // 20%
-            else if (f < (0.1 + 0.2 + 0.3))
+            else if (r < (10 + 20 + 30))
                 membership[i] = 2;  // 30%
             else
                 membership[i] = 3;  // 40%
