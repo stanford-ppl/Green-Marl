@@ -1,0 +1,15 @@
+Procedure random_walk_sampling_with_random_jump(G: Graph, N: Int, c : Double, S: Node_Set)
+{
+   Node(G) n = G.PickRandom();
+   Int count = 0;
+   While (count < N) {
+     S.Add(n);  
+     count++;
+     If ((n.Degree() == 0) || (Uniform() < c)) {
+         n = G.PickRandom();
+     }
+     Else {
+         n = n.PickRandomNbr(); 
+     }
+   }        
+}

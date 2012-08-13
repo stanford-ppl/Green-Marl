@@ -1,24 +1,18 @@
 #include "common_main.h"
-#include "randomnodesampling.h"
+#include "random_walk_sampling_with_random_jump.h"
 
 class my_main: public main_t
 {
 public:
-
-    virtual ~my_main() {}
 
     virtual bool prepare() {
         return true;
     }
 
     virtual bool run() {
-        int x = rand() % G.num_nodes();
+        int start = rand() % G.num_nodes();
         gm_node_set set(G.num_nodes());
-        gm_node_set set2(G.num_nodes());
-        gm_node_set set3(G.num_nodes());
-        RandomNodeSampling(G, x, set);
-        RandomDegreeNodeSampling(G, x, set);
-        RandomWalkSamplingWithRandomJump(G, x, 0.2, set);
+        random_walk_sampling_with_random_jump(G, start, 0.15, set);
         return true;
     }
 
