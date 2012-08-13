@@ -542,6 +542,152 @@ bool gm_graph::load_binary(char* filename) {
     return false;
 }
 
+#ifdef __AVRO__
+
+bool gm_graph::store_avro(char* filename) {
+    if (!_frozen) freeze();
+
+    std::auto_ptr<avro::OutputStream> out = avro::fileOutputStream(filename);
+    avro::EncoderPtr encoder = avro::binaryEncoder();
+    encoder->init(*out);
+    for (node_t i = 0; i < _numNodes; i++) {
+        gm::edgelist edgelist;
+        edgelist.source = i;
+        //for (edge_t j = this->begin[i]; j < this->begin[i+1]; j++) {
+        //	edgelist.dests.push_back(this->node_idx[j]);
+        //}
+        edgelist.dests.push_back(44);
+        avro::encode(*encoder, edgelist);
+    }
+    (*out).flush();
+
+    return true;
+    /*
+    FILE *f = fopen(filename, "wb");
+    if (f == NULL) {
+        fprintf(stderr, "cannot open %s for writing\n", filename);
+        return false;
+    }
+
+    // write it 4B wise?
+    uint32_t key = MAGIC_WORD;
+    fwrite(&key, 4, 1, f);
+
+    key = sizeof(node_t);
+    fwrite(&key, 4, 1, f);  // node_t size (in 4B)
+    key = sizeof(edge_t);
+    fwrite(&key, 4, 1, f);  // edge_t size (in 4B)
+
+    fwrite(&(this->_numNodes), sizeof(node_t), 1, f);
+
+    fwrite(&(this->_numEdges), sizeof(edge_t), 1, f);
+
+    for (node_t i = 0; i < _numNodes + 1; i++) {
+        fwrite(&(this->begin[i]), sizeof(edge_t), 1, f);
+    }
+
+    for (edge_t i = 0; i < _numEdges; i++) {
+        fwrite(&(this->node_idx[i]), sizeof(node_t), 1, f);
+    }
+
+    fclose(f);
+    return true;
+    */
+}
+
+bool gm_graph::load_avro(char* filename) {
+    clear_graph();
+    int32_t key;
+    int i;
+
+    std::auto_ptr<avro::InputStream> in = avro::fileInputStream(filename);
+    avro::DecoderPtr decoder = avro::binaryDecoder();
+    decoder->init(*in);
+    for (node_t i = 0; i < _numNodes; i++) {
+        gm::edgelist edgelist;
+        avro::decode(*decoder, edgelist);
+
+        edgelist.source = i;
+        for (edge_t j = this->begin[i]; j < this->begin[i+1]; j++) {
+        	edgelist.dests.push_back(this->node_idx[j]);
+        }
+    }
+    in.release();
+
+    FILE *f = fopen(filename, "rb");
+    if (f == NULL) {
+        fprintf(stderr, "cannot open %s for reading\n", filename);
+        goto error_return_noclose;
+    }
+
+    // write it 4B wise?
+    i = fread(&key, 4, 1, f);
+    if ((i != 1) || (key != MAGIC_WORD)) {
+        fprintf(stderr, "wrong file format, KEY mismatch: %d, %x\n", i, key);
+        goto error_return;
+    }
+
+    i = fread(&key, 4, 1, f); // index size (4B)
+    if (key != sizeof(node_t)) {
+        fprintf(stderr, "node_t size mismatch:%d (expect %ld)\n", key, sizeof(node_t));
+        goto error_return;
+    }
+
+    i = fread(&key, 4, 1, f); // index size (4B)
+    if (key != sizeof(edge_t)) {
+        fprintf(stderr, "edge_t size mismatch:%d (expect %ld)\n", key, sizeof(edge_t));
+        goto error_return;
+    }
+
+    //---------------------------------------------
+    // need back, numNodes, numEdges
+    //---------------------------------------------
+    node_t N;
+    edge_t M;
+    i = fread(&N, sizeof(node_t), 1, f);
+    if (i != 1) {
+        fprintf(stderr, "Error reading numNodes from file \n");
+        goto error_return;
+    }
+    i = fread(&M, sizeof(edge_t), 1, f);
+    if (i != 1) {
+        fprintf(stderr, "Error reading numEdges from file \n");
+        goto error_return;
+    }
+
+    allocate_memory_for_frozen_graph(N, M);
+
+    for (node_t i = 0; i < N + 1; i++) {
+        edge_t key;
+        int k = fread(&key, sizeof(edge_t), 1, f);
+        if ((k != 1)) {
+            fprintf(stderr, "Error reading node begin array\n");
+            goto error_return;
+        }
+        this->begin[i] = key;
+    }
+
+    for (edge_t i = 0; i < M; i++) {
+        node_t key;
+        int k = fread(&key, sizeof(node_t), 1, f);
+        if ((k != 1)) {
+            fprintf(stderr, "Error reading edge-end array\n");
+            goto error_return;
+        }
+        this->node_idx[i] = key;
+    }
+
+    fclose(f);
+    _frozen = true;
+    return true;
+
+    error_return: fclose(f);
+    error_return_noclose: clear_graph();
+    return false;
+}
+
+#endif
+
 bool gm_graph::is_neighbor(node_t src, node_t to) {
     // Edges are semi-sorted.
     // Do binary search
