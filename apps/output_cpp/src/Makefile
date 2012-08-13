@@ -19,7 +19,7 @@ endif
 
 ifdef HDFS
 # Change this path to point to the location of libhdfs.so
-CFLAGS += -L$(HADOOP_HOME)/build/c++/lib
+CFLAGS += -L$(HADOOP_HOME)/c++/lib
 # Change this path to point to the location of libjvm.so
 CFLAGS += -L$(JAVA_HOME)/jre/lib/amd64/server
 # Change this path to point to the location of jni.h and jni_md.h
