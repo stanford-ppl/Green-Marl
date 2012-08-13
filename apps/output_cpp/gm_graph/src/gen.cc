@@ -43,10 +43,10 @@ int main(int argc, char** argv) {
     //-----------------------------
     if (argc < 5) {
         printf("%s <Num Node> <Num Edge> <out filename> <0~1>\n", argv[0]);
-        printf("\t 0: uniform random (multigraph)\n");
-        printf("\t 1: uniform random alternative (multigraph)\n");
+        printf("\t 0: uniform random (multigprah)\n");
+        printf("\t 1: uniform random alternative (multigprah)\n");
         printf("\t 2: uniform random \n");
-        //        printf("\t 3: RMAT random (multigraph)\n");
+        //        printf("\t 3: RMAT random (mu\n");
         exit(0);
     }
 
