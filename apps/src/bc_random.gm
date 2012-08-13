@@ -1,4 +1,3 @@
-
 //-------------------------------------------------------------
 // Computation of estimiated betweenness centrality
 //-------------------------------------------------------------
@@ -33,4 +32,3 @@ Procedure bc_random(G: Graph, BC: N_P<Float>, K:Int)
     k++;
   }
 }
-
