@@ -1,46 +1,26 @@
 #include "common_main.h"
-#include "bc.h"  // defined in generated
+#include "bc_random.h"  // defined in generated
 #include "gm_rand.h"
 class my_main: public main_t
 {
 public:
-    gm_node_seq* Seeds;
     float* BC;
 
-    virtual ~my_main() {
+    ~my_main() {
         delete[] BC;
-        delete Seeds;
     }
 
     my_main() {
-        Seeds = NULL;
         BC = NULL;
     }
 
     virtual bool prepare() {
-        Seeds = new gm_node_seq();
         BC = new float[G.num_nodes()];
         return true;
     }
 
     virtual bool run() {
-#ifdef NODE64
-	gm_rand64 xorshift_rng;
-#else
-	gm_rand32 xorshift_rng;
-#endif
-        assert(Seeds != NULL);
-        // pick 5 random starting points;
-        for (int i = 0; i < 5; i++) {
-            node_t t;
-            do {
-                t = xorshift_rng.rand();
-            } while (t >= G.num_nodes());
-
-            Seeds->push_back(t);
-        }
-
-        comp_BC(G, BC, *Seeds);
+        bc_random(G, BC, 10);
         return true;
     }
 

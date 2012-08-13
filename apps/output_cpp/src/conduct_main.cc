@@ -8,6 +8,10 @@ public:
     int32_t* membership;
     double C;
 
+    ~my_main() {
+        delete[] membership;
+    }
+
     //--------------------------------------------------------
     // create 4 groups randomly
     //--------------------------------------------------------
@@ -41,7 +45,6 @@ public:
         // values
         //---------------------------------
         printf("sum C = %lf\n", C);
-        delete[] membership;
         return true;
     }
 };

@@ -8,6 +8,10 @@ public:
     bool* selected;
     int covered;
 
+    ~my_main() {
+        delete[] selected;
+    }
+
     //--------------------------------------------------------
     // create 4 groups randomly
     //--------------------------------------------------------
@@ -26,7 +30,6 @@ public:
         // values
         //---------------------------------
         printf("covered (may be non-deterministic) = %d\n", covered);
-        delete[] selected;
         return true;
     }
 };

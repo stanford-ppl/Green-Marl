@@ -4,22 +4,19 @@
 class my_main: public main_t
 {
 public:
-
-    virtual ~my_main() {}
+    int tCount;
 
     virtual bool prepare() {
         return true;
     }
 
     virtual bool run() {
-        int tCount = triangle_counting(G);
-
-        printf("triangle count: %d\n", tCount);
-
+        tCount = triangle_counting(G);
         return true;
     }
 
     virtual bool post_process() {
+        printf("number of triangles: %d\n", tCount);
         return true;
     }
 };
