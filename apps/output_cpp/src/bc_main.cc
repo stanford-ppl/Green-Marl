@@ -1,5 +1,6 @@
 #include "common_main.h"
 #include "bc.h"  // defined in generated
+#include "gm_rand.h"
 class my_main: public main_t
 {
 public:
@@ -18,12 +19,17 @@ public:
     }
 
     virtual bool run() {
+#ifdef NODE64
+	gm_rand64 xorshift_rng;
+#else
+	gm_rand32 xorshift_rng;
+#endif
         assert(Seeds != NULL);
         // pick 5 random starting points;
         for (int i = 0; i < 5; i++) {
             node_t t;
             do {
-                t = rand();
+                t = xorshift_rng.rand();
             } while (t >= G.num_nodes());
 
             Seeds->push_back(t);

@@ -1,22 +1,24 @@
 #include "common_main.h"
 #include "sssp.h"
+#include "gm_rand.h"
 
 class my_main: public main_t
 {
 public:
-    int* len; // length of each edge
-    int* dist;  // distance of each node
+    int32_t* len; // length of each edge
+    int32_t* dist;  // distance of each node
     node_t root;
 
     //--------------------------------------------------------
     // create 4 groups randomly
     //--------------------------------------------------------
     virtual bool prepare() {
+	gm_rand32 xorshift_rng;
         root = 0;
         dist = new int[G.num_nodes()];
         len = new int[G.num_edges()];
         for (int i = 0; i < G.num_edges(); i++)
-            len[i] = (rand() % 100) + 1;  // length: 1 ~ 100
+            len[i] = (xorshift_rng.rand() % 100) + 1;  // length: 1 ~ 100
         return true;
     }
 

@@ -1,5 +1,5 @@
 #include "common_main.h"
-#include "trianglecounting.h"
+#include "triangle_counting.h"
 
 class my_main: public main_t
 {
@@ -12,9 +12,7 @@ public:
     }
 
     virtual bool run() {
-        gm_property_of_collection_impl<gm_node_set, false> coll(G.num_nodes());
-        int tCount = TriangleCounting(G);
-        PotentialFriends(G, coll);
+        int tCount = triangle_counting(G);
 
         printf("triangle count: %d\n", tCount);
 
