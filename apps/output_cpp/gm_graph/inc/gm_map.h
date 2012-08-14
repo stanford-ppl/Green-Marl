@@ -130,11 +130,12 @@ protected:
 
 };
 
-template<class Key, class Value, Value defaultValue>
+template<class Key, class Value>
 class gm_map_small : public gm_map<Key, Value>
 {
 private:
     map<Key, Value> data;
+    const Value defaultValue;
     gm_spinlock_t lock;
     typedef typename map<Key, Value>::iterator Iterator;
 
@@ -178,7 +179,7 @@ private:
     }
 
 public:
-    gm_map_small() : lock(0) {
+    gm_map_small(Value defaultValue) : lock(0), defaultValue(defaultValue) {
     }
 
     ~gm_map_small() {
@@ -249,11 +250,12 @@ public:
 };
 
 
-template<class Key, class Value, Value defaultValue>
+template<class Key, class Value>
 class gm_map_large : public gm_map<Key, Value>
 {
 private:
     const size_t size_;
+    const Value defaultValue;
     Value* const data;
     bool * const valid;
 
@@ -366,8 +368,8 @@ private:
     }
 
 public:
-    gm_map_large(size_t size) :
-            size_(size), data(new Value[size]), valid(new bool[size]) {
+    gm_map_large(size_t size, Value defaultValue) :
+            size_(size), data(new Value[size]), valid(new bool[size]), defaultValue(defaultValue) {
         #pragma omp parallel for
         for (int i = 0; i < size; i++) {
             valid[i] = false;
@@ -478,11 +480,12 @@ public:
 };
 
 
-template<class Key, class Value, Value defaultValue>
+template<class Key, class Value>
 class gm_map_medium : public gm_map<Key, Value>
 {
 private:
     const int innerSize;
+    const Value defaultValue;
     map<Key, Value>* innerMaps;
     gm_spinlock_t* locks;
     typedef typename map<Key, Value>::iterator Iterator;
@@ -665,7 +668,7 @@ private:
     }
 
 public:
-    gm_map_medium(int threadCount) : innerSize(getSize(threadCount)), bitmask(getBitMask(innerSize)) {
+    gm_map_medium(int threadCount, Value defaultValue) : innerSize(getSize(threadCount)), bitmask(getBitMask(innerSize)), defaultValue(defaultValue) {
         locks = new gm_spinlock_t[innerSize];
         innerMaps = new map<Key, Value>[innerSize];
         #pragma omp parallel for

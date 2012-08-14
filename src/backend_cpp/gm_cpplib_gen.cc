@@ -159,7 +159,7 @@ const char* gm_cpplib::getMapDefaultValueForType(int type) {
 void gm_cpplib::addAdditionalMapParameters(int mapType) {
     switch (mapType) {
         case MEDIUM:
-            Body->pushln("(gm_rt_get_num_threads());");
+            Body->push("gm_rt_get_num_threads(), ");
             break;
         case SMALL:
         case LARGE:
@@ -180,11 +180,12 @@ void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
     Body->push(getTypeString(keyType));
     Body->push(", ");
     Body->push(getTypeString(valueType));
-    Body->push(", ");
-    Body->push(getMapDefaultValueForType(valueType));
     Body->push("> ");
     Body->push(mapId->get_genname());
+    Body->push("(");
     addAdditionalMapParameters(mapType);
+    Body->push(getMapDefaultValueForType(valueType));
+    Body->pushln(");");
 }
 
 void gm_cpplib::generate_sent_nop(ast_nop *f) {

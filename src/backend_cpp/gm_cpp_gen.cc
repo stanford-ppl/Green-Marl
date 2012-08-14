@@ -350,6 +350,13 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
         } else {
             assert(false);
         }
+    } else if (t->is_map()) {
+        char temp[256];
+        ast_maptypedecl* mapType = (ast_maptypedecl*)t;
+        const char* keyType = get_type_string(mapType->get_key_type());
+        const char* valueType = get_type_string(mapType->get_value_type());
+        sprintf(temp, "gm_map<%s, %s>", keyType, valueType);
+        return gm_strdup(temp);
     } else
         return get_lib()->get_type_string(t);
 
