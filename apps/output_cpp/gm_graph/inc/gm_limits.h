@@ -2,7 +2,6 @@
 #define GM_LIMITS_H_
 
 #include <limits.h>
-#include <limits>
 
 template<class Type>
 Type gm_get_min();
