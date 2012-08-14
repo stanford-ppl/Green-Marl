@@ -1,22 +1,22 @@
 #include "common_main.h"
-#include "triangle_counting.h"
+#include "random_degree_node_sampling.h"
 
 class my_main: public main_t
 {
 public:
-    int tCount;
 
     virtual bool prepare() {
         return true;
     }
 
     virtual bool run() {
-        tCount = triangle_counting(G);
+        int start = rand() % G.num_nodes();
+        gm_node_set set(G.num_nodes());
+        random_degree_node_sampling(G, start, set);
         return true;
     }
 
     virtual bool post_process() {
-        printf("number of triangles: %d\n", tCount);
         return true;
     }
 };

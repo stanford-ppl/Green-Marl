@@ -131,41 +131,32 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
     return false;
 }
 
-
-void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
-
-    const int SMALL = 0;
-    const int MEDIUM = 1;
-    const int LARGE = 2;
-
-    int mapType = MEDIUM; //TODO: implement compiler optimization to figure out what is best here
-    int keyType = map->getKeyTypeSummary();
-    int valueType = map->getValueTypeSummary();
-
-    if (mapType == MEDIUM)
-        Body->push("gm_map_medium");
+const char* gm_cpplib::getMapTypeString(int type) {
+    if (type == MEDIUM)
+        return "gm_map_medium";
     else
         assert(false);
+    return NULL;
+}
 
-    Body->push("<");
-    Body->push(getTypeString(keyType));
-    Body->push(", ");
-    Body->push(getTypeString(valueType));
-    Body->push(", ");
-
-    if (gm_is_prim_type(valueType))
-        Body->push("0");
-    else if (gm_is_node_type(valueType))
-        Body->push("gm_graph::NIL_NODE");
-    else if (gm_is_edge_type(valueType))
-            Body->push("gm_graph::NIL_EDGE");
+const char* gm_cpplib::getMapDefaultValueForType(int type) {
+    if (gm_is_float_type(type))
+        return "0.0";
+    else if (gm_is_integer_type(type))
+        return "0";
+    else if (gm_is_boolean_type(type))
+        return "false";
+    else if (gm_is_node_type(type))
+        return "gm_graph::NIL_NODE";
+    else if (gm_is_edge_type(type))
+        return "gm_graph::NIL_EDGE";
     else
+        //we only support primitives, nodes and edges in maps (yet)
         assert(false);
-    //we only support primitives, nodes and edges in maps (yet)
+    return NULL;
+}
 
-    Body->push("> ");
-    Body->push(mapId->get_genname());
-
+void gm_cpplib::addAdditionalMapParameters(int mapType) {
     switch (mapType) {
         case MEDIUM:
             Body->pushln("(gm_rt_get_num_threads());");
@@ -176,6 +167,24 @@ void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
             assert(false);
             break;
     }
+}
+
+void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
+
+    int mapType = MEDIUM; //TODO: implement compiler optimization to figure out what is best here
+    int keyType = map->getKeyTypeSummary();
+    int valueType = map->getValueTypeSummary();
+
+    Body->push(getMapTypeString(mapType));
+    Body->push("<");
+    Body->push(getTypeString(keyType));
+    Body->push(", ");
+    Body->push(getTypeString(valueType));
+    Body->push(", ");
+    Body->push(getMapDefaultValueForType(valueType));
+    Body->push("> ");
+    Body->push(mapId->get_genname());
+    addAdditionalMapParameters(mapType);
 }
 
 void gm_cpplib::generate_sent_nop(ast_nop *f) {
@@ -273,7 +282,7 @@ const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
         case GM_BLTIN_MAP_GET_MIN_KEY:
         case GM_BLTIN_MAP_GET_MAX_VALUE:
         case GM_BLTIN_MAP_GET_MIN_VALUE: {
-            if(in_parallel)
+            if (in_parallel)
                 // if it is in parallel we do not have to use the inherent
                 // parallelism of the map so this is not a bug!!!
                 return get_function_name_map_seq(methodId);

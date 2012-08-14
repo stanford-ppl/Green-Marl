@@ -1,0 +1,11 @@
+Procedure random_degree_node_sampling(G: Graph, N: Int, S: Node_Set)
+{
+   Node_Prop<Double> prob;
+   Long degSum = Sum(n: G.Nodes) {n.Degree()};
+   G.prob = G.Degree() / (Double) degSum * N;
+   Foreach(v: G.Nodes) {
+       Double dice = Uniform();
+       If (dice < v.prob)
+           S.Add(v);
+   }
+}

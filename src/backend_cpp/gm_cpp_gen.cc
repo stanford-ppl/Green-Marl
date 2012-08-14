@@ -480,7 +480,7 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
     }
 
     if (t->is_map()) {
-        ast_maptypedecl* map = (ast_maptypedecl*)t;
+        ast_maptypedecl* map = (ast_maptypedecl*) t;
         ast_idlist* idl = v->get_idlist();
         assert(idl->get_length() == 1);
         get_lib()->add_map_def(map, idl->get_item(0));
@@ -510,13 +510,13 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
 
 const char* gm_cpp_gen::get_function_name_map_reduce_assign(int reduceType) {
 
-        switch(reduceType) {
-            case GMREDUCE_PLUS:
-                return "changeValueAtomicAdd";
-            default:
-                assert(false);
-                return "ERROR";
-        }
+    switch (reduceType) {
+        case GMREDUCE_PLUS:
+            return "changeValueAtomicAdd";
+        default:
+            assert(false);
+            return "ERROR";
+    }
 }
 
 void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
@@ -534,8 +534,8 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
         ast_id* map = mapAccess->get_map_id();
 
         char buffer[256];
-        if(a->is_under_parallel_execution()) {
-            if(a->is_reduce_assign() && a->get_reduce_type() == GMREDUCE_PLUS) {
+        if (a->is_under_parallel_execution()) {
+            if (a->is_reduce_assign() && a->get_reduce_type() == GMREDUCE_PLUS) {
                 sprintf(buffer, "%s.%s(", map->get_genname(), get_function_name_map_reduce_assign(a->get_reduce_type()));
             } else {
                 sprintf(buffer, "%s.setValue_par(", map->get_genname());
