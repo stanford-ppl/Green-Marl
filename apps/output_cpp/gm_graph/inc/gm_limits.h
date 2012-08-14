@@ -32,12 +32,12 @@ inline int64_t gm_get_max() {
 
 template<>
 inline double gm_get_min() {
-    return -INFINITY;
+    return (-1.0) / 0.0;
 }
 
 template<>
 inline double gm_get_max() {
-    return INFINITY;
+    return 1.0 / 0.0;
 }
 
 #endif /* GM_LIMITS_H_ */
