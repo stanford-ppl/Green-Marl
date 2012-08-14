@@ -1,0 +1,4 @@
+Procedure test_map_as_proc_parameter(G:Graph, map : Map<Int, Int>)
+{
+	
+}
