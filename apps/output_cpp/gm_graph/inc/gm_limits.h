@@ -32,12 +32,14 @@ inline int64_t gm_get_max() {
 
 template<>
 inline double gm_get_min() {
-    return (-1.0) / 0.0;
+    //return (-1.0) / 0.0;
+    return -HUGE_VAL;
 }
 
 template<>
 inline double gm_get_max() {
-    return 1.0 / 0.0;
+    //return 1.0 / 0.0;
+    return HUGE_VAL;
 }
 
 #endif /* GM_LIMITS_H_ */
