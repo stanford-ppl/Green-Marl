@@ -13,7 +13,7 @@ GPS/Giraph: No - at the moment Green-Marl does not support multiple procedure de
 
 2. avg_teen_count
 -------------------------------------
-Description: Computes the average teen count of a node, TODO
+Description: Computes the average number of nodes that are followed by nodes that are 'younger' than 20 and are themselves 'older' than K.
 
 C++: Yes
 
@@ -58,16 +58,16 @@ GPS/Giraph: No - Maps are not supported for the GPS or Giraph back-end yet.
 
 7. conduct
 -------------------------------------
-Description: TODO
+Description: Computes how strongly a group of nodes is connected with the rest of the graph.
 
 C++: Yes
 
 GPS/Giraph: Yes
 
 
-8.op-dist
+8. hop-dist
 -------------------------------------
-Description: TODO
+Description: Computes the distance of every node from a root node.
 
 C++: Yes
 
@@ -104,7 +104,7 @@ Additionally, node-properties of collections are not supported for the GPS or Gi
 
 12. random_bipartite_matching
 -------------------------------------
-Description: TODO
+Description: Computes a random matching for a bipartite graph.
 
 C++: Yes
 
@@ -167,7 +167,7 @@ GPS/Giraph: No - Giraph does not support accessing a node's neighbor's neighbors
 
 19. v_cover
 -------------------------------------
-Description: TODO
+Description: Computes a vertex cover of a graph and returns the number of vertices in the cover.
 
 C++: Yes
 
