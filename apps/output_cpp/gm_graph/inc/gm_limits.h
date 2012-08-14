@@ -29,4 +29,14 @@ inline int64_t gm_get_max() {
     return LONG_MAX;
 }
 
+template<>
+inline double gm_get_min() {
+    return -INFINITY;
+}
+
+template<>
+inline double gm_get_max() {
+    return INFINITY;
+}
+
 #endif /* GM_LIMITS_H_ */
