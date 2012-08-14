@@ -45,10 +45,8 @@ public:
     virtual void generate_sent_nop(ast_nop* n);
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body);
     virtual void generate_expr_nil(ast_expr* e, gm_code_writer& Body);
-
     virtual bool add_collection_def(ast_id* set);
     virtual void add_map_def(ast_maptypedecl* map, ast_id* mapId);
-
     virtual void build_up_language_voca(gm_vocabulary& V);
 
     virtual bool need_up_initializer(ast_foreach* fe);
@@ -57,9 +55,12 @@ public:
     virtual void generate_down_initializer(ast_foreach* fe, gm_code_writer& Body);
     virtual void generate_foreach_header(ast_foreach* fe, gm_code_writer& Body);
 
-
-
 private:
+    //map sizes
+    static const int SMALL = 0;
+    static const int MEDIUM = 1;
+    static const int LARGE = 2;
+
     virtual void generate_expr_builtin_field(ast_expr_builtin_field* builtinExpr, gm_code_writer& body);
     const char* get_function_name_graph(int methodId);
     const char* get_function_name_nset(int methodId, bool in_parallel = false);
@@ -69,6 +70,9 @@ private:
     const char* get_function_name_map_seq(int methodId);
     const char* get_function_name_map_par(int methodId);
     void add_arguments_and_thread(gm_code_writer& body, ast_expr_builtin* builtinExpr, bool addThreadId);
+    const char* getMapDefaultValueForType(int type);
+    const char* getMapTypeString(int mapType);
+    void addAdditionalMapParameters(int mapType);
 
     static const char* get_primitive_type_string(int type_id) {
         switch (type_id) {
@@ -94,7 +98,7 @@ private:
 
     static const char* getTypeString(int type) {
         if (gm_is_prim_type(type))
-            return  get_primitive_type_string(type);
+            return get_primitive_type_string(type);
         else if (gm_is_node_type(type))
             return NODE_T;
         else if (gm_is_edge_type(type))

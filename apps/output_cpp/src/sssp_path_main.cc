@@ -6,35 +6,48 @@ class my_main: public main_t
 private:
     int* dist;
     int* len;
-    node_t* prev1;
-    node_t* prev2;
+    node_t* prev;
+    gm_node_seq Q;
+    node_t begin;
+    node_t end;
+
 public:
     virtual ~my_main() {
         delete[] dist;
         delete[] len;
-        delete[] prev1;
-        delete[] prev2;
+        delete[] prev;
     }
 
     virtual bool prepare() {
         dist = new int[G.num_nodes()];
         len = new int[G.num_edges()];
-        prev1 = new node_t[G.num_nodes()];
-        prev2 = new node_t[G.num_nodes()];
+        prev = new node_t[G.num_nodes()];
         return true;
     }
 
     virtual bool run() {
-        node_t root = 0;
-        node_t begin = 0;
-        node_t end = 0;
-        gm_node_seq Q;
-        sssp_path(G, dist, len, root, prev1);
-        get_path(G, begin, end, prev2, Q);
+        node_t root = rand() % G.num_nodes();
+        begin = root;
+        end = rand() % G.num_nodes();
+        // compute all shortest paths from root
+        sssp_path(G, dist, len, root, prev);
+        // get specific instance from root to end
+        get_path(G, begin, end, prev, Q);
         return true;
     }
 
     virtual bool post_process() {
+        printf("shortest path from %d to %d\n", begin, end);
+        gm_node_seq::seq_iter n_I = Q.prepare_seq_iteration();
+        while (n_I.has_next())
+        {
+            node_t n = n_I.get_next();
+            printf("%d", n);
+            if(n_I.has_next())
+                printf(" -> ");
+            else
+                printf("\n");
+        }
         return true;
     }
 };

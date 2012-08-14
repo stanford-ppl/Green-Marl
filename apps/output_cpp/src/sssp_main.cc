@@ -9,6 +9,11 @@ public:
     int32_t* dist;  // distance of each node
     node_t root;
 
+    virtual ~my_main() {
+        delete[] len;
+        delete[] dist;
+    }
+
     //--------------------------------------------------------
     // create 4 groups randomly
     //--------------------------------------------------------
@@ -34,8 +39,6 @@ public:
         for (int i = 0; i < 10; i++) {
             printf("dist[%d] = %d\n", i, dist[i]);
         }
-        delete[] len;
-        delete[] dist;
         return true;
     }
 };

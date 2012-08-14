@@ -996,6 +996,8 @@ public:
         delete valueType;
     }
 
+    virtual void reproduce(int id_level);
+
     static ast_maptypedecl* new_map(ast_typedecl* keyType, ast_typedecl* valueType) {
         ast_maptypedecl* newMap = new ast_maptypedecl();
         newMap->type_id = GMTYPE_MAP;
@@ -1719,10 +1721,8 @@ public:
         delete keyExpr;
     }
 
-    virtual void dump_tree(int i) {
-    } //TODO
-    virtual void reproduce(int i) {
-    } //TODO
+    virtual void dump_tree(int i);
+    virtual void reproduce(int i);
 
     ast_mapaccess* copy(bool cp_sym = false) {
         ast_mapaccess* clone = new ast_mapaccess();
@@ -2330,6 +2330,8 @@ public:
     ~ast_assign_mapentry() {
         delete lhs;
     }
+
+    virtual void reproduce(int indLevel);
 
     void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 

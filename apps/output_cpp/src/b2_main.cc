@@ -11,6 +11,11 @@ public:
     int32_t* B;
     node_t c;
 
+    virtual ~b2_main() {
+        delete[] A;
+        delete[] B;
+    }
+
     virtual bool prepare() {
         A = new int32_t[G.num_nodes()];
         B = new int32_t[G.num_nodes()];
@@ -24,8 +29,6 @@ public:
     }
 
     virtual bool post_process() {
-        delete[] A;
-        delete[] B;
         return true;
     }
 };

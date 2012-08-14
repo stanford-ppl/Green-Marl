@@ -30,6 +30,7 @@ void ast_idlist::dump_tree(int ind_lv) {
     }
     printf("]");
 }
+
 void ast_field::dump_tree(int ind_level) {
     assert(parent!=NULL);
     IND(ind_level);
@@ -37,6 +38,17 @@ void ast_field::dump_tree(int ind_level) {
     first->dump_tree(0);
     printf(".");
     second->dump_tree(0);
+    printf("]");
+}
+
+void ast_mapaccess::dump_tree(int indLevel) {
+    assert(parent != NULL);
+    IND(indLevel);
+    printf("[");
+    mapId->dump_tree(0);
+    printf("[");
+    keyExpr->dump_tree(indLevel + 1);
+    printf("]");
     printf("]");
 }
 
