@@ -1,4 +1,3 @@
-
 Proc random_bipartite_matching(
         G: Graph,               // Graph is a bipartite
         isLeft : N_P<Bool>,  // every edge is from left node to right node
