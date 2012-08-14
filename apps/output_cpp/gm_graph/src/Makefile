@@ -15,6 +15,10 @@ ifdef FORCE_64BIT
 CFLAGS += -m64
 endif
 
+ifdef FORCE_32BIT
+CFLAGS += -m32
+endif
+
 ifdef HDFS
 # Make sure to compile hadoop with
 # ant -Dcompile.c++=true -Dlibhdfs=true compile-c++-libhdfs
