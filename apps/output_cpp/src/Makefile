@@ -17,6 +17,10 @@ ifdef FORCE_64BIT
 CFLAGS += -m64
 endif
 
+ifdef FORCE_32BIT
+CFLAGS += -m32
+endif
+
 ifdef HDFS
 # Change this path to point to the location of libhdfs.so
 CFLAGS += -L$(HADOOP_HOME)/c++/lib
