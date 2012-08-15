@@ -179,7 +179,7 @@ void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
     Body->push("<");
     Body->push(getTypeString(keyType));
     Body->push(", ");
-    Body->push(getTypeString(valueType));
+    Body->push(getTypeString((valueType == GMTYPE_BOOL) ? GMTYPE_INT : valueType));
     Body->push("> ");
     Body->push(mapId->get_genname());
     Body->push("(");
