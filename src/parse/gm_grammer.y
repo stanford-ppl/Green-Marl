@@ -260,11 +260,11 @@
                   GM_set_lineinfo($$,@1.first_line, @1.first_column);} 
 
   dfs_post     :                               {$$.p1 = NULL; $$.p2 = NULL;}
-               | T_POST bfs_filter sent_block  {$$.p1 = $2;   $$.p2 = $3;  } 
+               | T_POST bfs_filter sent_block  {$$.p1 = $3;   $$.p2 = $2;  } 
                | T_POST sent_block             {$$.p1 = $2;   $$.p2 = NULL;  }
 
   bfs_reverse  :                               {$$.p1 = NULL; $$.p2 = NULL;}
-               | T_BACK bfs_filter sent_block  {$$.p1 = $2;   $$.p2 = $3;  } 
+               | T_BACK bfs_filter sent_block  {$$.p1 = $3;   $$.p2 = $2;  } 
                | T_BACK sent_block             {$$.p1 = $2;   $$.p2 = NULL;  }
 
   bfs_header_format :  '(' id ':' id opt_tp '.' T_NODES from_or_semi id ')' {
