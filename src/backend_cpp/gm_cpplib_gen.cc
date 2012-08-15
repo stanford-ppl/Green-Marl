@@ -140,32 +140,30 @@ const char* gm_cpplib::getMapTypeString(int type) {
 }
 
 const char* gm_cpplib::getMapDefaultValueForType(int type) {
-    if (gm_is_float_type(type))
+    if (gm_is_float_type(type)) {
         return "0.0";
-    else if (gm_is_integer_type(type))
+    } else if (gm_is_integer_type(type)) {
         return "0";
-    else if (gm_is_boolean_type(type))
+    } else if (gm_is_boolean_type(type)) {
         return "false";
-    else if (gm_is_node_type(type))
+    } else if (gm_is_node_type(type)) {
         return "gm_graph::NIL_NODE";
-    else if (gm_is_edge_type(type))
+    } else if (gm_is_edge_type(type)) {
         return "gm_graph::NIL_EDGE";
-    else
+    } else {
         //we only support primitives, nodes and edges in maps (yet)
         assert(false);
+    }
     return NULL;
 }
 
-void gm_cpplib::addAdditionalMapParameters(int mapType) {
+const char* gm_cpplib::getAdditionalMapParameters(int mapType) {
     switch (mapType) {
         case MEDIUM:
-            Body->push("gm_rt_get_num_threads(), ");
-            break;
-        case SMALL:
-        case LARGE:
+            return "gm_rt_get_num_threads(), ";
         default:
             assert(false);
-            break;
+            return "ERROR";
     }
 }
 
@@ -174,18 +172,20 @@ void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
     int mapType = MEDIUM; //TODO: implement compiler optimization to figure out what is best here
     int keyType = map->getKeyTypeSummary();
     int valueType = map->getValueTypeSummary();
+    if(valueType == GMTYPE_BOOL) {
+        valueType = GMTYPE_INT;
+    }
 
-    Body->push(getMapTypeString(mapType));
-    Body->push("<");
-    Body->push(getTypeString(keyType));
-    Body->push(", ");
-    Body->push(getTypeString((valueType == GMTYPE_BOOL) ? GMTYPE_INT : valueType));
-    Body->push("> ");
-    Body->push(mapId->get_genname());
-    Body->push("(");
-    addAdditionalMapParameters(mapType);
-    Body->push(getMapDefaultValueForType(valueType));
-    Body->pushln(");");
+    char typeBuffer[128];
+    // MapType<KeyType, ValueType> VariableName(AdditionalParameters DefaultValue);
+    sprintf(typeBuffer, "%s<%s, %s>", getMapTypeString(mapType), getTypeString(keyType),  getTypeString(valueType));
+
+    char parameterBuffer[64];
+    sprintf(parameterBuffer, "%s %s", getAdditionalMapParameters(mapType), getMapDefaultValueForType(valueType));
+
+    char buffer[256];
+    sprintf(buffer, "%s %s(%s);", typeBuffer, mapId->get_genname(), parameterBuffer);
+    Body->pushln(buffer);
 }
 
 void gm_cpplib::generate_sent_nop(ast_nop *f) {
