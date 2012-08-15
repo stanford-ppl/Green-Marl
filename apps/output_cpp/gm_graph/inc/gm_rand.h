@@ -35,7 +35,7 @@ private:
 class gm_rand32
 {
 public:
-    gm_rand32() : next(2463534242) {}
+    gm_rand32() : next(2463534242u) {}
     gm_rand32(int32_t seed) : next(seed) {} 
     
     int32_t rand() {
