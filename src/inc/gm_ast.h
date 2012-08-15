@@ -2722,9 +2722,11 @@ public:
         b_filter = e;
     }
     void set_fbody(ast_sentblock* b) {
+        if (b != NULL) b->set_parent(this);
         f_body = b;
     }
     void set_bbody(ast_sentblock* b) {
+        if (b != NULL) b->set_parent(this);
         b_body = b;
     }
     virtual void reproduce(int id_level);

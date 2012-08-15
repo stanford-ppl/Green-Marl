@@ -362,11 +362,6 @@ static void create_bw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
 
 
 void gm_gps_rewrite_bfs(ast_bfs* b) {
-    // for temporary
-    //
-    assert(b->get_b_filter() == NULL);
-    assert(b->get_f_filter() == NULL);
-    //assert(b->get_navigator() == NULL);
 
     gm_make_it_belong_to_sentblock(b);
     ast_sentblock* parent = (ast_sentblock*) b->get_parent();
@@ -506,7 +501,6 @@ static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_fo
     gm_ripoff_sent(body);
 
     // replace iterator
-    //printf("repalce :%s -> %s\n", bfs->get_iterator()->get_genname(), out_loop->get_iterator()->get_genname());
     gm_replace_symbol_entry(bfs->get_iterator()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
     // what was iterator 2 again?
     if (bfs->get_iterator2() != NULL)
