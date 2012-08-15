@@ -26,7 +26,8 @@ bool gm_cpplib::need_up_initializer(ast_foreach* f) {
     int iter_type = f->get_iter_type();
     if (gm_is_iteration_on_collection(iter_type))
         return true;
-    else if (gm_is_common_nbr_iter_type(iter_type)) return true;
+    else if (gm_is_common_nbr_iter_type(iter_type))
+        return true;
     return false;
 }
 
@@ -139,7 +140,12 @@ void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body) {
     int type = fe->get_iter_type();
 
     if (gm_is_iteration_on_all_graph(type)) {
-        char* graph_name = source->get_genname();
+        char* graph_name;
+        if(gm_is_node_property_type(source->getTypeSummary()) || gm_is_edge_property_type(source->getTypeSummary())) {
+            graph_name = source->getTypeInfo()->get_target_graph_id()->get_orgname();
+        } else {
+            graph_name = source->get_genname();
+        }
         char* it_name = iter->get_genname();
         sprintf(str_buf, "for (%s %s = 0; %s < %s.%s(); %s ++) ", get_type_string(type), it_name, it_name, graph_name,
                 gm_is_iteration_on_nodes(type) ? NUM_NODES : NUM_EDGES,
