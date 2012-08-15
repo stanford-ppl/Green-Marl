@@ -2,14 +2,16 @@
 Procedure gps18(
     G : Graph,
     n : Node (G),
-    A,B,C,D : N_P <Float>(G))
+    A,B,C,D,E : N_P <Float>(G))
 {
 
-    InBFS(v: G.Nodes From n) {
+    InBFS(v: G.Nodes From n)[v.E>0](v.E>10) {
 
         Foreach(t: v.UpNbrs) 
             t.A += v.B;
 
+    }
+    InReverse(v.E > 20) {
         Foreach(t: v.Nbrs) 
             t.D += v.C;
     }

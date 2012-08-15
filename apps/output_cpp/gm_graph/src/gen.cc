@@ -54,6 +54,9 @@ int main(int argc, char** argv) {
     node_t N = atol(argv[1]);
     edge_t M = atol(argv[2]);
     int gtype = atoi(argv[4]);
+    if (N == 0) {printf("Empty graph not allowed\n"); return EXIT_FAILURE;}
+    printf("Creating Graph, N = %lld, M = %lld, Type = %d\n", N, M, gtype);
+
 
     gm_graph* g;
     int random_seed = 1997;
@@ -94,5 +97,6 @@ int main(int argc, char** argv) {
     printf("storing time (ms) = %lf\n", ((T2.tv_sec) - (T1.tv_sec)) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
 
     delete g;
+    return EXIT_SUCCESS;
 }
 
