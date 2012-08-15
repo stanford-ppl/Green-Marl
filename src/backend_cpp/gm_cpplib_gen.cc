@@ -176,15 +176,16 @@ void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
         valueType = GMTYPE_INT;
     }
 
+    // Output: MapType<KeyType, ValueType> VariableName(AdditionalParameters DefaultValue);
+
     char typeBuffer[128];
-    // MapType<KeyType, ValueType> VariableName(AdditionalParameters DefaultValue);
     sprintf(typeBuffer, "%s<%s, %s>", getMapTypeString(mapType), getTypeString(keyType),  getTypeString(valueType));
 
     char parameterBuffer[64];
-    sprintf(parameterBuffer, "%s %s", getAdditionalMapParameters(mapType), getMapDefaultValueForType(valueType));
+    sprintf(parameterBuffer, "(%s %s)", getAdditionalMapParameters(mapType), getMapDefaultValueForType(valueType));
 
     char buffer[256];
-    sprintf(buffer, "%s %s(%s);", typeBuffer, mapId->get_genname(), parameterBuffer);
+    sprintf(buffer, "%s %s%s;", typeBuffer, mapId->get_genname(), parameterBuffer);
     Body->pushln(buffer);
 }
 
