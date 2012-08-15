@@ -40,4 +40,15 @@ inline double gm_get_max() {
     return INFINITY;
 }
 
+template<>
+inline float gm_get_min() {
+    return -INFINITY;
+}
+
+template<>
+inline float gm_get_max() {
+    return INFINITY;
+}
+
+
 #endif /* GM_LIMITS_H_ */
