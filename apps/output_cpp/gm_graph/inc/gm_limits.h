@@ -32,22 +32,26 @@ inline int64_t gm_get_max() {
 
 template<>
 inline double gm_get_min() {
-    return -INFINITY;
+    return -HUGE_VAL;
+    //return -INFINITY;
 }
 
 template<>
 inline double gm_get_max() {
-    return INFINITY;
+    return HUGE_VAL;
+    //return INFINITY;
 }
 
 template<>
 inline float gm_get_min() {
-    return -INFINITY;
+    return (float) -HUGE_VAL;
+    //return -INFINITY;
 }
 
 template<>
 inline float gm_get_max() {
-    return INFINITY;
+    return (float) HUGE_VAL;
+    //return INFINITY;
 }
 
 

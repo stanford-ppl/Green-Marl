@@ -41,7 +41,7 @@ static inline bool _gm_atomic_compare_and_swap(int32_t *dest, int32_t old_val, i
     return _gm_atomic_cas_int32(dest, old_val, new_val);
 }
 static inline bool _gm_atomic_compare_and_swap(int64_t *dest, int64_t old_val, int64_t new_val) {
-    return _gm_atomic_cas_float(dest, old_val, new_val);
+    return _gm_atomic_cas_int64(dest, old_val, new_val);
 }
 static inline bool _gm_atomic_compare_and_swap(float *dest, float old_val, float new_val) {
     return _gm_atomic_cas_float(dest, old_val, new_val);
