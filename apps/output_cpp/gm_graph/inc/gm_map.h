@@ -190,10 +190,11 @@ public:
     }
 
     Value getValue(const Key key) {
-        if (hasKey(key))
+        if (hasKey(key)) {
             return data[key];
-        else
+        } else {
             return defaultValue;
+        }
     }
 
     void setValue_par(const Key key, Value value) {
@@ -261,7 +262,6 @@ private:
 
     template<class Function>
     Value getValue_generic_seq(Function func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         #pragma omp parallel
@@ -288,7 +288,6 @@ private:
 
     template<class Function>
     Value getValue_generic_par(Function func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         for (Key i = 0; i < size_; i++) {
@@ -299,8 +298,6 @@ private:
 
     template<class Function>
     Key getKey_generic_par(Function compare, const Value initialValue) {
-
-        assert(size() > 0);
 
         Value value = initialValue;
         Key key = 0;
@@ -316,8 +313,6 @@ private:
 
     template<class Function>
     Key getKey_generic_seq(Function compare, const Value initialValue) {
-
-        assert(size() > 0);
 
         Value value = initialValue;
         Key key = 0;
@@ -493,7 +488,6 @@ private:
 
     template<class FunctionCompare, class FunctionMinMax>
     Value getValue_generic_par(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         for (int i = 0; i < innerSize; i++) {
@@ -510,7 +504,6 @@ private:
 
     template<class FunctionCompare, class FunctionMinMax>
     Value getValue_generic_seq(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         #pragma omp parallel
@@ -549,7 +542,6 @@ private:
 
     template<class Function>
     Key getKey_generic_seq(Function compare, const Value initialValue) {
-        assert(size() > 0);
         Key key = 0;
         Value value = initialValue;
 
@@ -573,7 +565,6 @@ private:
 
     template<class Function>
     Key getKey_generic_par(Function compare, const Value initialValue) {
-        assert(size() > 0);
         Key key = 0;
         Value value = initialValue;
 
@@ -683,11 +674,13 @@ public:
     }
 
     bool hasKey(const Key key) {
-        return positionHasKey(key % innerSize, key);
+        int position = key & bitmask;
+        return positionHasKey(position, key);
     }
 
     Value getValue(const Key key) {
-        return getValueFromPosition(key % innerSize, key);
+        int position = key & bitmask;
+        return getValueFromPosition(position, key);
     }
 
     void setValue_par(const Key key, Value value) {
@@ -698,7 +691,8 @@ public:
     }
 
     void setValue_seq(const Key key, Value value) {
-        setValueAtPosition(key & bitmask, key, value);
+        int position = key & bitmask;
+        setValueAtPosition(position, key, value);
     }
 
     bool hasMaxValue(const Key key) {

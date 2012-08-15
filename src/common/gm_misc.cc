@@ -150,16 +150,14 @@ const char* gm_get_iter_type_string(int t) {
             return "InNbrs";
         case GMTYPE_NODEITER_COMMON_NBRS:
             return "CommonNbrs";
-
         case GMTYPE_NODEITER_SET:
-            return "Items";
         case GMTYPE_NODEITER_SEQ:
-            return "Items";
         case GMTYPE_NODEITER_ORDER:
-            return "Items";
         case GMTYPE_ITER_ANY:
+        case GMTYPE_PROPERTYITER_SET:
+        case GMTYPE_PROPERTYITER_SEQ:
+        case GMTYPE_PROPERTYITER_ORDER:
             return "Items";
-
         default:
             assert(false);
             return "Unknown";
@@ -182,7 +180,8 @@ const char* gm_get_reduce_string(int rop_type) {
 }
 const char* gm_get_reduce_expr_string(int rop_type) {
     const char* opstr = (rop_type == GMREDUCE_PLUS) ? "Sum" : (rop_type == GMREDUCE_MULT) ? "Product" : (rop_type == GMREDUCE_MIN) ? "Min" :
-                        (rop_type == GMREDUCE_MAX) ? "Max" : (rop_type == GMREDUCE_AND) ? "All" : (rop_type == GMREDUCE_OR) ? "Exist" : (rop_type == GMREDUCE_AVG) ? "Avg" : "??";
+                        (rop_type == GMREDUCE_MAX) ? "Max" : (rop_type == GMREDUCE_AND) ? "All" : (rop_type == GMREDUCE_OR) ? "Exist" :
+                        (rop_type == GMREDUCE_AVG) ? "Avg" : "??";
     return opstr;
 }
 
