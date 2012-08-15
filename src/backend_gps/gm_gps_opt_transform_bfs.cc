@@ -29,7 +29,7 @@ public:
     virtual bool apply(ast_sent* s) {
         if (s->get_nodetype()== AST_BFS)
         {
-            assert (!in_bfs);  // no nested BFS for now
+            assert (!in_bfs);  // [XXX] Nested BFS are not allowed (temporary)
             in_bfs = true;
             current_bfs = (ast_bfs*) s;
             BFS.push_back(current_bfs);
@@ -146,6 +146,7 @@ static ast_sentblock* create_fw_body_prepare(ast_sentblock* while_sb, ast_bfs* b
     
 }
 
+
 static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_foreach* out_loop, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, bool is_fw);
 
 static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, gm_symtab_entry* fin_sym) {
@@ -156,7 +157,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     //       Foreach(v:G.Nodes) {
     //          if (v.level == curr_level) {
     //             Foreach(k:v.Nbrs) {
-    //                If (k.level == +INF) {
+    //                If (k.level == +INF && [navigator]) {
     //                   k.level = curr_level + 1;    
     //                   bfs_finished &= False;
     //                }
@@ -205,7 +206,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         GMTYPE_NODEITER_ALL);
     while_sb->add_sent(foreach_out);
 
-    // outer if
+
     ast_expr* lev_check_out_c = ast_expr::new_comp_expr(
         GMOP_EQ,
         ast_expr::new_field_expr(
@@ -327,6 +328,7 @@ static void create_bw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     ast_sentblock* lev_check_out_sb = ast_sentblock::new_sentblock();
     ast_if* lev_check_out_if = ast_if::new_if(lev_check_out_c, lev_check_out_sb,NULL);
     foreach_sb->add_sent(lev_check_out_if);
+
 
 
     create_user_body_main(lev_check_out_sb, bfs, foreach_out, lev_sym, curr_sym, false);

@@ -867,6 +867,12 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
             Body.push(")");
             break;
 
+        case GM_BLTIN_GRAPH_RAND_NODE:         // random node function
+            Body.push("(new java.util.Random()).nextInt(");
+            Body.push("getNumVertices()");
+            Body.push(")");
+            break;
+
         case GM_BLTIN_GRAPH_NUM_NODES:
             Body.push("getNumVertices()");
             break;
