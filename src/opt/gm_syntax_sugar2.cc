@@ -266,7 +266,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
             need_count_for_avg = true;
             if (target->get_filter() == NULL) {
-                
+
                 int iter_type = target->get_iter_type();
                 int src_type = target->get_source()->getTypeInfo()->getTypeSummary();
                 if (find_count_function(src_type, iter_type) == GM_BLTIN_END)
@@ -326,13 +326,12 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
         bound_id = old_iter->copy(false); // dummy value;
     }
 
-
     if (!has_nested) {
         r_assign = ast_assign::new_assign_scala(lhs_id, body, GMASSIGN_REDUCE, bound_id, rtype);
         foreach_body = r_assign;
 
         if (need_count_for_avg) {
-            
+
             ast_sentblock* sb = ast_sentblock::new_sentblock();
             ast_id* lhs_id = cnt_symbol->getId()->copy(true);  // symInfo is correct for LHS
             bound_id2 = old_iter->copy(false);              // symInfo not available yet
@@ -476,7 +475,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
 }
 
-class Replace_PropertyItarator_With_NodeIterator : public gm_apply
+class Replace_PropertyItarator_With_NodeIterator: public gm_apply
 {
 
 public:
@@ -552,21 +551,13 @@ private:
             newBody = ast_sentblock::new_sentblock();
         }
 
-        ast_assign* assign = createAssignStatement();
         std::list<ast_sent*>& statements = newBody->get_sents();
-        if(fe->get_body()->get_nodetype() == AST_SENTBLOCK) {
-            std::list<ast_sent*>& sentList = ((ast_sentblock*) fe->get_body())->get_sents();
-            std::list<ast_sent*>::iterator iter;
-            for(iter = sentList.begin(); iter != sentList.end(); iter++) {
-                statements.push_back(*iter);
-            }
-        } else {
+        if (fe->get_body()->get_nodetype() != AST_SENTBLOCK) {
             statements.push_back(fe->get_body());
         }
 
+        ast_assign* assign = createAssignStatement();
         statements.push_front(assign);
-
-
 
         return newBody;
     }
