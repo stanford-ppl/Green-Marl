@@ -11,6 +11,7 @@
 GM_COMPILE_STEP(gm_cpp_opt_check_feasible, "Check compiler feasiblity")
 GM_COMPILE_STEP(gm_cpp_opt_defer, "Handle deferred writes")
 GM_COMPILE_STEP(gm_cpp_opt_sanitize_name, "Sanitize identifier")
+GM_COMPILE_STEP(gm_cpp_opt_common_nbr, "Common Neigbhor Iteration")
 GM_COMPILE_STEP(gm_cpp_opt_select_par, "Select parallel regions")
 GM_COMPILE_STEP(gm_cpp_opt_save_bfs, "Finding BFS Children")
 //GM_COMPILE_STEP(gm_cpp_opt_reduce_bound, "Optimize reductions with sequential bound ")
