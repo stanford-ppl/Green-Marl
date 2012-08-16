@@ -1,0 +1,9 @@
+Procedure test_map_builtin_functions(G:Graph)
+{
+	Graph G2;
+	N_P<N_S(G)>(G) prop;
+	
+	For(x : prop.Items) {
+		N_S(G2) s = x;	// bound graph conflict
+	}
+}
