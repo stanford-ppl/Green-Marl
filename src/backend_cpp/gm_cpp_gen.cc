@@ -538,7 +538,12 @@ void gm_cpp_gen::generate_sent_map_assign(ast_assign_mapentry* a) {
             sprintf(buffer, "%s.setValue_par(", map->get_genname());
         }
     } else {
-        sprintf(buffer, "%s.setValue_seq(", map->get_genname());
+        if (a->is_reduce_assign() && a->get_reduce_type() == GMREDUCE_PLUS) {
+            //TODO do this without CAS overhead
+            sprintf(buffer, "%s.%s(", map->get_genname(), get_function_name_map_reduce_assign(a->get_reduce_type()));
+        } else {
+            sprintf(buffer, "%s.setValue_seq(", map->get_genname());
+        }
     }
     Body.push(buffer);
 
