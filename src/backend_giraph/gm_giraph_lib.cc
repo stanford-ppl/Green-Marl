@@ -909,7 +909,7 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
             Body.push("getTotalNumVertices()");
             break;
         case GM_BLTIN_NODE_DEGREE:
-            Body.push("getTotalNumEdges()");
+            Body.push("getNumEdges()");
             break;
         case GM_BLTIN_NODE_IN_DEGREE:
             Body.push(STATE_SHORT_CUT);
