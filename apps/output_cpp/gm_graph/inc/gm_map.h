@@ -377,7 +377,7 @@ public:
     }
 
     bool hasKey(const Key key) {
-        return key < size() && valid[key];
+        return key < size_ && valid[key];
     }
 
     Value getValue(const Key key) {
@@ -453,7 +453,6 @@ public:
             oldValue = data[key];
             newValue = valid[key] ? (oldValue + summand) : summand;
         } while (_gm_atomic_compare_and_swap(data + key, oldValue, newValue) == false);
-
         valid[key] = true;
         return newValue;
     }
