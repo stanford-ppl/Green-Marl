@@ -95,9 +95,9 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.NL();
 
     Body.pushln("@Override");
-    sprintf(temp, "public BasicVertex<%s, VertexData, %s, MessageData> getCurrentVertex() throws IOException, InterruptedException {", vertex_id, edge_data);
+    sprintf(temp, "public Vertex<%s, VertexData, %s, MessageData> getCurrentVertex() throws IOException, InterruptedException {", vertex_id, edge_data);
     Body.pushln(temp);
-    sprintf(temp, "BasicVertex<%s, VertexData, %s, MessageData> vertex =", vertex_id, edge_data);
+    sprintf(temp, "Vertex<%s, VertexData, %s, MessageData> vertex =", vertex_id, edge_data);
     Body.pushln(temp);
     sprintf(temp, "    BspUtils.<%s, VertexData, %s, MessageData> createVertex(getContext().getConfiguration());", vertex_id, edge_data);
     Body.pushln(temp);
@@ -167,23 +167,20 @@ void gm_giraph_gen::do_generate_input_output_formats() {
 
     Body.pushln("@Override");
     Body.pushln("public void writeVertex(");
-    sprintf(temp, "BasicVertex<%s, VertexData, %s, ?> vertex)", vertex_id, edge_data);
+    sprintf(temp, "Vertex<%s, VertexData, %s, ?> vertex)", vertex_id, edge_data);
     Body.pushln(temp);
     Body.pushln("throws IOException, InterruptedException {");
-    Body.pushln("StringBuffer sb = new StringBuffer(vertex.getVertexId().toString());");
-    Body.pushln("sb.append('\\t').append(vertex.getVertexValue());");
+    Body.pushln("StringBuffer sb = new StringBuffer(vertex.getId().toString());");
+    Body.pushln("sb.append('\\t').append(vertex.getValue());");
     Body.NL();
 
-    sprintf(temp, "Iterator<%s> outEdges = vertex.getOutEdgesIterator();", vertex_id);
+    sprintf(temp, "for (Edge<%s, %s> edge : vertex.getEdges()) {", vertex_id, edge_data);
     Body.pushln(temp);
-    Body.pushln("while (outEdges.hasNext()) {");
     if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        sprintf(temp, "%s neighbor = outEdges.next();", vertex_id);
-        Body.pushln(temp);
-        Body.pushln("sb.append('\\t').append(neighbor);");
-        Body.pushln("sb.append('\\t').append(vertex.getEdgeValue(neighbor));");
+        Body.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
+        Body.pushln("sb.append('\\t').append(edge.getValue());");
     } else {
-        Body.pushln("sb.append('\\t').append(outEdges.next());");
+        Body.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
         Body.pushln("sb.append(\"\\t1.0\");");
     }
     Body.pushln("}");
