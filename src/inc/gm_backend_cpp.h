@@ -267,6 +267,7 @@ private:
     const char* get_function_name(int methodId, bool& addThreadId);
     void generate_idlist_primitive(ast_idlist* idList);
     void generate_lhs_default(int type);
+    void generate_sent_map_assign(ast_assign_mapentry* a);
 };
 
 extern gm_cpp_gen CPP_BE;

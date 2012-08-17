@@ -155,6 +155,7 @@ private:
     bool check_arguments(ast_expr_builtin* b);
     bool check_mapaccess(ast_expr_mapaccess* mapAccessExpr);
     bool check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column);
+    int tryResolveUnknownType(int type);
 
 public:
     // expression, dest-type
@@ -367,13 +368,27 @@ int gm_typechecker_stage_3::resolveGenericInputType(ast_expr_builtin* b, int arg
 
     gm_builtin_def* def = b->get_builtin_def();
     ast_id* driver = b->get_driver();
-    assert(driver->getTypeSummary() == GMTYPE_MAP); // we only support maps atm
+    assert(driver->getTypeSummary() == GMTYPE_MAP);
+    // we only support maps atm
     ast_typedecl* typeDecl = driver->getTypeInfo();
     ast_maptypedecl* mapTypeDecl = (ast_maptypedecl*) typeDecl;
     if (def->genericArgumentTypeIsKeyType(argPosition))
         return mapTypeDecl->getKeyTypeSummary();
     else
         return mapTypeDecl->getValueTypeSummary();
+}
+
+int gm_typechecker_stage_3::tryResolveUnknownType(int type) {
+    switch (type) {
+        case GMTYPE_COLLECTIONITER_SET:
+            return GMTYPE_NSET;
+        case GMTYPE_COLLECTIONITER_ORDER:
+            return GMTYPE_NORDER;
+        case GMTYPE_COLLECTIONITER_SEQ:
+            return GMTYPE_NSEQ;
+        default:
+            return type;
+    }
 }
 
 bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
@@ -388,19 +403,23 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
         ast_expr* e = *iter;
         int currentType = e->get_type_summary();
         int def_type = def->get_arg_type(position);
-        if(def_type == GMTYPE_GENERIC) {
-            def_type = (int)resolveGenericInputType(b, position);
+        if (def_type == GMTYPE_GENERIC) {
+            def_type = (int) resolveGenericInputType(b, position);
         } else if (gm_is_unknown_type(currentType)) {
             okay = false;
             continue;
         }
+
+        currentType = tryResolveUnknownType(currentType);
+
         bool warning;
         int coerced_type;
         bool isCompatible;
-        if (gm_is_collection_of_collection_type(b->get_source_type()))
+        if (gm_is_collection_of_collection_type(b->get_source_type())) {
             isCompatible = gm_is_compatible_type_collection_of_collection(b->get_driver()->getTargetTypeSummary(), currentType, def->get_method_id());
-        else
+        } else {
             isCompatible = gm_is_compatible_type_for_assign(def_type, currentType, coerced_type, warning);
+        }
         if (!isCompatible) {
             char temp[20];
             sprintf(temp, "%d", position + 1);
