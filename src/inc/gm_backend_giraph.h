@@ -41,7 +41,8 @@ public:
     virtual void generate_broadcast_reduce_initialize_master(ast_id* id, gm_code_writer& Body, int reduce_type, const char* base_value);
     virtual void generate_broadcast_state_master(const char* state_var, gm_code_writer& Body);
     virtual void generate_broadcast_isFirst_master(const char* var, gm_code_writer& Body);
-    virtual void generate_broadcast_variable_type(int gm_type_id, gm_code_writer& Body, int reduce_op = GMREDUCE_NULL);
+    virtual void generate_broadcast_aggregator_type(int gm_type_id, gm_code_writer& Body, int reduce_op = GMREDUCE_NULL);
+    virtual void generate_broadcast_writable_type(int gm_type_id, gm_code_writer& Body);
     virtual void generate_broadcast_send_master(ast_id* id, gm_code_writer& Body);
     virtual void generate_broadcast_receive_master(ast_id* id, gm_code_writer& Body, int reduce_op = GMREDUCE_NULL);
     virtual void generate_headers(gm_code_writer& Body);
@@ -87,6 +88,13 @@ public:
     virtual void generate_message_send_for_random_write(ast_sentblock* sb, gm_symtab_entry* sym, gm_code_writer& Body);
 
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master);
+
+    virtual bool is_node_type_int() {
+        return true;
+    }
+    virtual bool is_edge_type_int() {
+        return true;
+    }
 };
 
 //-----------------------------------------------------------------
