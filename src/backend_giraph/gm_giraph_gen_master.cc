@@ -51,7 +51,7 @@ void gm_giraph_gen::do_generate_master_class() {
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
     std::set<gm_symtab_entry*>::iterator I_sym;
 
-    sprintf(temp, "registerAggregator(%s, IntOverwriteAggregator.class);", GPS_KEY_FOR_STATE);
+    sprintf(temp, "registerPersistentAggregator(%s, IntOverwriteAggregator.class);", GPS_KEY_FOR_STATE);
     Body.pushln(temp);
     for (I_bb = bb_blocks.begin(); I_bb != bb_blocks.end(); I_bb++) {
         gm_gps_basic_block* b = *I_bb;
@@ -59,7 +59,7 @@ void gm_giraph_gen::do_generate_master_class() {
 
         if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
             int cond_bb_no = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
-            sprintf(temp, "registerAggregator(\"%s%d\", BooleanOverwriteAggregator.class);", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
+            sprintf(temp, "registerPersistentAggregator(\"%s%d\", BooleanOverwriteAggregator.class);", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
             Body.pushln(temp);
         }
     }
@@ -70,9 +70,9 @@ void gm_giraph_gen::do_generate_master_class() {
         assert(syminfo!=NULL);
 
         if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
-            sprintf(temp, "registerAggregator(%s, ", get_lib()->create_key_string(sym->getId()));
+            sprintf(temp, "registerPersistentAggregator(%s, ", get_lib()->create_key_string(sym->getId()));
             Body.push(temp);
-            get_lib()->generate_broadcast_variable_type(sym->getId()->getTypeSummary(), Body, syminfo->get_reduce_type());
+            get_lib()->generate_broadcast_aggregator_type(sym->getId()->getTypeSummary(), Body, syminfo->get_reduce_type());
             Body.pushln(".class);");
         }
     }
