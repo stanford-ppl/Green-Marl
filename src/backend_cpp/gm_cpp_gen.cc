@@ -526,6 +526,34 @@ const char* gm_cpp_gen::get_function_name_map_reduce_assign(int reduceType) {
     }
 }
 
+void gm_cpp_gen::generate_sent_map_assign(ast_assign_mapentry* a) {
+    ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
+    ast_id* map = mapAccess->get_map_id();
+
+    char buffer[256];
+    if (a->is_under_parallel_execution()) {
+        if (a->is_reduce_assign() && a->get_reduce_type() == GMREDUCE_PLUS) {
+            sprintf(buffer, "%s.%s(", map->get_genname(), get_function_name_map_reduce_assign(a->get_reduce_type()));
+        } else {
+            sprintf(buffer, "%s.setValue_par(", map->get_genname());
+        }
+    } else {
+        if (a->is_reduce_assign() && a->get_reduce_type() == GMREDUCE_PLUS) {
+            //TODO do this without CAS overhead
+            sprintf(buffer, "%s.%s(", map->get_genname(), get_function_name_map_reduce_assign(a->get_reduce_type()));
+        } else {
+            sprintf(buffer, "%s.setValue_seq(", map->get_genname());
+        }
+    }
+    Body.push(buffer);
+
+    ast_expr* key = mapAccess->get_key_expr();
+    generate_expr(key);
+    Body.push(", ");
+    generate_expr(a->get_rhs());
+    Body.pushln(");");
+}
+
 void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
 
     if (a->is_target_scalar()) {
@@ -536,27 +564,7 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
         }
         generate_lhs_id(a->get_lhs_scala());
     } else if (a->is_target_map_entry()) {
-
-        ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
-        ast_id* map = mapAccess->get_map_id();
-
-        char buffer[256];
-        if (a->is_under_parallel_execution()) {
-            if (a->is_reduce_assign() && a->get_reduce_type() == GMREDUCE_PLUS) {
-                sprintf(buffer, "%s.%s(", map->get_genname(), get_function_name_map_reduce_assign(a->get_reduce_type()));
-            } else {
-                sprintf(buffer, "%s.setValue_par(", map->get_genname());
-            }
-        } else {
-            sprintf(buffer, "%s.setValue_seq(", map->get_genname());
-        }
-        Body.push(buffer);
-
-        ast_expr* key = mapAccess->get_key_expr();
-        generate_expr(key);
-        Body.push(", ");
-        generate_expr(a->get_rhs());
-        Body.pushln(");");
+        generate_sent_map_assign(a->to_assign_mapentry());
         return;
     } else {
         generate_lhs_field(a->get_lhs_field());
