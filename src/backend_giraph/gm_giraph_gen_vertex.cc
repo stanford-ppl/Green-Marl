@@ -40,33 +40,6 @@ void gm_giraph_gen::do_generate_worker_context_class() {
     Body.NL();
     Body.pushln("@Override");
     Body.pushln("public void preApplication() throws InstantiationException, IllegalAccessException {");
-    sprintf(temp, "registerAggregator(%s, IntOverwriteAggregator.class);", GPS_KEY_FOR_STATE);
-    Body.pushln(temp);
-
-    for (I_bb = bb_blocks.begin(); I_bb != bb_blocks.end(); I_bb++) {
-        gm_gps_basic_block* b = *I_bb;
-        if ((!b->is_prepare()) && (!b->is_vertex())) continue;
-
-        if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
-            int cond_bb_no = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
-            sprintf(temp, "registerAggregator(\"%s%d\", BooleanOverwriteAggregator.class);", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
-            Body.pushln(temp);
-        }
-    }
-
-    for (I_sym = scalar.begin(); I_sym != scalar.end(); I_sym++) {
-        gm_symtab_entry* sym = *I_sym;
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
-        assert(syminfo!=NULL);
-
-        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
-            sprintf(temp, "registerAggregator(%s, ", get_lib()->create_key_string(sym->getId()));
-            Body.push(temp);
-            get_lib()->generate_broadcast_variable_type(sym->getId()->getTypeSummary(), Body, syminfo->get_reduce_type());
-            Body.pushln(".class);");
-        }
-    }
-
     Body.pushln("}");
     Body.NL();
     Body.pushln("@Override");
@@ -75,31 +48,6 @@ void gm_giraph_gen::do_generate_worker_context_class() {
     Body.NL();
     Body.pushln("@Override");
     Body.pushln("public void preSuperstep() {");
-    sprintf(temp, "useAggregator(%s);", GPS_KEY_FOR_STATE);
-    Body.pushln(temp);
-
-    for (I_bb = bb_blocks.begin(); I_bb != bb_blocks.end(); I_bb++) {
-        gm_gps_basic_block* b = *I_bb;
-        if ((!b->is_prepare()) && (!b->is_vertex())) continue;
-
-        if (b->find_info_bool(GPS_FLAG_IS_INTRA_MERGED_CONDITIONAL)) {
-            int cond_bb_no = b->find_info_int(GPS_INT_INTRA_MERGED_CONDITIONAL_NO);
-            sprintf(temp, "useAggregator(\"%s%d\");", GPS_INTRA_MERGE_IS_FIRST, cond_bb_no);
-            Body.pushln(temp);
-        }
-    }
-
-    for (I_sym = scalar.begin(); I_sym != scalar.end(); I_sym++) {
-        gm_symtab_entry* sym = *I_sym;
-        gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(GPS_TAG_BB_USAGE);
-        assert(syminfo!=NULL);
-
-        if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
-            sprintf(temp, "useAggregator(%s);", get_lib()->create_key_string(sym->getId()));
-            Body.pushln(temp);
-        }
-    }
-
     Body.pushln("}");
     Body.NL();
     Body.pushln("@Override");
@@ -208,7 +156,7 @@ void gm_giraph_gen::do_generate_vertex_states() {
     char temp[1024];
     Body.NL();
     Body.pushln("@Override");
-    Body.pushln("public void compute(Iterator<MessageData> _msgs) {");
+    Body.pushln("public void compute(Iterable<MessageData> _msgs) {");
     get_lib()->generate_receive_state_vertex("_state_vertex", Body);
 
     Body.pushln("switch(_state_vertex) { ");
@@ -288,7 +236,7 @@ void gm_giraph_gen::do_generate_vertex_state_body(gm_gps_basic_block *b) {
     int type = b->get_type();
 
     char temp[1024];
-    sprintf(temp, "private void _vertex_state_%d(Iterator<MessageData> _msgs) {", id);
+    sprintf(temp, "private void _vertex_state_%d(Iterable<MessageData> _msgs) {", id);
     Body.pushln(temp);
 
     get_lib()->generate_vertex_prop_access_prepare(Body);
@@ -319,8 +267,7 @@ void gm_giraph_gen::do_generate_vertex_state_body(gm_gps_basic_block *b) {
         }
 
         Body.pushln("// Begin msg receive");
-        Body.pushln("while (_msgs.hasNext()) {");
-        Body.pushln("MessageData _msg = _msgs.next();");
+        Body.pushln("for (MessageData _msg : _msgs) {");
 
         std::list<gm_gps_comm_unit>& R = b->get_receivers();
         std::list<gm_gps_comm_unit>::iterator I;
