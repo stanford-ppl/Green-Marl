@@ -351,6 +351,12 @@ void gm_insert_sent_body_end(ast_foreach* fe, ast_sent* target, bool need_fix_sy
     }
 }
 
+
+void gm_remove_sent_from_sb(ast_sent* target, ast_sentblock* from, bool fix_symtab)
+{
+    gm_ripoff_sent(target, fix_symtab); // this is same from ripoff sent
+}
+
 class replace_subexpr_A : public gm_apply
 {
 public:
@@ -648,4 +654,40 @@ void gm_reconstruct_scope(ast_node* top)
     assert(top->has_scope());
     gm_reconstruct_scope_t T(top);
     top->traverse_pre(&T);
+}
+
+//------------------------------------------------------------
+// Sentenceblock related
+//------------------------------------------------------------
+bool gm_is_sentblock_empty(ast_sentblock* sb)
+{
+    std::list<ast_sent*>& L = sb->get_sents();
+    return (L.size() == 0);
+}
+bool gm_is_sentblock_trivial(ast_sentblock* sb, ast_sent* &s)
+{
+    std::list<ast_sent*>& L = sb->get_sents();
+    if (L.size() != 1) return false;
+
+    // also there should be no definitions
+    if (sb->get_symtab_var()->get_num_symbols() != 0) return false;
+    if (sb->get_symtab_field()->get_num_symbols() != 0) return false;
+    if (sb->get_symtab_proc()->get_num_symbols() != 0) return false;
+
+    s = L.front();
+    return true;
+}
+
+ast_sent* gm_get_sentence_if_trivial_sentblock(ast_sent* s) 
+{
+    if (s->get_nodetype() == AST_SENTBLOCK) 
+    {
+        ast_sent* t;
+        if (gm_is_sentblock_trivial((ast_sentblock*) s, t))
+        {
+            return t;
+        }
+    }
+
+    return s;
 }

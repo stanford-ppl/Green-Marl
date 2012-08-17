@@ -21,15 +21,15 @@ public:
     }
 
     virtual bool run() {
-        if (method == 0)
+        //if (method == 0)
             adamicAdar(G, aa);
-        else
-            adamicAdar2(G, aa);
+        //else
+        //    adamicAdar2(G, aa);
         return true;
     }
 
     virtual void print_arg_info() {
-        printf("[usemethod=0/1]");
+        //printf("[usemethod=0/1]");
     }
 
     virtual bool check_args(int argc, char** argv) {

@@ -2854,9 +2854,11 @@ public:
         return cond;
     }
     void set_then(ast_sent* s) {
+        if (s!=NULL) s->set_parent(this);
         then_part = s;
     }
     void set_else(ast_sent* s) {
+        if (s!=NULL) s->set_parent(this);
         else_part = s;
     }
     void set_cond(ast_expr* c) {
