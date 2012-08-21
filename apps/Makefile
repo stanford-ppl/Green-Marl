@@ -53,7 +53,7 @@ all: lib gen bin
 lib:
 	@cd $(tdir); make lib
 
-bin:
+bin: lib
 	@cd $(tdir); make 
 
 gen:

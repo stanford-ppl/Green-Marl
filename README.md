@@ -113,7 +113,7 @@ The following steps generates a set of empty directories that will be used durin
 compilation:
 
     cd $(top)
-    ./make_dirs.sh
+    make dirs
 
 3-3 Build the Compiler
 -------------------------------------
