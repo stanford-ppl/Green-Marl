@@ -7,8 +7,9 @@ import os;
 import multiprocessing;
 
 s_path = sys.path[0];
+TOP_LEVEL_PATH=s_path+"/../../";
 COMP_BINARY_PATH=s_path+"/../../bin/gm_comp";
-COMP_SRC_PATH=s_path+"/../../src";
+COMP_SRC_PATH=s_path+"/../../src/";
 APPS_PATH=s_path+"/../../apps/";
 NUM_THREADS=multiprocessing.cpu_count();
 
@@ -72,10 +73,10 @@ if (interactive):
 # BUILD THE COMPILER
 
 def build_compiler():
-    os.chdir(COMP_SRC_PATH);
+    os.chdir(TOP_LEVEL_PATH);
     make_res = commands.getstatusoutput("make veryclean");
     assert make_res[0] == 0;
-    make_res = commands.getstatusoutput("make -j" + str(NUM_THREADS));
+    make_res = commands.getstatusoutput("make compiler -j" + str(NUM_THREADS));
     if make_res[0] != 0:
         print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
         sys.exit(-1);
@@ -96,7 +97,7 @@ def build_and_run_apps(apps_out_dir, run_apps):
     os.chdir(APPS_PATH);
     make_res = commands.getstatusoutput("make clean_all");
     assert make_res[0] == 0;
-    make_res = commands.getstatusoutput("make all");
+    make_res = commands.getstatusoutput("make all -j" + str(NUM_THREADS));
     if make_res[0] != 0:
         print "APPLICATION BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
         sys.exit(-1);
