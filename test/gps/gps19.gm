@@ -1,4 +1,4 @@
-// Test of BFS
+// Test of  edge iteration
 Procedure gps19(
     G : Graph,
     B : N_P <Int>(G),
