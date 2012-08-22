@@ -9,6 +9,7 @@
 // declaration of optimization steps
 //-------------------------------------------
 GM_COMPILE_STEP(gm_gps_opt_transform_bfs, "Transform BFS into while and foreach")
+GM_COMPILE_STEP(gm_gps_opt_edge_iteration, "Transform Edge Iteration")
 GM_COMPILE_STEP(gm_gps_opt_simplify_expr1, "Seperating builtin-calls from outer-loop driver")
 //GM_COMPILE_STEP(gm_gps_opt_find_nested_loops_test, "test find nested loops")
 GM_COMPILE_STEP(gm_gps_opt_find_nested_loops_test, "test find nested loops")

@@ -101,6 +101,7 @@ SRCS2 =\
        gm_gps_opt_simplify_expr1.cc\
        gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_opt_transform_bfs.cc\
+	   gm_gps_opt_edge_iteration.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc\

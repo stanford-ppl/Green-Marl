@@ -48,6 +48,7 @@ extern void gm_add_sent_end(ast_sent* current, ast_sent* newone, bool fix_symtab
 //--------------------------------------------------------------------
 extern void gm_add_sent_before(ast_sent* current, ast_sent* newone, bool fix_symtab = true);
 extern void gm_add_sent_after(ast_sent* current, ast_sent* newone, bool fix_symtab = true);
+extern void gm_replace_sent(ast_sent* orgone, ast_sent* newone, bool fix_symtab = true);
 
 //--------------------------------------------------------------------
 // similar to add_sent_*. But explicitly give the sentence bock
@@ -150,6 +151,7 @@ ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type);
 // [the routine expects that there is only 1 instance of old_e inside target top expreesion]
 // note: symtab hierarchy is *not* re-validated by this routine
 // (thus be careful if new_e contains Sum/Product...)
+// (this method should be depricated; use replace_expr_general instead)
 extern bool gm_replace_subexpr(ast_expr* top, ast_expr* old_e, ast_expr* new_e);
 
 // implement following function 
@@ -176,6 +178,8 @@ extern bool gm_resolve_name_conflict(ast_sent *s, gm_symtab_entry *e, bool is_sc
 // [Assumption. e_new is a valid symbol entry that does not break scoping rule.]
 //---------------------------------------------------------------------------------------
 extern bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top);
+// replace symbol entry only for bounds 
+extern bool gm_replace_symbol_entry_bound(gm_symtab_entry *e_old, gm_symtab_entry *e_new, ast_node* top);
 
 //---------------------------------------------------------------
 // Merge subblock P,Q into P
