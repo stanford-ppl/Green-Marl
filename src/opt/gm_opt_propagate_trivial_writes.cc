@@ -82,7 +82,6 @@ public:
             gm_symtab_entry* rhs_sym = I->second->get_rhs()->get_id()->getSymInfo();
             ast_sentblock* sb = gm_find_defining_sentblock_up(a, lhs_sym);
             assert(sb!=NULL);
-            printf("changing %s -> %s\n", lhs_sym->getId()->get_genname(), rhs_sym->getId()->get_genname());
             gm_replace_symbol_access_scalar_scalar(sb, lhs_sym, rhs_sym, /* change rhs*/ true, /*change lhs*/false);
 
             _changed = true;
