@@ -124,7 +124,8 @@ bool gm_reflect_symbol_entry_name(gm_symtab_entry *e_modified, ast_node* top)
 // If the new symbol has different orgname() from the old one, modify the name in the id node as well.
 // (Assumption. e_new is a valid symbol entry that does not break scoping rule)
 //---------------------------------------------------------------------------------------
-bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top);
+extern bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top);
+extern bool gm_replace_symbol_entry_bound(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top);
 
 class gm_replace_symbol_entry_t : public gm_apply
 {
@@ -159,6 +160,48 @@ protected:
 };
 bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top) {
     gm_replace_symbol_entry_t T;
+    T.do_replace(e_old, e_new, top);
+    return T.is_changed();
+}
+
+class gm_replace_symbol_entry_bound_t : public gm_apply
+{
+public:
+    virtual bool apply(ast_sent* s) {
+        assert(_src != NULL);
+        assert(_target !=NULL);
+
+        if (s->get_nodetype() == AST_ASSIGN) {
+            ast_assign* a = (ast_assign*) s;
+            if (a->get_bound() != NULL) {
+                ast_id * i = a->get_bound();
+                assert(i->getSymInfo() != NULL);
+                if (i->getSymInfo() == _src) {
+                    i->setSymInfo(_target);
+                    _changed = true;
+                }
+                return true;
+            }
+        }
+    }
+    bool is_changed() {
+        return _changed;
+    }
+    void do_replace(gm_symtab_entry *e_old, gm_symtab_entry* e_new, ast_node* top) {
+        set_for_sent(true);
+        _src = e_old;
+        _target = e_new;
+        _changed = false;
+        top->traverse_pre(this);
+    }
+protected:
+    bool _changed;
+    gm_symtab_entry* _src;
+    gm_symtab_entry*_target;
+};
+
+bool gm_replace_symbol_entry_bound(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top) {
+    gm_replace_symbol_entry_bound_t T;
     T.do_replace(e_old, e_new, top);
     return T.is_changed();
 }

@@ -1,0 +1,15 @@
+// Test of  edge iteration
+Procedure gps19(
+    G : Graph,
+    B : N_P <Int>(G),
+    A : E_P <Float>(G))
+ {
+    Int x = 0;
+    Foreach(e: G.Edges)(e.A>0) {
+
+        //Node n = e.FromNode(); 
+        //Node r = e.ToNode();
+
+        x += e.A;
+    }
+}

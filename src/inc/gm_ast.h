@@ -2055,6 +2055,7 @@ public:
         return true;
     }
 
+    // [xxx] should it be getIterator()->getTypeSummary()?
     int get_iter_type() {
         return iter_type;
     }

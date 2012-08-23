@@ -278,6 +278,10 @@ void gm_add_sent_before(ast_sent* current, ast_sent* target, bool need_fix_symta
 void gm_add_sent_after(ast_sent* current, ast_sent* target, bool need_fix_symtab) {
     gm_add_sent(current, target, GM_INSERT_AFTER, need_fix_symtab);
 }
+void gm_replace_sent(ast_sent* current, ast_sent* target, bool need_fix_symtab) {
+    gm_add_sent_after(current, target, need_fix_symtab);
+    gm_ripoff_sent(current, need_fix_symtab);
+}
 
 void gm_ripoff_sent(ast_sent* target, bool need_fix_symtab) {
     // make sure that target belongs to a sent block

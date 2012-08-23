@@ -73,6 +73,8 @@ SRCS2 =\
        gm_merge_loops.cc gm_moveup_propdecl.cc\
        gm_check_property_argument_usage.cc\
        gm_opt_nonconf_reduce.cc\
+       gm_opt_remove_unused_scalar.cc\
+       gm_opt_propagate_trivial_writes.cc\
        gm_flip_edges.cc\
        gm_cpp_opt.cc\
        gm_cpp_opt_select_par.cc\
@@ -101,6 +103,7 @@ SRCS2 =\
        gm_gps_opt_simplify_expr1.cc\
        gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_opt_transform_bfs.cc\
+	   gm_gps_opt_edge_iteration.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc\
