@@ -123,6 +123,8 @@ public:
     virtual bool is_target(ast_expr* e) {
         if (e->is_builtin()) {
             ast_expr_builtin* b = (ast_expr_builtin*) e;
+            if (b->get_driver() == NULL) 
+                return false;
             if (b->get_driver()->getSymInfo() != edge)
                 return false;
 
