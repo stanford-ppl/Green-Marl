@@ -430,7 +430,7 @@ bool gm_graph::store_binary(char* filename) {
     }
 
     // write it 4B wise?
-    uint32_t key = htonl(MAGIC_WORD);
+    int32_t key = htonl(MAGIC_WORD);
     fwrite(&key, 4, 1, f);
 
     key = htonl(sizeof(node_t));
