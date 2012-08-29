@@ -1,11 +1,16 @@
 CC= g++
 AR= ar
-LIBDIR = ../lib
-BINDIR = ../../bin
-INCDIR = ../inc
-CFLAGS = -O3 -g -I$(INCDIR) -fopenmp -Wall
-OUT = $(BINDIR)/graph_gen $(LIBDIR)/libgmgraph.a
-GRAPHLIB_OBJECTS = gm_graph.o gm_runtime.o gm_lock.o
+LIB = lib
+BIN = ../bin
+INC = inc
+OBJ = obj
+CFLAGS = -O3 -g -I$(INC) -fopenmp -Wall
+OUT = $(BIN)/graph_gen $(LIB)/libgmgraph.a
+GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gen.o $(OBJ)/graph_generate.o 
+GRAPHLIB_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_runtime.o $(OBJ)/gm_lock.o
+
+# where to find source codes
+vpath %.cc src
 
 ifdef ORACLE
 CFLAGS += -D__ORACLE__
@@ -38,19 +43,19 @@ CFLAGS += -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
 CFLAGS += -I$(HADOOP_HOME)/src/c++/libhdfs/
 
 CFLAGS += -lhdfs -ljvm -D__HDFS__
-GRAPHLIB_OBJECTS += gm_hdfs.o
+GRAPHLIB_OBJECTS += $(OBJ)/gm_hdfs.o
 endif
 
 all: $(OUT)
 
-$(BINDIR)/graph_gen: gen.o graph_generate.o gm_graph.o
+$(BIN)/graph_gen: $(GRAPHGEN_OBJECTS)
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(LIBDIR)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
-	$(AR) r $@ $^ 
+$(LIB)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
+	$(AR) r $@ $^
 
-%.o: %.cc
-	$(CC) $(CFLAGS) -c $<
+$(OBJ)/%.o: %.cc
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	\rm -f *.o $(OUT)
+	rm -f $(OBJ)/*.o $(OUT)
