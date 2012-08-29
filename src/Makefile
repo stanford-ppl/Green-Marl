@@ -12,8 +12,7 @@ ifneq ($(UNAME),Darwin)
     LDFLAGS += -lrt
 endif
 
-
-# where to find sorce codes
+# where to find source codes
 vpath %.h  inc
 vpath %.c parse
 vpath %.l parse
