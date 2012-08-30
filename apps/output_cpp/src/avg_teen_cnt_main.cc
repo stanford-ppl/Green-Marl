@@ -13,6 +13,7 @@ public:
 
     virtual bool prepare() {
         age = new int[G.num_nodes()];
+        #pragma omp paralel for
         for (int i = 0; i < G.num_nodes(); i++) {
         	age[i] = 10;
         }

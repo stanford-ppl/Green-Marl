@@ -18,6 +18,12 @@ public:
     virtual bool prepare() {
         membership = new int32_t[G.num_nodes()];
 	gm_rand32 xorshift_rng;
+        
+        // For NUMA architectures, let each thread touch it first.
+        #pragma parallel for 
+        for (int i = 0; i < G.num_nodes(); i++) 
+            membership[i] = 0;
+
         for (int i = 0; i < G.num_nodes(); i++) {
 	    int32_t r = xorshift_rng.rand() % 100;
             if (r < 10)
