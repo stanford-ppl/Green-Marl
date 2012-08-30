@@ -1,5 +1,6 @@
 #include "common_main.h"
 #include "sssp_path.h"
+#include "gm_rand.h"
 
 class my_main: public main_t
 {
@@ -29,6 +30,7 @@ public:
             for (edge_t j = G.begin[i]; i < G.begin[i+1]; j++)
                 len[j] = 0;
 
+	    gm_rand32 xorshift_rng;
         for (edge_t i = 0; i < G.num_edges(); i++)
             len[i] = (xorshift_rng.rand() % 100) + 1;  // length: 1 ~ 100
         return true;
