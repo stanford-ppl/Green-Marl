@@ -47,7 +47,7 @@ all: $(OUT)
 echo:
 	echo $(INCFILES)
 
-$(BINDIR)/% : $(GEN_SRC)/%.cc %_main.cc 
+$(BINDIR)/% : $(GEN_SRC)/%.cc %_main.cc $(LIBDIR)/libgmgraph.a
 	$(CC) $(CFLAGS) $^ $(LFLAGS) -o $@
 
 clean:
