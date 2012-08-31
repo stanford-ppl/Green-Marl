@@ -7,8 +7,9 @@ import os;
 import multiprocessing;
 
 s_path = sys.path[0];
+TOP_LEVEL_PATH=s_path+"/../../";
 COMP_BINARY_PATH=s_path+"/../../bin/gm_comp";
-COMP_SRC_PATH=s_path+"/../../src";
+COMP_SRC_PATH=s_path+"/../../src/";
 APPS_PATH=s_path+"/../../apps/";
 NUM_THREADS=multiprocessing.cpu_count();
 
@@ -20,11 +21,14 @@ if (len(sys.argv) == 2 and sys.argv[1] == "-nostop") or os.getenv("gm_regress_no
 
 # CHECK EXISTENCE AND VERSIONS OF THE REQUIRED TOOLS
 
-def find_version(command_s, out_s, tool_config):
-    if len(re.findall(re.escape(command_s), out_s)) == 0:
-        print "Cannot find "+command_s;
-        sys.exit(-1);
-    return len(re.findall('\\b'+re.sub("\.", "_", tool_config)+'\\b', re.sub("\.", "_", out_s)));
+def find_version(command_s_list, out_s, tool_config):
+    for command_s in command_s_list:
+        if len(re.findall(re.escape(command_s), out_s)) != 0:
+            return len(re.findall('\\b'+re.sub("\.", "_", tool_config)+'\\b', re.sub("\.", "_", out_s)));
+            
+    print "Cannot find "+command_s;
+    sys.exit(-1);
+    return False;
 
 flex_out = commands.getoutput("flex --version");
 bison_out = commands.getoutput("bison --version");
@@ -39,9 +43,9 @@ supported_configs = [ [ "2.5.35", "2.4.1", "4.6.1"],
 
 config_found = False;
 for config in supported_configs:
-    flex_found = find_version("flex", flex_out, config[0]);
-    bison_found = find_version("bison", bison_out, config[1]);
-    gpp_found = find_version("g++", gpp_out, config[2]);
+    flex_found = find_version(["flex"], flex_out, config[0]);
+    bison_found = find_version(["bison"], bison_out, config[1]);
+    gpp_found = find_version(["g++", "gcc"], gpp_out, config[2]);
     if (flex_found and bison_found and gpp_found):
         config_found = True;
 
@@ -69,10 +73,10 @@ if (interactive):
 # BUILD THE COMPILER
 
 def build_compiler():
-    os.chdir(COMP_SRC_PATH);
+    os.chdir(TOP_LEVEL_PATH);
     make_res = commands.getstatusoutput("make veryclean");
     assert make_res[0] == 0;
-    make_res = commands.getstatusoutput("make -j" + str(NUM_THREADS));
+    make_res = commands.getstatusoutput("make compiler -j" + str(NUM_THREADS));
     if make_res[0] != 0:
         print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
         sys.exit(-1);
@@ -93,7 +97,7 @@ def build_and_run_apps(apps_out_dir, run_apps):
     os.chdir(APPS_PATH);
     make_res = commands.getstatusoutput("make clean_all");
     assert make_res[0] == 0;
-    make_res = commands.getstatusoutput("make all");
+    make_res = commands.getstatusoutput("make all -j" + str(NUM_THREADS));
     if make_res[0] != 0:
         print "APPLICATION BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
         sys.exit(-1);

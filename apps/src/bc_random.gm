@@ -1,14 +1,12 @@
-
 //-------------------------------------------------------------
-// Computation of estimiated betweenness centrality
+// Computation of estimated betweenness centrality
 //-------------------------------------------------------------
 Procedure bc_random(G: Graph, BC: N_P<Float>, K:Int)
 {
   G.BC = 0; // Initialize
 
   Int k = 0;
-  While (k < K)
-  {
+  While (k < K) {
     Node s = G.PickRandom();
 
     // temporary values per Node
@@ -33,4 +31,3 @@ Procedure bc_random(G: Graph, BC: N_P<Float>, K:Int)
     k++;
   }
 }
-

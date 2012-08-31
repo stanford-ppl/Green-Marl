@@ -125,8 +125,8 @@ public:
                 return false;
             }
         } else if (lhs->get_nodetype() == AST_MAPACCESS) {
-            ast_mapaccess* mapAccess = (ast_mapaccess*)lhs;
-            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            ast_mapaccess* mapAccess = (ast_mapaccess*) lhs;
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*) mapAccess->get_map_id()->getTypeInfo();
             l_sym = mapAccess->get_bound_graph_for_value();
             summary_lhs = mapDecl->getValueTypeSummary();
 
@@ -154,6 +154,7 @@ public:
 
         // check assignable
         summary_rhs = rhs->get_type_summary();
+        summary_rhs = tryResolveIfUnknown(summary_rhs);
 
         bool warn;
         int coed;
@@ -174,7 +175,7 @@ public:
             } else {
                 r_sym = rhs->get_bound_graph();
             }
-            return checkGraphs(l_sym,  r_sym, summary_rhs, l, c);
+            return checkGraphs(l_sym, r_sym, summary_rhs, l, c);
         }
 
         return true;
@@ -191,7 +192,7 @@ public:
         } else if (a->is_target_map_entry()) {
             ast_mapaccess* mapAccess = a->to_assign_mapentry()->get_lhs_mapaccess();
             okay = check_assign_lhs_rhs(mapAccess, a->get_rhs(), l, c);
-            ast_maptypedecl* mapDecl = (ast_maptypedecl*)mapAccess->get_map_id()->getTypeInfo();
+            ast_maptypedecl* mapDecl = (ast_maptypedecl*) mapAccess->get_map_id()->getTypeInfo();
             summary_lhs = mapDecl->getValueTypeSummary();
         } else {
             okay = check_assign_lhs_rhs(a->get_lhs_field(), a->get_rhs(), l, c);
@@ -266,6 +267,18 @@ private:
             }
         }
         return true;
+    }
+
+    int tryResolveIfUnknown(int type) {
+        switch (type) {
+            case GMTYPE_PROPERTYITER_SET:
+                return GMTYPE_NSET;
+            case GMTYPE_PROPERTYITER_SEQ:
+                return GMTYPE_NSEQ;
+            case GMTYPE_PROPERTYITER_ORDER:
+                return GMTYPE_NORDER;
+        }
+        return type;
     }
 
 public:

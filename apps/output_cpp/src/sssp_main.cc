@@ -9,6 +9,11 @@ public:
     int32_t* dist;  // distance of each node
     node_t root;
 
+    virtual ~my_main() {
+        delete[] len;
+        delete[] dist;
+    }
+
     //--------------------------------------------------------
     // create 4 groups randomly
     //--------------------------------------------------------
@@ -17,7 +22,14 @@ public:
         root = 0;
         dist = new int[G.num_nodes()];
         len = new int[G.num_edges()];
-        for (int i = 0; i < G.num_edges(); i++)
+
+        // for NUMA, let each thread touch it first
+        #pragma omp parallel for
+        for (node_t i = 0; i < G.num_nodes(); i++)
+            for (edge_t j = G.begin[i]; j < G.begin[i+1]; j++)
+                len[j] = 0;
+
+        for (edge_t i = 0; i < G.num_edges(); i++)
             len[i] = (xorshift_rng.rand() % 100) + 1;  // length: 1 ~ 100
         return true;
     }
@@ -34,8 +46,6 @@ public:
         for (int i = 0; i < 10; i++) {
             printf("dist[%d] = %d\n", i, dist[i]);
         }
-        delete[] len;
-        delete[] dist;
         return true;
     }
 };

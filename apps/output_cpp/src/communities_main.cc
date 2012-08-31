@@ -4,7 +4,6 @@
 class my_main: public main_t
 {
 public:
-
     node_t* comm;
 
     virtual ~my_main() {

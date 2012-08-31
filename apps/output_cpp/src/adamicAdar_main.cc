@@ -5,8 +5,14 @@ class aa_main: public main_t
 public:
     double* aa; // edge property
     int method;
+
+    ~aa_main() {
+        delete[] aa;
+    }
+
     aa_main() {
         method = 0;
+        aa = NULL;
     }
 
     virtual bool prepare() {
@@ -15,16 +21,17 @@ public:
     }
 
     virtual bool run() {
-        if (method == 0)
+        //if (method == 0)
             adamicAdar(G, aa);
-        else
-            adamicAdar2(G, aa);
+        //else
+        //    adamicAdar2(G, aa);
         return true;
     }
 
     virtual void print_arg_info() {
-        printf("[usemethod=0/1]");
+        //printf("[usemethod=0/1]");
     }
+
     virtual bool check_args(int argc, char** argv) {
         if (argc > 0) method = atoi(argv[0]);
         return true;
@@ -38,7 +45,6 @@ public:
                 if (max_cnt++ == 100) break;
             }
         }
-        delete[] aa;
         return true;
     }
 };

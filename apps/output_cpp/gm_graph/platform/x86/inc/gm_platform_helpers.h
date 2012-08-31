@@ -65,10 +65,7 @@ static inline bool _gm_i386_casX(volatile unsigned long long* addr,
 
 #define _gm_CAS_asm_64(dest, old_val, new_val) \
     ({ \
-    const unsigned long long    oldVal = reinterpret_cast<const unsigned long long>(old_val); \
-    const unsigned long long    newVal = reinterpret_cast<const unsigned long long>(new_val); \
-    volatile unsigned long long*  ptr  = reinterpret_cast<volatile unsigned long long*>(dest);\
-    _gm_i386_casX(ptr, &oldVal, &newVal); \
+    _gm_i386_casX(reinterpret_cast<volatile unsigned long long*>(dest), reinterpret_cast<unsigned long long*>(&old_val), reinterpret_cast<unsigned long long*>(&new_val)); \
     })
 
 static inline unsigned long
@@ -85,10 +82,9 @@ _gm_i386_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
 
 #define _gm_CAS_asm_32(dest, old_val, new_val) \
     ({ \
-    const unsigned long     oldVal = reinterpret_cast<const unsigned long >(old_val); \
-    const unsigned long     newVal = reinterpret_cast<const unsigned long >(new_val); \
-    volatile unsigned long*  ptr  = reinterpret_cast<volatile unsigned long*>(dest);\
-    _gm_i386_cas(ptr, &oldVal, &newVal); \
+    const unsigned long    oldVal = *(reinterpret_cast< unsigned long*>(&old_val)); \
+    const unsigned long    newVal = *(reinterpret_cast< unsigned long*>(&new_val)); \
+    _gm_i386_cas(reinterpret_cast<volatile unsigned long*>(dest), oldVal, newVal); \
     })
 #else // end of 32bit x86
 #error "Unsupported x86 platform"
@@ -131,19 +127,20 @@ _gm_i386_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
 #define _gm_atomic_fetch_and_add_node(ptr, val) __sync_fetch_and_add(ptr, val)
 
 #ifdef GM_NODE64
-#define htonnode(n) ((node_t)__builtin_bswap64((node_t)n))
-#define ntohnode(n) ((node_t)__builtin_bswap64((node_t)n))
-#else
-#define htonnode(n) ((node_t)__builtin_bswap32((node_t)n))
-#define ntohnode(n) ((node_t)__builtin_bswap32((node_t)n))
-#endif
-
-#ifdef GM_EDGE64
 #define htonedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
 #define ntohedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
+#define htonnode(n) ((node_t)__builtin_bswap64((node_t)n))
+#define ntohnode(n) ((node_t)__builtin_bswap64((node_t)n))
+#elif defined GM_EDGE64
+#define htonedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
+#define ntohedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
+#define htonnode(n) ((node_t)__builtin_bswap32((node_t)n))
+#define ntohnode(n) ((node_t)__builtin_bswap32((node_t)n))
 #else
 #define htonedge(n) ((edge_t)__builtin_bswap32((edge_t)n))
 #define ntohedge(n) ((edge_t)__builtin_bswap32((edge_t)n))
+#define htonnode(n) ((node_t)__builtin_bswap32((node_t)n))
+#define ntohnode(n) ((node_t)__builtin_bswap32((node_t)n))
 #endif
 
 #endif

@@ -1,0 +1,9 @@
+Procedure random_node_sampling(G: Graph, N: Int, S: Node_Set) 
+{
+	Double prob = 1 / (Double) N;
+	Foreach(v: G.Nodes) {
+		Double dice = Uniform();
+		If (dice < prob)
+        	S.Add(v);
+   }
+}

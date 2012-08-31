@@ -1,6 +1,4 @@
-//--------------------------------------
 // The example used in GPS paper
-//--------------------------------------
 Procedure avg_teen_cnt(
         G: Graph, 
         age, teen_cnt: N_P<Int>,

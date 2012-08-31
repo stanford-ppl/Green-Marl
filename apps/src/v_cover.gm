@@ -23,6 +23,6 @@ Proc v_cover(G: Graph, select: E_P<Bool>) : Int
         from.Covered =True;
         to.Covered = True;
     }
-    Int c =Count(t:G.Nodes)(t.Covered);
+    Int c = Count(t:G.Nodes)(t.Covered);
     Return c;
 }

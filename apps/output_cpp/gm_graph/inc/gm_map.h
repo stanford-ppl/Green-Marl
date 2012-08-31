@@ -130,11 +130,12 @@ protected:
 
 };
 
-template<class Key, class Value, Value defaultValue>
+template<class Key, class Value>
 class gm_map_small : public gm_map<Key, Value>
 {
 private:
     map<Key, Value> data;
+    const Value defaultValue;
     gm_spinlock_t lock;
     typedef typename map<Key, Value>::iterator Iterator;
 
@@ -178,7 +179,7 @@ private:
     }
 
 public:
-    gm_map_small() : lock(0) {
+    gm_map_small(Value defaultValue) : lock(0), defaultValue(defaultValue) {
     }
 
     ~gm_map_small() {
@@ -189,10 +190,11 @@ public:
     }
 
     Value getValue(const Key key) {
-        if (hasKey(key))
+        if (hasKey(key)) {
             return data[key];
-        else
+        } else {
             return defaultValue;
+        }
     }
 
     void setValue_par(const Key key, Value value) {
@@ -249,17 +251,17 @@ public:
 };
 
 
-template<class Key, class Value, Value defaultValue>
+template<class Key, class Value>
 class gm_map_large : public gm_map<Key, Value>
 {
 private:
     const size_t size_;
+    const Value defaultValue;
     Value* const data;
     bool * const valid;
 
     template<class Function>
     Value getValue_generic_seq(Function func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         #pragma omp parallel
@@ -286,7 +288,6 @@ private:
 
     template<class Function>
     Value getValue_generic_par(Function func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         for (Key i = 0; i < size_; i++) {
@@ -297,8 +298,6 @@ private:
 
     template<class Function>
     Key getKey_generic_par(Function compare, const Value initialValue) {
-
-        assert(size() > 0);
 
         Value value = initialValue;
         Key key = 0;
@@ -314,8 +313,6 @@ private:
 
     template<class Function>
     Key getKey_generic_seq(Function compare, const Value initialValue) {
-
-        assert(size() > 0);
 
         Value value = initialValue;
         Key key = 0;
@@ -366,8 +363,8 @@ private:
     }
 
 public:
-    gm_map_large(size_t size) :
-            size_(size), data(new Value[size]), valid(new bool[size]) {
+    gm_map_large(size_t size, Value defaultValue) :
+            size_(size), data(new Value[size]), valid(new bool[size]), defaultValue(defaultValue) {
         #pragma omp parallel for
         for (int i = 0; i < size; i++) {
             valid[i] = false;
@@ -380,7 +377,7 @@ public:
     }
 
     bool hasKey(const Key key) {
-        return key < size() && valid[key];
+        return key < size_ && valid[key];
     }
 
     Value getValue(const Key key) {
@@ -456,7 +453,6 @@ public:
             oldValue = data[key];
             newValue = valid[key] ? (oldValue + summand) : summand;
         } while (_gm_atomic_compare_and_swap(data + key, oldValue, newValue) == false);
-
         valid[key] = true;
         return newValue;
     }
@@ -478,11 +474,12 @@ public:
 };
 
 
-template<class Key, class Value, Value defaultValue>
+template<class Key, class Value>
 class gm_map_medium : public gm_map<Key, Value>
 {
 private:
     const int innerSize;
+    const Value defaultValue;
     map<Key, Value>* innerMaps;
     gm_spinlock_t* locks;
     typedef typename map<Key, Value>::iterator Iterator;
@@ -490,7 +487,6 @@ private:
 
     template<class FunctionCompare, class FunctionMinMax>
     Value getValue_generic_par(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         for (int i = 0; i < innerSize; i++) {
@@ -507,7 +503,6 @@ private:
 
     template<class FunctionCompare, class FunctionMinMax>
     Value getValue_generic_seq(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
-        assert(size() > 0);
 
         Value value = initialValue;
         #pragma omp parallel
@@ -546,7 +541,6 @@ private:
 
     template<class Function>
     Key getKey_generic_seq(Function compare, const Value initialValue) {
-        assert(size() > 0);
         Key key = 0;
         Value value = initialValue;
 
@@ -570,7 +564,6 @@ private:
 
     template<class Function>
     Key getKey_generic_par(Function compare, const Value initialValue) {
-        assert(size() > 0);
         Key key = 0;
         Value value = initialValue;
 
@@ -665,7 +658,7 @@ private:
     }
 
 public:
-    gm_map_medium(int threadCount) : innerSize(getSize(threadCount)), bitmask(getBitMask(innerSize)) {
+    gm_map_medium(int threadCount, Value defaultValue) : innerSize(getSize(threadCount)), bitmask(getBitMask(innerSize)), defaultValue(defaultValue) {
         locks = new gm_spinlock_t[innerSize];
         innerMaps = new map<Key, Value>[innerSize];
         #pragma omp parallel for
@@ -680,11 +673,13 @@ public:
     }
 
     bool hasKey(const Key key) {
-        return positionHasKey(key % innerSize, key);
+        int position = key & bitmask;
+        return positionHasKey(position, key);
     }
 
     Value getValue(const Key key) {
-        return getValueFromPosition(key % innerSize, key);
+        int position = key & bitmask;
+        return getValueFromPosition(position, key);
     }
 
     void setValue_par(const Key key, Value value) {
@@ -695,7 +690,8 @@ public:
     }
 
     void setValue_seq(const Key key, Value value) {
-        setValueAtPosition(key & bitmask, key, value);
+        int position = key & bitmask;
+        setValueAtPosition(position, key, value);
     }
 
     bool hasMaxValue(const Key key) {

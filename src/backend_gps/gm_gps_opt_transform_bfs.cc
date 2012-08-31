@@ -8,10 +8,12 @@
 #include "gm_backend_gps_opt_steps.h"
 
 //--------------------------------------------------------
-//
-//
-//
-//
+// Transform BFS ==> Pregel-Canonical Statments. (i.e. while + foreach)
+// 
+//  By doing this transformation, we may lose an opportunity to use 
+//  a special fast implmentation of BFS.
+//  However, we can re-use GPS tranlsation mechanism for while/foreach statments.
+//  without creating new translation rules.
 //----------------------------------------------------
 
 class gps_opt_find_bfs_t : public gm_apply
@@ -29,7 +31,7 @@ public:
     virtual bool apply(ast_sent* s) {
         if (s->get_nodetype()== AST_BFS)
         {
-            assert (!in_bfs);  // no nested BFS for now
+            assert (!in_bfs);  // [XXX] Nested BFS are not allowed (temporary)
             in_bfs = true;
             current_bfs = (ast_bfs*) s;
             BFS.push_back(current_bfs);
@@ -146,6 +148,7 @@ static ast_sentblock* create_fw_body_prepare(ast_sentblock* while_sb, ast_bfs* b
     
 }
 
+
 static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_foreach* out_loop, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, bool is_fw);
 
 static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry* lev_sym, gm_symtab_entry* curr_sym, gm_symtab_entry* fin_sym) {
@@ -156,7 +159,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     //       Foreach(v:G.Nodes) {
     //          if (v.level == curr_level) {
     //             Foreach(k:v.Nbrs) {
-    //                If (k.level == +INF) {
+    //                If (k.level == +INF && [navigator]) {
     //                   k.level = curr_level + 1;    
     //                   bfs_finished &= False;
     //                }
@@ -205,7 +208,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         GMTYPE_NODEITER_ALL);
     while_sb->add_sent(foreach_out);
 
-    // outer if
+
     ast_expr* lev_check_out_c = ast_expr::new_comp_expr(
         GMOP_EQ,
         ast_expr::new_field_expr(
@@ -240,7 +243,24 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
             inf
         );
     ast_sentblock* lev_check_in_sb = ast_sentblock::new_sentblock();
-    ast_if* lev_check_in_if = ast_if::new_if(lev_check_in_c, lev_check_in_sb,NULL);
+    ast_if* lev_check_in_if;
+    if (bfs->get_navigator() != NULL) 
+    {
+        ast_expr* navi = bfs->get_navigator();
+        bfs->set_navigator(NULL);
+
+        // replace bfs symbol ==> an inner foreach symbol
+        gm_replace_symbol_entry(bfs->get_iterator()->getSymInfo(), foreach_in->get_iterator()->getSymInfo(), navi);
+
+        // check with navigator
+        ast_expr* new_top = ast_expr::new_lbiop_expr(GMOP_AND, lev_check_in_c, navi);
+        lev_check_in_if = ast_if::new_if(new_top, lev_check_in_sb,NULL);
+    } 
+    else 
+    {
+        lev_check_in_if = ast_if::new_if(lev_check_in_c, lev_check_in_sb,NULL);
+    }
+
     inner_sb->add_sent(lev_check_in_if);
 
     // increase level
@@ -329,6 +349,7 @@ static void create_bw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
     foreach_sb->add_sent(lev_check_out_if);
 
 
+
     create_user_body_main(lev_check_out_sb, bfs, foreach_out, lev_sym, curr_sym, false);
 
     // decrease curr level
@@ -341,10 +362,6 @@ static void create_bw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
 
 
 void gm_gps_rewrite_bfs(ast_bfs* b) {
-    // for temporary
-    assert(b->get_b_filter() == NULL);
-    assert(b->get_f_filter() == NULL);
-    assert(b->get_navigator() == NULL);
 
     gm_make_it_belong_to_sentblock(b);
     ast_sentblock* parent = (ast_sentblock*) b->get_parent();
@@ -484,7 +501,6 @@ static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_fo
     gm_ripoff_sent(body);
 
     // replace iterator
-    //printf("repalce :%s -> %s\n", bfs->get_iterator()->get_genname(), out_loop->get_iterator()->get_genname());
     gm_replace_symbol_entry(bfs->get_iterator()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
     // what was iterator 2 again?
     if (bfs->get_iterator2() != NULL)

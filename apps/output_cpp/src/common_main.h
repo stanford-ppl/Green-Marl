@@ -28,6 +28,9 @@ protected:
     }
 
 public:
+    virtual ~main_t() {
+    }
+
     main_t() {
         time_to_exclude = 0;
     }

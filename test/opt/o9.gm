@@ -1,0 +1,8 @@
+// Test of trivial write propagation
+Proc P(G:Graph)
+{
+    Int x = 0;
+    Int y = x;
+    Int z = y;
+    Int k = x + y + z;
+}

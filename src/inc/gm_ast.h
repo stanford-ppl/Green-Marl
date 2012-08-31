@@ -895,7 +895,7 @@ public:
             assert(target_collection->getTypeInfo() != NULL);
             assert(target_collection->getTypeInfo()->get_target_graph_sym() != NULL);
             return target_collection->getTypeInfo()->get_target_graph_sym();
-        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator() || is_collection_of_collection()) {
+        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator() || is_collection_of_collection() || gm_is_property_iter_type(type_id)) {
             assert(target_graph != NULL);
             assert(target_graph->getSymInfo() != NULL);
             return target_graph->getSymInfo();
@@ -2055,6 +2055,7 @@ public:
         return true;
     }
 
+    // [xxx] should it be getIterator()->getTypeSummary()?
     int get_iter_type() {
         return iter_type;
     }
@@ -2722,9 +2723,11 @@ public:
         b_filter = e;
     }
     void set_fbody(ast_sentblock* b) {
+        if (b != NULL) b->set_parent(this);
         f_body = b;
     }
     void set_bbody(ast_sentblock* b) {
+        if (b != NULL) b->set_parent(this);
         b_body = b;
     }
     virtual void reproduce(int id_level);
@@ -2852,9 +2855,11 @@ public:
         return cond;
     }
     void set_then(ast_sent* s) {
+        if (s!=NULL) s->set_parent(this);
         then_part = s;
     }
     void set_else(ast_sent* s) {
+        if (s!=NULL) s->set_parent(this);
         else_part = s;
     }
     void set_cond(ast_expr* c) {

@@ -216,13 +216,13 @@ static void do_flip_edges(std::list<ast_foreach*>& target) {
             ast_sent* body2 = if2->get_then();
 
             in->set_body(body2);
-            body2->set_parent(in);
+            //body2->set_parent(in);
 
             if2->set_then(body1);
-            body1->set_parent(if2);
+            //body1->set_parent(if2);
 
             out->set_body(if2);
-            if2->set_parent(out);
+            //if2->set_parent(out);
         }
 
         else if (if2 == NULL) {
@@ -230,21 +230,21 @@ static void do_flip_edges(std::list<ast_foreach*>& target) {
             ast_sent* body2 = in->get_body();
 
             in->set_body(if1);
-            if1->set_parent(in);
+            //if1->set_parent(in);
 
             if1->set_then(body2);
-            body2->set_parent(if1);
+            ///body2->set_parent(if1);
 
             out->set_body(in);
-            in->set_parent(out);
+            //in->set_parent(out);
         } else {
             // exchange conditions
             ast_expr* e1 = if1->get_cond();
             ast_expr* e2 = if2->get_cond();
             if1->set_cond(e2);
-            e2->set_parent(if1);
+            //e2->set_parent(if1);
             if2->set_cond(e1);
-            e1->set_parent(if2);
+            //e1->set_parent(if2);
         }
 
         if (dest->get_nodetype() == AST_ASSIGN) {

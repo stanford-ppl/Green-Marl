@@ -35,7 +35,7 @@ void gm_giraphlib::generate_headers(gm_code_writer& Body) {
 
 void gm_giraphlib::generate_node_iterator_rhs(ast_id* id, gm_code_writer& Body) {
     //TODO
-    Body.push("getVertexId().get()");
+    Body.push("getId().get()");
 }
 
 // scalar variable broadcast
@@ -43,32 +43,33 @@ void gm_giraphlib::generate_node_iterator_rhs(ast_id* id, gm_code_writer& Body) 
 
 void gm_giraphlib::generate_broadcast_state_master(const char* state_var, gm_code_writer& Body) {
     char temp[1024];
-    sprintf(temp, "((IntOverwriteAggregator) getAggregator(%s)).setAggregatedValue(%s);", GPS_KEY_FOR_STATE, state_var);
+    sprintf(temp, "setAggregatedValue(%s, new IntWritable(%s));", GPS_KEY_FOR_STATE, state_var);
     Body.pushln(temp);
 }
 
 void gm_giraphlib::generate_receive_state_vertex(const char* state_var, gm_code_writer& Body) {
     char temp[1024];
-    sprintf(temp, "int %s = ((IntOverwriteAggregator) getAggregator(%s)).getAggregatedValue().get();", state_var, GPS_KEY_FOR_STATE);
+    sprintf(temp, "int %s = this.<IntWritable>getAggregatedValue(%s).get();", state_var, GPS_KEY_FOR_STATE);
     Body.pushln(temp);
 }
 void gm_giraphlib::generate_broadcast_isFirst_master(const char* is_first_var, gm_code_writer& Body) {
     char temp[1024];
-    sprintf(temp, "((BooleanOverwriteAggregator) getAggregator(\"%s\")).setAggregatedValue(%s);", is_first_var, is_first_var);
+    sprintf(temp, "setAggregatedValue(\"%s\", new BooleanWritable(%s));", is_first_var, is_first_var);
     Body.pushln(temp);
 }
 void gm_giraphlib::generate_receive_isFirst_vertex(const char* is_first_var, gm_code_writer& Body) {
     char temp[1024];
-    sprintf(temp, "boolean %s = ((BooleanOverwriteAggregator) getAggregator(\"%s\"", is_first_var, is_first_var);
+    sprintf(temp, "boolean %s = this.<BooleanWritable>getAggregatedValue(\"%s\").get();", is_first_var, is_first_var);
     Body.push(temp);
-    Body.pushln(")).getAggregatedValue().get();");
 }
 
 void gm_giraphlib::generate_broadcast_reduce_initialize_master(ast_id* id, gm_code_writer& Body, int reduce_op_type, const char* base_value) {
     char temp[1024];
-    Body.push("((");
-    generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
-    sprintf(temp, ") getAggregator(%s)).setAggregatedValue(%s);", create_key_string(id), base_value);
+
+    sprintf(temp, "setAggregatedValue(%s, new ", create_key_string(id));
+    Body.push(temp);
+    generate_broadcast_writable_type(id->getTypeSummary(), Body);
+    sprintf(temp, "(%s));", base_value);
     Body.pushln(temp);
 }
 
@@ -77,23 +78,23 @@ void gm_giraphlib::generate_broadcast_send_master(ast_id* id, gm_code_writer& Bo
     // create new BV
     //---------------------------------------------------
     char temp[1024];
-    Body.push("((");
-    generate_broadcast_variable_type(id->getTypeSummary(), Body);
-    sprintf(temp, ") getAggregator(%s)).setAggregatedValue(", create_key_string(id));
+    sprintf(temp, "setAggregatedValue(%s, new ", create_key_string(id));
     Body.push(temp);
+    generate_broadcast_writable_type(id->getTypeSummary(), Body);
 
     //---------------------------------------------------
     // Initial Value: Reading of Id
     //---------------------------------------------------
+    Body.push("(");
     get_main()->generate_rhs_id(id);
-    Body.pushln(");");
+    Body.pushln("));");
 }
 
 void gm_giraphlib::generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Body) {
     char temp[1024];
-    Body.push("((");
-    generate_broadcast_variable_type(id->getTypeSummary(), Body);
-    sprintf(temp, ") getAggregator(%s)).getAggregatedValue().get()", create_key_string(id));
+    Body.push("this.<");
+    generate_broadcast_writable_type(id->getTypeSummary(), Body);
+    sprintf(temp, "> getAggregatedValue(%s).get()", create_key_string(id));
     Body.push(temp);
 }
 
@@ -128,8 +129,7 @@ void gm_giraphlib::generate_parameter_read_vertex(ast_id* id, gm_code_writer& Bo
     Body.push(temp);
 }
 
-void gm_giraphlib::generate_broadcast_variable_type(int type_id, gm_code_writer& Body, int reduce_op)
-
+void gm_giraphlib::generate_broadcast_aggregator_type(int type_id, gm_code_writer& Body, int reduce_op)
 {
     //--------------------------------------
     // Generate following string
@@ -202,14 +202,42 @@ void gm_giraphlib::generate_broadcast_variable_type(int type_id, gm_code_writer&
     Body.push("Aggregator");
 }
 
+void gm_giraphlib::generate_broadcast_writable_type(int type_id, gm_code_writer& Body)
+{
+    if (gm_is_node_compatible_type(type_id)) type_id = GMTYPE_NODE;
+    if (gm_is_edge_compatible_type(type_id)) type_id = GMTYPE_EDGE;
+
+    switch (type_id) {
+        case GMTYPE_INT:
+            Body.push("Int");
+            break;
+        case GMTYPE_DOUBLE:
+            Body.push("Double");
+            break;
+        case GMTYPE_LONG:
+            Body.push("Long");
+            break;
+        case GMTYPE_FLOAT:
+            Body.push("Float");
+            break;
+        case GMTYPE_BOOL:
+            Body.push("Boolean");
+            break;
+        case GMTYPE_NODE:
+            if (is_node_type_int())
+                Body.push("Int");
+            else
+                Body.push("Long");
+            break;
+        default:
+            assert(false);
+            break;
+    }
+    Body.push("Writable");
+}
+
 void gm_giraphlib::generate_broadcast_receive_master(ast_id* id, gm_code_writer& Body, int reduce_op_type) {
     char temp[1024];
-    generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
-    sprintf(temp, " %sAggregator = (", id->get_genname());
-    Body.push(temp);
-    generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
-    sprintf(temp, ") getAggregator(%s);", create_key_string(id));
-    Body.pushln(temp);
 
     // Read from BV to local value
     get_main()->generate_lhs_id(id);
@@ -249,7 +277,9 @@ void gm_giraphlib::generate_broadcast_receive_master(ast_id* id, gm_code_writer&
         }
     }
 
-    sprintf(temp, "%sAggregator.getAggregatedValue().get()", id->get_genname());
+    Body.push("this.<");
+    generate_broadcast_writable_type(id->getTypeSummary(), Body);
+    sprintf(temp, ">getAggregatedValue(%s).get()", create_key_string(id));
     Body.push(temp);
     if (need_paren) Body.push(")");
     Body.pushln(";");
@@ -260,10 +290,10 @@ void gm_giraphlib::generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& 
     ast_id* id = a->get_lhs_scala();
 
     char temp[1024];
-    Body.push("((");
-    generate_broadcast_variable_type(id->getTypeSummary(), Body, reduce_op_type);
-    sprintf(temp, ") getAggregator(%s)).aggregate(", create_key_string(id));
+
+    sprintf(temp, "aggregate(%s, new ", create_key_string(id));
     Body.push(temp);
+    generate_broadcast_writable_type(id->getTypeSummary(), Body);
 
     //---------------------------------------------------
     // Initial Value: Reading of Id
@@ -506,7 +536,7 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
 
 void gm_giraphlib::generate_vertex_prop_access_prepare(gm_code_writer& Body) {
     char temp[1024];
-    sprintf(temp, "VertexData %s = getVertexValue();", STATE_SHORT_CUT);
+    sprintf(temp, "VertexData %s = getValue();", STATE_SHORT_CUT);
     Body.pushln(temp);
 }
 void gm_giraphlib::generate_vertex_prop_access_lhs(ast_id* id, gm_code_writer& Body) {
@@ -662,6 +692,9 @@ void gm_giraphlib::generate_message_class_details(gm_gps_beinfo* info, gm_code_w
 void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) {
     char temp[1024];
 
+    const char* vertex_id = PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable";
+    const char* edge_data = FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP) ? "EdgeData" : "NullWritable";
+
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
 
     int m_type = (fe == NULL) ? GPS_COMM_INIT : GPS_COMM_NESTED;
@@ -681,17 +714,16 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
             sprintf(temp, "if (%s.%s.length > 0) {", STATE_SHORT_CUT, GPS_REV_NODE_ID); //TODO
             Body.pushln(temp);
         } else {
-            Body.pushln("if (getNumOutEdges() > 0) {");
+            Body.pushln("if (getNumEdges() > 0) {");
         }
     } else {
         assert((fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_NBRS));
         Body.pushln("// Sending messages to each neighbor");
-        sprintf(temp, "Iterator<%s> neighbors = this.getOutEdgesIterator();", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
+        sprintf(temp, "for (Edge<%s, %s> edge : getEdges()) {", vertex_id, edge_data);
         Body.pushln(temp);
-        Body.pushln("while (neighbors.hasNext()) {");
-        sprintf(temp, "%s _neighborId = neighbors.next();", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
+        sprintf(temp, "%s _neighborId = edge.getTargetVertexId();", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
         Body.pushln(temp);
-        Body.pushln("EdgeData _outEdgeData = this.getEdgeValue(_neighborId);");
+        Body.pushln("EdgeData _outEdgeData = edge.getValue();");
     }
 
     // check if any edge updates that should be done before message sending
@@ -764,14 +796,14 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
             sprintf(temp, "for (%s node : %s.%s) {", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", STATE_SHORT_CUT,
                     GPS_REV_NODE_ID);
             Body.pushln(temp);
-            Body.pushln("sendMsg(node, _msg);");
+            Body.pushln("sendMessage(node, _msg);");
             Body.pushln("}");
         } else {
-            Body.pushln("sendMsgToAllEdges(_msg);");
+            Body.pushln("sendMessageToAllEdges(_msg);");
         }
         Body.pushln("}");
     } else {
-        Body.pushln("sendMsg(_neighborId, _msg);");
+        Body.pushln("sendMessage(_neighborId, _msg);");
         if (sents_after_message.size() > 0) {
             Body.NL();
             std::list<ast_sent*>::iterator I;
@@ -867,11 +899,17 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
             Body.push(")");
             break;
 
+        case GM_BLTIN_GRAPH_RAND_NODE:         // random node function
+            Body.push("(new java.util.Random()).nextInt(");
+            Body.push("getTotalNumVertices()");
+            Body.push(")");
+            break;
+
         case GM_BLTIN_GRAPH_NUM_NODES:
-            Body.push("getNumVertices()");
+            Body.push("getTotalNumVertices()");
             break;
         case GM_BLTIN_NODE_DEGREE:
-            Body.push("getNumOutEdges()");
+            Body.push("getNumEdges()");
             break;
         case GM_BLTIN_NODE_IN_DEGREE:
             Body.push(STATE_SHORT_CUT);
@@ -891,7 +929,7 @@ void gm_giraphlib::generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block*
 
     if (bb->get_type() == GM_GPS_BBTYPE_PREPARE1) {
         Body.pushln("// Preperation: creating reverse edges");
-        sprintf(temp, "%s %s = getVertexId().get();", main->get_type_string(GMTYPE_NODE), GPS_DUMMY_ID);
+        sprintf(temp, "%s %s = getId().get();", main->get_type_string(GMTYPE_NODE), GPS_DUMMY_ID);
         Body.pushln(temp);
 
         generate_message_send(NULL, Body);
@@ -899,8 +937,7 @@ void gm_giraphlib::generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block*
     } else if (bb->get_type() == GM_GPS_BBTYPE_PREPARE2) {
         Body.pushln("//Preperation creating reverse edges");
         Body.pushln("int i = 0; // iterable does not have length(), so we have to count it");
-        Body.pushln("while (_msgs.hasNext()) {");
-        Body.pushln("_msgs.next();");
+        Body.pushln("for (MessageData _msg : _msgs) {");
         Body.pushln("i++;");
         Body.pushln("}");
 
@@ -909,9 +946,7 @@ void gm_giraphlib::generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block*
         Body.NL();
 
         Body.pushln("i=0;");
-        Body.pushln("MessageData _msg;");
-        Body.pushln("while (_msgs.hasNext()) {");
-        Body.pushln("_msg = _msgs.next();");
+        Body.pushln("for (MessageData _msg : _msgs) {");
         generate_message_receive_begin(NULL, Body, bb, true);
         sprintf(temp, "%s.%s[i] = new %s(%s);", STATE_SHORT_CUT, GPS_REV_NODE_ID, PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable",
                 GPS_DUMMY_ID);

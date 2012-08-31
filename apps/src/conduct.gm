@@ -2,20 +2,13 @@ Proc conduct(G: Graph, member: N_P<Int>, num: Int) : Float
 {
     Int Din, Dout, Cross;
 
-    Din  = Sum(u:G.Nodes)(u.member==num){u.Degree()};
-    Dout = Sum(u:G.Nodes)(u.member!=num){u.Degree()};
-    /*
-    Cross = 0;
-    Foreach(u:G.Nodes)(u.member==num){ 
-        Foreach(j:u.Nbrs)(j.member!=num)
-        {
-            Cross++;
-        }
-    }
-    */
-    Cross = Sum(u:G.Nodes)(u.member==num){ Count(j:u.Nbrs)(j.member!=num)};
+    Din  = Sum(u:G.Nodes)(u.member == num){u.Degree()};
+    Dout = Sum(u:G.Nodes)(u.member != num){u.Degree()};
+    Cross = Sum(u:G.Nodes)(u.member == num){ Count(j:u.Nbrs)(j.member != num)};
 
     Float m = (Din < Dout) ? Din : Dout;  
-    If (m ==0) Return (Cross == 0) ? 0.0 : INF;
-    Else Return (Cross / m);
+    If (m == 0) 
+    	Return (Cross == 0) ? 0.0 : INF;
+    Else 
+    	Return (Cross / m);
 }

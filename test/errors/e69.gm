@@ -1,0 +1,8 @@
+Procedure test_map_builtin_functions(G:Graph)
+{
+	N_P<N_S> prop;
+	
+	For(x : prop.Items) {
+		N_O o = x;	// type conflict
+	}
+}

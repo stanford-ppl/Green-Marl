@@ -16,6 +16,8 @@ GM_COMPILE_STEP(gm_ind_opt_hoist_foreach, "Move foreach statements")
 GM_COMPILE_STEP(gm_ind_opt_flip_edges, "Flipping Edges in Nested Foeach")
 GM_COMPILE_STEP(gm_ind_opt_loop_merge, "Merge loops")
 GM_COMPILE_STEP(gm_ind_opt_nonconf_reduce, "Optimizing non-conflicting reductions")
+GM_COMPILE_STEP(gm_ind_opt_propagate_trivial_writes, "Propagate Trivial Writes")
+GM_COMPILE_STEP(gm_ind_opt_remove_unused_scalar, "Remove Unused Scalar")
 
 #endif
 

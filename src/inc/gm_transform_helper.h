@@ -48,6 +48,7 @@ extern void gm_add_sent_end(ast_sent* current, ast_sent* newone, bool fix_symtab
 //--------------------------------------------------------------------
 extern void gm_add_sent_before(ast_sent* current, ast_sent* newone, bool fix_symtab = true);
 extern void gm_add_sent_after(ast_sent* current, ast_sent* newone, bool fix_symtab = true);
+extern void gm_replace_sent(ast_sent* orgone, ast_sent* newone, bool fix_symtab = true);
 
 //--------------------------------------------------------------------
 // similar to add_sent_*. But explicitly give the sentence bock
@@ -56,6 +57,12 @@ extern void gm_insert_sent_begin_of_sb(ast_sentblock* curr_sb, ast_sent* newone,
 extern void gm_insert_sent_end_of_sb(ast_sentblock* curr_sb, ast_sent* newone, bool fix_symtab = true);
 extern void gm_insert_sent_body_begin(ast_foreach* curr_sb, ast_sent* newone, bool fix_symtab = true);
 extern void gm_insert_sent_body_end(ast_foreach* curr_sb, ast_sent* newone, bool fix_sumtab = true);
+
+//--------------------------------------------------------------------
+// Remove(Rip-Off) sentence from a sentence block
+// (User should guarantee target does not use any symbol defined in from)
+//--------------------------------------------------------------------
+extern void gm_remove_sent_from_sb(ast_sent* target, ast_sentblock* from, bool fix_symtab = true);
 
 //------------------------------------------------------------
 // Scope management
@@ -72,14 +79,25 @@ extern void gm_reconstruct_scope(ast_node* top);  // top should must have a scop
 // Symbol addition and creation
 //------------------------------------------------------------
 // Find an upscope where I can add some symbol defs
-ast_sentblock* gm_find_upscope(ast_sent* s);
+extern ast_sentblock* gm_find_upscope(ast_sent* s);
 // Add symbols into some scope
-gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, char* new_vname); // assumtpion: no name-conflict.
-gm_symtab_entry* gm_add_new_symbol_property(ast_sentblock* sb, int primtype, bool is_nodeprop, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
-gm_symtab_entry* gm_add_new_symbol_nodeedge_type(ast_sentblock* sb, int nodeedge_type, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
+extern gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, char* new_vname); // assumtpion: no name-conflict.
+extern gm_symtab_entry* gm_add_new_symbol_property(ast_sentblock* sb, int primtype, bool is_nodeprop, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
+extern gm_symtab_entry* gm_add_new_symbol_nodeedge_type(ast_sentblock* sb, int nodeedge_type, gm_symtab_entry* target_graph, char* new_vname); // assumtpion: no name-conflict.
 
+//------------------------------------------------------------
+// Sentence block related
+//------------------------------------------------------------
 // returns sentblock that defines the given entry
-ast_sentblock* gm_find_defining_sentblock_up(ast_node* begin, gm_symtab_entry *e, bool is_property = false);
+extern ast_sentblock* gm_find_defining_sentblock_up(ast_node* begin, gm_symtab_entry *e, bool is_property = false);
+// Is the sentence block empty?   (nothing in there)
+extern bool gm_is_sentblock_empty(ast_sentblock* sb);
+// Is the sentence block trivial? (only one sentence, no definition)--  also returns the only sentence
+extern bool gm_is_sentblock_trivial(ast_sentblock* sb, ast_sent* &s);
+
+// get the trivivial sententce of s if s is a trivial sent-block. otherwise returns s itself
+extern ast_sent* gm_get_sentence_if_trivial_sentblock(ast_sent* s);
+
 
 //------------------------------------------------------------
 // Replace every symbol access
@@ -133,6 +151,7 @@ ast_expr* gm_new_bottom_symbol(int reduce_type, int lhs_type);
 // [the routine expects that there is only 1 instance of old_e inside target top expreesion]
 // note: symtab hierarchy is *not* re-validated by this routine
 // (thus be careful if new_e contains Sum/Product...)
+// (this method should be depricated; use replace_expr_general instead)
 extern bool gm_replace_subexpr(ast_expr* top, ast_expr* old_e, ast_expr* new_e);
 
 // implement following function 
@@ -159,6 +178,8 @@ extern bool gm_resolve_name_conflict(ast_sent *s, gm_symtab_entry *e, bool is_sc
 // [Assumption. e_new is a valid symbol entry that does not break scoping rule.]
 //---------------------------------------------------------------------------------------
 extern bool gm_replace_symbol_entry(gm_symtab_entry *e_old, gm_symtab_entry*e_new, ast_node* top);
+// replace symbol entry only for bounds 
+extern bool gm_replace_symbol_entry_bound(gm_symtab_entry *e_old, gm_symtab_entry *e_new, ast_node* top);
 
 //---------------------------------------------------------------
 // Merge subblock P,Q into P

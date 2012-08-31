@@ -1,4 +1,4 @@
-
+/*
 Proc adamicAdar(G:Graph, aa: E_P<Double>)
 {
     Foreach (e:G.Edges)
@@ -10,7 +10,6 @@ Proc adamicAdar(G:Graph, aa: E_P<Double>)
     }
 }
 
-
 Proc adamicAdar2(G:Graph, aa: E_P<Double>)
 {
     Foreach (e:G.Edges)
@@ -19,5 +18,22 @@ Proc adamicAdar2(G:Graph, aa: E_P<Double>)
         Node to = e.ToNode();
        
         e.aa = Sum(n: from.Nbrs)(n.IsNbrFrom(to)) {1 / Log(n.NumNbrs())};
+    }
+}
+*/
+
+Proc adamicAdar(G:Graph, aa: E_P<Double>)
+{
+    Foreach (e:G.Edges)
+    {
+        Node from = e.FromNode();
+        Node to = e.ToNode();
+       
+        // In C++ backend, the compiler optimizes below
+        e.aa = Sum(n: from.Nbrs)(n.IsNbrFrom(to)) {1 / Log(n.NumNbrs())};
+
+        // into 
+        // e.aa = Sum(n: from.CommonNbrs(to)) {1 / Log(n.NumNbrs())};
+
     }
 }

@@ -106,28 +106,19 @@ The compiler(gm_comp) and runtime(gm_graph) requires the following environments:
  * g++ 
  * GNU flex and bison 
 
-3-2 Directory Generation
--------------------------------------
-
-The following steps generates a set of empty directories that will be used during
-compilation:
-
-    cd $(top)
-    ./make_dirs.sh
-
-3-3 Build the Compiler
+3-2 Build the Compiler
 -------------------------------------
 
 The following steps build up 'gm_comp', a Green-Marl compiler:
 
-    cd $(top)/src
-    make                  %% check if $(top)/bin/gm_comp has been created successfully.
+    cd $(top)
+    make compiler         %% check if $(top)/bin/gm_comp has been created successfully.
     cd $(top)/bin 
     ./gm_comp -h          %% this command shows available compiler options
 
-A more detailed documentation about the gm_comp compiler can be found in [doc/gm_comp.md](Green-Marl/blob/master/doc/gm_comp.md) in this package
+More detailed documentation about the gm_comp compiler can be found in [doc/gm_comp.md](Green-Marl/blob/master/doc/gm_comp.md) in this package.
 
-3-4 Installing Syntax Highlighting for vi
+3-3 Installing Syntax Highlighting for vi
 -------------------------------------
 
 Vi users can enable syntax highlighting of Green-Marl programs (.gm files) 
@@ -243,8 +234,8 @@ Now we can compile the generated code through the following steps:
 
 In fact, there is a short cut that does all of 4.2~4.4 at one command:
 
-    cd $(top)/apps/
-    make all      %% this does all of 'make lib', 'make gen', and 'make bin' in order.
+    cd $(top)
+    make apps     %% this does all of 'make lib', 'make gen', and 'make bin' in order. It also compiles the compiler if it has not been compiled before.
 
 
 4-6 Executing sample programs

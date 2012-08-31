@@ -1,0 +1,12 @@
+// Test of unused scalar
+Proc P(G:Graph,n: Node(G), A:Node_Prop<Int>)
+{
+    Int x = 0;
+    Int y; // should be optimize 
+    Node r; // should be optimized
+    Node s; // should be not optimized
+
+    Foreach(i:G.Nodes) {
+        x += i.A + r.A;
+    }
+}

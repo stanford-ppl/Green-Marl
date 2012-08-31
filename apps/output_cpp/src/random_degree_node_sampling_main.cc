@@ -1,23 +1,18 @@
 #include "common_main.h"
-#include "trianglecounting.h"
+#include "random_degree_node_sampling.h"
 
 class my_main: public main_t
 {
 public:
-
-    virtual ~my_main() {}
 
     virtual bool prepare() {
         return true;
     }
 
     virtual bool run() {
-        gm_property_of_collection_impl<gm_node_set, false> coll(G.num_nodes());
-        int tCount = TriangleCounting(G);
-        PotentialFriends(G, coll);
-
-        printf("triangle count: %d\n", tCount);
-
+        int start = rand() % G.num_nodes();
+        gm_node_set set(G.num_nodes());
+        random_degree_node_sampling(G, start, set);
         return true;
     }
 

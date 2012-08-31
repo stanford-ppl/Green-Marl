@@ -1,8 +1,7 @@
-
 Proc random_bipartite_matching(
         G: Graph,               // Graph is a bipartite
         isLeft : N_P<Bool>,  // every edge is from left node to right node
-        Match: N_P<Node(G)>     // result: match of the node
+        Match: N_P<Node>     // result: match of the node
 ) : Int
 {
     Int count = 0;

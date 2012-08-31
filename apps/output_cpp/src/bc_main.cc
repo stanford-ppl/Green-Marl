@@ -5,11 +5,16 @@ class my_main: public main_t
 {
 public:
     gm_node_seq* Seeds;
-
     float* BC;
+
+    virtual ~my_main() {
+        delete[] BC;
+        delete Seeds;
+    }
 
     my_main() {
         Seeds = NULL;
+        BC = NULL;
     }
 
     virtual bool prepare() {
@@ -44,9 +49,6 @@ public:
         printf("BC[1] = %0.9lf\n", BC[1]);
         printf("BC[2] = %0.9lf\n", BC[2]);
         printf("BC[3] = %0.9lf\n", BC[3]);
-
-        delete[] BC;
-        delete Seeds;
         return true;
     }
 };

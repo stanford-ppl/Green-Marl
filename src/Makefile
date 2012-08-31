@@ -12,8 +12,7 @@ ifneq ($(UNAME),Darwin)
     LDFLAGS += -lrt
 endif
 
-
-# where to find sorce codes
+# where to find source codes
 vpath %.h  inc
 vpath %.c parse
 vpath %.l parse
@@ -73,6 +72,8 @@ SRCS2 =\
        gm_merge_loops.cc gm_moveup_propdecl.cc\
        gm_check_property_argument_usage.cc\
        gm_opt_nonconf_reduce.cc\
+       gm_opt_remove_unused_scalar.cc\
+       gm_opt_propagate_trivial_writes.cc\
        gm_flip_edges.cc\
        gm_cpp_opt.cc\
        gm_cpp_opt_select_par.cc\
@@ -80,6 +81,7 @@ SRCS2 =\
        gm_cpp_opt_reduce_scalar.cc \
        gm_cpp_opt_check_feasible.cc \
        gm_cpp_opt_save_bfs.cc\
+	   gm_cpp_opt_common_nbr.cc\
        gm_cpp_gen.cc \
        gm_cpp_gen_bfs.cc \
        gm_cpp_gen_foreach.cc\
@@ -100,6 +102,7 @@ SRCS2 =\
        gm_gps_opt_simplify_expr1.cc\
        gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_opt_transform_bfs.cc\
+	   gm_gps_opt_edge_iteration.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc\

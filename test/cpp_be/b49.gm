@@ -1,0 +1,14 @@
+Procedure test_common_nbr_opt(G:Graph, k: Node, A:N_P<Int>) : Int
+{
+    Int z = 0;
+    
+    Foreach(n: G.Nodes)(n.A>0) {
+        Foreach(t: n.Nbrs)(t.A < 0) {
+            If (t.IsNbrFrom(k)) {
+                z++;
+            }
+        }
+    }
+
+    Return z;
+}
