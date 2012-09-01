@@ -30,11 +30,16 @@ public:
         set_separate_post_apply(true);
     }
 
-    void process_rwinfo(gm_rwinfo_map& MAP, std::set<void*>& SET) {
-        gm_rwinfo_map::iterator I;
+    void process_rwinfo(gm_rwinfo_map& MAP, std::list<void*>& LIST) {
+        gm_rwinfo_map::iterator I;        
         for (I = MAP.begin(); I != MAP.end(); I++) {
             gm_symtab_entry* e = I->first;
-            SET.insert(e);
+            // eliminate duplicates
+            std::list<void*>::iterator L_I;
+            for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
+              if (((gm_symtab_entry*)*L_I) == e) break;
+            }
+            if (L_I == LIST.end()) LIST.push_back(e);
 
             gm_rwinfo_list* use = I->second;
             (assert(use!=NULL));
@@ -42,11 +47,29 @@ public:
             for (K = use->begin(); K != use->end(); K++) {
                 gm_symtab_entry* driver = (*K)->driver;
                 if (driver != NULL) {
-                    SET.insert(driver);
+                    // eliminate duplicates
+                    for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
+                        if (((gm_symtab_entry*)*L_I) == driver) break;
+                    }
+                    if (L_I == LIST.end()) LIST.push_back(driver);
+
+                    LIST.push_back(driver);
                     ast_id* g = driver->getType()->get_target_graph_id();
                     ast_id* c = driver->getType()->get_target_collection_id();
-                    if (g != NULL) SET.insert(g->getSymInfo());
-                    if (c != NULL) SET.insert(c->getSymInfo());
+                    if (g != NULL) {
+                        // eliminate duplicates
+                        for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
+                            if (((gm_symtab_entry*)*L_I) == g->getSymInfo()) break;
+                        }
+                        if (L_I == LIST.end()) LIST.push_back(g->getSymInfo());
+                    }
+                    if (c != NULL) {
+                        // eliminate duplicates
+                        for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
+                            if (((gm_symtab_entry*)*L_I) == c->getSymInfo()) break;
+                        }
+                        if (L_I == LIST.end()) LIST.push_back(c->getSymInfo());
+                    }
                 }
             }
         }
@@ -54,13 +77,13 @@ public:
 
     bool apply(ast_sent* s) {
         if (s->get_nodetype() == AST_BFS) {
-            ast_extra_info_set* syms = new ast_extra_info_set();
-            std::set<void*> &S = syms->get_set();
+            ast_extra_info_list* syms = new ast_extra_info_list();
+            std::list<void*> &L = syms->get_list();
 
             // insert graph symbol at the first
             gm_symtab_entry* graph = ((ast_bfs*) s)->get_root()->getTypeInfo()->get_target_graph_sym();
 
-            S.insert(graph);
+            L.push_back(graph);
 
             // are symbols that are read/writen inside bfs
             gm_rwinfo_sets* RWINFO = gm_get_rwinfo_sets(s);
@@ -70,9 +93,9 @@ public:
             gm_rwinfo_map& WS = RWINFO->write_set;
             gm_rwinfo_map& DS = RWINFO->reduce_set;
 
-            process_rwinfo(RS, S);
-            process_rwinfo(WS, S);
-            process_rwinfo(DS, S);
+            process_rwinfo(RS, L);
+            process_rwinfo(WS, L);
+            process_rwinfo(DS, L);
 
             s->add_info(CPPBE_INFO_BFS_SYMBOLS, syms);
             has_bfs = true;
@@ -103,8 +126,8 @@ public:
             ast_id * driver = bin->get_driver();
             if (driver != NULL) {
 
-                std::set<void*>& SET = ((ast_extra_info_set*) current_bfs->find_info(CPPBE_INFO_BFS_SYMBOLS))->get_set();
-                SET.insert(driver->getSymInfo());
+                std::list<void*>& LIST = ((ast_extra_info_list*) current_bfs->find_info(CPPBE_INFO_BFS_SYMBOLS))->get_list();
+                LIST.push_back(driver->getSymInfo());
             }
         }
         return true;

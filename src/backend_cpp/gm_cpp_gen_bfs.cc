@@ -97,9 +97,9 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs) {
 
     const char* has_post_visit = bool_string((bfs->get_bbody() != NULL) && (bfs->get_bbody()->get_sents().size() >= 1));
 
-    ast_extra_info_set* info = (ast_extra_info_set*) bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
-    std::set<void*>& SET = info->get_set();
-    std::set<void*>::iterator S;
+    ast_extra_info_list* info = (ast_extra_info_list*) bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
+    std::list<void*>& SET = info->get_list();
+    std::list<void*>::iterator S;
     gm_symtab_entry* graph_sym = (gm_symtab_entry*) (*(SET.begin()));
     const char* template_name = (bfs->is_bfs() ? BFS_TEMPLATE : DFS_TEMPLATE);
 
@@ -221,10 +221,10 @@ void gm_cpp_gen::generate_sent_bfs(ast_bfs* bfs) {
     //-------------------------------------------
     // give every entry that are used
     //-------------------------------------------
-    ast_extra_info_set* syms = (ast_extra_info_set*) bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
+    ast_extra_info_list* syms = (ast_extra_info_list*) bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
     assert(syms != NULL);
-    std::set<void*>& S = syms->get_set();
-    std::set<void*>::iterator I;
+    std::list<void*>& S = syms->get_list();
+    std::list<void*>::iterator I;
     bool is_first = true;
     for (I = S.begin(); I != S.end(); I++) {
         if (!is_first) {
