@@ -467,7 +467,7 @@ bool gm_graph::store_binary(char* filename) {
     node_t num_nodes = htonnode(this->_numNodes);
     fwrite(&num_nodes, sizeof(node_t), 1, f);
 
-    node_t num_edges = htonedge(this->_numEdges);
+    edge_t num_edges = htonedge(this->_numEdges);
     fwrite(&(num_edges), sizeof(edge_t), 1, f);
 
     for (node_t i = 0; i < _numNodes + 1; i++) {
