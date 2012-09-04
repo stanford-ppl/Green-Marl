@@ -4,6 +4,7 @@
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
+#include "gm_argopts.h"
 
 //--------------------------------------------------------------
 // A Back-End for GIRAPH generation
@@ -35,6 +36,32 @@ void gm_giraph_gen::init_gen_steps() {
 //----------------------------------------------------
 // Main Generator
 //----------------------------------------------------
+bool gm_giraph_gen::do_generate() {
+    FE.prepare_proc_iteration();
+    ast_procdef* proc = FE.get_next_proc();
+
+    // Check whether procedure name is the same as the filename
+    char* proc_name = proc->get_procname()->get_genname();
+    if (strcmp(proc_name, fname) != 0) {
+        gm_backend_error(GM_ERROR_GPS_PROC_NAME, proc->get_procname()->get_genname(), fname);
+        return false;
+    }
+
+    // Append 'Vertex' to filename if we only generate vertex logic
+    if (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_VERTEX_ONLY)) {
+        char filename[256];
+        sprintf(filename, "%sVertex", proc->get_procname()->get_genname());
+        PREGEL_BE->setFileName(filename);
+    }
+
+    if (!open_output_files()) return false;
+
+    bool b = gm_apply_compiler_stage(get_gen_steps());
+
+    close_output_files();
+
+    return b;
+}
 
 void gm_giraph_gen::write_headers() {
     get_lib()->generate_headers(Body);
@@ -63,21 +90,26 @@ void gm_giraph_gen::do_generate_global_variables() {
 }
 
 void gm_giraph_gen::do_generate_input_output_formats() {
-    char temp[1024];
+    char temp[1024], vertex_data[256], edge_data[256], message_data[256];
     ast_procdef* proc = FE.get_current_proc();
 
     const char* proc_name = proc->get_procname()->get_genname();
     const char* vertex_id = PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable";
-    const char* edge_data = proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP) ? "EdgeData" : "NullWritable";
+    sprintf(vertex_data, "%sVertex.VertexData", proc_name);
+    if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP))
+        sprintf(edge_data, "%sVertex.EdgeData", proc_name);
+    else
+        sprintf(edge_data, "NullWritable");
+    sprintf(message_data, "%sVertex.MessageData", proc_name);
 
     Body.pushln("//----------------------------------------------");
     Body.pushln("// Vertex Input format");
     Body.pushln("//----------------------------------------------");
 
-    sprintf(temp, "static class %sVertexInputFormat extends TextVertexInputFormat<%s, VertexData, %s, MessageData> {", proc_name, vertex_id, edge_data);
+    sprintf(temp, "static class %sVertexInputFormat extends TextVertexInputFormat<%s, %s, %s, %s> {", proc_name, vertex_id, vertex_data, edge_data, message_data);
     Body.pushln(temp);
     Body.pushln("@Override");
-    sprintf(temp, "public VertexReader<%s, VertexData, %s, MessageData>", vertex_id, edge_data);
+    sprintf(temp, "public VertexReader<%s, %s, %s, %s>", vertex_id, vertex_data, edge_data, message_data);
     Body.pushln(temp);
     Body.pushln("createVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {");
     sprintf(temp, "return new %sVertexReader(textInputFormat.createRecordReader(split, context));", proc_name);
@@ -85,8 +117,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.pushln("}");
     Body.NL();
 
-    sprintf(temp, "static class %sVertexReader extends TextVertexInputFormat.TextVertexReader<%s, VertexData, %s, MessageData> {", proc_name, vertex_id,
-            edge_data);
+    sprintf(temp, "static class %sVertexReader extends TextVertexInputFormat.TextVertexReader<%s, %s, %s, %s> {", proc_name, vertex_id, vertex_data, edge_data, message_data);
     Body.pushln(temp);
     sprintf(temp, "public %sVertexReader(RecordReader<LongWritable, Text> lineRecordReader) {", proc_name);
     Body.pushln(temp);
@@ -95,11 +126,11 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.NL();
 
     Body.pushln("@Override");
-    sprintf(temp, "public Vertex<%s, VertexData, %s, MessageData> getCurrentVertex() throws IOException, InterruptedException {", vertex_id, edge_data);
+    sprintf(temp, "public Vertex<%s, %s, %s, %s> getCurrentVertex() throws IOException, InterruptedException {", vertex_id, vertex_data, edge_data, message_data);
     Body.pushln(temp);
-    sprintf(temp, "Vertex<%s, VertexData, %s, MessageData> vertex =", vertex_id, edge_data);
+    sprintf(temp, "Vertex<%s, %s, %s, %s> vertex =", vertex_id, vertex_data, edge_data, message_data);
     Body.pushln(temp);
-    sprintf(temp, "    BspUtils.<%s, VertexData, %s, MessageData> createVertex(getContext().getConfiguration());", vertex_id, edge_data);
+    sprintf(temp, "    BspUtils.<%s, %s, %s, %s> createVertex(getContext().getConfiguration());", vertex_id, vertex_data, edge_data, message_data);
     Body.pushln(temp);
     Body.NL();
 
@@ -121,12 +152,14 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     }
     if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
         Body.pushln("double edgeValue = Double.parseDouble(values[i+1]);");
-        Body.pushln("edges.put(edgeId, new EdgeData(edgeValue));");
+        sprintf(temp, "edges.put(edgeId, new %s(edgeValue));", edge_data);
+        Body.pushln(temp);
     } else {
         Body.pushln("edges.put(edgeId, NullWritable.get());");
     }
     Body.pushln("}");
-    Body.pushln("vertex.initialize(vertexId, new VertexData(vertexValue), edges, null);");
+    sprintf(temp, "vertex.initialize(vertexId, new %sVertex.VertexData(vertexValue), edges, null);", proc_name);
+    Body.pushln(temp);
     Body.pushln("return vertex;");
     Body.pushln("}");
     Body.NL();
@@ -144,10 +177,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body.pushln("// ----------------------------------------------");
     sprintf(temp, "static class %sVertexOutputFormat extends", proc_name);
     Body.pushln(temp);
-    sprintf(temp, "TextVertexOutputFormat<%s, VertexData, %s> {", vertex_id, edge_data);
+    sprintf(temp, "TextVertexOutputFormat<%s, %s, %s> {", vertex_id, vertex_data, edge_data);
     Body.pushln(temp);
     Body.pushln("@Override");
-    sprintf(temp, "public VertexWriter<%s, VertexData, %s> createVertexWriter(", vertex_id, edge_data);
+    sprintf(temp, "public VertexWriter<%s, %s, %s> createVertexWriter(", vertex_id, vertex_data, edge_data);
     Body.pushln(temp);
     Body.pushln("TaskAttemptContext context) throws IOException, InterruptedException {");
     sprintf(temp, "return new %sVertexWriter(textOutputFormat.getRecordWriter(context));", proc_name);
@@ -157,7 +190,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
 
     sprintf(temp, "static class %sVertexWriter", proc_name);
     Body.pushln(temp);
-    sprintf(temp, "extends TextVertexOutputFormat.TextVertexWriter<%s, VertexData, %s> {", vertex_id, edge_data);
+    sprintf(temp, "extends TextVertexOutputFormat.TextVertexWriter<%s, %s, %s> {", vertex_id, vertex_data, edge_data);
     Body.pushln(temp);
     sprintf(temp, "public %sVertexWriter(RecordWriter<Text, Text> lineRecordReader) {", proc_name);
     Body.pushln(temp);
@@ -167,7 +200,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
 
     Body.pushln("@Override");
     Body.pushln("public void writeVertex(");
-    sprintf(temp, "Vertex<%s, VertexData, %s, ?> vertex)", vertex_id, edge_data);
+    sprintf(temp, "Vertex<%s, %s, %s, ?> vertex)", vertex_id, vertex_data, edge_data);
     Body.pushln(temp);
     Body.pushln("throws IOException, InterruptedException {");
     Body.pushln("StringBuffer sb = new StringBuffer(vertex.getId().toString());");
@@ -195,6 +228,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
 void gm_giraph_gen::do_generate_job_configuration() {
     char temp[1024];
     ast_procdef* proc = FE.get_current_proc();
+    char* proc_name = proc->get_procname()->get_genname();
 
     // Iterate symbol table
     gm_symtab* args = proc->get_symtab_var();
@@ -256,17 +290,17 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body.NL();
     Body.pushln("GiraphJob job = new GiraphJob(getConf(), getClass().getName());");
     Body.pushln("job.getConfiguration().setInt(GiraphJob.CHECKPOINT_FREQUENCY, 0);");
-    sprintf(temp, "job.setMasterComputeClass(%sMaster.class);", proc->get_procname()->get_genname());
+    sprintf(temp, "job.setMasterComputeClass(%sVertex.%sMasterCompute.class);", proc_name, proc_name);
     Body.pushln(temp);
-    sprintf(temp, "job.setVertexClass(%sVertex.class);", proc->get_procname()->get_genname());
+    sprintf(temp, "job.setVertexClass(%sVertex.class);", proc_name);
     Body.pushln(temp);
-    sprintf(temp, "job.setWorkerContextClass(%sWorkerContext.class);", proc->get_procname()->get_genname());
+    sprintf(temp, "job.setWorkerContextClass(%sVertex.%sWorkerContext.class);", proc_name, proc_name);
     Body.pushln(temp);
-    sprintf(temp, "job.setVertexInputFormatClass(%sVertexInputFormat.class);", proc->get_procname()->get_genname());
+    sprintf(temp, "job.setVertexInputFormatClass(%sVertexInputFormat.class);", proc_name);
     Body.pushln(temp);
     Body.pushln("FileInputFormat.addInputPath(job.getInternalJob(), new Path(cmd.getOptionValue('i')));");
     Body.pushln("if (cmd.hasOption('o')) {");
-    sprintf(temp, "job.setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc->get_procname()->get_genname());
+    sprintf(temp, "job.setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc_name);
     Body.pushln(temp);
     Body.pushln("FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(cmd.getOptionValue('o')));");
     Body.pushln("}");
@@ -332,7 +366,7 @@ void gm_giraph_gen::do_generate_job_configuration() {
 
     Body.NL();
     Body.pushln("public static void main(final String[] args) throws Exception {");
-    sprintf(temp, "System.exit(ToolRunner.run(new %s(), args));", proc->get_procname()->get_genname());
+    sprintf(temp, "System.exit(ToolRunner.run(new %s(), args));", proc_name);
     Body.pushln(temp);
     Body.pushln("}");
 }
@@ -343,17 +377,22 @@ void gm_giraph_gen::end_class() {
 
 void gm_giraph_gen::generate_proc(ast_procdef* proc) {
     write_headers();
-    begin_class();
-    do_generate_global_variables();
+
+    if (!OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_VERTEX_ONLY)) {
+        begin_class();
+        do_generate_global_variables();
+    }
+
+    do_generate_vertex_begin();
     do_generate_master();
+    do_generate_vertex_body();
+    do_generate_vertex_end();
 
-    do_generate_vertex();
-
-    do_generate_input_output_formats();
-
-    do_generate_job_configuration();
-
-    end_class();
+    if (!OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_VERTEX_ONLY)) {
+        do_generate_input_output_formats();
+        do_generate_job_configuration();
+        end_class();
+    }
 }
 
 void gm_giraph_gen_class::process(ast_procdef* proc) {

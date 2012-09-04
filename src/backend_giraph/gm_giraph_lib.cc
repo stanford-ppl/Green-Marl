@@ -5,32 +5,37 @@
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
+#include "gm_argopts.h"
 
 void gm_giraphlib::generate_headers(gm_code_writer& Body) {
     Body.pushln("import java.io.DataInput;");
     Body.pushln("import java.io.DataOutput;");
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.lang.Math;");
-    Body.pushln("import java.util.Iterator;");
-    Body.pushln("import java.util.Map;");
     Body.pushln("import java.util.Random;");
-    Body.pushln("import org.apache.commons.cli.*;");
     Body.pushln("import org.apache.giraph.aggregators.*;");
     Body.pushln("import org.apache.giraph.graph.*;");
-    Body.pushln("import org.apache.giraph.lib.*;");
-    Body.pushln("import org.apache.hadoop.conf.Configuration;");
-    Body.pushln("import org.apache.hadoop.fs.Path;");
     Body.pushln("import org.apache.hadoop.io.*;");
-    Body.pushln("import org.apache.hadoop.mapreduce.InputSplit;");
-    Body.pushln("import org.apache.hadoop.mapreduce.RecordReader;");
-    Body.pushln("import org.apache.hadoop.mapreduce.RecordWriter;");
-    Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
-    Body.pushln("import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;");
-    Body.pushln("import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;");
-    Body.pushln("import org.apache.hadoop.util.Tool;");
-    Body.pushln("import org.apache.hadoop.util.ToolRunner;");
     Body.pushln("import org.apache.log4j.Logger;");
-    Body.pushln("import com.google.common.collect.Maps;");
+
+    if (!OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_VERTEX_ONLY)) {
+        Body.pushln("import java.util.Map;");
+        Body.pushln("import org.apache.commons.cli.*;");
+        Body.pushln("import org.apache.giraph.lib.*;");
+        Body.pushln("import org.apache.hadoop.conf.Configuration;");
+        Body.pushln("import org.apache.hadoop.fs.Path;");
+        Body.pushln("import org.apache.hadoop.mapreduce.InputSplit;");
+        Body.pushln("import org.apache.hadoop.mapreduce.RecordReader;");
+        Body.pushln("import org.apache.hadoop.mapreduce.RecordWriter;");
+        Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
+        Body.pushln("import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;");
+        Body.pushln("import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;");
+        Body.pushln("import org.apache.hadoop.util.Tool;");
+        Body.pushln("import org.apache.hadoop.util.ToolRunner;");
+        Body.pushln("import com.google.common.collect.Maps;");
+    }
+    Body.NL();
+    Body.pushln("@SuppressWarnings(\"unused\")");
 }
 
 void gm_giraphlib::generate_node_iterator_rhs(ast_id* id, gm_code_writer& Body) {

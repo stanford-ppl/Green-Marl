@@ -77,6 +77,14 @@ void gm_gps_gen::init_gen_steps() {
 // Main Generator
 //----------------------------------------------------
 bool gm_gps_gen::do_generate() {
+	FE.prepare_proc_iteration();
+	ast_procdef* proc = FE.get_next_proc();
+
+    // Check whether procedure name is the same as the filename
+	if (strcmp(proc->get_procname()->get_genname(), fname) != 0) {
+		gm_backend_error(GM_ERROR_GPS_PROC_NAME, proc->get_procname()->get_genname(), fname);
+		return false;
+	}
 
     if (!open_output_files()) return false;
 

@@ -14,7 +14,6 @@ void gm_giraph_gen::do_generate_master() {
     do_generate_master_serialization();
     Body.pushln("}"); // finish master class
     Body.NL();
-
 }
 
 void gm_giraph_gen::do_generate_master_class() {
@@ -25,7 +24,7 @@ void gm_giraph_gen::do_generate_master_class() {
     // create master class
     //--------------------------------------------------------------------
     char temp[1024];
-    sprintf(temp, "public static class %sMaster extends MasterCompute {", proc->get_procname()->get_genname());
+    sprintf(temp, "public static class %sMasterCompute extends MasterCompute {", proc->get_procname()->get_genname());
     Body.pushln(temp);
     Body.pushln("// Control fields");
     bool prep = FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE);

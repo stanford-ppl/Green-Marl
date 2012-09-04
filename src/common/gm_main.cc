@@ -25,8 +25,6 @@
 #include "gm_argopts.h"
 #include "gm_ind_opt.h"
 
-//const char* GM_version_info = "0.1"; // moved to common/gm_verion_string
-
 gm_frontend FE;
 gm_cpp_gen CPP_BE;  // CPP Backend
 gm_gps_gen GPS_BE;  // GPS Backend
