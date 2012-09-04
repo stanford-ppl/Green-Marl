@@ -4,19 +4,56 @@
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
 #include "gm_transform_helper.h"
+#include "gm_argopts.h"
 extern void gm_redirect_reproduce(FILE *f);
 extern void gm_baseindent_reproduce(int i);
 extern void gm_flush_reproduce();
 
-void gm_giraph_gen::do_generate_vertex() {
+void gm_giraph_gen::do_generate_vertex_body() {
     set_master_generate(false);
-    do_generate_vertex_class();
+    do_generate_vertex_states();
     do_generate_worker_context_class();
     do_generate_vertex_property_class(false);
 
     if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) do_generate_vertex_property_class(true);
 
     do_generate_message_class();
+}
+
+void gm_giraph_gen::do_generate_vertex_begin() {
+    char temp[1024];
+    const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
+    Body.pushln("//----------------------------------------------");
+    Body.pushln("// Main Vertex Class");
+    Body.pushln("//----------------------------------------------");
+    if (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_VERTEX_ONLY)) {
+        sprintf(temp, "public class %sVertex", proc_name);
+    } else {
+        sprintf(temp, "public static class %sVertex", proc_name);
+    }
+    Body.pushln(temp);
+    Body.push_indent();
+    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+        sprintf(temp, "extends EdgeListVertex< %s, %sVertex.VertexData, %sVertex.EdgeData, %sVertex.MessageData > {",
+                PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable",
+                proc_name, proc_name, proc_name);
+    } else {
+        sprintf(temp, "extends EdgeListVertex< %s, %sVertex.VertexData, NullWritable, %sVertex.MessageData > {",
+                PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable",
+                proc_name, proc_name);
+    }
+    Body.pushln(temp);
+    Body.pop_indent();
+    Body.NL();
+    Body.pushln("// Vertex logger");
+    sprintf(temp, "private static final Logger LOG = Logger.getLogger(%sVertex.class);", proc_name);
+    Body.pushln(temp);
+    Body.NL();
+}
+
+void gm_giraph_gen::do_generate_vertex_end() {
+    Body.pushln("} // end of vertex class");
+    Body.NL();
 }
 
 void gm_giraph_gen::do_generate_worker_context_class() {
@@ -124,32 +161,6 @@ void gm_giraph_gen::do_generate_message_class() {
 
     Body.pushln("} // end of message-data class");
     Body.NL();
-}
-
-void gm_giraph_gen::do_generate_vertex_class() {
-    char temp[1024];
-    const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
-    Body.pushln("//----------------------------------------------");
-    Body.pushln("// Main Vertex Class");
-    Body.pushln("//----------------------------------------------");
-    sprintf(temp, "public static class %sVertex", proc_name);
-    Body.pushln(temp);
-    Body.push_indent();
-    if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        sprintf(temp, "extends EdgeListVertex< %s, VertexData, EdgeData, MessageData > {",
-                PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
-    } else {
-        sprintf(temp, "extends EdgeListVertex< %s, VertexData, NullWritable, MessageData > {",
-                PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
-    }
-    Body.pushln(temp);
-    Body.pop_indent();
-
-    do_generate_vertex_states();
-
-    Body.pushln("} // end of vertex class");
-    Body.NL();
-
 }
 
 void gm_giraph_gen::do_generate_vertex_states() {

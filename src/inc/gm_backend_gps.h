@@ -131,6 +131,8 @@ DEF_STRING(GPS_TAG_COMM_ID);
 // is pararell
 class gm_gps_gen : public gm_backend, public gm_code_generator
 {
+	friend class gm_giraph_gen;
+
 public:
     gm_gps_gen() :
             gm_code_generator(Body), dname(NULL), fname(NULL), f_body(NULL) {
