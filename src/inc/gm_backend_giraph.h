@@ -137,10 +137,11 @@ protected:
     void do_generate_scalar_broadcast_receive(gm_gps_basic_block *b);
     void do_generate_shared_variables_keys();
 
-    void do_generate_vertex();
+    void do_generate_vertex_begin();
+    void do_generate_vertex_body();
+    void do_generate_vertex_end();
     void do_generate_worker_context_class();
     void do_generate_vertex_property_class(bool is_edge_prop);
-    void do_generate_vertex_class();
     void do_generate_message_class();
     void do_generate_vertex_states();
     void do_generate_vertex_state_body(gm_gps_basic_block *b);
@@ -154,6 +155,7 @@ private:
 
 public:
     // from code generator interface
+    virtual bool do_generate();
     virtual void generate_proc(ast_procdef* p);
 
 };

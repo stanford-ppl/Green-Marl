@@ -42,31 +42,38 @@ static const char* GMARGFLAG_FLIP_BFSUP = "FlipUp";
 
 static const char* GMARGFLAG_MERGE_BB = "GPSMerge";
 static const char* GMARGFLAG_MERGE_BB_INTRA = "GPSMergeIntra";
+static const char* GMARGFLAG_GIRAPH_VERTEX_ONLY = "GiraphVertexOnly";
 //static const char* GMARGFLAG_DUMPIR = "Dd";
 //static const char* GMARGFLAG_NOMERGE = "NoMerge";
 //static const char* GMARGFLAG_NOSCREDUCE = "NoScalarReduce";
 
 // Add compiler options here
-static struct GM_comp_args GM_compiler_options[] = { { GMARGFLAG_HELP, GMARG_NULL, "Print help messages", NULL }, { GMARGFLAG_VERSION, GMARG_NULL,
-        "Print version", NULL }, { GMARGFLAG_TARGET, GMARG_STRING, "Target backend. Current valid targets are 'cpp_omp', 'cpp_seq', 'gps' and 'giraph'.", "cpp_omp" }, {
-        GMARGFLAG_OUTDIR, GMARG_STRING, "Output directory.", "." }, { GMARGFLAG_OPT_LEV, GMARG_INT, "Optimization Level (tobe implemented)", "1" }, {
-        GMARGFLAG_VERB_LEV, GMARG_INT, "Verbosity Level 0:silent, 1:show compile stage", "0" },
+static struct GM_comp_args GM_compiler_options[] = {
+        { GMARGFLAG_HELP, GMARG_NULL, "Print help messages", NULL },
+        { GMARGFLAG_VERSION, GMARG_NULL, "Print version", NULL },
+        { GMARGFLAG_TARGET, GMARG_STRING, "Target backend. Current valid targets are 'cpp_omp', 'cpp_seq', 'gps' and 'giraph'.", "cpp_omp" },
+        { GMARGFLAG_OUTDIR, GMARG_STRING, "Output directory.", "." },
+        { GMARGFLAG_OPT_LEV, GMARG_INT, "Optimization Level (tobe implemented)", "1" },
+        { GMARGFLAG_VERB_LEV, GMARG_INT, "Verbosity Level 0:silent, 1:show compile stage", "0" },
 
-{ GMARGFLAG_FLIP_BFSUP, GMARG_BOOL, "Enable 'flipping edges for BFS Up-nbrs'", "1" }, { GMARGFLAG_FLIP_REVERSE, GMARG_BOOL,
-        "Enable 'flipping edges' to avoid the use of reverse edges", "0" }, { GMARGFLAG_FLIP_PULL, GMARG_BOOL,
-        "Enable 'flipping edges' to avoid the use of pull-based computation", "0" }, { GMARGFLAG_MERGE_BB, GMARG_BOOL, "(For gps) Enable bb merge optimization",
-        "1" }, { GMARGFLAG_MERGE_BB_INTRA, GMARG_BOOL, "(For gps) Enable intra-loop bb merge optimization", "1" },
+        { GMARGFLAG_FLIP_BFSUP, GMARG_BOOL, "Enable 'flipping edges for BFS Up-nbrs'", "1" },
+        { GMARGFLAG_FLIP_REVERSE, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of reverse edges", "0" },
+        { GMARGFLAG_FLIP_PULL, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of pull-based computation", "0" },
+        { GMARGFLAG_MERGE_BB, GMARG_BOOL, "(For gps) Enable bb merge optimization", "1" },
+        { GMARGFLAG_MERGE_BB_INTRA, GMARG_BOOL, "(For gps) Enable intra-loop bb merge optimization", "1" },
 
-{ GMARGFLAG_STOP_STRING, GMARG_STRING, "(For debug) Stop the compiler after certain stage. <string>=(step)[.(step)]", "0" },
+        { GMARGFLAG_STOP_STRING, GMARG_STRING, "(For debug) Stop the compiler after certain stage. <string>=(step)[.(step)]", "0" },
 
-{ GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For debug) When stopped, reproduce green-marl program", "1" }, { GMARGFLAG_PRINTRW, GMARG_BOOL,
-        "(For debug) When stopped, print rw analysis information", "0" }, { GMARGFLAG_PRINTBB, GMARG_BOOL,
-        "(For gps-debug) When stopped, print basicblock information", "0" },
+        { GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For debug) When stopped, reproduce green-marl program", "1" },
+        { GMARGFLAG_PRINTRW, GMARG_BOOL, "(For debug) When stopped, print rw analysis information", "0" },
+        { GMARGFLAG_PRINTBB, GMARG_BOOL, "(For gps-debug) When stopped, print basicblock information", "0" },
 
-//{GMARGFLAG_DUMPIR, GMARG_BOOL, "(For internal debug) When stopped, dump IR tree", "0"},
-//{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},
-//{GMARGFLAG_NOSCREDUCE, GMARG_BOOL, "(For Paper writing) Disable Optimizing Scalar Reduction", "0"},
-        };
+        { GMARGFLAG_GIRAPH_VERTEX_ONLY, GMARG_BOOL, "(For giraph) Only generate vertex logic", "0" },
+
+        //{GMARGFLAG_DUMPIR, GMARG_BOOL, "(For internal debug) When stopped, dump IR tree", "0"},
+        //{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},
+        //{GMARGFLAG_NOSCREDUCE, GMARG_BOOL, "(For Paper writing) Disable Optimizing Scalar Reduction", "0"},
+    };
 
 //----------------------------------------
 // A class that stores command line arguments 
