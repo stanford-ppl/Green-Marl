@@ -181,6 +181,7 @@ public:
     virtual void prepare_external_creation(node_t n, edge_t m);
     virtual bool store_binary(char* filename);          // attributes not saved
     virtual bool load_binary(char* filename);           // call this to an empty graph object
+    virtual bool load_adjacency_list(char* filename, char separator = '\t');
 
     //--------------------------------------------------------------
     // conversion between idx and id
