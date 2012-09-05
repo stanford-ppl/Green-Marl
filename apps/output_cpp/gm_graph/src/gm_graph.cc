@@ -560,17 +560,17 @@ bool gm_graph::load_binary(char* filename) {
             fprintf(stderr, "Error reading node begin array\n");
             goto error_return;
         }
-	#if GM_GRAPH_NUMA_OPT
+    #if GM_GRAPH_NUMA_OPT
         temp_begin[i] = key;
-	#else
+    #else
         this->begin[i] = key;
-	#endif
+    #endif
     }
 
 #if GM_GRAPH_NUMA_OPT
     #pragma omp parallel for
     for(edge_t i = 0; i < N + 1; i ++)
-	    this->begin[i] = temp_begin[i];
+        this->begin[i] = temp_begin[i];
 
     delete [] temp_begin;
 
@@ -596,7 +596,7 @@ bool gm_graph::load_binary(char* filename) {
     #pragma omp parallel for
     for(node_t i = 0; i < N ; i ++) {
         for(edge_t j = begin[i]; j < begin[i+1]; j ++)
-	        this->node_idx[j] = temp_node_idx[j];
+            this->node_idx[j] = temp_node_idx[j];
     }
     delete [] temp_node_idx;
 
@@ -622,25 +622,25 @@ bool gm_graph::load_adjacency_list(char* filename, char separator) {
     // Open the file
     std::ifstream file(filename);
     if (file == NULL) {
-    	goto error_return;
+        goto error_return;
     }
 
     // Determine number of nodes and edges so we can allocate memory
     while(std::getline(file, line)) {
-    	if (line.at(0) < '0' || line.at(0) > '9') {
-    		continue;
-    	}
+        if (line.at(0) < '0' || line.at(0) > '9') {
+            continue;
+        }
         field_index = 0;
         std::stringstream linestream(line);
         while(std::getline(linestream, temp_str, separator)) {
             if (field_index == 0) {
-            	// Parsing node id
-            	temp_long = atol(temp_str.c_str());
-            	index_convert[temp_long] = N;
-            	N++;
+                // Parsing node id
+                temp_long = atol(temp_str.c_str());
+                index_convert[temp_long] = N;
+                N++;
             } else if (field_index % 2 == 0) {
-            	// Parsing edge id
-            	M++;
+                // Parsing edge id
+                M++;
             }
             field_index++;
         }
@@ -655,24 +655,24 @@ bool gm_graph::load_adjacency_list(char* filename, char separator) {
 
     // Fill the node and edges arrays
     while(std::getline(file, line)) {
-    	if (line.at(0) < '0' || line.at(0) > '9') {
-    		continue;
-    	}
-    	field_index = 0;
-		std::stringstream linestream(line);
-		while(std::getline(linestream, temp_str, separator)) {
-			if (field_index == 0) {
-				// Parsing node id
-				this->begin[processed_nodes] = processed_edges;
-			} else if (field_index % 2 == 0) {
-				// Parsing edge id
-				temp_long = atol(temp_str.c_str());
-				this->node_idx[processed_edges] = index_convert[temp_long];
-				processed_edges++;
-			}
-			field_index++;
-		}
-		processed_nodes++;
+        if (line.at(0) < '0' || line.at(0) > '9') {
+            continue;
+        }
+        field_index = 0;
+        std::stringstream linestream(line);
+        while(std::getline(linestream, temp_str, separator)) {
+            if (field_index == 0) {
+                // Parsing node id
+                this->begin[processed_nodes] = processed_edges;
+            } else if (field_index % 2 == 0) {
+                // Parsing edge id
+                temp_long = atol(temp_str.c_str());
+                this->node_idx[processed_edges] = index_convert[temp_long];
+                processed_edges++;
+            }
+            field_index++;
+        }
+        processed_nodes++;
     }
 
     // Close file and freeze graph
