@@ -177,10 +177,11 @@ public:
     // Read and Write the graph from/to a file, using a custom binary format
     // The graph will be frozen automatically.
     //--------------------------------------------------------------
-    #define MAGIC_WORD	0x03939999
+    #define MAGIC_WORD 0x03939999
     virtual void prepare_external_creation(node_t n, edge_t m);
     virtual bool store_binary(char* filename);          // attributes not saved
     virtual bool load_binary(char* filename);           // call this to an empty graph object
+    virtual bool load_adjacency_list(char* filename, char separator = '\t');
 
     //--------------------------------------------------------------
     // conversion between idx and id
