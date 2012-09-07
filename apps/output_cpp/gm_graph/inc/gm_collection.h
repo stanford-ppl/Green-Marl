@@ -61,7 +61,7 @@ public:
             return iter != end;
         }
 
-        T get_next() {
+        T& get_next() {
             return *(iter++);
         }
 

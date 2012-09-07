@@ -313,7 +313,7 @@ public:
                 return false;
             }
         }
-        inline T get_next() {
+        inline const T get_next() {
             if (is_small) {
                 T t = *ITER;
                 ITER++;
