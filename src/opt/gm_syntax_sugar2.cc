@@ -557,6 +557,7 @@ private:
         }
 
         ast_assign* assign = createAssignStatement();
+        assign->set_is_reference(true);
         statements.push_front(assign);
 
         return newBody;

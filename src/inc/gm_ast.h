@@ -2289,9 +2289,17 @@ public:
         return NULL;
     }
 
+    void set_is_reference(bool is_ref) {
+        isReference = is_ref;
+    }
+
+    bool is_reference() {
+        return isReference;
+    }
+
 protected:
     ast_assign() :
-            ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false), lhs_type(0), assign_type(0), reduce_type(0) {
+            ast_sent(AST_ASSIGN), lhs_scala(NULL), lhs_field(NULL), rhs(NULL), bound(NULL), arg_minmax(false), lhs_type(0), assign_type(0), reduce_type(0), isReference(false) {
     }
 
 private:
@@ -2304,6 +2312,7 @@ private:
     ast_id* bound;  // bounding iterator
 
     bool arg_minmax;
+    bool isReference;
 
     std::list<ast_node*> l_list;
     std::list<ast_expr*> r_list;
