@@ -115,7 +115,7 @@ public:
         inline bool has_next() {                               \
             return (ITER != END_ITER);                         \
         }                                                      \
-        inline const T get_next()                               \
+        inline T get_next()                               \
         {   T t = *ITER; ITER++; return t;}                    \
         private:                                               \
             typename LIST_ITER_TYPE ITER;                      \
@@ -147,7 +147,7 @@ public:
                 return false;
             }
         }
-        inline const T get_next() {
+        inline T get_next() {
             if (is_small) {
                 T t = *ITER;
                 ITER++;
