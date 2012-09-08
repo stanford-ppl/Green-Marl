@@ -103,7 +103,6 @@ void gm_cpplib::generate_down_initializer(ast_foreach* f, gm_code_writer& Body) 
         } else {
             sprintf(str_buf, "%s %s = %s.get_next();", type_name, f->get_iterator()->get_genname(), lst_iter_name);
         }
-        Body.pushln(str_buf);
     } else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
         const char* alias_name = f->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
         const char* type_name = get_type_string(iter_type);
