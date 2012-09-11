@@ -20,7 +20,7 @@ static void find_enclosing_scope(ast_node* n, gm_scope* s) {
         fe->get_this_scope(s);
         return;
     } else if (n->get_nodetype() == AST_SENTBLOCK) {
-        ast_foreach* sb = (ast_foreach*) n;
+        ast_sentblock* sb = (ast_sentblock*) n;
         sb->get_this_scope(s);
         return;
     } else if (n->get_nodetype() == AST_PROCDEF) {
