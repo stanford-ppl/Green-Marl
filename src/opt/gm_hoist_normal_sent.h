@@ -24,7 +24,7 @@ public:
             // find target assign sentence
             //--------------------------------------
             ast_sent* target = *i_out;
-            if (!check_target((ast_assign*) target)) continue;
+            if (target->get_nodetype() != AST_ASSIGN || !check_target((ast_assign*) target)) continue;
 
             std::list<ast_sent*>& sents2 = sb->get_sents(); // most up-to-date list
             std::list<ast_sent*> stack;
