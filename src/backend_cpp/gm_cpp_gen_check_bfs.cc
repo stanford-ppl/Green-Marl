@@ -55,7 +55,7 @@ public:
 
                     LIST.push_back(driver);
                     ast_id* g = driver->getType()->get_target_graph_id();
-                    ast_id* c = driver->getType()->get_target_collection_id();
+                    //ast_id* c = driver->getType()->get_target_collection_id();
                     if (g != NULL) {
                         // eliminate duplicates
                         for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
@@ -63,6 +63,7 @@ public:
                         }
                         if (L_I == LIST.end()) LIST.push_back(g->getSymInfo());
                     }
+                    /* 
                     if (c != NULL) {
                         // eliminate duplicates
                         for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
@@ -70,6 +71,7 @@ public:
                         }
                         if (L_I == LIST.end()) LIST.push_back(c->getSymInfo());
                     }
+                    */
                 }
             }
         }

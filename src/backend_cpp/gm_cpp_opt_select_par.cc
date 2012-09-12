@@ -50,7 +50,7 @@ public:
             } else if (fe->is_sequential()) {
                 // user wants it sequential
                 fe->set_sequential(true);
-            } else if (gm_is_iteration_on_all_graph(fe->get_iter_type())) {
+            } else if (gm_is_all_graph_iteration(fe->get_iter_type())) {
                 set_to_seq_t T;
 
                 // set parallel
@@ -60,7 +60,7 @@ public:
                 gm_traverse_up_sent(s->get_parent(), &T);
 
                 // [XXX] need to think about this
-            } else if (gm_is_iteration_on_collection(fe->get_iter_type())) {
+            } else if (gm_is_simple_collection_iteration(fe->get_iter_type())) {
 
                 // make it sequential always
                 set_to_seq_t T;

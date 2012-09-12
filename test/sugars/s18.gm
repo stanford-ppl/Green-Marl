@@ -5,12 +5,12 @@ Procedure foo()
    Node n;
    N_P<N_S> prop;
    
-   For(s: prop.Items) {
-   		s.Add(n);
-   }
+   //For(s: prop.Items) { // This syntax has been deprecated
+   //		s.Add(n);
+   //}
    
-   Foreach(n2: G.Nodes) { //should be equal to above
-   		N_S s = n2.prop;
+   Foreach(n2: G.Nodes) { 
+   		N_S s = n2.prop;  // This creates a copy of Node_Set.
    		s.Add(n);
    }
    

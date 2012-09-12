@@ -48,7 +48,7 @@ static bool capture_pattern(ast_foreach* out, ast_if*& if1, ast_foreach*& in, as
     if1 = if2 = NULL;
     in = NULL;
 
-    if (!gm_is_all_graph_node_iter_type(out->get_iter_type())) return false;
+    if (!gm_is_all_graph_node_iteration(out->get_iter_type())) return false;
 
     ast_sent* body1;
     body1 = get_single_destination_sentence(out->get_body());
@@ -65,7 +65,7 @@ static bool capture_pattern(ast_foreach* out, ast_if*& if1, ast_foreach*& in, as
     in = (ast_foreach*) body1;
 
     int iter2 = in->get_iter_type();
-    if ((iter2 != GMTYPE_NODEITER_NBRS) && (iter2 != GMTYPE_NODEITER_IN_NBRS)) return false;
+    if (!gm_is_out_nbr_node_iteration(iter2) && !gm_is_in_nbr_node_iteration(iter2)) return false;
 
     if (in->get_source()->getSymInfo() != out->get_iterator()->getSymInfo()) return false;
 
@@ -108,7 +108,7 @@ public:
 
 
             if (avoid_reverse) {
-                if (in->get_iter_type() == GMTYPE_NODEITER_IN_NBRS) {
+                if (gm_is_in_nbr_node_iteration(fe->get_iter_type())) {
                     target.push_back(fe);
                     return true; // do ont push it twice
                 }
@@ -197,16 +197,18 @@ static void do_flip_edges(std::list<ast_foreach*>& target) {
         in->get_source()->setSymInfo(iter_in);
 
         // 2) flip inner edge direction
-        if (in->get_iter_type() == GMTYPE_NODEITER_NBRS)
-            in->set_iter_type(GMTYPE_NODEITER_IN_NBRS);
-        else if (in->get_iter_type() == GMTYPE_NODEITER_IN_NBRS)
-            in->set_iter_type(GMTYPE_NODEITER_NBRS);
+        if (in->get_iter_type() == GMITER_NODE_NBRS)
+            in->set_iter_type(GMITER_NODE_IN_NBRS);
+        else if (in->get_iter_type() == GMITER_NODE_IN_NBRS)
+            in->set_iter_type(GMITER_NODE_NBRS);
         else {
             assert(false);
         }
 
-        iter_in->getType()->set_typeid(out->get_iter_type());
-        iter_out->getType()->set_typeid(in->get_iter_type());
+        iter_in->getType()->set_defining_node(out);
+        iter_out->getType()->set_defining_node(in);
+        //iter_in->getType()->set_typeid(out->get_iter_type());
+        //iter_out->getType()->set_typeid(in->get_iter_type());
 
         // 3) exchange if conditions
         if ((if1 == NULL) && (if2 == NULL)) {

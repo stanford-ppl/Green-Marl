@@ -36,7 +36,7 @@ public:
         if (s->get_nodetype() == AST_FOREACH) {
             // check iteratation type
             ast_foreach* fe = (ast_foreach*) s;
-            if (fe->get_iter_type() == GMTYPE_EDGEITER_ALL) {
+            if (gm_is_all_graph_edge_iteration(fe->get_iter_type())) {
                 _targets.push_back(fe);
             }
         }
@@ -59,12 +59,12 @@ public:
             ast_sentblock* sb = ast_sentblock::new_sentblock();
             const char* outer_name = FE.voca_temp_name_and_add("_n");
             ast_id* outer_id = ast_id::new_id(outer_name, fe->get_iterator()->get_line(), fe->get_iterator()->get_col());
-            ast_foreach* outer_fe = gm_new_foreach_after_tc(outer_id, fe->get_iterator()->getTypeInfo()->get_target_graph_id()->copy(true), sb, GMTYPE_NODEITER_ALL);
+            ast_foreach* outer_fe = gm_new_foreach_after_tc(outer_id, fe->get_iterator()->getTypeInfo()->get_target_graph_id()->copy(true), sb, GMITER_NODE_ALL);
 
             // (2) create inner foreach loop 
             const char* inner_name = FE.voca_temp_name_and_add("_t");
             ast_id* inner_id = ast_id::new_id(inner_name, fe->get_iterator()->get_line(), fe->get_iterator()->get_col());
-            ast_foreach* inner_fe = gm_new_foreach_after_tc(inner_id, outer_id->copy(true), body, GMTYPE_NODEITER_NBRS);
+            ast_foreach* inner_fe = gm_new_foreach_after_tc(inner_id, outer_id->copy(true), body, GMITER_NODE_NBRS);
             sb->add_sent(inner_fe);
 
             // (3) replace fe -> outer_fe
@@ -91,7 +91,7 @@ public:
 
             // (6) add definition of the new edge symbol at the top
             ast_expr*  rhs = ast_expr_builtin::new_builtin_expr(inner_id->copy(true), 
-                    BUILT_IN.find_builtin_def(GMTYPE_NODEITER_NBRS, GM_BLTIN_NODE_TO_EDGE), 
+                    BUILT_IN.find_builtin_def(GMTYPE_NODE_ITERATOR, GM_BLTIN_NODE_TO_EDGE, GMITER_NODE_NBRS), 
                     NULL);
             ast_assign* new_assign = ast_assign::new_assign_scala(new_edge_symbol->getId()->copy(true), rhs);
             gm_insert_sent_begin_of_sb(sb2, new_assign);

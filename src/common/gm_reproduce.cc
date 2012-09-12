@@ -310,8 +310,8 @@ void ast_expr_reduce::reproduce(int ind_level) {
     Out.push(": ");
     src->reproduce(0);
     Out.push(".");
-    Out.push(gm_get_iter_type_string(iter_type));
-    if (gm_is_common_nbr_iter_type(iter_type)) {
+    Out.push(gm_get_iteration_string(iter_type));
+    if (gm_is_common_nbr_iteration(iter_type)) {
         Out.push('(');
         src2->reproduce(0);
         Out.push(')');
@@ -455,8 +455,8 @@ void ast_foreach::reproduce(int ind_level) {
     Out.push(" : ");
     source->reproduce(0);
     Out.push(".");
-    Out.push(gm_get_iter_type_string(iter_type));
-    if (gm_is_common_nbr_iter_type(iter_type)) {
+    Out.push(gm_get_iteration_string(iter_type));
+    if (gm_is_common_nbr_iteration(iter_type)) {
         Out.push('(');
         source2->reproduce(0);
         Out.push(')');
@@ -577,6 +577,7 @@ void ast_return::reproduce(int ind_level) {
 void ast_call::reproduce(int ind_level) {
     assert(is_builtin_call());
     b_in->reproduce(ind_level);
+    Out.pushln(";");
 }
 
 void ast_nop::reproduce(int ind_level) {

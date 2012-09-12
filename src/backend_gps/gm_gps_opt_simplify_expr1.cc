@@ -89,7 +89,8 @@ public:
 
             // add initializer
             ast_id* lhs_id = target->getId()->copy(true);
-            gm_builtin_def* bin = BUILT_IN.find_builtin_def(drv->getType()->getTypeSummary(), method_id);
+            gm_builtin_def* bin = BUILT_IN.find_builtin_def(drv->getType()->getTypeSummary(), method_id, 
+                    drv->getType()->is_iterator() ? drv->getType()->get_defined_iteration_from_iterator() : GMITER_ANY);
             assert(bin != NULL);
             assert(bin->get_num_args() == 0);
             ast_id* driver = drv->getId()->copy(true);

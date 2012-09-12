@@ -90,8 +90,8 @@ public:
     bool find_symbol_id(ast_id* id, bool print_error = true);
     bool find_symbol_field_id(ast_id* id);
 
-    bool gm_symbol_check_iter_header(ast_id* it, ast_id* src, int iter_type, ast_id* src2 = NULL);
-    bool gm_symbol_check_bfs_header(ast_id* it, ast_id* src, ast_id* root, int iter_type);
+    bool gm_symbol_check_iter_header(ast_id* it, ast_id* src, int iter_type, ast_id* src2, ast_node* def_node);
+    bool gm_symbol_check_bfs_header(ast_id* it, ast_id* src,  int iter_type, ast_id* root, ast_node* def_node);
 
 private:
     // symbol tables
@@ -106,6 +106,7 @@ private:
     bool _is_okay;
 
     //if sourceId is defined as a field variable (= is a property) the iter type should be a property iterator
+    /*
     int adjust_iter_type(ast_foreach* fe) {
         if (curr_field->find_symbol(fe->get_source()) != NULL) {
             ast_id* source = fe->get_source();
@@ -118,8 +119,10 @@ private:
             return fe->get_iter_type();
         }
     }
+    */
 
     static int mapTargetToIterType(int targetType) {
+        /*
         switch (targetType) {
             case GMTYPE_NSET:
             case GMTYPE_ESET:
@@ -134,17 +137,19 @@ private:
                 assert(false);
                 return -1;
         }
+        */
+        assert(false);
     }
 
     void checkAndSetBoundGraphsForMap(ast_mapaccess* mapAccess) {
         ast_maptypedecl* mapDecl = (ast_maptypedecl*) mapAccess->get_map_id()->getTypeInfo();
         ast_typedecl* keyType = mapDecl->get_key_type();
         ast_typedecl* valueType = mapDecl->get_value_type();
-        if (gm_has_target_graph_type(keyType->getTypeSummary())) {
+        if (gm_requires_target_graph_type(keyType->getTypeSummary())) {
             gm_symtab_entry* keyGraph = keyType->get_target_graph_sym();
             mapAccess->set_bound_graph_for_key(keyGraph);
         }
-        if (gm_has_target_graph_type(valueType->getTypeSummary())) {
+        if (gm_requires_target_graph_type(valueType->getTypeSummary())) {
             gm_symtab_entry* valueGraph = valueType->get_target_graph_sym();
             mapAccess->set_bound_graph_for_value(valueGraph);
         }
@@ -211,7 +216,9 @@ static const int ANY_THING = 0;
 bool gm_check_target_is_defined(ast_id* target, gm_symtab* vars, int should_be_what = ANY_THING) {
     // check graph is defined
     assert(target->get_orgname() != NULL);
-    if (gm_find_and_connect_symbol(target, vars) == false) return false;
+    if (gm_find_and_connect_symbol(target, vars) == false){
+        return false;
+    }
 
     switch (should_be_what) {
         case SHOULD_BE_A_GRAPH:
@@ -260,7 +267,6 @@ ast_id* gm_get_default_graph(gm_symtab* symTab) {
             if (entryType->is_graph()) {
                 foundCount++;
                 if (foundCount > 1) {
-                    printf("FUU\n");
                     gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
                     return NULL;
                 }
@@ -308,29 +314,38 @@ bool gm_check_graph_is_defined(ast_typedecl* type, gm_symtab* symTab) {
 bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V);
 
 bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V, int targetType) {
-    if (type->is_primitive() || type->is_void()) {
-        //nothing to do
-    } else if (type->is_graph()) {
+
+    type->set_well_defined(true);
+
+    if (type->is_primitive() || type->is_void()) 
+        return true;
+
+    if (type->is_graph()) {
         //if default graph is used, check if no other graph is defined
         if (SYM_V->is_default_graph_used() && SYM_V->get_graph_declaration_count() > 0) {
             gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, (ast_id*) type, "", "");
             return false;
         }
-    } else if (type->is_collection() || type->is_nodeedge() || type->is_all_graph_iterator() || type->is_collection_of_collection()) {
-        bool is_okay = gm_check_graph_is_defined(type, SYM_V);
-        if (!is_okay) return is_okay;
-    } else if (type->is_property()) {
+    } 
+
+    // target graph required
+    if (type->requires_target_graph()) {
         bool is_okay = gm_check_graph_is_defined(type, SYM_V);
         if (!is_okay) return false;
+    } 
 
+    if (type->is_property()) {
         ast_typedecl* target_type = type->get_target_type();
+
         if (target_type->is_nodeedge() || target_type->is_collection()) {
-            is_okay &= gm_check_type_is_well_defined(target_type, SYM_V);
+            bool is_okay = gm_check_type_is_well_defined(target_type, SYM_V);
             if (!is_okay) return false;
         } else if (!target_type->is_primitive()) {
             gm_type_error(GM_ERROR_NEED_PRIMITIVE, type->get_line(), type->get_col());
             return false;
         }
+
+        /*
     } else if (type->is_collection_iterator()) {
         ast_id* col = type->get_target_collection_id();
         assert(col != NULL);
@@ -350,37 +365,18 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V, int tar
 
         // copy graph_id
         type->set_target_graph_id(col->getTypeInfo()->get_target_graph_id()->copy(true));
-    } else if (type->is_property_iterator()) {
-        ast_id* property = type->get_target_property_id();
-        assert(property != NULL);
-        bool is_okay = gm_check_target_is_defined(property, SYM_V, SHOULD_BE_A_PROPERTY);
-        if (!is_okay) return false;
+        */
 
-        type->set_target_graph_id(property->getTypeInfo()->get_target_graph_id()->copy(true));
-
-    } else if (type->is_common_nbr_iterator() || type->is_any_nbr_iterator()) {
-        ast_id* node = type->get_target_nbr_id();
-        assert(node != NULL);
-        bool is_okay = gm_check_target_is_defined(node, SYM_V, SHOULD_BE_A_NODE_COMPATIBLE);
-        if (!is_okay) return false;
-
-        // copy graph_id
-        //printf("copying graph id = %s\n", node->getTypeInfo()->get_target_graph_id()->get_orgname());
-        type->set_target_graph_id(node->getTypeInfo()->get_target_graph_id()->copy(true));
     } else if (type->is_map()) {
         ast_maptypedecl* mapType = (ast_maptypedecl*) type;
-        if(gm_has_target_graph_type(mapType->getKeyTypeSummary())) {
+        if(gm_requires_target_graph_type(mapType->getKeyTypeSummary())) {
             if(!gm_check_graph_is_defined(mapType->get_key_type(), SYM_V)) return false;
         }
-        if(gm_has_target_graph_type(mapType->getValueTypeSummary())) {
+        if(gm_requires_target_graph_type(mapType->getValueTypeSummary())) {
             if(!gm_check_graph_is_defined(mapType->get_value_type(), SYM_V)) return false;
         }
-    } else {
-        printf("%s", gm_get_type_string(type->getTypeSummary()));
-        assert(false);
-    }
+    } 
 
-    type->set_well_defined(true);
     return true;
 }
 
@@ -389,12 +385,13 @@ bool gm_check_type_is_well_defined(ast_typedecl* type, gm_symtab* SYM_V) {
 }
 
 //---------------------
-// (This function can be used after type-checking)
-// add a (copy of) symbol and (copy of) type into a symtab, error if symbol is duplicated
-//  (the original id is also connected to the symtab enntry)
-// (type should be well defined)
-//
-// The name is added to the current procedure vocaburary 
+// [Create a symbol entry for (id) in the symtab]
+//    - a new symbol is created
+//    - error if name is duplicated
+//    - a copy of type will be also created and appended to the symbol
+//    - the original id gets a link to the newly created  symtab enntry)
+//    - type should be well defined
+//    - The name is added to the current procedure vocaburary 
 //---------------------
 bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_readable, bool is_writeable, gm_symtab* SYM_ALT, int targetType) {
 
@@ -426,122 +423,139 @@ bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl* type, bool is_r
     return gm_declare_symbol(SYM, id, type, is_readable, is_writeable, NULL, GMTYPE_INVALID);
 }
 
-// symbol checking for foreach and in-place reduction
-bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src, int iter_type, ast_id* src2) {
-    bool is_okay = true;
-    // GRAPH
-    if (gm_is_iteration_on_all_graph(iter_type)) {
-        is_okay = gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_GRAPH);
-    }
-    // items - collection
-    else if (gm_is_iteration_on_collection(iter_type)) {
-        is_okay = gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_COLLECTION);
-    }
-    // items - property
-    else if (gm_is_iteration_on_property(iter_type)) {
-        is_okay = gm_check_target_is_defined(src, curr_field, SHOULD_BE_A_PROPERTY);
-    }
-    // out.in.up.down
-    else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
-        ast_id* n = src; //f->get_source();
-        is_okay = gm_find_and_connect_symbol(n, curr_sym); // source
+// symbol checking for foreach and reduction
+bool gm_typechecker_stage_1::gm_symbol_check_iter_header(ast_id* it, ast_id* src, int iter_type, ast_id* src2, ast_node* def_node) {
 
-        if (is_okay) {
-
-            ast_typedecl* type = n->getTypeInfo();
-            if (!type->is_node_compatible()) {
-                gm_type_error(GM_ERROR_NONNODE_TARGET, n, n);
-                is_okay = false;
-            }
-
-            // In/Down is only available inside BFS -> checked at step 2
-            if (gm_is_iteration_on_updown_levels(iter_type)) {
-                if (!gm_is_iteration_bfs(n->getTypeSummary())) {
-                    gm_type_error(GM_ERROR_NEED_BFS_ITERATION, n);
-                    is_okay = false;
-                }
-            }
-
-            if (is_okay && gm_is_common_nbr_iter_type(iter_type)) {
-                assert(src2 != NULL);
-                is_okay = gm_find_and_connect_symbol(src2, curr_sym); // source
-
-                if (is_okay) {
-                    // check if two sources have the same graph
-                    gm_symtab_entry* e1 = src->getTypeInfo()->get_target_graph_sym();
-                    gm_symtab_entry* e2 = src2->getTypeInfo()->get_target_graph_sym();
-                    assert(e1 != NULL);
-                    if (e1 != e2) {
-                        gm_type_error(GM_ERROR_TARGET_MISMATCH, src2->get_line(), src2->get_col());
-                        is_okay = false;
-                    }
-                }
-
-            }
-        }
-    } else {
-        printf("%s\n", gm_get_type_string(iter_type));
+    if( !gm_is_all_graph_iteration(iter_type) &&
+        !gm_is_any_iteration(iter_type) &&
+        !gm_is_any_neighbor_node_iteration(iter_type) &&
+        !gm_is_common_nbr_iteration(iter_type)) {
         assert(false);
     }
 
-    if (!is_okay) return false;
+    assert (iter_type == def_node->get_iter_type());
 
-    //--------------------------------------
-    // create iterator
-    //--------------------------------------
-    ast_typedecl* type;
-    if (gm_is_iteration_on_collection(iter_type)) {
-        type = ast_typedecl::new_set_iterator(src->copy(true), iter_type);
-    } else if (gm_is_iteration_on_property(iter_type)) {
-        type = ast_typedecl::new_property_iterator(src->copy(true), iter_type);
-    } else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
-        type = ast_typedecl::new_nbr_iterator(src->copy(true), iter_type);
-    } else {
-        type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
+    // GRAPH
+    if (gm_is_all_graph_iteration(iter_type)) { // NODES, EDGES
+        if (!gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_GRAPH))
+           return false;
     }
 
-    if (gm_is_iteration_on_property(iter_type))
-        is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, curr_field);
-    else if (src->getTypeInfo()->is_collection_of_collection())
-        is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, NULL, src->getTargetTypeSummary());
-    else
-        is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE);
+    // Neighborhood
+    if (gm_is_any_neighbor_node_iteration(iter_type) || gm_is_common_nbr_iteration(iter_type)) {
+        if (!gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_NODE_COMPATIBLE)) // source
+            return false;
+    }
 
+    // In/Down is only available inside BFS 
+    if (gm_is_updown_node_iteration(iter_type)) {
+        if (!src->getTypeInfo()->is_node_iterator() ||
+           (!gm_is_bfs_node_iteration( src->getTypeInfo()->get_defined_iteration_from_iterator())))
+        {
+            gm_type_error(GM_ERROR_NEED_BFS_ITERATION, src);
+            return false;
+        }
+    }
+
+    if (gm_is_common_nbr_iteration(iter_type)) {
+        assert(src2 != NULL);
+        if (!gm_check_target_is_defined(src2, curr_sym, SHOULD_BE_A_NODE_COMPATIBLE)) // source
+           return false; // source
+
+        // check if two sources have the same graph
+        gm_symtab_entry* e1 = src->getTypeInfo()->get_target_graph_sym();
+        gm_symtab_entry* e2 = src2->getTypeInfo()->get_target_graph_sym();
+        assert(e1 != NULL); assert(e2!=NULL);
+        if (e1 != e2) {
+           gm_type_error(GM_ERROR_TARGET_MISMATCH, src2->get_line(), src2->get_col());
+           return false;
+        }
+    }
+
+    // items - collection
+    if (gm_is_any_iteration(iter_type)) { // ITEMS
+
+        // [TODO] collection of collections?
+        if (!gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_COLLECTION))
+            return false;
+
+        if (src->getTypeInfo()->is_node_collection()) {
+            def_node->set_iter_type(GMITER_NODE_COLLECTION);
+        } else if (src->getTypeInfo()->is_edge_collection()) {
+            def_node->set_iter_type(GMITER_EDGE_COLLECTION);
+        } else if (src->getTypeInfo()->is_collection_of_collection()) {
+            def_node->set_iter_type(GMITER_COLLECTION_OF_COLLECTION);
+        } else {
+            assert(false);
+        }
+    }
+
+    //--------------------------------------
+    // create & declare iterator
+    //--------------------------------------
+    ast_typedecl* type;
+    ast_id* target_graph;
+    int iterator_t; // GMTYPE_NODE_ITERATOR, EDGE_ITERATOR, COLLETION_ITERATOR
+    iter_type = def_node->get_iter_type();
+    if (gm_is_node_iteration(iter_type)) {
+        iterator_t = GMTYPE_NODE_ITERATOR;
+    } else if (gm_is_edge_iteration(iter_type)) {
+        iterator_t = GMTYPE_EDGE_ITERATOR;
+    } else if (gm_is_collection_of_collection_iteration(iter_type)) {
+        iterator_t = GMTYPE_COLLECTION_ITERATOR;
+    } else {
+        assert(false);
+    }
+
+    
+    if (src->getTypeInfo()->is_graph())
+        target_graph = src->copy(true);
+    else
+        target_graph = src->getTypeInfo()->get_target_graph_id()->copy(true);
+
+    type = ast_typedecl::new_iterator(target_graph, iterator_t, def_node);
+
+    bool is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE);
+
+    /*
+    if (src->getTypeInfo()->is_collection_of_collection())
+        is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE, NULL, src->getTargetTypeSummary());
+    */
+      
+    // a copy of type has been already added to 
     delete type;
 
     return is_okay;
 }
 
 // symbol checking for foreach and in-place reduction
-bool gm_typechecker_stage_1::gm_symbol_check_bfs_header(ast_id* it, ast_id* src, ast_id* root, int iter_type) {
-    // check source: should be a graph
-    bool is_okay = true;
-    is_okay = gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_GRAPH);
-    // check root:
-    is_okay = gm_find_and_connect_symbol(root, curr_sym) && is_okay;
-    if (is_okay) {
-        // root should be a node. and target should be the graph
-        ast_typedecl* t_root = root->getTypeInfo();
-        if (!t_root->is_node_compatible()) {
-            gm_type_error(GM_ERROR_NONNODE_TARGET, root, root);
-            is_okay = false;
-        }
-    }
+bool gm_typechecker_stage_1::gm_symbol_check_bfs_header(ast_id* it, ast_id* src, int iter_type, ast_id* root, ast_node* def_node) {
 
-    if (is_okay) {
+    // check source: should be a graph
+    if (!gm_check_target_is_defined(src, curr_sym, SHOULD_BE_A_GRAPH)) // source
+           return false; // source
+
+    if (!gm_check_target_is_defined(root, curr_sym, SHOULD_BE_A_NODE_COMPATIBLE)) // source
+           return false; // source
+
         // check root is a node of src
-        is_okay = gm_check_target_graph(src, root);
-        if (!is_okay) gm_type_error(GM_ERROR_TARGET_MISMATCH, src, root);
+    if (!gm_check_target_graph(src, root)) {
+        gm_type_error(GM_ERROR_TARGET_MISMATCH, src, root);
+        return false;
     }
 
     //-----------------------------------------
     // create iteator
     //-----------------------------------------
-    ast_typedecl* type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
-    is_okay = gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE) && is_okay;
+    ast_typedecl* type = ast_typedecl::new_iterator(src->copy(true), GMTYPE_NODE_ITERATOR, def_node);
+    if (!gm_declare_symbol(curr_sym, it, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE)) {
+       delete type;
+       return false; 
+    }
+
     delete type;
 
-    return is_okay;
+    return true;
 }
 
 //--------------------------------------------------------
@@ -688,22 +702,20 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
             // check bound symbol
         case AST_FOREACH: {
             ast_foreach* fe = (ast_foreach*) s;
-            int iter_type = adjust_iter_type(fe);
-            is_okay = gm_symbol_check_iter_header(fe->get_iterator(), fe->get_source(), iter_type, fe->get_source2());
-            if (!is_okay) break;
-            if (gm_is_unknown_collection_iter_type(iter_type)) { // resolve unknown iterator
-                fe->set_iter_type(fe->get_iterator()->getTypeSummary());
-            }
+            int iter_type = fe->get_iter_type();
+            is_okay = gm_symbol_check_iter_header(fe->get_iterator(), fe->get_source(), iter_type, fe->get_source2(), fe);
+
             break;
         }
 
         case AST_BFS: {
             ast_bfs* bfs = (ast_bfs*) s;
-            is_okay = gm_symbol_check_bfs_header(bfs->get_iterator(), bfs->get_source(), bfs->get_root(), bfs->get_iter_type());
+            is_okay = gm_symbol_check_bfs_header(bfs->get_iterator(), bfs->get_source(), bfs->get_iter_type(), bfs->get_root(), bfs);
 
             //---------------------------------------------
             // create 2nd iteator
             //---------------------------------------------
+            /*
             const char* tname = FE.voca_temp_name("nx");
             ast_id* iter2 = ast_id::new_id(tname, bfs->get_iterator()->get_line(), bfs->get_iterator()->get_col());
             ast_typedecl* type = ast_typedecl::new_nbr_iterator(bfs->get_iterator()->copy(true), bfs->get_iter_type2());
@@ -711,6 +723,7 @@ bool gm_typechecker_stage_1::apply(ast_sent* s) {
             delete type;
             delete[] tname;
             bfs->set_iterator2(iter2);
+            */
             break;
         }
 
@@ -779,9 +792,9 @@ bool gm_typechecker_stage_1::apply(ast_expr* p) {
         case GMEXPR_REDUCE: {
             ast_expr_reduce* r = (ast_expr_reduce*) p;
             int iter_type = r->get_iter_type();
-            is_okay = gm_symbol_check_iter_header(r->get_iterator(), r->get_source(), iter_type, r->get_source2());
-            if (gm_is_unknown_collection_iter_type(iter_type)) // resolve unknown iterator
-                r->set_iter_type(r->get_iterator()->getTypeSummary());
+            is_okay = gm_symbol_check_iter_header(r->get_iterator(), r->get_source(), iter_type, r->get_source2(), r);
+            //if (gm_is_unknown_collection_iter_type(iter_type)) // resolve unknown iterator
+            //    r->set_iter_type(r->get_iterator()->getTypeSummary());
             break;
         }
         case GMEXPR_BUILTIN: {
@@ -869,6 +882,8 @@ bool gm_typechecker_stage_1::find_symbol_field(ast_field* f) {
         // Edge(n).Y  ==> n is nbr iterator, Y is edge prop. Edge(n) is the current edge that goes to n
 
         if (f->is_rarrow()) {
+            assert(false);
+            /*
             int type = name_type->getTypeSummary();
             if (!(gm_is_inout_nbr_node_iter_type(type) || (type == GMTYPE_NODEITER_BFS))) {
                 // not BFS, not in-out
@@ -879,6 +894,7 @@ bool gm_typechecker_stage_1::find_symbol_field(ast_field* f) {
                 gm_type_error(GM_ERROR_WRONG_PROPERTY, field, "Edge_Property");
                 return false;
             }
+            */
         } else {
 
             if (name_type->is_graph() || name_type->is_collection()) {

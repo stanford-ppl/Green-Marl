@@ -28,7 +28,7 @@ public:
             ast_foreach* fe = (ast_foreach*) s;
             if (is_under_condition() || is_under_random_iterator() || (topmost_iterator != NULL)) {
                 random_iter_stack.push_back(s);
-            } else if (fe->get_iter_type() == GMTYPE_NODEITER_ALL) { //TODO remove else if?
+            } else if (fe->get_iter_type() == GMITER_NODE_ALL) { //TODO remove else if?
                 topmost_iterator = fe->get_iterator()->getSymInfo();
             } else {
                 topmost_iterator = fe->get_iterator()->getSymInfo();

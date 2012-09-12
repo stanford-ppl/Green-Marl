@@ -47,6 +47,7 @@ enum AST_NODE_TYPE
 class gm_symtab_entry;
 class gm_symtab;
 class gm_scope;
+class ast_id;
 // typechecker context;
 class gm_apply;
 // defined in gm_traverse.h
@@ -251,6 +252,13 @@ public:
         assert(has_scope());
         sym_procs = p;
     }
+
+    // interafce for iteration definining ast-nodes
+    virtual void set_iter_type(int i) {assert(false);}
+    virtual int  get_iter_type()      {assert(false);return 0;}
+    virtual ast_id* get_source()      {assert(false);}
+    virtual ast_id* get_source2()     {assert(false);}
+
 
 protected:
     gm_symtab* sym_vars;
@@ -575,20 +583,18 @@ class ast_typedecl: public ast_node
 {  // property or type
 protected:
     ast_typedecl() :
-            ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), target_collection(NULL), target_nbr(NULL), target_nbr2(NULL), _well_defined(false), type_id(
+            ast_node(AST_TYPEDECL), target_type(NULL), target_graph(NULL), _well_defined(false), def_node(NULL), type_id(
                     0) {
     }
 
 public:
-    // give a deep copy
+    // give a deep copy, except defining node
     virtual ast_typedecl* copy() {
         ast_typedecl *p = new ast_typedecl();
         p->type_id = this->type_id;
         p->target_type = (this->target_type == NULL) ? NULL : this->target_type->copy();
         p->target_graph = (this->target_graph == NULL) ? NULL : this->target_graph->copy(true);
-        p->target_collection = (this->target_collection == NULL) ? NULL : this->target_collection->copy(true);
-        p->target_nbr = (this->target_nbr == NULL) ? NULL : this->target_nbr->copy(true);
-        p->target_nbr2 = (this->target_nbr2 == NULL) ? NULL : this->target_nbr2->copy(true);
+        p->def_node = this->def_node;
         p->line = this->line;
         p->col = this->col;
         p->_well_defined = this->_well_defined;
@@ -599,8 +605,6 @@ public:
     virtual ~ast_typedecl() {
         delete target_type;
         delete target_graph; //gets deleted twice (sometimes) why??? o.O
-        delete target_collection;
-        delete target_nbr;
     }
 
     static ast_typedecl* new_primtype(int ptype_id) {
@@ -635,36 +639,18 @@ public:
         return t;
     }
 
-    static ast_typedecl* new_nodeedge_iterator(ast_id* tg, int iter_type) {
-        assert(gm_is_all_graph_iter_type(iter_type));
+    // node iterator, edge iterator, colllection iterator
+    static ast_typedecl* new_iterator(ast_id* tg, int type, ast_node* defining_node) { 
+        assert(gm_is_iterator_type(type));
         ast_typedecl* t = new ast_typedecl();
-        t->type_id = iter_type;
+        t->type_id = type;
+        t->def_node = defining_node;
         t->target_graph = tg;
-        tg->set_parent(t);
         return t;
     }
 
-    static ast_typedecl* new_nbr_iterator(ast_id* tg, int iter_type) {
-        assert(gm_is_any_nbr_iter_type(iter_type));
-        ast_typedecl* t = new ast_typedecl();
-        t->type_id = iter_type;
-        t->target_nbr = tg;
-        tg->set_parent(t);
-        return t;
-    }
-
-    static ast_typedecl* new_common_nbr_iterator(ast_id* tg, ast_id* tg2, int iter_type) {
-        assert(gm_is_any_nbr_iter_type(iter_type));
-        ast_typedecl* t = new ast_typedecl();
-        t->type_id = iter_type;
-        t->target_nbr = tg;
-        t->target_nbr2 = tg2;
-        tg->set_parent(t);
-        tg2->set_parent(t);
-        return t;
-    }
-
-    static ast_typedecl* new_set(ast_id* tg, int set_type) {
+    static ast_typedecl* new_collection(ast_id* tg, int set_type) { 
+        assert(gm_is_simple_collection_type(set_type)); // No collection of collections
         ast_typedecl* t = new ast_typedecl();
         t->type_id = set_type;
         if (tg == NULL) //no graph defined for this set - we will handle this later (typecheck step 1)
@@ -674,31 +660,14 @@ public:
         return t;
     }
 
-    static ast_typedecl* new_queue(ast_id* targetGraph, ast_typedecl* collectionType) {
+    static ast_typedecl* new_queue(ast_id* targetGraph, ast_typedecl* collectionType) {  // collection of collection
         ast_typedecl* typeDecl = new ast_typedecl();
-        typeDecl->type_id = GMTYPE_COLLECTION;
+        typeDecl->type_id = GMTYPE_COLLECTION_OF_COLLECTION;
         typeDecl->target_type = collectionType;
         if (targetGraph == NULL) return typeDecl; //no graph defined for this queue - we will handle this later (typecheck step 1)
         typeDecl->target_graph = targetGraph;
         targetGraph->set_parent(typeDecl);
         return typeDecl;
-    }
-
-    static ast_typedecl* new_set_iterator(ast_id* set, int iter_type) {
-        // deprecated
-        ast_typedecl* t = new ast_typedecl();
-        t->type_id = iter_type;
-        t->target_collection = set;
-        set->set_parent(t);
-        return t;
-    }
-
-    static ast_typedecl* new_collection_iterator(ast_id* set, int iter_type) {
-        ast_typedecl* t = new ast_typedecl();
-        t->type_id = iter_type;
-        t->target_collection = set;
-        set->set_parent(t);
-        return t;
     }
 
     static ast_typedecl* new_nodeprop(ast_typedecl* type, ast_id* tg) {
@@ -723,14 +692,6 @@ public:
         t->target_graph = tg;
         tg->set_parent(t);
         return t;
-    }
-
-    static ast_typedecl* new_property_iterator(ast_id* property, int iter_type) {
-        ast_typedecl* typeDecl = new ast_typedecl();
-        typeDecl->type_id = iter_type;
-        typeDecl->target_collection = property;
-        property->set_parent(typeDecl);
-        return typeDecl;
     }
 
     static ast_typedecl* new_void() {
@@ -796,28 +757,24 @@ public:
         return gm_is_edge_collection_type(type_id);
     }
 
-    bool is_collection_iterator() {
-        return gm_is_collection_iter_type(type_id);
+    bool is_iterator() {
+        return gm_is_iterator_type(type_id);
     }
 
-    bool is_unknown_collection_iterator() {
-        return gm_is_unknown_collection_iter_type(type_id);
+    bool is_collection_iterator() { 
+        return gm_is_collection_iterator_type(type_id);
     }
 
     bool is_node_iterator() {
-        return gm_is_node_iter_type(type_id);
+        return gm_is_node_iterator_type(type_id);
     }
 
     bool is_edge_iterator() {
-        return gm_is_edge_iter_type(type_id);
+        return gm_is_edge_iterator_type(type_id);
     }
 
     bool is_node_edge_iterator() {
         return is_node_iterator() || is_edge_iterator();
-    }
-
-    bool is_property_iterator() {
-        return gm_is_property_iter_type(type_id);
     }
 
     bool is_numeric() {
@@ -840,28 +797,12 @@ public:
         return gm_is_boolean_type(type_id);
     }
 
-    bool is_reverse_iterator() {
-        return gm_is_iteration_use_reverse(type_id);
-    }
-
-    bool has_target_graph() {
-        return gm_has_target_graph_type(type_id);
+    bool requires_target_graph() {
+        return gm_requires_target_graph_type(type_id);
     }
 
     bool is_void() {
         return gm_is_void_type(type_id);
-    }
-
-    bool is_all_graph_iterator() {
-        return gm_is_all_graph_iter_type(type_id);
-    }
-
-    bool is_any_nbr_iterator() {
-        return gm_is_any_nbr_iter_type(type_id);
-    }
-
-    bool is_common_nbr_iterator() {
-        return gm_is_common_nbr_iter_type(type_id);
     }
 
     bool is_sequence_collection() {
@@ -876,31 +817,34 @@ public:
         return gm_is_set_collection_type(type_id);
     }
 
-    bool is_sequential_collection() {
-        return gm_is_sequential_collection_type(type_id);
+    bool is_inherently_unique_collection() {
+        return gm_is_inherently_unique_collection_type(type_id);
     }
 
     virtual bool is_map() {
         return false;
     }
 
+    //---------------------------------------------------------------
+    // (assumption this->is_iterator): check the definining node
+    // defined in frontend/gm_typecheck.cc
+    //---------------------------------------------------------------
+    int           get_defined_iteration_from_iterator(); 
+    ast_id*       get_defined_source_from_iterator(); 
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
 
     // there is no copying of type
-
     gm_symtab_entry* get_target_graph_sym() {
-        if (is_collection_iterator()) {
-            assert(target_collection != NULL);
-            assert(target_collection->getTypeInfo() != NULL);
-            assert(target_collection->getTypeInfo()->get_target_graph_sym() != NULL);
-            return target_collection->getTypeInfo()->get_target_graph_sym();
-        } else if (is_collection() || is_property() || is_nodeedge() || is_node_iterator() || is_edge_iterator() || is_collection_of_collection() || gm_is_property_iter_type(type_id)) {
+
+        if (is_collection() || is_property() || is_nodeedge() || 
+            is_iterator() || is_collection_of_collection())  {
             assert(target_graph != NULL);
             assert(target_graph->getSymInfo() != NULL);
             return target_graph->getSymInfo();
         } else {
-            printf("type = %s\n", gm_get_type_string(type_id));
+            printf("type = %s does not have target graph symbol\n", gm_get_type_string(type_id));
             assert(false);
             return NULL;
         }
@@ -908,22 +852,6 @@ public:
 
     ast_id* get_target_graph_id() {
         return target_graph;
-    }
-
-    ast_id* get_target_collection_id() {
-        return target_collection;
-    }
-
-    ast_id* get_target_property_id() {
-        return target_collection;
-    }
-
-    ast_id* get_target_nbr_id() {
-        return target_nbr;
-    }
-
-    ast_id* get_target_nbr2_id() {
-        return target_nbr2;
     }
 
     ast_typedecl* get_target_type() {
@@ -965,13 +893,19 @@ public:
     // (when scope is not available)
     void enforce_well_defined();
 
+    ast_node*   get_definining_node() {
+        return def_node;
+    }
+
+    void set_defining_node(ast_node* n)   {
+        def_node = n ;
+    }
+
 private:
     // defined in gm_frontend_api.h
-    ast_typedecl* target_type;  // for property
-    ast_id* target_graph;       // for property, node, edge, set
-    ast_id* target_collection;  // for set-iterator set
-    ast_id* target_nbr;         // for nbr-iterator
-    ast_id* target_nbr2;        // for common neighbor iterator
+    ast_typedecl* target_type;        // for property
+    ast_id*       target_graph;       // for property, node, edge, set
+    ast_node*     def_node;           // The foreach (bfs,reduce) statement that defines this iterator
 
 protected:
     int type_id;
@@ -1887,6 +1821,12 @@ public:
     virtual int get_source_type() {
         return (driver == NULL) ? GMTYPE_VOID : driver->getTypeSummary();
     }
+    virtual int get_source_iteration() {
+        return (driver == NULL) ?  GMITER_ANY :
+               (driver->getTypeInfo()->is_iterator()) ?
+                driver->getTypeInfo()->get_defined_iteration_from_iterator():
+                GMITER_ANY;
+    }
 
     static ast_expr_builtin* new_builtin_expr(ast_id* id, const char* orgname, expr_list* t) {
         ast_expr_builtin* E = new ast_expr_builtin();
@@ -2055,12 +1995,11 @@ public:
         return true;
     }
 
-    // [xxx] should it be getIterator()->getTypeSummary()?
-    int get_iter_type() {
+    virtual int get_iter_type() {
         return iter_type;
     }
 
-    void set_iter_type(int i) {
+    virtual void set_iter_type(int i) {
         iter_type = i;
     }
 
@@ -2068,7 +2007,7 @@ public:
         return reduce_type;
     }
 
-    ast_id* get_source() {
+    virtual ast_id* get_source() {
         return src;
     }
 
@@ -2084,7 +2023,7 @@ public:
         return body;
     }
 
-    ast_id* get_source2() {
+    virtual ast_id* get_source2() {
         return src2;
     }
 
@@ -2549,7 +2488,7 @@ public:
     virtual void dump_tree(int id_level);
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
-    ast_id* get_source() {
+    virtual ast_id* get_source() {
         return source;
     }
     ast_id* get_iterator() {
@@ -2566,16 +2505,15 @@ public:
     ast_expr* get_filter() {
         return cond;
     }
-    int get_iter_type() {
+    virtual int get_iter_type() {
         return iter_type;
     } // GM_ITERATORS
 
-    void set_iter_type(int i) {
+    virtual void set_iter_type(int i) {
         iter_type = i;
     } // GM_ITERATORS
 
-    // should be same to get_iterator()->get_type_summary()
-    ast_id* get_source2() {
+    virtual ast_id* get_source2() {
         return source2;
     }
 
@@ -2600,23 +2538,23 @@ public:
     }
 
     virtual bool is_under_parallel_execution() {
-        return is_parallel();
+        return is_parallel();  // realy?
     }
 
-    // For is sequential while FOREACH is parallel.
+    // For is sequential, Foreach is parallel.
     // Optimization may override parallel execution with sequential.
 
     // sequential execution
-    bool is_sequential() {
+    virtual bool is_sequential() {
         return seq_exe;
     }
 
-    void set_sequential(bool b) {
+    virtual void set_sequential(bool b) {
         seq_exe = b;
     }
 
     // parallel execution
-    bool is_parallel() {
+    virtual bool is_parallel() {
         return !is_sequential();
     }
 
@@ -2652,7 +2590,7 @@ public:
         delete iter;
         delete src;
         delete root;
-        delete iter2;
+        //delete iter2;
         delete_symtabs();
     }
 
@@ -2699,11 +2637,14 @@ public:
     ast_id* get_iterator() {
         return iter;
     }
-    ast_id* get_iterator2() {
-        return iter2;
-    }
-    ast_id* get_source() {
+    //ast_id* get_iterator2() {
+    //    return iter2;
+    //}
+    virtual ast_id* get_source() {
         return src;
+    }
+    virtual ast_id* get_source2() {
+        return get_root();
     }
     ast_id* get_root() {
         return root;
@@ -2715,10 +2656,11 @@ public:
         return _bfs;
     }
 
-    void set_iterator2(ast_id* id) {
-        assert(iter2 == NULL);
-        iter2 = id;
-    }
+    //void set_iterator2(ast_id* id) {
+    //    assert(iter2 == NULL);
+    //    iter2 = id;
+    //}
+    
     void set_navigator(ast_expr* e) {
         if (e != NULL) e->set_parent(this);
         navigator = e;
@@ -2742,12 +2684,14 @@ public:
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
-    int get_iter_type() {
-        return GMTYPE_NODEITER_BFS;
+
+    virtual int get_iter_type() {
+        return GMITER_NODE_BFS;
     }
-    int get_iter_type2() {
-        return is_transpose() ? GMTYPE_NODEITER_IN_NBRS : GMTYPE_NODEITER_NBRS;
-    }
+
+    //int get_iter_type2() {
+    //    return is_transpose() ? GMTYPE_NODEITER_IN_NBRS : GMTYPE_NODEITER_NBRS;
+    //}
 
     virtual bool has_scope() {
         return true;
@@ -2763,8 +2707,7 @@ public:
 
 protected:
     ast_bfs() :
-            ast_sent(AST_BFS), f_body(NULL), b_body(NULL), f_filter(NULL), b_filter(NULL), navigator(NULL), iter(NULL), src(NULL), root(NULL), iter2(NULL), use_transpose(
-                    false), _bfs(true) {
+            ast_sent(AST_BFS), f_body(NULL), b_body(NULL), f_filter(NULL), b_filter(NULL), navigator(NULL), iter(NULL), src(NULL), root(NULL), use_transpose(false), _bfs(true) {
         create_symtabs();
     }
 
@@ -2779,7 +2722,7 @@ private:
     ast_id* iter;
     ast_id* src;
     ast_id* root;
-    ast_id* iter2; // iterator used for frontier expansion [xxx] what?
+    //ast_id* iter2; // iterator used for frontier expansion [xxx] what?
     bool use_transpose;
     bool _bfs;
 };

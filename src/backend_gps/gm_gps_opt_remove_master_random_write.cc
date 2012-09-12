@@ -58,7 +58,7 @@ public:
             ast_id* id = ast_id::new_id(name, a->get_line(), a->get_col());
             ast_sentblock* foreach_sb = ast_sentblock::new_sentblock();
             ast_foreach* foreach_out = gm_new_foreach_after_tc(
-                id,  a->get_lhs_field()->get_first()->getTypeInfo()->get_target_graph_id()->copy(true), foreach_sb, GMTYPE_NODEITER_ALL);
+                id,  a->get_lhs_field()->get_first()->getTypeInfo()->get_target_graph_id()->copy(true), foreach_sb, GMITER_NODE_ALL);
             gm_add_sent_after(a, foreach_out);
             delete[] name;
             gm_ripoff_sent(a);

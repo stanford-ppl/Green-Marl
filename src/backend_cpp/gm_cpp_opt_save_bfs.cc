@@ -26,7 +26,7 @@ public:
             if (bfs->is_bfs()) L.push_front(bfs);
         } else if (s->get_nodetype() == AST_FOREACH) {
             ast_foreach* fe = (ast_foreach*) s;
-            if (gm_is_iteration_on_down_neighbors(fe->get_iter_type())) {
+            if (gm_is_down_nbr_node_iteration(fe->get_iter_type())) {
                 ast_bfs* bfs = L.front();
                 bfs->add_info_bool(CPPBE_INFO_USE_DOWN_NBR, true);
             }

@@ -74,22 +74,10 @@ const char* gm_get_type_string(int t) {
             return "Node";
         case GMTYPE_EDGE:
             return "Edge";
-        case GMTYPE_NODEITER_ALL:
-            return "Node::I(ALL)";
-        case GMTYPE_NODEITER_NBRS:
-            return "Node::I(NBR)";
-        case GMTYPE_NODEITER_IN_NBRS:
-            return "Node::I(IN_NBR)";
-        case GMTYPE_NODEITER_BFS:
-            return "Node::I(BFS)";
-        case GMTYPE_NODEITER_UP_NBRS:
-            return "Node::I(+1)";
-        case GMTYPE_NODEITER_DOWN_NBRS:
-            return "Node::I(-1)";
-        case GMTYPE_EDGEITER_ALL:
-            return "EdgeI";
-        case GMTYPE_EDGEITER_NBRS:
-            return "EdgeI";
+        case GMTYPE_NODE_ITERATOR:
+            return "Node::I";
+        case GMTYPE_EDGE_ITERATOR:
+            return "Edge::I";
         case GMTYPE_BOOL:
             return "Bool";
         case GMTYPE_NSET:
@@ -110,19 +98,7 @@ const char* gm_get_type_string(int t) {
         case GMTYPE_INF_DOUBLE:
         case GMTYPE_INF_FLOAT:
             return "INF";
-        case GMTYPE_NODEITER_SET:
-            return "N_S::I";
-        case GMTYPE_NODEITER_SEQ:
-            return "N_Q::I";
-        case GMTYPE_NODEITER_ORDER:
-            return "N_O::I";
-        case GMTYPE_EDGEITER_SET:
-            return "E_S::I";
-        case GMTYPE_EDGEITER_SEQ:
-            return "E_Q::I";
-        case GMTYPE_EDGEITER_ORDER:
-            return "E_O::I";
-        case GMTYPE_ITER_ANY:
+        case GMTYPE_COLLECTION_ITERATOR:
             return "Collection::I";
         case GMTYPE_VOID:
             return "Void";
@@ -132,31 +108,28 @@ const char* gm_get_type_string(int t) {
             return "Unknown";
     }
 }
-const char* gm_get_iter_type_string(int t) {
+const char* gm_get_iteration_string(int t) {
     switch (t) {
-        case GMTYPE_NODEITER_ALL:
+        case GMITER_NODE_ALL:
             return "Nodes";
-        case GMTYPE_NODEITER_NBRS:
+        case GMITER_NODE_NBRS:
             return "Nbrs";
-        case GMTYPE_EDGEITER_ALL:
+        case GMITER_EDGE_ALL:
             return "Edges";
-        case GMTYPE_EDGEITER_NBRS:
+        case GMITER_EDGE_NBRS:
             return "Nbr_Edges";
-        case GMTYPE_NODEITER_UP_NBRS:
+        case GMITER_NODE_UP_NBRS:
             return "UpNbrs";
-        case GMTYPE_NODEITER_DOWN_NBRS:
+        case GMITER_NODE_DOWN_NBRS:
             return "DownNbrs";
-        case GMTYPE_NODEITER_IN_NBRS:
+        case GMITER_NODE_IN_NBRS:
             return "InNbrs";
-        case GMTYPE_NODEITER_COMMON_NBRS:
+        case GMITER_NODE_COMMON_NBRS:
             return "CommonNbrs";
-        case GMTYPE_NODEITER_SET:
-        case GMTYPE_NODEITER_SEQ:
-        case GMTYPE_NODEITER_ORDER:
-        case GMTYPE_ITER_ANY:
-        case GMTYPE_PROPERTYITER_SET:
-        case GMTYPE_PROPERTYITER_SEQ:
-        case GMTYPE_PROPERTYITER_ORDER:
+        case GMITER_NODE_COLLECTION:
+        case GMITER_EDGE_COLLECTION:
+        case GMITER_ANY:
+        case GMITER_COLLECTION_OF_COLLECTION:
             return "Items";
         default:
             assert(false);
@@ -272,6 +245,7 @@ char* gm_strdup(const char *c) {
     return z;
 }
 
+/*
 int gm_get_iter_type_from_set_type(int set_type) {
     switch (set_type) {
         case GMTYPE_NSET:
@@ -291,4 +265,5 @@ int gm_get_iter_type_from_set_type(int set_type) {
             return 0;
     }
 }
+*/
 

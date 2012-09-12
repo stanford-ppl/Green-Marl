@@ -316,8 +316,8 @@ void traverse_expr_for_readset_adding_reduce(ast_expr_reduce* e2, gm_rwinfo_map&
     int iter_type = e2->get_iter_type();
     ast_expr* f = e2->get_filter();
     ast_expr* b = e2->get_body();
-    bool is_conditional = (f != NULL) || gm_is_collection_iter_type(iter_type);
-    range_cond_t R(gm_get_range_from_itertype(iter_type), !is_conditional);
+    bool is_conditional = (f != NULL) || gm_is_collection_iterator_type(iter_type);
+    range_cond_t R(gm_get_range_from_itertype(iter_type, e2->get_source()->getTypeSummary()), !is_conditional);
     DrvMap[it] = R;
     traverse_expr_for_readset_adding(b, rset, DrvMap);
     DrvMap.erase(it);
@@ -889,11 +889,11 @@ bool gm_rw_analysis::apply_while(ast_while* a) {
 //        } }
 //-----------------------------------------------------------------------------
 //
-static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwinfo_map& T, int iter_type, bool is_parallel) {
+static bool cleanup_iterator_access(ast_id* iter, gm_rwinfo_map& T_temp, gm_rwinfo_map& T, int iter_type, int src_type, bool is_parallel) {
     bool is_okay = true;
     gm_symtab_entry* iter_sym = iter->getSymInfo();
     gm_rwinfo_map::iterator i;
-    int range = gm_get_range_from_itertype(iter_type);
+    int range = gm_get_range_from_itertype(iter_type, src_type);
     //printf("iter_type = %s, range = %s\n", gm_get_type_string(iter_type), gm_get_range_string(range));
 
     for (i = T_temp.begin(); i != T_temp.end(); i++) {
@@ -973,13 +973,14 @@ static bool cleanup_iterator_access_reduce(ast_id* iter, gm_rwinfo_map& D_temp, 
         gm_rwinfo_map& W,       // write 
         gm_rwinfo_map& B,       // bound-set for Foreach
         int iter_type,          // Nodes or NBRS
+        int source_type,
         bool is_parallel)
 
         {
     bool is_okay = true;
     gm_symtab_entry* iter_sym = iter->getSymInfo();
     gm_rwinfo_map::iterator i;
-    int range = gm_get_range_from_itertype(iter_type);
+    int range = gm_get_range_from_itertype(iter_type, source_type);
 
     for (i = D_temp.begin(); i != D_temp.end(); i++) {
         gm_symtab_entry* sym = i->first;
@@ -1058,17 +1059,17 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a) {
         gm_add_rwinfo_to_set(R_temp, sym, new_entry, false);
     }
 
-    bool is_conditional = (a->get_filter() != NULL) || (gm_is_collection_iter_type(a->get_iter_type()));
+    bool is_conditional = (a->get_filter() != NULL) || (gm_is_collection_iterator_type(a->get_iter_type()));
     is_okay = merge_body(R_temp, W_temp, D_temp, M_temp, a->get_body(), is_conditional);
 
     // 3) Eliminate access driven by the current iterator
     // 4) And construct bound set
     //printf("foreach: %s, iter_type = %s\n", a->get_iterator()->get_genname(), gm_get_type_string(a->get_iter_type()));
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;
-    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type(), a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type(), a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type(), a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), M_temp, M, a->get_iter_type(), a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), M_temp, M, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
 
     //printf("R:");gm_print_rwinfo_set(R);
     //printf("done\n");
@@ -1096,6 +1097,7 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a) {
     gm_rwinfo_map M_temp;
 
     int iter_type = a->get_iter_type(); // should be GMTYPE_NODEITER_BFS || GMTYPE_NODEIER_DFS
+    int source_type = a->get_source()->getTypeSummary();
     gm_symtab_entry* it = a->get_iterator()->getSymInfo();
     assert(it != NULL);
 
@@ -1107,13 +1109,13 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a) {
     }
 
     if (a->get_f_filter() != NULL) {
-        range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+        range_cond_t R(gm_get_range_from_itertype(iter_type, source_type), true);
         Default_DriverMap[it] = R;
         traverse_expr_for_readset_adding(a->get_f_filter(), R_temp);
         Default_DriverMap.erase(it);
     }
     if (a->get_b_filter() != NULL) {
-        range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+        range_cond_t R(gm_get_range_from_itertype(iter_type, source_type), true);
         Default_DriverMap[it] = R;
         traverse_expr_for_readset_adding(a->get_b_filter(), R_temp);
         Default_DriverMap.erase(it);
@@ -1133,11 +1135,13 @@ bool gm_rw_analysis::apply_bfs(ast_bfs* a) {
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;
     gm_rwinfo_map& B2 = gm_get_bound_set_info(a)->bound_set_back;
 
-    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, iter_type, a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, iter_type, a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp1, D, W, B, iter_type, a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp2, D, W, B2, iter_type, a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), M_temp, M, iter_type, a->is_parallel()) && is_okay;
+    int src_type = a->get_source()->getTypeSummary();
+
+    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, iter_type, src_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, iter_type, src_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp1, D, W, B, iter_type, src_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp2, D, W, B2, iter_type, src_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(a->get_iterator(), M_temp, M, iter_type, src_type, a->is_parallel()) && is_okay;
 
     cleanup_iterator_access_bfs(R);
     cleanup_iterator_access_bfs(W);
