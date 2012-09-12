@@ -50,6 +50,7 @@ static inline int gm_rt_get_num_threads() {
     return _GM_RT.get_num_threads();
 }
 static inline void gm_rt_set_num_threads(int n) {
+    printf("Executing the modified GM runtime.\n");
     _GM_RT.set_num_threads(n);
 }
 static inline int gm_rt_thread_id() {
