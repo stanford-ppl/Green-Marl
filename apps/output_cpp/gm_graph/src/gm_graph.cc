@@ -726,3 +726,19 @@ bool gm_graph::is_neighbor(node_t src, node_t to) {
     }
     return false;
 }
+
+// check if node size has been changed after this library is built
+void gm_graph_check_if_size_is_correct(int node_size, int edge_size)
+{
+    if (node_size != sizeof(node_t)) {
+        printf("Current nodesize in the applicaiton is %d, while the library expects %d. Please rebuild the library\n",
+                node_size, (int)sizeof(node_t));
+    }
+    if (edge_size != sizeof(edge_t)) {
+        printf("Current nodesize in the applicaiton is %d, while the library expects %d. Please rebuild the library\n",
+                edge_size, (int)sizeof(edge_t));
+    }
+    assert (node_size == sizeof(node_t)); 
+    assert (edge_size == sizeof(edge_t));
+        
+}
