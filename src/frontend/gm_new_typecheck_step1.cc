@@ -260,7 +260,6 @@ ast_id* gm_get_default_graph(gm_symtab* symTab) {
             if (entryType->is_graph()) {
                 foundCount++;
                 if (foundCount > 1) {
-                    printf("FUU\n");
                     gm_type_error(GM_ERROR_DEFAULT_GRAPH_AMBIGUOUS, targetGraph, (*II)->getId());
                     return NULL;
                 }

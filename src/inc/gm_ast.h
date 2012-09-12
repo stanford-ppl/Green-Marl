@@ -1798,7 +1798,7 @@ public:
     }
 
     int get_optype() {
-        return (int) GMEXPR_MAPACCESS;
+        return (int) GMOP_MAPACCESS;
     }
 
     GMEXPR_CLASS get_opclass() {
