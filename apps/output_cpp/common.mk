@@ -30,7 +30,7 @@ endif
 #   nodes(edges) in a graph. However 32bit is more compact and 
 #   faster.
 # - Once node or edge size is changed, the whole library should
-#   be re-compiled. Thus, please do: make clean_all
+#   be re-compiled. i.e. please do: make clean_all
 # - Allowed combinations of (node,edge) are :
 #  (32,32), (32,64),(64,64)
 #-----------------------------------------
