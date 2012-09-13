@@ -35,7 +35,7 @@ endif
 #  (32,32), (32,64),(64,64)
 #-----------------------------------------
 NODE_SIZE=32
-EDGE_SIZE=64
+EDGE_SIZE=32
 
 ifeq (${EDGE_SIZE},64)
   ifeq (${NODE_SIZE},64)
