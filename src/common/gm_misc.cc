@@ -10,6 +10,8 @@ const char* gm_get_nodetype_string(int t) {
             return "AST_ID";
         case AST_FIELD:
             return "AST_FIELD";
+        case AST_MAPACCESS:
+            return "AST_MAPACCESS";
         case AST_PROCDEF:
             return "AST_PROCDEF";
         case AST_EXPR:

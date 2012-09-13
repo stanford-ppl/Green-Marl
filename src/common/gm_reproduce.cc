@@ -66,36 +66,45 @@ void ast_typedecl::reproduce(int ind_level) {
         }
     } else if (is_node_property()) {
         assert(target_type!=NULL);
-        assert(target_graph!=NULL);
         Out.push("N_P <");
         target_type->reproduce(0);
-        Out.push(">(");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push(">");
+        if(target_graph != NULL) {
+            Out.push('(');
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_edge_property()) {
         assert(target_type!=NULL);
-        assert(target_graph!=NULL);
         Out.push("E_P <");
         target_type->reproduce(0);
-        Out.push(">(");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push(">");
+        if(target_graph != NULL) {
+            Out.push('(');
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_node()) {
-        assert(target_graph!=NULL);
-        Out.push("Node (");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push("Node ");
+        if(target_graph != NULL) {
+            Out.push("(");
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_edge()) {
-        assert(target_graph!=NULL);
-        Out.push("Edge (");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push("Edge ");
+        if(target_graph != NULL) {
+            Out.push("(");
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_collection()) {
-        assert(target_graph!=NULL);
         Out.push(gm_get_type_string(type_id));
-        Out.push('(');
-        target_graph->reproduce(0);
-        Out.push(')');
+        if(target_graph != NULL) {
+            Out.push('(');
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_void()) {
         // do nothing
     } else {
