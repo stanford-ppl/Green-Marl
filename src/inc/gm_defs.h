@@ -381,6 +381,7 @@ enum GM_OPS_T
     GMOP_TYPEC,  // TYPE Conversion
     GMOP_TER,    // Ternary op
     GMOP_ASSIGN,    // used in typechecking only.
+    GMOP_MAPACCESS,
     GMOP_END
 // a marker indicating end of enum
 };
