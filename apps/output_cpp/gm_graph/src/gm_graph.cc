@@ -742,3 +742,5 @@ void gm_graph_check_if_size_is_correct(int node_size, int edge_size)
     assert (edge_size == sizeof(edge_t));
         
 }
+
+int GM_SIZE_CHECK_VAR;

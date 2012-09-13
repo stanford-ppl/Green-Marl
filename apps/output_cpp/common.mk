@@ -15,7 +15,7 @@ CFLAGS += -D__ORACLE__
 endif
 
 #-----------------------------------------
-# 32bit machine(OS) vs. 64bit machine(OS)
+# 32bit OS(machine) vs. 64bit OS(machine)
 #-----------------------------------------
 ifdef FORCE_64BIT
 CFLAGS += -m64
@@ -34,8 +34,13 @@ endif
 # - Allowed combinations of (node,edge) are :
 #  (32,32), (32,64),(64,64)
 #-----------------------------------------
-NODE_SIZE=32
-EDGE_SIZE=32
+ifndef NODE_SIZE
+  NODE_SIZE=32
+endif
+ifndef EDGE_SIZE
+  EDGE_SIZE=32
+endif
+
 
 ifeq (${EDGE_SIZE},64)
   ifeq (${NODE_SIZE},64)
@@ -62,12 +67,13 @@ endif
 #-----------------------------------------------
 ifdef HDFS
 # Make sure to compile hadoop with
-# ant -Dcompile.c++=true -Dlibhdfs=true compile-c++-libhdfs
+#    ant -Dcompile.c++=true -Dlibhdfs=true compile-c++-libhdfs
+#
 # Also make sure the following environment variables are set:
-# JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64
-# HADOOP_HOME=/path/to/hadoop-0.20.2-cdh3u4
-# CLASSPATH=${CLASSPATH}:${HADOOP_HOME}/hadoop-core-0.20.2-cdh3u4.jar:${HADOOP_HOME}/lib/commons-logging-1.0.4.jar
-# LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
+#    JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0.x86_64
+#    HADOOP_HOME=/path/to/hadoop-0.20.2-cdh3u4
+#    CLASSPATH=${CLASSPATH}:${HADOOP_HOME}/hadoop-core-0.20.2-cdh3u4.jar:${HADOOP_HOME}/lib/commons-logging-1.0.4.jar
+#    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 
 # Change this path to point to the location of libhdfs.so
 CFLAGS += -L$(HADOOP_HOME)/c++/lib
