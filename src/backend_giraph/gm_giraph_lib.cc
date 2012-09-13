@@ -711,7 +711,7 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
     gm_gps_communication_size_info& SINFO = *(info->find_communication_size_info(U));
 
     bool need_separate_message = (fe == NULL) ? false : fe->find_info_bool(GPS_FLAG_EDGE_DEFINING_INNER);
-    bool is_in_neighbors = (fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_IN_NBRS);
+    bool is_in_neighbors = (fe != NULL) && (gm_is_in_nbr_node_iteration(fe->get_iter_type()));
 
     if (!need_separate_message) {
         Body.pushln("// Sending messages to all neighbors (if there is a neighbor)");
@@ -722,7 +722,7 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
             Body.pushln("if (getNumEdges() > 0) {");
         }
     } else {
-        assert((fe != NULL) && (fe->get_iter_type() == GMTYPE_NODEITER_NBRS));
+        assert((fe != NULL) && (gm_is_out_nbr_node_iteration(fe->get_iter_type())));
         Body.pushln("// Sending messages to each neighbor");
         sprintf(temp, "for (Edge<%s, %s> edge : getEdges()) {", vertex_id, edge_data);
         Body.pushln(temp);

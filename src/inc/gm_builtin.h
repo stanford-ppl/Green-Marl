@@ -78,8 +78,8 @@ const gm_builtin_desc_t GM_builtins[] = {
 
 //
 // sourcetype:name:return type:num_arg:arg_types...
-//    * at source type means that it is an alias to the previous definition
-//    ! at source type means that it requires strict type
+//    * : it is an alias to the previous definition
+//    ! : requires a specific iter_type
 // builtin id
 // additional info
         { "Graph:NumNodes:Int:0",       GM_BLTIN_GRAPH_NUM_NODES, "" },
@@ -96,8 +96,10 @@ const gm_builtin_desc_t GM_builtins[] = {
         { "Node:HasEdgeTo:Bool:1:Node", GM_BLTIN_NODE_HAS_EDGE_TO, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE)},
         { "Node:PickRandomNbr:Node",    GM_BLTIN_NODE_RAND_NBR, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE)},
 
-        { "!NI_In:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Out:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Down:ToEdge:Edge:0",
-                GM_BLTIN_NODE_TO_EDGE, "" }, { "!NI_Up:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" },
+        { "!NI_In:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, 
+        { "!NI_Out:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, 
+        { "!NI_Down:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" }, 
+        { "!NI_Up:ToEdge:Edge:0", GM_BLTIN_NODE_TO_EDGE, "" },
 
         { "Edge:FromNode:Node:0", GM_BLTIN_EDGE_FROM, AUX_INFO(GM_BLTIN_INFO_NEED_FROM,GM_BLTIN_FLAG_TRUE) }, { "Edge:ToNode:Node:0", GM_BLTIN_EDGE_TO, "" },
 
@@ -195,6 +197,10 @@ public:
         return method_id;
     }
 
+    int get_iter_type() {
+        return iter_type;
+    }
+
     const char* get_orgname() {
         return orgname;
     }
@@ -226,13 +232,13 @@ public:
     bool has_info(const char* key);
     bool find_info_bool(const char* key); // return false if key does not exist
     int find_info_int(const char* key); // return false if key does not exist
-    bool need_strict_source_type() {
-        return need_strict;
+    bool need_check_iteration_type() {
+        return check_iter_type;
     }
 
 private:
     gm_builtin_def() :
-            src_type(0), res_type(0), num_args(0), arg_types(NULL), orgname(NULL), method_id(0), need_strict(false), org_def(NULL), synonym(false) {
+            src_type(0), res_type(0), num_args(0), arg_types(NULL), orgname(NULL), method_id(0), check_iter_type(false), org_def(NULL), synonym(false), iter_type(0) {
     } // not allow random creation
     int src_type;
     int res_type;
@@ -240,7 +246,8 @@ private:
     int* arg_types;
     const char* orgname;
     int method_id;
-    bool need_strict;
+    bool check_iter_type;
+    int  iter_type;
     std::map<std::string, ast_extra_info> extra_info;
 
     bool synonym;
@@ -254,8 +261,8 @@ public:
     gm_builtin_manager();
     ~gm_builtin_manager();
 
-    gm_builtin_def* find_builtin_def(int source_type, const char* orgname);
-    gm_builtin_def* find_builtin_def(int source_type, int method_id);
+    gm_builtin_def* find_builtin_def(int source_type, const char* orgname, int iter_type);
+    gm_builtin_def* find_builtin_def(int source_type, int method_id, int iter_type);
 
     gm_builtin_def* get_last_def() {
         return last_def;

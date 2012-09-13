@@ -68,7 +68,7 @@ public:
             if (r->get_nodetype() != AST_EXPR_RDC) return true;
             ast_expr_reduce* D = (ast_expr_reduce*) r;
             int iter_type = D->get_iter_type();
-            if (iter_type != GMTYPE_NODEITER_UP_NBRS) return true;
+            if (iter_type != GMITER_NODE_UP_NBRS) return true;
             if (D->get_filter() != NULL) return true; // todo considering filters
 
             targets.push_back(f->get_second()->getSymInfo());
@@ -168,7 +168,7 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p) {
     ast_expr_reduce* old_rhs = (ast_expr_reduce*) a->get_rhs();
 
     ast_id* old_iter = old_rhs->get_iterator();
-    assert(old_iter->getTypeSummary() == GMTYPE_NODEITER_UP_NBRS);
+    assert(old_iter->getTypeInfo()->get_defined_iteration_from_iterator() == GMITER_NODE_UP_NBRS);
 
     // [TODO] considering filters in original RHS.
     assert(old_rhs->get_filter() == NULL);
@@ -179,7 +179,7 @@ void gm_flip_backedge_t::flip_edges(ast_assign *a, ast_sentblock * p) {
     ast_sentblock* foreach_body = ast_sentblock::new_sentblock();  // body of foreach
     ast_id* new_iter = old_iter->copy(); // same name, nullify symtab entry 
     ast_id* new_source = old_rhs->get_source()->copy(true); // same symtab
-    int new_iter_type = GMTYPE_NODEITER_DOWN_NBRS;
+    int new_iter_type = GMITER_NODE_DOWN_NBRS;
 
     // new_iter has a valid symtab entry, after foreach creating.
     // foreach_body has correct symtab hierachy

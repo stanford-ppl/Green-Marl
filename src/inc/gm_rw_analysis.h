@@ -64,50 +64,37 @@ enum gm_range_type_t
     GM_RANGE_INVALID,
 };
 
-static int gm_get_range_from_itertype(int itype) {
-    switch (itype) {
-        case GMTYPE_NODEITER_ALL:
-        case GMTYPE_EDGEITER_ALL:
-            return GM_RANGE_LINEAR;
-        case GMTYPE_NODEITER_NBRS:
-        case GMTYPE_NODEITER_IN_NBRS:
-        case GMTYPE_EDGEITER_NBRS:
-        case GMTYPE_NODEITER_COMMON_NBRS:
-        case GMTYPE_EDGEITER_IN_NBRS:
-            return GM_RANGE_RANDOM;
-        case GMTYPE_NODEITER_BFS:
-        case GMTYPE_EDGEITER_BFS:
+static int gm_get_range_from_itertype(int itype, int source_type) {
+
+    if (gm_is_all_graph_iteration(itype)) {
+        return GM_RANGE_LINEAR;
+    }
+    else if (gm_is_bfs_node_iteration(itype)) {
             return GM_RANGE_LEVEL;
-        case GMTYPE_NODEITER_UP_NBRS:
-        case GMTYPE_EDGEITER_UP_NBRS:
+    }
+    else if (gm_is_up_nbr_node_iteration(itype)) {
             return GM_RANGE_LEVEL_UP;
-        case GMTYPE_NODEITER_DOWN_NBRS:
-        case GMTYPE_EDGEITER_DOWN_NBRS:
+    }
+    else if (gm_is_down_nbr_node_iteration(itype)) {
             return GM_RANGE_LEVEL_DOWN;
-        case GMTYPE_NODEITER_SET:
-        case GMTYPE_EDGEITER_SET:
+    }
+    else if (gm_is_any_neighbor_node_iteration(itype) || gm_is_common_nbr_iteration(itype)) {
+        return GM_RANGE_RANDOM;
+    }
+    else if (gm_is_simple_collection_iteration(itype)) {
+        if (gm_is_inherently_unique_collection_type(source_type)) 
             return GM_RANGE_LINEAR;
-        case GMTYPE_NODEITER_ORDER:
-        case GMTYPE_EDGEITER_ORDER:
-            return GM_RANGE_LINEAR;
-        case GMTYPE_NODEITER_SEQ:
-        case GMTYPE_EDGEITER_SEQ:
+        else
             return GM_RANGE_RANDOM;
-        case GMTYPE_NODE:
-        case GMTYPE_EDGE:
-            return GM_RANGE_RANDOM;
-        case GMTYPE_PROPERTYITER_SET:
-        case GMTYPE_PROPERTYITER_SEQ:
-        case GMTYPE_PROPERTYITER_ORDER:
-            return GM_RANGE_LINEAR;
-        case GMTYPE_COLLECTIONITER_SET:
-        case GMTYPE_COLLECTIONITER_SEQ:
-        case GMTYPE_COLLECTIONITER_ORDER:
-            return GM_RANGE_RANDOM; //TODO is there somthing more suitable?
-        default:
-            printf("type = %d\n", itype);
-            assert(false);
-            return 0;
+    }
+    else if (gm_is_collection_of_collection_iteration(itype)) {
+        return GM_RANGE_RANDOM; //TODO is there somthing more suitable?
+
+    }
+    else {
+        printf("itype = %d\n", itype);
+        assert(false);
+        return 0;
     }
 }
 

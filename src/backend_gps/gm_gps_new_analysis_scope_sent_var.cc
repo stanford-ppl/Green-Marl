@@ -57,14 +57,14 @@ public:
         if (s->get_nodetype() == AST_FOREACH) {
             ast_foreach* fe = (ast_foreach*) s;
             if (outer_loop == NULL) {
-                assert(fe->get_iterator()->getTypeSummary() == GMTYPE_NODEITER_ALL);
+                assert(gm_is_all_graph_node_iteration(fe->get_iter_type()));
                 outer_loop = fe;
                 outer_loop->add_info_bool(GPS_FLAG_IS_OUTER_LOOP, true);
                 outer_loop->get_iterator()->getSymInfo()->add_info_int(GPS_INT_SYMBOL_SCOPE, GPS_NEW_SCOPE_OUT);
                 outer_loop->get_iterator()->getSymInfo()->add_info_bool(GPS_FLAG_IS_OUTER_LOOP, true);
                 current_scope = GPS_NEW_SCOPE_OUT;
             } else if (inner_loop == NULL) {
-                assert((fe->get_iterator()->getTypeSummary() == GMTYPE_NODEITER_NBRS) || (fe->get_iterator()->getTypeSummary() == GMTYPE_NODEITER_IN_NBRS));
+                assert(gm_is_in_nbr_node_iteration(fe->get_iter_type()) || gm_is_out_nbr_node_iteration(fe->get_iter_type()));
                 inner_loop = fe;
                 inner_loop->add_info_bool(GPS_FLAG_IS_INNER_LOOP, true);
                 inner_loop->get_iterator()->getSymInfo()->add_info_int(GPS_INT_SYMBOL_SCOPE, GPS_NEW_SCOPE_IN);

@@ -242,14 +242,14 @@
   foreach_filter :                          { $$ = NULL;}
                  | '(' bool_expr ')'        { $$ = $2; }
 
-  iterator1 : T_NODES                       { $$.i1 = GMTYPE_NODEITER_ALL; $$.p1=NULL;}
-            | T_EDGES                       { $$.i1 = GMTYPE_EDGEITER_ALL; $$.p1=NULL;}
-            | T_NBRS                        { $$.i1 = GMTYPE_NODEITER_NBRS; $$.p1=NULL;}
-            | T_IN_NBRS                     { $$.i1 = GMTYPE_NODEITER_IN_NBRS; $$.p1=NULL;}
-            | T_UP_NBRS                     { $$.i1 = GMTYPE_NODEITER_UP_NBRS; $$.p1=NULL;}
-            | T_DOWN_NBRS                   { $$.i1 = GMTYPE_NODEITER_DOWN_NBRS;$$.p1=NULL;}
-            | T_ITEMS                       { $$.i1 = GMTYPE_ITER_ANY;$$.p1=NULL; /* should be resolved after typechecking */}
-            | T_COMMON_NBRS '(' id ')'      { $$.i1 = GMTYPE_NODEITER_COMMON_NBRS;$$.p1 = $3; }
+  iterator1 : T_NODES                       { $$.i1 = GMITER_NODE_ALL; $$.p1=NULL;}
+            | T_EDGES                       { $$.i1 = GMITER_EDGE_ALL; $$.p1=NULL;}
+            | T_NBRS                        { $$.i1 = GMITER_NODE_NBRS; $$.p1=NULL;}
+            | T_IN_NBRS                     { $$.i1 = GMITER_NODE_IN_NBRS; $$.p1=NULL;}
+            | T_UP_NBRS                     { $$.i1 = GMITER_NODE_UP_NBRS; $$.p1=NULL;}
+            | T_DOWN_NBRS                   { $$.i1 = GMITER_NODE_DOWN_NBRS;$$.p1=NULL;}
+            | T_ITEMS                       { $$.i1 = GMITER_ANY;$$.p1=NULL; /* should be resolved after typechecking */}
+            | T_COMMON_NBRS '(' id ')'      { $$.i1 = GMITER_NODE_COMMON_NBRS;$$.p1 = $3; }
 
   sent_dfs    : T_DFS bfs_header_format bfs_filters sent_block dfs_post
                 { $$ = GM_bfs( $2.p1,$2.p2,$2.p3,  $3.p1,$3.p2, $5.p2,   $4,$5.p1,   $2.b1, false); 

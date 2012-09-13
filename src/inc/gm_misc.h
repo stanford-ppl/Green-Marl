@@ -19,7 +19,7 @@
 extern char* gm_strdup(const char* c); // same as strdup but use new instead of malloc
 extern const char* gm_get_nodetype_string(int t);
 extern const char* gm_get_type_string(int t);
-extern const char* gm_get_iter_type_string(int t);
+extern const char* gm_get_iteration_string(int t);
 extern const char* gm_get_op_string(int op_type);
 extern const char* gm_get_reduce_string(int reduce_op_type);
 extern const char* gm_get_reduce_expr_string(int reduce_op_type);
@@ -31,7 +31,7 @@ static inline bool gm_is_same_string(const char* s1, const char* s2) {
 
 //extern const char* gm_get_builtin_string(int t);
 //extern int gm_get_output_type_summary_builtin(int btype); 
-extern int gm_get_iter_type_from_set_type(int set_type);
+//extern int gm_get_iter_type_from_set_type(int set_type);
 
 //------------------------------------------
 // parsing path string

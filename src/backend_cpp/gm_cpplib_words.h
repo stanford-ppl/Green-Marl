@@ -12,7 +12,7 @@ static const char* RANDOM_NODE = "pick_random_node";
 
 static const char* NODE_T = "node_t";
 static const char* EDGE_T = "edge_t";
-static const char* NODEITER_T = "node_t"; // [todo] clarify later
+static const char* NODEITER_T = "node_t"; // [todo] clarify later --> to be removed
 static const char* EDGEITER_T = "edge_t";
 static const char* GRAPH_T = "gm_graph";
 static const char* SET_T = "gm_node_set";

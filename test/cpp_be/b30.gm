@@ -1,5 +1,6 @@
 Procedure test_property_of_collection_iterate(G:Graph)
 {
+    /* This syntax has been deprecated
     N_P<N_S> prop;
     Node n;
     
@@ -8,4 +9,5 @@ Procedure test_property_of_collection_iterate(G:Graph)
     	
     Foreach(s: prop.Items)
     	s.Add(n);
+    */
 }

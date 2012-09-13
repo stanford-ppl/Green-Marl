@@ -15,4 +15,7 @@ typedef int32_t edge_t;
 typedef int32_t node_t;
 #endif
 
+// call this function to check if node/edge size matches with the library
+extern void gm_graph_check_if_size_is_correct(int node_size, int edge_size); 
+
 #endif
