@@ -4,7 +4,7 @@ Procedure test_nested_sum(G:Graph)
     //must not compile since default grah is not well-defined
     Node n;
     For(x : G.Nodes) {
-	n = x;
+	    n = x;
     }
 
     Node(G) n2 = n;

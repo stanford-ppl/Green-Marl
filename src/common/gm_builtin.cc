@@ -2,7 +2,9 @@
 #include "gm_misc.h"
 #include "gm_builtin.h"
 
-static int gm_get_type_from_string(const char* s) {
+static int gm_get_type_from_string(const char* s, int& required_iter_type) {
+    required_iter_type = 0;
+
     assert(s!=NULL);
     if (gm_is_same_string(s, "Graph"))
         return GMTYPE_GRAPH;
@@ -10,18 +12,6 @@ static int gm_get_type_from_string(const char* s) {
         return GMTYPE_NODE;
     else if (gm_is_same_string(s, "Edge"))
         return GMTYPE_EDGE;
-    else if (gm_is_same_string(s, "NI_All"))
-        return GMTYPE_NODEITER_ALL;
-    else if (gm_is_same_string(s, "EI_All"))
-        return GMTYPE_EDGEITER_ALL;
-    else if (gm_is_same_string(s, "NI_Out"))
-        return GMTYPE_NODEITER_NBRS;
-    else if (gm_is_same_string(s, "NI_In"))
-        return GMTYPE_NODEITER_IN_NBRS;
-    else if (gm_is_same_string(s, "NI_Up"))
-        return GMTYPE_NODEITER_UP_NBRS;
-    else if (gm_is_same_string(s, "NI_Down"))
-        return GMTYPE_NODEITER_DOWN_NBRS;
     else if (gm_is_same_string(s, "Int"))
         return GMTYPE_INT;
     else if (gm_is_same_string(s, "Long"))
@@ -50,6 +40,31 @@ static int gm_get_type_from_string(const char* s) {
         return GMTYPE_MAP;
     else if (gm_is_same_string(s, "Generic"))
         return GMTYPE_GENERIC;
+
+    else if (gm_is_same_string(s, "NI_All")) {
+        required_iter_type = GMITER_NODE_ALL;
+        return GMTYPE_NODE_ITERATOR;
+    }
+    else if (gm_is_same_string(s, "EI_All")) {
+        required_iter_type = GMITER_EDGE_ALL;
+        return GMTYPE_EDGE_ITERATOR;
+    }
+    else if (gm_is_same_string(s, "NI_Out")) {
+        required_iter_type = GMITER_NODE_NBRS;
+        return GMTYPE_NODE_ITERATOR;
+    }
+    else if (gm_is_same_string(s, "NI_In")) {
+        required_iter_type = GMITER_NODE_IN_NBRS;
+        return GMTYPE_NODE_ITERATOR;
+    }
+    else if (gm_is_same_string(s, "NI_Up")) {
+        required_iter_type = GMITER_NODE_UP_NBRS;
+        return GMTYPE_NODE_ITERATOR;
+    }
+    else if (gm_is_same_string(s, "NI_Down")) {
+        required_iter_type = GMITER_NODE_DOWN_NBRS;
+        return GMTYPE_NODE_ITERATOR;
+    }
     else {
         assert(false);
         return 0;
@@ -69,7 +84,7 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def) {
         assert(org_def!=NULL);
 
         this->synonym = true;
-        this->need_strict = false;
+        this->check_iter_type = false;
         this->org_def = org_def;
         this->src_type = org_def->src_type;  // need source type.
         this->orgname = gm_strdup(&temp[1]);
@@ -81,24 +96,26 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def) {
         this->synonym = false;
 
         if (temp[0] == '!') {
-            this->need_strict = true;
+            this->check_iter_type = true;
             temp = temp + 1;
         } else {
-            this->need_strict = false;
+            this->check_iter_type = false;
         }
 
         // parse and fill
         char *p;
+        int iter_type;
+        int dummy;
         p = strtok(temp, ":");
         if (p[0] == '_')
             src_type = GMTYPE_VOID; // top-level
         else
-            this->src_type = gm_get_type_from_string(p);
+            this->src_type = gm_get_type_from_string(p, iter_type);
 
         p = strtok(NULL, ":");
         this->orgname = gm_strdup(p);
         p = strtok(NULL, ":");
-        this->res_type = gm_get_type_from_string(p);
+        this->res_type = gm_get_type_from_string(p, dummy);
         p = strtok(NULL, ":");
         if (p == NULL)
             this->num_args = 0;
@@ -108,7 +125,7 @@ gm_builtin_def::gm_builtin_def(const gm_builtin_desc_t* def) {
             this->arg_types = new int[num_args];
             for (int i = 0; i < num_args; i++) {
                 p = strtok(NULL, ":");
-                this->arg_types[i] = gm_get_type_from_string(p);
+                this->arg_types[i] = gm_get_type_from_string(p, dummy);
             }
         }
 
@@ -202,35 +219,38 @@ gm_builtin_manager::~gm_builtin_manager() {
         delete *i;
 }
 
-gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char* orgname) {
+gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char* orgname, int iter_type) {
     std::list<gm_builtin_def*>::iterator i;
     for (i = defs.begin(); i != defs.end(); i++) {
         gm_builtin_def* d = *i;
-        int def_src = d->get_source_type_summary();
-        if (gm_is_same_string(orgname, d->get_orgname())) {
-            if (def_src == source_type) {
-                if (d->is_synonym_def())
-                    return d->get_org_def();
-                else
-                    return d;
-            }
-            bool is_strict = d->need_strict_source_type();
-            if (is_strict) continue;
-            if (def_src == GMTYPE_VOID) continue;
-            assert(!gm_is_prim_type(def_src));
+        if (!gm_is_same_string(orgname, d->get_orgname())) continue;
 
-            if (gm_is_same_node_or_edge_compatible_type(def_src, source_type) || gm_collection_of_collection_compatible_type(def_src, source_type)) {
-                if (d->is_synonym_def())
-                    return d->get_org_def();
-                else
-                    return d;
-            }
+        int def_src = d->get_source_type_summary();
+        if (def_src == source_type) {
+            goto found;
         }
+
+        if (source_type == GMTYPE_VOID) continue;
+        if (gm_is_prim_type(def_src)) continue;
+
+        // compatible types
+        if (!gm_is_same_node_or_edge_compatible_type(def_src, source_type) &&
+            !gm_collection_of_collection_compatible_type(def_src, source_type)) 
+            continue;
+
+        if (d->need_check_iteration_type() && (d->get_iter_type() != iter_type))
+            continue;
+
+        found:
+        if (d->is_synonym_def())
+            return d->get_org_def();
+        else
+            return d;
     }
     return NULL;
 }
 
-gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, int id) {
+gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, int id, int iter_type) {
     bool is_strict;
 
     std::list<gm_builtin_def*>::iterator i;
@@ -239,16 +259,22 @@ gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, int id) {
         if (d->get_method_id() != id) continue;
 
         int def_src = d->get_source_type_summary();
-        if (def_src == source_type) goto found;
+        if (def_src == source_type) {
+            goto found;
+        }
 
-        is_strict = d->need_strict_source_type();
-
-        if (is_strict) continue;
         if (source_type == GMTYPE_VOID) continue;
         if (gm_is_prim_type(def_src)) continue;
 
-        if (!gm_is_same_node_or_edge_compatible_type(def_src, source_type)) continue;
-        found: if (d->is_synonym_def())
+        if (!gm_is_same_node_or_edge_compatible_type(def_src, source_type) &&
+            !gm_collection_of_collection_compatible_type(def_src, source_type)) 
+            continue;
+
+        if (d->need_check_iteration_type() && (d->get_iter_type() != iter_type))
+            continue;
+
+        found: 
+        if (d->is_synonym_def())
             return d->get_org_def();
         else
             return d;

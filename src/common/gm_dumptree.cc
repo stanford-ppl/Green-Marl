@@ -220,7 +220,7 @@ void ast_expr_reduce::dump_tree(int ind_level) {
     printf(":");
     src->dump_tree(0);
     printf(".");
-    printf("%s)\n", gm_get_iter_type_string(iter_type));
+    printf("%s)\n", gm_get_iteration_string(iter_type));
     if (filter != NULL) {
         IND(ind_level + 1);
         printf("<Filter> \n");
@@ -312,7 +312,7 @@ void ast_foreach::dump_tree(int ind_level) {
     printf(" : ");
     source->dump_tree(ind_level + 1);
     printf("  ");
-    printf("%s ", gm_get_iter_type_string(iter_type));
+    printf("%s ", gm_get_iteration_string(iter_type));
     if (cond != NULL) printf(" FILTER: ");
     printf("\n");
     if (cond != NULL) {

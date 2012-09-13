@@ -227,9 +227,10 @@ bool gm_is_compatible_type(int op, int t1, int t2, int& op_result_type, int& t1_
         t2 = t1;
     }
 
-    if ((gm_is_set_collection_type(t1) && gm_is_collection_of_set_iter_type(t2))
-            || (gm_is_sequence_collection_type(t1) && gm_is_collection_of_seq_iter_type(t2))
-            || (gm_is_order_collection_type(t1) && gm_is_collection_of_order_iter_type(t2))) t2 = t1;
+    // collection of collections
+    // Need separate check for target collection type and graph
+    if (gm_is_collection_type(t1) && gm_is_collection_iterator_type(t2))  
+        t2 = t1;
 
     for (int i = 0; i < (int) GM_TYPE_RULES.size(); i++) {
         gm_type_rule& R = GM_TYPE_RULES[i];

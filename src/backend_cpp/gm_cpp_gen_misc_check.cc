@@ -83,7 +83,7 @@ public:
                 }
             }
 
-            if (gm_is_common_nbr_iter_type(iter_type)) {
+            if (gm_is_common_nbr_iteration(iter_type)) {
                 ast_id* G = fe->get_source()->getTypeInfo()->get_target_graph_id();
                 if (G != NULL) {
                     gm_symtab_entry* e = G->getSymInfo();

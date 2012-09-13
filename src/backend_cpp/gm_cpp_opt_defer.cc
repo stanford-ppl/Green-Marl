@@ -165,7 +165,7 @@ static void post_process_deferred_writes(std::list<gm_symtab_entry*>& target_sym
         assert(src->getSymInfo() != NULL);
 
         bool need_initializer = true;
-        if (gm_is_all_graph_iter_type(fe->get_iter_type())) {
+        if (gm_is_all_graph_iteration(fe->get_iter_type())) {
             gm_rwinfo_sets *sets = gm_get_rwinfo_sets(fe);
             gm_rwinfo_map& W = sets->write_set;
             assert(W.find(old_dest) != W.end());
@@ -303,7 +303,7 @@ static ast_foreach* create_init_or_update(ast_id* src, bool is_nodeprop, gm_symt
     //------------------------------
     const char* iter_name = FE.voca_temp_name_and_add("i");
     ast_id* itor = ast_id::new_id(iter_name, 0, 0);
-    int iter_type = is_nodeprop ? GMTYPE_NODEITER_ALL : GMTYPE_EDGEITER_ALL;
+    int iter_type = is_nodeprop ? GMITER_NODE_ALL : GMITER_EDGE_ALL;
     ast_foreach* fe = gm_new_foreach_after_tc(itor, src, a, iter_type);
     assert(itor->getSymInfo()!=NULL);
     delete[] iter_name;

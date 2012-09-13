@@ -84,6 +84,17 @@ def build_compiler():
 
 build_compiler();
 
+# RUN UNIT TEST (CHECK IF CRASH)
+def run_unit_test_crash():
+    os.chdir(s_path+"/..");
+    crash_res = commands.getstatusoutput("./check_if_crash.sh");
+    if crash_res[0] != 0:
+        print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
+        sys.exit(-1);
+
+run_unit_test_crash();
+
+
 # BUILD AND RUN THE APPS
 
 APP_EXCLUSIONS=[ "b2_main.cc", "Makefile", "common_main.cc", "common_main.h", "randomnodesampling_main.cc", "random_bipartite_matching_main.cc", "sssp_path_main.cc"];

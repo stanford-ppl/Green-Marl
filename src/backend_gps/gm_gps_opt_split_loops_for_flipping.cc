@@ -304,7 +304,7 @@ static void split_the_loop(ast_foreach* in) {
     }
     assert(out!=NULL);
 
-    assert(gm_is_iteration_on_all_graph(out->get_iter_type()));
+    assert(gm_is_all_graph_iteration(out->get_iter_type()));
     gm_make_it_belong_to_sentblock(out);
     assert(out->get_parent()->get_nodetype() == AST_SENTBLOCK);
 

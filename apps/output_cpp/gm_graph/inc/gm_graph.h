@@ -14,6 +14,7 @@
 typedef node_t node_id;
 typedef edge_t edge_id;
 
+
 //--------------------------------------------------------------------------
 // Representation of Graph
 // 

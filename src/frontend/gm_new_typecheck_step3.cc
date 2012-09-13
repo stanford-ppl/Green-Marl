@@ -235,7 +235,7 @@ bool gm_typechecker_stage_3::check_mapaccess(ast_expr_mapaccess* mapAccessExpr) 
 bool gm_typechecker_stage_3::check_boundGraphsForKeyAndValue(ast_mapaccess* mapAccess, int line, int column) {
     //check if target graphs for key are the same
     int keyType = mapAccess->get_key_expr()->get_type_summary();
-    if (gm_has_target_graph_type(keyType)) {
+    if (gm_requires_target_graph_type(keyType)) {
         gm_symtab_entry* keyGraph = mapAccess->get_bound_graph_for_key();
         ast_expr* keyExpr = mapAccess->get_key_expr();
         int keyExprType = keyExpr->get_type_summary();
@@ -304,7 +304,7 @@ bool gm_typechecker_stage_3::check_binary(ast_expr* e) {
     }
 
     // node/edge
-    if (gm_has_target_graph_type(l_type)) {
+    if (gm_requires_target_graph_type(l_type)) {
         gm_symtab_entry* l_sym = e->get_left_op()->get_bound_graph();
         gm_symtab_entry* r_sym = e->get_right_op()->get_bound_graph();
 
@@ -379,6 +379,7 @@ int gm_typechecker_stage_3::resolveGenericInputType(ast_expr_builtin* b, int arg
 }
 
 int gm_typechecker_stage_3::tryResolveUnknownType(int type) {
+    /*
     switch (type) {
         case GMTYPE_COLLECTIONITER_SET:
             return GMTYPE_NSET;
@@ -389,6 +390,8 @@ int gm_typechecker_stage_3::tryResolveUnknownType(int type) {
         default:
             return type;
     }
+    */
+    return type;
 }
 
 bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
@@ -410,7 +413,7 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
             continue;
         }
 
-        currentType = tryResolveUnknownType(currentType);
+        //currentType = tryResolveUnknownType(currentType);
 
         bool warning;
         int coerced_type;
@@ -420,6 +423,7 @@ bool gm_typechecker_stage_3::check_arguments(ast_expr_builtin* b) {
         } else {
             isCompatible = gm_is_compatible_type_for_assign(def_type, currentType, coerced_type, warning);
         }
+
         if (!isCompatible) {
             char temp[20];
             sprintf(temp, "%d", position + 1);
@@ -445,7 +449,7 @@ bool gm_typechecker_stage_3::check_builtin(ast_expr_builtin* b) {
     }
     b->set_type_summary(fun_ret_type);
 
-    if (gm_has_target_graph_type(fun_ret_type)) {
+    if (gm_requires_target_graph_type(fun_ret_type)) {
         if (b->get_driver()->getTypeInfo()->is_graph()) {
             b->set_bound_graph(b->get_driver()->getSymInfo());
         } else
@@ -471,7 +475,7 @@ bool gm_typechecker_stage_3::resolveGenericOutputType(ast_expr_builtin* b) {
 
     b->set_type_summary(funcReturnType);
 
-    if (gm_has_target_graph_type(funcReturnType)) {
+    if (gm_requires_target_graph_type(funcReturnType)) {
         gm_symtab_entry* graph;
         if (def->genericTypeIsKeyType())
             graph = mapTypeDecl->get_key_type()->get_target_graph_sym();

@@ -38,7 +38,7 @@ public:
 
         if (foreach_depth == 1) {
             // check if node-wide foreach
-            if (fe->get_iter_type() != GMTYPE_NODEITER_ALL) {
+            if (!gm_is_all_graph_node_iteration(fe->get_iter_type())) {
                 gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_RANGE_MASTER, s->get_line(), s->get_col(), "");
                 _error = true;
             }
@@ -54,7 +54,7 @@ public:
 
         else if (foreach_depth == 2) {
             // check if out-nbr iteration
-            if ((fe->get_iter_type() != GMTYPE_NODEITER_NBRS) && (fe->get_iter_type() != GMTYPE_NODEITER_IN_NBRS)) {
+            if (!gm_is_in_nbr_node_iteration(fe->get_iter_type()) && !gm_is_out_nbr_node_iteration(fe->get_iter_type())) {
                 gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_RANGE_VERTEX, s->get_line(), s->get_col(), "");
                 _error = true;
             }
