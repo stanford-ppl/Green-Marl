@@ -11,11 +11,7 @@
 
 gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed, bool use_xorshift_rng) {
     
-#ifdef NODE64
-    gm_rand64 xorshift_rng((int64_t)seed);
-#else
-    gm_rand32 xorshift_rng((int32_t)seed);
-#endif
+    gm_rand xorshift_rng(seed);
     if (!use_xorshift_rng) {
         srand(seed);
     }
