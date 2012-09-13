@@ -196,7 +196,17 @@ at the following locations:
     $(top)/apps/output_cpp/gm_graph/src
     $(top)/apps/output_cpp/gm_graph/inc
 
-gm_graph library can be built through the following steps:
+
+Regarding data-structure size, gm_graph can be configured in one of follwing three options:
+
+  * 32bit node_id, 32bit edge_id
+  * 32bit node_id, 64bit edge_id
+  * 64bit edge_id, 64bit edge_id
+
+The above options can be configured by setting up compiler variables NODE_SIZE and EDGE_SIZE 
+in $(top)/apps/output_cpp/common.mk
+
+Once you set-up above compiler flags, gm_graph library can be built through the following steps:
 
     cd $(top)/apps/
     make lib
@@ -204,8 +214,9 @@ gm_graph library can be built through the following steps:
     %%%% Check libgmgraph.a has been successfully created.
     ls $(top)/apps/output_cpp/gm_graph/lib  
 
-Note that this step is required only once for each package release.  A more
-detailed documentation about gm_graph library can be found in doc_gm_graph.txt
+Note that this step is required only once for each package release.  Also note that whenever you change
+the node_id/edge_id size, you have to re-built the gm_graph libaray as well as your applications. A more
+detailed documentation about gm_graph library can be found in doc_gm_graph.txt [todo]
 
 
 4-4 Compiling the Generated C++ Files
@@ -250,7 +261,7 @@ copied into $(top)/apps/output_cpp/bin/.
 
      (TODO)
      * Currently graph_gen is created together when gm_graph is built
-     * We will make graph_gen a separate package; one routine is polluted by GPL. 
+     * We will make graph_gen a separate package; one routine is polluted by GPL
  
 Now, do the following steps and execute sample programs:
 
