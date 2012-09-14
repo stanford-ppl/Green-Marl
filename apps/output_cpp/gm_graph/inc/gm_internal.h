@@ -16,10 +16,12 @@
  #if defined(__sparc)
   #if defined (__ORACLE__)
    #include "../platform/sparc/inc/gm_platform_helpers.h"
-  #endif
   #else
-   #error "We need x86 (32bit or 64bit) or Sparc environment" 
+   #error "We need __ORACLE__ Sparc environment" 
   #endif
+ #else
+   #error "We need x86 (32bit or 64bit) or Sparc environment" 
+ #endif
 #endif
 
 
