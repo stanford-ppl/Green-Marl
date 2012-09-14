@@ -40,6 +40,57 @@ gm_graph::~gm_graph() {
     delete_frozen_graph();
 }
 
+bool gm_graph::is_neighbor(node_t src, node_t to) {
+    // Edges are semi-sorted.
+    // Do binary search
+    edge_t begin_edge = begin[src];
+    edge_t end_edge = begin[src + 1] - 1; // inclusive
+    if (begin_edge > end_edge) return false;
+
+    node_t left_node = node_idx[begin_edge];
+    node_t right_node = node_idx[end_edge];
+    if (to == left_node) return true;
+    if (to == right_node) return true;
+
+    /*int cnt = 0;*/
+    while (begin_edge < end_edge) {
+        left_node = node_idx[begin_edge];
+        right_node = node_idx[end_edge];
+
+        /*
+         cnt++;
+         if (cnt > 490) {
+         printf("%d ~ %d (val:%d ~ %d) vs %d\n", begin_edge, end_edge, left_node, right_node, to);
+         }
+         if (cnt == 500) assert(false);
+         */
+
+        if (to < left_node) return false;
+        if (to > right_node) return false;
+
+        edge_t mid_edge = (begin_edge + end_edge) / 2;
+        node_t mid_node = node_idx[mid_edge];
+        if (to == mid_node) return true;
+        if (to < mid_node) {
+            if (end_edge == mid_edge) return false;
+            end_edge = mid_edge;
+        } else if (to > mid_node) {
+            if (begin_edge == mid_edge) return false;
+            begin_edge = mid_edge;
+        }
+
+    }
+    return false;
+}
+
+bool gm_graph::has_edge_to(node_t source, node_t to) {
+    edge_t current = begin[source];
+    edge_t end = begin[source + 1];
+    while(current < end)
+        if(node_idx[current++] == to) return true;
+    return false;
+}
+
 void gm_graph::freeze() {
     if (_frozen) return;
 
@@ -225,11 +276,11 @@ void gm_graph::make_reverse_edges() {
         for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
             node_t dest = node_idx[e];
             edge_t r_edge_idx = r_begin[dest] + loc[e];
-            #if GM_GRAPH_NUMA_OPT
+#if GM_GRAPH_NUMA_OPT
             temp_r_node_idx[r_edge_idx] = i;
-            #else
+#else
             r_node_idx[r_edge_idx] = i;
-            #endif
+#endif
         }
     }
 #if GM_GRAPH_NUMA_OPT
@@ -253,7 +304,7 @@ void gm_graph::make_reverse_edges() {
     delete[] loc;
 }
 
-inline static void swap(edge_t idx1, edge_t idx2, node_t* dest_array, edge_t* aux_array) {
+static void swap(edge_t idx1, edge_t idx2, node_t* dest_array, edge_t* aux_array) {
     if (idx1 == idx2) return;
 
     node_t T = dest_array[idx1];
@@ -681,49 +732,6 @@ bool gm_graph::load_adjacency_list(char* filename, char separator) {
     return true;
 
     error_return: clear_graph();
-    return false;
-}
-
-bool gm_graph::is_neighbor(node_t src, node_t to) {
-    // Edges are semi-sorted.
-    // Do binary search
-    edge_t begin_edge = begin[src];
-    edge_t end_edge = begin[src + 1] - 1; // inclusive
-    if (begin_edge > end_edge) return false;
-
-    node_t left_node = node_idx[begin_edge];
-    node_t right_node = node_idx[end_edge];
-    if (to == left_node) return true;
-    if (to == right_node) return true;
-
-    /*int cnt = 0;*/
-    while (begin_edge < end_edge) {
-        left_node = node_idx[begin_edge];
-        right_node = node_idx[end_edge];
-
-        /*
-         cnt++;
-         if (cnt > 490) {
-         printf("%d ~ %d (val:%d ~ %d) vs %d\n", begin_edge, end_edge, left_node, right_node, to);
-         }
-         if (cnt == 500) assert(false);
-         */
-
-        if (to < left_node) return false;
-        if (to > right_node) return false;
-
-        edge_t mid_edge = (begin_edge + end_edge) / 2;
-        node_t mid_node = node_idx[mid_edge];
-        if (to == mid_node) return true;
-        if (to < mid_node) {
-            if (end_edge == mid_edge) return false;
-            end_edge = mid_edge;
-        } else if (to > mid_node) {
-            if (begin_edge == mid_edge) return false;
-            begin_edge = mid_edge;
-        }
-
-    }
     return false;
 }
 
