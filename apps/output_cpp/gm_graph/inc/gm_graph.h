@@ -215,6 +215,10 @@ public:
         return rand() % num_nodes(); //TODO make 64bit compatible
     }
 
+#ifdef HDFS
+    bool load_binary_hdfs(char* filename);
+#endif  // HDFS
+
 private:
 
     void delete_frozen_graph();

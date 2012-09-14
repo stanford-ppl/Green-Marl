@@ -3,16 +3,19 @@ AR= ar
 LIB = lib
 BIN = ../bin
 INC = inc
+SRC = src
 OBJ = obj
 CFLAGS = -O3 -g -I$(INC) -fopenmp -Wall 
 OUT = $(BIN)/graph_gen $(LIB)/libgmgraph.a
-GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/graph_gen_main.o  
-GRAPHLIB_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_runtime.o $(OBJ)/gm_lock.o
 
 # where to find source codes
-vpath %.cc src
+vpath %.cc $(SRC)
+vpath %.h $(INC)
 
-vpath %.h inc
+SOURCES := $(wildcard $(SRC)/*.cc)
+OBJECTS := $(subst $(SRC),$(OBJ),$(SOURCES:.cc=.o)) 
+GRAPHLIB_OBJECTS = $(OBJECTS)
+GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/graph_gen_main.o 
 
 ifdef ORACLE
 CFLAGS += -D__ORACLE__
