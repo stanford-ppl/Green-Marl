@@ -71,7 +71,9 @@ void gm_mem_helper::cleanup() {
     }
 }
 
-
+/*
+ * Wrappers to call the gm_mem_helper methods
+ */
 int64_t* gm_rt_allocate_long(size_t sz, int thread_id) {
     int64_t* ptr = new int64_t[sz];
     _GM_MEM.save(ptr, 0, thread_id);

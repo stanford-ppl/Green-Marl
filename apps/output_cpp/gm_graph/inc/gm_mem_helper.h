@@ -45,6 +45,10 @@ class gm_mem_helper
 // defined in gm_runtime.cc
 extern gm_mem_helper _GM_MEM;
 
+/*
+ * Wrappers to call the gm_mem_helper methods
+ *    - Shouldnt they be static members of the gm_mem_helper class?
+ */
 int64_t* gm_rt_allocate_long(size_t sz, int thread_id = 0);
 int32_t* gm_rt_allocate_int(size_t sz, int thread_id = 0);
 float* gm_rt_allocate_float(size_t sz, int thread_id = 0);
