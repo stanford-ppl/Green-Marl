@@ -151,6 +151,7 @@ public:
         }
 
         destroy_target_after = true;
+	return new_expr;
     }
 
 private:
