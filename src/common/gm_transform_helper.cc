@@ -602,6 +602,8 @@ bool gm_check_if_end_with_return(ast_sentblock* sb) {
     // [XXX]
     // simply check last sentence only
     // should be merged with dead-code elimination
+    if (sb->get_sents().size() == 0) 
+       return false;
     if (sb->get_sents().back() == NULL) {
         return false;
     } else if (sb->get_sents().back()->get_nodetype() == AST_RETURN) {
