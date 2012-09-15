@@ -9,11 +9,7 @@ using namespace std;
 template<class T>
 class gm_collection
 {
-
-private:
-    list<T> data;
-
-public:
+  public:
     gm_collection(int maxNumberThreads = 16) {
     }
 
@@ -51,12 +47,12 @@ public:
 
     class seq_iter
     {
-    private:
+      private:
         typedef typename list<T>::iterator Iterator;
         Iterator iter;
         const Iterator end;
 
-    public:
+      public:
         bool has_next() {
             return iter != end;
         }
@@ -73,6 +69,9 @@ public:
     seq_iter prepare_seq_iteration() {
         return seq_iter(data.begin(), data.end());
     }
+
+  private:
+      list<T> data;
 
 };
 

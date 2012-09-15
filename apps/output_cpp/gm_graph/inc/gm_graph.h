@@ -87,36 +87,36 @@ public:
     static const edge_t NIL_EDGE = (edge_t) -1;
 
     bool is_neighbor(node_t src, node_t to); // need semi sorting
-
-    bool has_edge_to(node_t source, node_t to) {
-        edge_t current = begin[source];
-        edge_t end = begin[source + 1];
-        while(current < end)
-            if(node_idx[current++] == to) return true;
-        return false;
-    }
+    bool has_edge_to(node_t source, node_t to);
 
     node_t num_nodes() {
         return _numNodes;
     }
+
     edge_t num_edges() {
         return _numEdges;
     }
+
     bool has_reverse_edge() {
         return _reverse_edge;
     }
+
     bool is_frozen() {
         return _frozen;
     }
+
     bool is_directed() {
         return _directed;
     }
+
     bool is_semi_sorted() {
         return _semi_sorted;
     }
+
     bool has_separate_edge_idx() {
         return (e_id2idx != NULL);
     }
+
     bool is_edge_source_ready() {
         return (node_idx_src != NULL);
     }
@@ -215,6 +215,10 @@ public:
     node_t pick_random_node() {
         return rand() % num_nodes(); //TODO make 64bit compatible
     }
+
+#ifdef HDFS
+    bool load_binary_hdfs(char* filename);
+#endif  // HDFS
 
 private:
 

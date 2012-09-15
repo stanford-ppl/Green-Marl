@@ -38,34 +38,19 @@ private:
 };
 
 extern gm_runtime _GM_RT;
-
-static inline void gm_rt_initialize() {
-    _GM_RT.initialize();
-}
-static inline bool gm_rt_is_initialized() {
-    return _GM_RT.is_initialized();
-}
-
-static inline int gm_rt_get_num_threads() {
-    return _GM_RT.get_num_threads();
-}
-static inline void gm_rt_set_num_threads(int n) {
-    _GM_RT.set_num_threads(n);
-}
-static inline int gm_rt_thread_id() {
-    return _GM_RT.get_thread_id();
-}
-
-static inline double gm_rt_uniform(int tid = 0) {
-    return _GM_RT.uniform(tid);
-}
-static inline int gm_rt_rand(int min, int max, int tid = 0) {
-    return _GM_RT.rand(min, max, tid);
-}
-static inline long gm_rt_rand_long(long max, int tid = 0) {
-    return _GM_RT.rand_long(max, tid);
-}
-
 extern int dummy[];
+
+/*
+ * Wrappers to call the gm_runtime methods
+ *    - Shouldnt they be static members of the gm_runtime class?
+ */
+void gm_rt_initialize();
+bool gm_rt_is_initialized();
+int gm_rt_get_num_threads();
+void gm_rt_set_num_threads(int n);
+int gm_rt_thread_id();
+double gm_rt_uniform(int tid = 0);
+int gm_rt_rand(int min, int max, int tid = 0);
+long gm_rt_rand_long(long max, int tid = 0);
 
 #endif

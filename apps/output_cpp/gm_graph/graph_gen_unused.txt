@@ -1,0 +1,29 @@
+
+// This file includes the functions that are unused but were present in the earlier version of
+// gm_graph library.
+
+bool test_backedge(gm_graph* g) {
+    int repeat = g->num_nodes() * 0.001;
+
+    gm_graph&G = *g;
+    for (int K = 0; K < repeat; K++) {
+        int s = rand() % g->num_nodes();
+        for (int j = G.begin[s]; j < G.begin[s + 1]; j++) {
+            int n = G.node_idx[j];
+            //printf("from %d, n = %d\n", s, n);
+            bool found = false;
+            for (int i = G.r_begin[n]; i < G.r_begin[n + 1]; i++) {
+                int m = G.r_node_idx[i];
+                if (m == s) found = true;
+            }
+            if (!found) {
+                printf("\n%d -> %d \n", s, n);
+            }
+            assert(found);
+        }
+    }
+
+    return true;
+}
+
+

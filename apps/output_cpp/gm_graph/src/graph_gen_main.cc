@@ -5,36 +5,8 @@
 #include <assert.h>
 #include <sys/time.h>
 
-gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed, bool use_xorshift_rng);
-gm_graph* create_uniform_random_graph2(node_t N, edge_t M, long seed);
-gm_graph* create_uniform_random_nonmulti_graph(node_t N, edge_t M, long seed);
-/*
- gm_graph* create_RMAT_graph(node_t N, edge_t M, int rseed=2387, bool need_gackedge = true, double a=0.45, double b=0.25, double c=0.15, bool permute=true);
- */
+#include "graph_gen.h"
 
-bool test_backedge(gm_graph* g) {
-    int repeat = g->num_nodes() * 0.001;
-
-    gm_graph&G = *g;
-    for (int K = 0; K < repeat; K++) {
-        int s = rand() % g->num_nodes();
-        for (int j = G.begin[s]; j < G.begin[s + 1]; j++) {
-            int n = G.node_idx[j];
-            //printf("from %d, n = %d\n", s, n);
-            bool found = false;
-            for (int i = G.r_begin[n]; i < G.r_begin[n + 1]; i++) {
-                int m = G.r_node_idx[i];
-                if (m == s) found = true;
-            }
-            if (!found) {
-                printf("\n%d -> %d \n", s, n);
-            }
-            assert(found);
-        }
-    }
-
-    return true;
-}
 //  CREATE RMAT  or random file and dump
 int main(int argc, char** argv) {
 
@@ -66,7 +38,7 @@ int main(int argc, char** argv) {
 
     switch (gtype) {
         case 0:
-          g = create_uniform_random_graph(N, M, random_seed, false);
+            g = create_uniform_random_graph(N, M, random_seed, false);
             break;
         case 1:
             g = create_uniform_random_graph2(N, M, random_seed);
@@ -75,13 +47,13 @@ int main(int argc, char** argv) {
             g = create_uniform_random_nonmulti_graph(N, M, random_seed);
             break;
         case 3:
-          g = create_uniform_random_graph(N, M, random_seed, true);
+            g = create_uniform_random_graph(N, M, random_seed, true);
             break;
-            /*
-             case 4:
+        /*
+        case 4:
              g = create_RMAT_graph(N, M, random_seed, need_back_edge);
              break;
-             */
+        */
         default:
             printf("UNKNOWN GRAPH TYPE\n");
             exit(-1);
