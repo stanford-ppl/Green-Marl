@@ -27,7 +27,7 @@ the third one is included in this source package.
 
 
 2 The Package 
-====================================
+=======================================
 
 2-1 Obtaining source package
 -------------------------------------
