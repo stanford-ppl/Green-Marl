@@ -112,11 +112,15 @@ static int check_leveled_access(gm_rwinfo* e1) {
     //-----------------------
     int lev = -1;
     int a_range;
-    if (e1->driver == NULL) {
+    if (e1->driver == NULL) 
         a_range = e1->access_range;
+    else if (!e1->driver->getType()->is_node_iterator()) {
+        return lev;
     } else {
-        int t = e1->driver->getType()->get_typeid();
-        a_range = gm_get_range_from_itertype(t);
+        assert(gm_is_iterator_type(e1->driver->getType()->getTypeSummary()));
+        int t = e1->driver->getType()->get_defined_iteration_from_iterator();
+        int src_type = e1->driver->getType()->get_defined_source_from_iterator()->getTypeSummary();
+        a_range = gm_get_range_from_itertype(t, src_type);
     }
 
     if (a_range == GM_RANGE_LEVEL)
@@ -146,8 +150,9 @@ static bool check_if_conflict(gm_rwinfo_list* l1, gm_rwinfo_list* l2, gm_rwinfo*
             }
             if (conf_type == RD_CONFLICT) {
                 if (e2->reduce_op == GMREDUCE_DEFER) continue;
-                printf("%d lev1 = %d, %d lev2 = %d\n", e1->access_range, lev1, e2->access_range, lev2);
-                assert(false);
+                //printf("%d lev1 = %d, %d lev2 = %d\n", e1->access_range, lev1, e2->access_range, lev2);
+                //assert(false);
+                
             }
             if (conf_type == MM_CONFLICT) {
                 if (e1->mutate_direction == e2->mutate_direction) continue;
@@ -302,13 +307,13 @@ bool gm_check_conf_t::apply(ast_sent* s) {
             Default_DriverMap.erase(it);
         }
         if (bfs->get_f_filter() != NULL) {
-            range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+            range_cond_t R(gm_get_range_from_itertype(iter_type, bfs->get_source()->getTypeSummary()), true);
             Default_DriverMap[it] = R;
             traverse_expr_for_readset_adding(bfs->get_f_filter(), R_filter);
             Default_DriverMap.erase(it);
         }
         if (bfs->get_b_filter() != NULL) {
-            range_cond_t R(gm_get_range_from_itertype(iter_type), true);
+            range_cond_t R(gm_get_range_from_itertype(iter_type, bfs->get_source()->getTypeSummary()), true);
             Default_DriverMap[it] = R;
             traverse_expr_for_readset_adding(bfs->get_b_filter(), R_filter);
             Default_DriverMap.erase(it);

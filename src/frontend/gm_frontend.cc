@@ -185,9 +185,8 @@ ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, a
         assert((filter->get_nodetype() == AST_EXPR) || (filter->get_nodetype() == AST_EXPR_BUILTIN));
     }
     if (src2 != NULL) assert(src2->get_nodetype() == AST_ID);
-    assert(gm_is_iter_type(iter_op));
-    assert(
-            (op == GMREDUCE_MAX) || (op == GMREDUCE_MIN) || (op == GMREDUCE_PLUS) || (op == GMREDUCE_MULT) || (op == GMREDUCE_AND) || (op == GMREDUCE_OR) || (op == GMREDUCE_AVG));
+    assert(gm_is_valid_iteration(iter_op)); 
+    assert((op == GMREDUCE_MAX) || (op == GMREDUCE_MIN) || (op == GMREDUCE_PLUS) || (op == GMREDUCE_MULT) || (op == GMREDUCE_AND) || (op == GMREDUCE_OR) || (op == GMREDUCE_AVG));
 
     ast_expr_reduce* n = ast_expr_reduce::new_reduce_expr(op, (ast_id*) iter, (ast_id*) src, iter_op, (ast_expr*) body, (ast_expr*) filter);
 
@@ -260,7 +259,7 @@ ast_node* GM_primtype_ref(int prim_type_id) {
 
 ast_node* GM_settype_ref(int set_type_id, ast_node* id) {
     if (id != NULL) assert(id->get_nodetype() == AST_ID);
-    return ast_typedecl::new_set((ast_id*) id, set_type_id);
+    return ast_typedecl::new_collection((ast_id*) id, set_type_id);
 }
 
 ast_node* GM_queuetype_ref(ast_node* collectionType, ast_node* id) {
@@ -448,7 +447,7 @@ ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sen
         assert(source2->get_nodetype() == AST_ID);
     }
 
-    assert(gm_is_iter_type(iter_typ));
+    assert(gm_is_valid_iteration(iter_typ));
     ast_id* i = (ast_id*) id;
     ast_id* s = (ast_id*) source;
     ast_sent* b = (ast_sent*) sent;

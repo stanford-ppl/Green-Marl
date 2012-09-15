@@ -35,9 +35,9 @@ static ast_foreach* create_surrounding_fe(ast_assign* a) {
     src->set_col(first->get_col());
     int iter;
     if (gm_is_node_property_type(second->getTypeSummary()))
-        iter = GMTYPE_NODEITER_ALL;
+        iter = GMITER_NODE_ALL;
     else if (gm_is_edge_property_type(second->getTypeSummary()))
-        iter = GMTYPE_EDGEITER_ALL;
+        iter = GMITER_EDGE_ALL;
     else
         assert(false);
 

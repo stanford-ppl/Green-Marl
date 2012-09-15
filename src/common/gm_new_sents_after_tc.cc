@@ -31,7 +31,9 @@ extern bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bo
 ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, int iter_type) {
     assert(it->getSymInfo() == NULL);
     assert(src->getSymInfo() != NULL);
-    assert(gm_is_iteration_on_all_graph(iter_type) || gm_is_iteration_on_neighbors_compatible(iter_type));
+    assert(gm_is_all_graph_iteration(iter_type) || 
+           gm_is_any_neighbor_iteration(iter_type) ||
+           gm_is_simple_collection_iteration(iter_type));
 
     //-----------------------------------------------------
     // create foreach node
@@ -43,12 +45,19 @@ ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, in
     // create iterator type
     //--------------------------------------------------
     ast_typedecl* type;
-    if (gm_is_iteration_on_all_graph(iter_type)) {
+    ast_id* target_graph;
+    if (gm_is_all_graph_iteration(iter_type)) {
         assert(gm_is_graph_type(src->getTypeSummary()));
-        type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
-    } else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
-        assert(gm_is_node_compatible_type(src->getTypeSummary()));
-        type = ast_typedecl::new_nbr_iterator(src->copy(true), iter_type);
+        target_graph = src->copy(true);
+    }
+    else {
+        assert(src->getTypeInfo()->get_target_graph_id() != NULL);
+        target_graph = src->getTypeInfo()->get_target_graph_id()->copy(true);
+    }
+    if (gm_is_node_iteration(iter_type)) {
+        type = ast_typedecl::new_iterator(target_graph, GMTYPE_NODE_ITERATOR, fe);
+    } else if (gm_is_edge_iteration(iter_type)) {
+        type = ast_typedecl::new_iterator(target_graph, GMTYPE_EDGE_ITERATOR, fe);
     } else {
         assert(false);
     }
@@ -82,7 +91,9 @@ ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, in
 ast_expr_reduce* gm_new_expr_reduce_after_tc(ast_id* it, ast_id* src, ast_expr* body, ast_expr* filter, int iter_type, int op_type) {
     assert(it->getSymInfo() == NULL);
     assert(src->getSymInfo() != NULL);
-    assert(gm_is_iteration_on_all_graph(iter_type) || gm_is_iteration_on_neighbors_compatible(iter_type));
+    assert(gm_is_all_graph_iteration(iter_type) || 
+           gm_is_any_neighbor_iteration(iter_type) ||
+           gm_is_simple_collection_iteration(iter_type));
 
     //-----------------------------------------------------
     // create expression node
@@ -93,12 +104,11 @@ ast_expr_reduce* gm_new_expr_reduce_after_tc(ast_id* it, ast_id* src, ast_expr* 
     // create iterator type
     //--------------------------------------------------
     ast_typedecl* type;
-    if (gm_is_iteration_on_all_graph(iter_type)) {
-        assert(gm_is_graph_type(src->getTypeSummary()));
-        type = ast_typedecl::new_nodeedge_iterator(src->copy(true), iter_type);
-    } else if (gm_is_iteration_on_neighbors_compatible(iter_type)) {
-        assert(gm_is_node_compatible_type(src->getTypeSummary()));
-        type = ast_typedecl::new_nbr_iterator(src->copy(true), iter_type);
+    ast_id* target_graph = src->getTypeInfo()->get_target_graph_id()->copy(true);
+    if (gm_is_node_iteration(iter_type)) {
+        type = ast_typedecl::new_iterator(target_graph, GMTYPE_NODE_ITERATOR, R);
+    } else if (gm_is_edge_iteration(iter_type)) {
+        type = ast_typedecl::new_iterator(target_graph, GMTYPE_EDGE_ITERATOR, R);
     } else {
         assert(false);
     }

@@ -695,6 +695,7 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br) {
 void gm_cpp_gen::generate_sent_block_exit(ast_sentblock* sb) {
     bool has_prop_decl = sb->find_info_bool(CPPBE_INFO_HAS_PROPDECL);
     bool is_proc_entry = sb->find_info_bool(CPPBE_INFO_IS_PROC_ENTRY);
+    assert(sb->get_nodetype() == AST_SENTBLOCK);
     bool has_return_ahead = gm_check_if_end_with_return(sb);
 
     if (has_prop_decl && !has_return_ahead) {

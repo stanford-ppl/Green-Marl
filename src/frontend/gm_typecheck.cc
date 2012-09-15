@@ -39,9 +39,9 @@ int gm_determine_result_type(int t1, int t2) {
             return t1;
         else
             return t2;
-    } else if (gm_is_iter_type(t1))
+    } else if (gm_is_iterator_type(t1))
         return t2;
-    else if (gm_is_iter_type(t1))
+    else if (gm_is_iterator_type(t2))
         return t1;
     else {
         assert(false);
@@ -208,24 +208,33 @@ char* ast_id::get_genname() {
 }
 
 void ast_typedecl::enforce_well_defined() {
-
-    if (is_collection() || is_nodeedge() || is_all_graph_iterator() || is_property()) {
-        if (is_property()) assert(target_type != NULL);
+    
+    // check target graph is well defined
+    if (is_collection() || is_nodeedge() || is_property() || is_iterator()){
         assert(target_graph != NULL);
         assert(target_graph->getSymInfo() != NULL);
-    } else if (is_any_nbr_iterator()) {
-        assert(target_nbr != NULL);
-        assert(target_nbr->getSymInfo() != NULL);
-        if (target_graph == NULL) {
-            target_graph = target_nbr->getTypeInfo()->get_target_graph_id()->copy(true);
-        }
-    } else if (is_collection_iterator()) {
-        assert(target_collection != NULL);
-        assert(target_collection->getSymInfo() != NULL);
-        if (target_graph == NULL) {
-            target_graph = target_collection->getTypeInfo()->get_target_graph_id()->copy(true);
-        }
+
+        if (is_property()) 
+            assert(target_type != NULL);
+
+        if (is_iterator()) 
+            assert(def_node != NULL);
+
     }
 
     set_well_defined(true);
 }
+
+int ast_typedecl::get_defined_iteration_from_iterator() {
+    assert(is_iterator());
+    assert(def_node != NULL);
+    return def_node->get_iter_type();
+}
+ast_id* ast_typedecl::get_defined_source_from_iterator() {
+    assert(is_iterator());
+    assert(def_node != NULL);
+
+    return def_node->get_source();
+}
+
+

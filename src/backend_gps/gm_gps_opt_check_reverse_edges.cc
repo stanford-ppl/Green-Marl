@@ -112,7 +112,7 @@ void gm_gps_opt_check_reverse_edges::process(ast_procdef* p) {
         ast_sentblock* sb2 = ast_sentblock::new_sentblock();
         ast_id* it2 = ast_id::new_id(tmp_iter, 0, 0);
         ast_id* src = T.get_target_graph()->getId()->copy(true);
-        ast_foreach* fe = gm_new_foreach_after_tc(it2, src, sb2, GMTYPE_NODEITER_ALL);
+        ast_foreach* fe = gm_new_foreach_after_tc(it2, src, sb2, GMITER_NODE_ALL);
         ast_expr* rhs = ast_expr::new_ival_expr(0);
         ast_field* f = ast_field::new_field(fe->get_iterator()->copy(true), new_prop->getId()->copy(true));
         ast_assign* a = ast_assign::new_assign_field(f, rhs);
@@ -121,13 +121,13 @@ void gm_gps_opt_check_reverse_edges::process(ast_procdef* p) {
         it2 = it2->copy(false);
         src = src->copy(true);
         sb2 = ast_sentblock::new_sentblock();
-        ast_foreach* fe2 = gm_new_foreach_after_tc(it2, src, sb2, GMTYPE_NODEITER_ALL);
+        ast_foreach* fe2 = gm_new_foreach_after_tc(it2, src, sb2, GMITER_NODE_ALL);
 
         char* tmp_iter2 = FE.voca_temp_name_and_add("u");
         ast_sentblock* sb3 = ast_sentblock::new_sentblock();
         ast_id* it3 = ast_id::new_id(tmp_iter2, 0, 0);
         src = fe2->get_iterator()->copy(true);
-        ast_foreach* fe3 = gm_new_foreach_after_tc(it3, src, sb3, GMTYPE_NODEITER_NBRS);
+        ast_foreach* fe3 = gm_new_foreach_after_tc(it3, src, sb3, GMITER_NODE_NBRS);
         gm_insert_sent_begin_of_sb(sb2, fe3);
 
         rhs = ast_expr::new_ival_expr(1);

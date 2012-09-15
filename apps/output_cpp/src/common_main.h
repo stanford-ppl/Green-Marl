@@ -37,6 +37,10 @@ public:
 
     virtual void main(int argc, char** argv) {
         bool b;
+
+        // check if node/edge size matches with the library (runtime-check)
+        gm_graph_check_node_edge_size_at_link_time();
+        
         if (argc < 3) {
 
             printf("%s <graph_name> <num_threads> ", argv[0]);

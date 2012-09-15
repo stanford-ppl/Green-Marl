@@ -351,7 +351,9 @@ static void find_linear_segments(gps_bb* current, std::list<gps_bb*>& current_li
     }
 
     if (continue_current_list) {
-        find_linear_segments(current->get_nth_exit(0), current_list, all_lists, visited);
+        if (current->get_num_exits() > 0) {
+            find_linear_segments(current->get_nth_exit(0), current_list, all_lists, visited);
+        }
     } else { //finish_current_list
         if (current_list.size() > 0) all_lists.push_back(current_list); // end of segment
 

@@ -2110,56 +2110,56 @@ yyuserAction (yyRuleNum yyn, int yyrhslen, yyGLRStackItem* yyvsp,
 
 /* Line 936 of glr.c  */
 #line 245 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_ALL; ((*yyvalp).pair).p1=NULL;;}
+    { ((*yyvalp).pair).i1 = GMITER_NODE_ALL; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 99:
 
 /* Line 936 of glr.c  */
 #line 246 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_EDGEITER_ALL; ((*yyvalp).pair).p1=NULL;;}
+    { ((*yyvalp).pair).i1 = GMITER_EDGE_ALL; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 100:
 
 /* Line 936 of glr.c  */
 #line 247 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_NBRS; ((*yyvalp).pair).p1=NULL;;}
+    { ((*yyvalp).pair).i1 = GMITER_NODE_NBRS; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 101:
 
 /* Line 936 of glr.c  */
 #line 248 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_IN_NBRS; ((*yyvalp).pair).p1=NULL;;}
+    { ((*yyvalp).pair).i1 = GMITER_NODE_IN_NBRS; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 102:
 
 /* Line 936 of glr.c  */
 #line 249 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_UP_NBRS; ((*yyvalp).pair).p1=NULL;;}
+    { ((*yyvalp).pair).i1 = GMITER_NODE_UP_NBRS; ((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 103:
 
 /* Line 936 of glr.c  */
 #line 250 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_DOWN_NBRS;((*yyvalp).pair).p1=NULL;;}
+    { ((*yyvalp).pair).i1 = GMITER_NODE_DOWN_NBRS;((*yyvalp).pair).p1=NULL;;}
     break;
 
   case 104:
 
 /* Line 936 of glr.c  */
 #line 251 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_ITER_ANY;((*yyvalp).pair).p1=NULL; /* should be resolved after typechecking */;}
+    { ((*yyvalp).pair).i1 = GMITER_ANY;((*yyvalp).pair).p1=NULL; /* should be resolved after typechecking */;}
     break;
 
   case 105:
 
 /* Line 936 of glr.c  */
 #line 252 "parse/gm_grammer.y"
-    { ((*yyvalp).pair).i1 = GMTYPE_NODEITER_COMMON_NBRS;((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr); ;}
+    { ((*yyvalp).pair).i1 = GMITER_NODE_COMMON_NBRS;((*yyvalp).pair).p1 = (((yyGLRStackItem const *)yyvsp)[YYFILL ((3) - (4))].yystate.yysemantics.yysval.ptr); ;}
     break;
 
   case 106:

@@ -43,7 +43,7 @@ public:
             if (in_bfs) 
             {
                 int itt = fe->get_iter_type();
-                if (gm_is_iteration_on_down_neighbors(itt)) 
+                if (gm_is_down_nbr_node_iteration(itt)) 
                 {
                 // check if this is forward bfs
                     ast_node* current = fe;
@@ -101,7 +101,7 @@ static void create_initializer(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry*
     ast_sentblock* inner_sb = ast_sentblock::new_sentblock(); 
     char* i_name = FE.voca_temp_name_and_add("i", NULL, true);
     ast_id* it = ast_id::new_id(i_name, bfs->get_iterator()->get_line(), bfs->get_iterator()->get_col());
-    ast_foreach* fe = gm_new_foreach_after_tc(it, bfs->get_source()->copy(true), inner_sb, GMTYPE_NODEITER_ALL);
+    ast_foreach* fe = gm_new_foreach_after_tc(it, bfs->get_source()->copy(true), inner_sb, GMITER_NODE_ALL);
 
     sb->add_sent(fe);
     sb->add_sent(a_curr);
@@ -127,7 +127,7 @@ static ast_sentblock* create_fw_body_prepare(ast_sentblock* while_sb, ast_bfs* b
         bfs->get_iterator()->copy(false),
         bfs->get_source()->copy(true),
         foreach_sb,
-        GMTYPE_NODEITER_ALL);
+        GMITER_NODE_ALL);
     while_sb->add_sent(foreach_out);
 
     // outer if
@@ -205,7 +205,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         bfs->get_iterator()->copy(false),
         bfs->get_source()->copy(true),
         foreach_sb,
-        GMTYPE_NODEITER_ALL);
+        GMITER_NODE_ALL);
     while_sb->add_sent(foreach_out);
 
 
@@ -229,7 +229,7 @@ static void create_fw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         inner_id,
         foreach_out->get_iterator()->copy(true),
         inner_sb,
-        GMTYPE_NODEITER_NBRS);
+        GMITER_NODE_NBRS);
     lev_check_out_sb->add_sent(foreach_in);
 
     // inner level_check
@@ -332,7 +332,7 @@ static void create_bw_iteration(ast_sentblock* sb, ast_bfs* bfs, gm_symtab_entry
         bfs->get_iterator()->copy(false),
         bfs->get_source()->copy(true),
         foreach_sb,
-        GMTYPE_NODEITER_ALL);
+        GMITER_NODE_ALL);
     while_sb->add_sent(foreach_out);
 
     // level check
@@ -445,7 +445,7 @@ public:
         if (s->get_nodetype() == AST_FOREACH) 
         {
             ast_foreach* fe = (ast_foreach*) s;
-            if ((fe->get_iter_type() == GMTYPE_NODEITER_UP_NBRS) || (fe->get_iter_type() == GMTYPE_NODEITER_DOWN_NBRS))
+            if (gm_is_updown_node_iteration(fe->get_iter_type()))
             {
                 targets.push_back(fe);
             }
@@ -467,12 +467,11 @@ public:
             ast_sent* body = fe->get_body();
             gm_ripoff_sent(body);
 
-            int new_iter_type =  (fe->get_iter_type() == GMTYPE_NODEITER_UP_NBRS) ? GMTYPE_NODEITER_IN_NBRS : GMTYPE_NODEITER_NBRS;
-            int op_for_check =   (fe->get_iter_type() == GMTYPE_NODEITER_UP_NBRS) ? GMOP_SUB : GMOP_ADD;
+            int new_iter_type =  gm_is_up_nbr_node_iteration(fe->get_iter_type()) ? GMITER_NODE_IN_NBRS : GMITER_NODE_NBRS;
+            int op_for_check =   gm_is_up_nbr_node_iteration(fe->get_iter_type()) ? GMOP_SUB : GMOP_ADD;
 
             // chechge iter type
             fe->set_iter_type(new_iter_type);
-            fe->get_iterator()->getTypeInfo()->set_typeid(new_iter_type);
 
             // if (i.lev == (curr_level -1))
             ast_expr* check_level = ast_expr::new_comp_expr(GMOP_EQ,
@@ -503,8 +502,8 @@ static void create_user_body_main(ast_sentblock* sb_to_add, ast_bfs* bfs, ast_fo
     // replace iterator
     gm_replace_symbol_entry(bfs->get_iterator()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
     // what was iterator 2 again?
-    if (bfs->get_iterator2() != NULL)
-        gm_replace_symbol_entry(bfs->get_iterator2()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
+    //if (bfs->get_iterator2() != NULL)
+    //    gm_replace_symbol_entry(bfs->get_iterator2()->getSymInfo(), out_loop->get_iterator()->getSymInfo(), body);
 
     // replace up/down nbr 
     gps_opt_find_updown_foreach_t T(curr_sym, lev_sym);

@@ -37,19 +37,14 @@ const char* gm_cpplib::get_type_string(int type) {
             return NODE_T;
         else
             return EDGE_T;
-    } else if (gm_is_iter_type(type)) {
-        if (gm_is_node_iter_type(type)) {
-            return NODEITER_T;
-        } else if (gm_is_edge_iter_type(type)) {
-            return EDGEITER_T;
-        } else if (gm_is_node_compatible_type(type))
-            return NODE_T;
-        else if (gm_is_edge_compatible_type(type))
-            return EDGE_T;
-        else {
-            assert(false);
-            return "ERROR";
-        }
+    } else if (gm_is_node_iterator_type(type)) {
+        return NODEITER_T;
+    } else if (gm_is_edge_iterator_type(type)) {
+        return EDGEITER_T;
+    } else if (gm_is_collection_iterator_type(type)) { // collection of collection iterator
+        printf("type = %s\n", gm_get_type_string(type));
+        assert(false);
+        return 0;
     } else if (gm_is_collection_type(type)) {
         assert(gm_is_node_collection_type(type) || gm_is_collection_of_collection_type(type));
         if (gm_is_set_collection_type(type))
@@ -454,10 +449,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
                     break;
             }
             return;
-        case GMTYPE_NODEITER_NBRS:
-        case GMTYPE_NODEITER_IN_NBRS:
-        case GMTYPE_NODEITER_UP_NBRS:
-        case GMTYPE_NODEITER_DOWN_NBRS:
+        case GMTYPE_NODE_ITERATOR:
             switch (method_id) {
                 case GM_BLTIN_NODE_TO_EDGE: {
                     const char* alias_name = i->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);

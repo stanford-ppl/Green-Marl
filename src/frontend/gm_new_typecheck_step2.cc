@@ -99,13 +99,13 @@ private:
     gm_symtab_entry* _group_sym;
 
     bool apply_on_builtin(ast_expr_builtin* builtinExpr);
-    bool set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType);
+    bool set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType, int iterationType);
     bool apply_on_field(ast_field* f);
 };
 
-bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType) {
+bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* builtinExpr, int sourceType, int iterationType) {
 
-    gm_builtin_def* builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname());
+    gm_builtin_def* builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname(), iterationType);
 
     if (builtinDef == NULL) {
         if (_is_group_assignment && (gm_is_graph_type(sourceType) || gm_is_collection_type(sourceType))) {
@@ -114,7 +114,7 @@ bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* 
             else
                 sourceType = GMTYPE_EDGE;
 
-            builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname());
+            builtinDef = BUILT_IN.find_builtin_def(sourceType, builtinExpr->get_callname(), iterationType);
         }
     }
 
@@ -139,6 +139,8 @@ bool gm_typechecker_stage_2::set_and_check_builtin_definition(ast_expr_builtin* 
 
 bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
     int sourceType = builtinExpr->get_source_type();
+    int iterationType = builtinExpr->get_source_iteration();
+    /*
     switch (sourceType) {
         case GMTYPE_PROPERTYITER_SET:
         case GMTYPE_COLLECTIONITER_SET:
@@ -155,7 +157,8 @@ bool gm_typechecker_stage_2::apply_on_builtin(ast_expr_builtin* builtinExpr) {
         default:
             break;
     }
-    return set_and_check_builtin_definition(builtinExpr, sourceType);
+    */
+    return set_and_check_builtin_definition(builtinExpr, sourceType, iterationType);
 }
 
 bool gm_typechecker_stage_2::apply_on_field(ast_field* f) {

@@ -143,4 +143,10 @@ _gm_i386_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
 #define ntohnode(n) ((node_t)__builtin_bswap32((node_t)n))
 #endif
 
+// swap saved 32/64bit ==> recast into host node_t/edge_t type
+#define n32tohnode(n)  ((node_t)__builtin_bswap32((uint32_t)n))
+#define n64tohnode(n)  ((node_t)__builtin_bswap64((uint64_t)n))
+#define n32tohedge(n)  ((edge_t)__builtin_bswap32((uint32_t)n))
+#define n64tohedge(n)  ((edge_t)__builtin_bswap64((uint64_t)n))
+
 #endif

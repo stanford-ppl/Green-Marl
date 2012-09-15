@@ -64,19 +64,19 @@ protected:
 
 static int find_count_function(int source_type, int iter_type) {
     if (gm_is_graph_type(source_type)) {
-        if (gm_is_all_graph_node_iter_type(iter_type)) {
+        if (gm_is_all_graph_node_iteration(iter_type)) {
             return GM_BLTIN_GRAPH_NUM_NODES;
-        } else if (gm_is_all_graph_node_iter_type(iter_type)) {
+        } else if (gm_is_all_graph_edge_iteration(iter_type)) {
             return GM_BLTIN_GRAPH_NUM_EDGES;
         }
     } else if (gm_is_node_compatible_type(source_type)) {
-        if (iter_type == GMTYPE_NODEITER_IN_NBRS) {
+        if (gm_is_in_nbr_node_iteration(iter_type)) {
             return GM_BLTIN_NODE_IN_DEGREE;
-        } else if (iter_type == GMTYPE_NODEITER_NBRS) {
+        } else if (gm_is_out_nbr_node_iteration(iter_type)) {
             return GM_BLTIN_NODE_DEGREE;
         }
     } else if (gm_is_collection_type(source_type)) {
-        if (gm_is_collection_iter_type(iter_type)) return GM_BLTIN_SET_SIZE;
+        if (gm_is_simple_collection_iteration(iter_type)) return GM_BLTIN_SET_SIZE;
     }
 
     return GM_BLTIN_END;
@@ -439,7 +439,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
             assert(method_id != GM_BLTIN_END);
 
             // make a call to built-in funciton
-            gm_builtin_def* def = BUILT_IN.find_builtin_def(src_type, method_id);
+            gm_builtin_def* def = BUILT_IN.find_builtin_def(src_type, method_id, iter_type);
             assert(def != NULL);
 
             ast_expr_builtin* rhs = ast_expr_builtin::new_builtin_expr(target->get_source()->copy(true), def, NULL);
@@ -475,6 +475,7 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
 
 }
 
+/*
 class Replace_PropertyItarator_With_NodeIterator: public gm_apply
 {
 
@@ -641,6 +642,7 @@ private:
         return true;
     }
 };
+*/
 
 void gm_ind_opt_syntax_sugar2::process(ast_procdef* p) {
     // 2. ReduceOP --> Reduce Assign
@@ -649,10 +651,10 @@ void gm_ind_opt_syntax_sugar2::process(ast_procdef* p) {
     A.post_process();         // process
 
     // Should re-do rw-analysis
-    /*    gm_redo_rw_analysis(p->get_body()); */
+    gm_redo_rw_analysis(p->get_body()); 
 
-    Replace_PropertyItarator_With_NodeIterator B;
-    p->traverse_pre(&B);
+    //Replace_PropertyItarator_With_NodeIterator B;
+    //p->traverse_pre(&B);
 }
 
 static gm_symtab_entry* insert_def_and_init_before(const char* vname, int prim_type, ast_sent* curr, ast_expr* default_val) {

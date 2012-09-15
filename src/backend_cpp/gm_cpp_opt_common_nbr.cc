@@ -46,7 +46,6 @@ static bool is_common_nbr_expression(ast_expr* e, gm_symtab_entry*& s) {
         ast_expr_builtin * b = (ast_expr_builtin*) e;
 
         // check if node.isNobrTo()
-        
         ast_id* driver = b->get_driver();
         if (driver == NULL) 
             return false;
@@ -87,7 +86,7 @@ public:
 
         ast_foreach* fe = (ast_foreach*) sent;
 
-        if (fe->get_iter_type() != GMTYPE_NODEITER_NBRS) 
+        if (!gm_is_out_nbr_node_iteration(fe->get_iter_type()))
             return true;
 
 
@@ -95,6 +94,7 @@ public:
 
         if (fe_body->get_nodetype() != AST_IF)
             return true;
+
 
         ast_if* iff = (ast_if*) fe_body;
         if (iff->get_else() != NULL)
@@ -204,8 +204,7 @@ void cpp_opt_common_nbr_t::apply_transform(gm_cpp_common_nbr_item_t& T) {
     }
 
     // set new iterator
-    fe->set_iter_type(GMTYPE_NODEITER_COMMON_NBRS);
-    fe->get_iterator()->getSymInfo()->getType()->set_typeid(GMTYPE_NODEITER_COMMON_NBRS);
+    fe->set_iter_type(GMITER_NODE_COMMON_NBRS);
     fe->set_source2(common_sym->getId()->copy());
 
     // adjust scope information of fe and below

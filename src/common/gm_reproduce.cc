@@ -66,36 +66,45 @@ void ast_typedecl::reproduce(int ind_level) {
         }
     } else if (is_node_property()) {
         assert(target_type!=NULL);
-        assert(target_graph!=NULL);
         Out.push("N_P <");
         target_type->reproduce(0);
-        Out.push(">(");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push(">");
+        if(target_graph != NULL) {
+            Out.push('(');
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_edge_property()) {
         assert(target_type!=NULL);
-        assert(target_graph!=NULL);
         Out.push("E_P <");
         target_type->reproduce(0);
-        Out.push(">(");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push(">");
+        if(target_graph != NULL) {
+            Out.push('(');
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_node()) {
-        assert(target_graph!=NULL);
-        Out.push("Node (");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push("Node ");
+        if(target_graph != NULL) {
+            Out.push("(");
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_edge()) {
-        assert(target_graph!=NULL);
-        Out.push("Edge (");
-        target_graph->reproduce(0);
-        Out.push(')');
+        Out.push("Edge ");
+        if(target_graph != NULL) {
+            Out.push("(");
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_collection()) {
-        assert(target_graph!=NULL);
         Out.push(gm_get_type_string(type_id));
-        Out.push('(');
-        target_graph->reproduce(0);
-        Out.push(')');
+        if(target_graph != NULL) {
+            Out.push('(');
+            target_graph->reproduce(0);
+            Out.push(')');
+        }
     } else if (is_void()) {
         // do nothing
     } else {
@@ -310,8 +319,8 @@ void ast_expr_reduce::reproduce(int ind_level) {
     Out.push(": ");
     src->reproduce(0);
     Out.push(".");
-    Out.push(gm_get_iter_type_string(iter_type));
-    if (gm_is_common_nbr_iter_type(iter_type)) {
+    Out.push(gm_get_iteration_string(iter_type));
+    if (gm_is_common_nbr_iteration(iter_type)) {
         Out.push('(');
         src2->reproduce(0);
         Out.push(')');
@@ -455,8 +464,8 @@ void ast_foreach::reproduce(int ind_level) {
     Out.push(" : ");
     source->reproduce(0);
     Out.push(".");
-    Out.push(gm_get_iter_type_string(iter_type));
-    if (gm_is_common_nbr_iter_type(iter_type)) {
+    Out.push(gm_get_iteration_string(iter_type));
+    if (gm_is_common_nbr_iteration(iter_type)) {
         Out.push('(');
         source2->reproduce(0);
         Out.push(')');
@@ -577,6 +586,7 @@ void ast_return::reproduce(int ind_level) {
 void ast_call::reproduce(int ind_level) {
     assert(is_builtin_call());
     b_in->reproduce(ind_level);
+    Out.pushln(";");
 }
 
 void ast_nop::reproduce(int ind_level) {

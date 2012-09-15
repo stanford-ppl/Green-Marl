@@ -48,7 +48,7 @@ public:
                         ast_bfs* bfs  = (ast_bfs*) n;
                         if (bfs->is_bfs()) single = false;
                         if (bfs->get_iterator()->getSymInfo() == bound) found = true;
-                        if (bfs->get_iterator2()->getSymInfo() == bound) found = true; // what was iterator 2 again?
+                        //if (bfs->get_iterator2()->getSymInfo() == bound) found = true; // what was iterator 2 again?
                     }
                     n = n->get_parent();
                 }
@@ -203,19 +203,20 @@ private:
                     } 
                     else {
                         int iter_type = fe->get_iter_type();
-                        if ((iter_type == GMTYPE_NODEITER_ALL) || (iter_type == GMTYPE_EDGEITER_ALL) ||
-                            (iter_type == GMTYPE_NODEITER_SET) || (iter_type == GMTYPE_EDGEITER_SET) ||
-                            (iter_type == GMTYPE_NODEITER_ORDER) || (iter_type == GMTYPE_EDGEITER_ORDER)) {
+                        if (gm_is_all_graph_iteration(iter_type))
                             break;
-                        } else {
-                            return false;
-                        }
+
+                        if (fe->get_source()->getTypeInfo()->is_set_collection() ||
+                            fe->get_source()->getTypeInfo()->is_order_collection())
+                            break;
+
+                        return false;
                     }
                 }
                 if (n->get_nodetype() == AST_BFS) {
                     ast_bfs* bfs = (ast_bfs*) n;
-                    if ((bfs->get_iterator()->getSymInfo() == bound) ||
-                        (bfs->get_iterator2()->getSymInfo() == bound)) {
+                    if ((bfs->get_iterator()->getSymInfo() == bound)) { 
+                        //&& (bfs->get_iterator2()->getSymInfo() == bound)) 
                         break;
                     }
                     else if (bfs->is_bfs()) 

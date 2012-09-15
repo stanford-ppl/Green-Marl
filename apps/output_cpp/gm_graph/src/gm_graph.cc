@@ -39,49 +39,6 @@ gm_graph::~gm_graph() {
     delete_frozen_graph();
 }
 
-bool gm_graph::is_neighbor(node_t src, node_t to) {
-    // Edges are semi-sorted.
-    // Do binary search
-    edge_t begin_edge = begin[src];
-    edge_t end_edge = begin[src + 1] - 1; // inclusive
-    if (begin_edge > end_edge) return false;
-
-    node_t left_node = node_idx[begin_edge];
-    node_t right_node = node_idx[end_edge];
-    if (to == left_node) return true;
-    if (to == right_node) return true;
-
-    /*int cnt = 0;*/
-    while (begin_edge < end_edge) {
-        left_node = node_idx[begin_edge];
-        right_node = node_idx[end_edge];
-
-        /*
-         cnt++;
-         if (cnt > 490) {
-         printf("%d ~ %d (val:%d ~ %d) vs %d\n", begin_edge, end_edge, left_node, right_node, to);
-         }
-         if (cnt == 500) assert(false);
-         */
-
-        if (to < left_node) return false;
-        if (to > right_node) return false;
-
-        edge_t mid_edge = (begin_edge + end_edge) / 2;
-        node_t mid_node = node_idx[mid_edge];
-        if (to == mid_node) return true;
-        if (to < mid_node) {
-            if (end_edge == mid_edge) return false;
-            end_edge = mid_edge;
-        } else if (to > mid_node) {
-            if (begin_edge == mid_edge) return false;
-            begin_edge = mid_edge;
-        }
-
-    }
-    return false;
-}
-
 bool gm_graph::has_edge_to(node_t source, node_t to) {
     edge_t current = begin[source];
     edge_t end = begin[source + 1];
@@ -563,18 +520,26 @@ bool gm_graph::load_binary(char* filename) {
         goto error_return;
     }
 
+    uint32_t saved_node_t_size;
+    uint32_t saved_edge_t_size;
     i = fread(&key, 4, 1, f); // index size (4B)
-    key = ntohl(key);
-    if (key != sizeof(node_t)) {
-        fprintf(stderr, "node_t size mismatch:%d (expect %ld)\n", key, sizeof(node_t));
+    saved_node_t_size = ntohl(key);
+    if (saved_node_t_size > sizeof(node_t)) {
+        fprintf(stderr, "node_t size mismatch:%d (expect %ld), please re-generate the graph\n", key, sizeof(node_t));
         goto error_return;
     }
 
     i = fread(&key, 4, 1, f); // index size (4B)
-    key = ntohl(key);
-    if (key != sizeof(edge_t)) {
-        fprintf(stderr, "edge_t size mismatch:%d (expect %ld)\n", key, sizeof(edge_t));
+    saved_edge_t_size = ntohl(key);
+    if (saved_edge_t_size > sizeof(edge_t)) {
+        fprintf(stderr, "edge_t size mismatch:%d (expect %ld), please re-generate the graph\n", key, sizeof(edge_t));
         goto error_return;
+    }
+    if ((saved_node_t_size != 4) && (saved_node_t_size != 8)) {
+        fprintf(stderr, "unexpected node_t size in the file:%d(B)\n", saved_node_t_size);
+    }
+    if ((saved_edge_t_size != 4) && (saved_edge_t_size != 8)) {
+        fprintf(stderr, "unexpected node_t size in the file:%d(B)\n", saved_node_t_size);
     }
 
     //---------------------------------------------
@@ -582,19 +547,23 @@ bool gm_graph::load_binary(char* filename) {
     //---------------------------------------------
     node_t N;
     edge_t M;
-    i = fread(&N, sizeof(node_t), 1, f);
-    N = ntohnode(N);
+    i = fread(&N, saved_node_t_size, 1, f);
+#define BITS_TO_NODE(X) ((saved_node_t_size == 4) ? n32tohnode(X) : n64tohnode(X))
+#define BITS_TO_EDGE(X) ((saved_edge_t_size == 4) ? n32tohedge(X) : n64tohedge(X))
+
+    N = BITS_TO_NODE(N);
     if (i != 1) {
         fprintf(stderr, "Error reading numNodes from file \n");
         goto error_return;
     }
-    i = fread(&M, sizeof(edge_t), 1, f);
-    M = ntohedge(M);
+    i = fread(&M, saved_edge_t_size, 1, f);
+    M = BITS_TO_EDGE(M);
     if (i != 1) {
         fprintf(stderr, "Error reading numEdges from file \n");
         goto error_return;
     }
 
+    printf("N = %ld, M = %ld\n", N,M);
     allocate_memory_for_frozen_graph(N, M);
 
 #if GM_GRAPH_NUMA_OPT 
@@ -604,8 +573,8 @@ bool gm_graph::load_binary(char* filename) {
 
     for (node_t i = 0; i < N + 1; i++) {
         edge_t key;
-        int k = fread(&key, sizeof(edge_t), 1, f);
-        key = ntohedge(key);
+        int k = fread(&key, saved_edge_t_size, 1, f);
+        key = BITS_TO_EDGE(key);
         if ((k != 1)) {
             fprintf(stderr, "Error reading node begin array\n");
             goto error_return;
@@ -629,8 +598,8 @@ bool gm_graph::load_binary(char* filename) {
 
     for (edge_t i = 0; i < M; i++) {
         node_t key;
-        int k = fread(&key, sizeof(node_t), 1, f);
-        key = ntohnode(key);
+        int k = fread(&key, saved_node_t_size, 1, f);
+        key = BITS_TO_NODE(key);
         if ((k != 1)) {
             fprintf(stderr, "Error reading edge-end array\n");
             goto error_return;
@@ -734,6 +703,67 @@ bool gm_graph::load_adjacency_list(char* filename, char separator) {
     return false;
 }
 
+bool gm_graph::is_neighbor(node_t src, node_t to) {
+    // Edges are semi-sorted.
+    // Do binary search
+    edge_t begin_edge = begin[src];
+    edge_t end_edge = begin[src + 1] - 1; // inclusive
+    if (begin_edge > end_edge) return false;
+
+    node_t left_node = node_idx[begin_edge];
+    node_t right_node = node_idx[end_edge];
+    if (to == left_node) return true;
+    if (to == right_node) return true;
+
+    /*int cnt = 0;*/
+    while (begin_edge < end_edge) {
+        left_node = node_idx[begin_edge];
+        right_node = node_idx[end_edge];
+
+        /*
+         cnt++;
+         if (cnt > 490) {
+         printf("%d ~ %d (val:%d ~ %d) vs %d\n", begin_edge, end_edge, left_node, right_node, to);
+         }
+         if (cnt == 500) assert(false);
+         */
+
+        if (to < left_node) return false;
+        if (to > right_node) return false;
+
+        edge_t mid_edge = (begin_edge + end_edge) / 2;
+        node_t mid_node = node_idx[mid_edge];
+        if (to == mid_node) return true;
+        if (to < mid_node) {
+            if (end_edge == mid_edge) return false;
+            end_edge = mid_edge;
+        } else if (to > mid_node) {
+            if (begin_edge == mid_edge) return false;
+            begin_edge = mid_edge;
+        }
+
+    }
+    return false;
+}
+
+// check if node size has been changed after this library is built
+void gm_graph_check_if_size_is_correct(int node_size, int edge_size)
+{
+    if (node_size != sizeof(node_t)) {
+        printf("Current nodesize in the applicaiton is %d, while the library expects %d. Please rebuild the library\n",
+                node_size, (int)sizeof(node_t));
+    }
+    if (edge_size != sizeof(edge_t)) {
+        printf("Current nodesize in the applicaiton is %d, while the library expects %d. Please rebuild the library\n",
+                edge_size, (int)sizeof(edge_t));
+    }
+    assert (node_size == sizeof(node_t));
+    assert (edge_size == sizeof(edge_t));
+
+}
+
+int GM_SIZE_CHECK_VAR;
+
 #ifdef HDFS
 #include <hdfs.h>
 #define HDFS_NAMENODE "namenode.ib.bunch"
@@ -831,3 +861,4 @@ bool gm_graph::load_binary_hdfs(char* filename) {
 }
 
 #endif  // HDFS
+

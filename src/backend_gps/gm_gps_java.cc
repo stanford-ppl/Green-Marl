@@ -102,13 +102,24 @@ void gm_gps_gen::generate_lhs_field(ast_field* f) {
     if (is_master_generate()) {
         assert(false);
     } else if (is_receiver_generate()) {
-        if (f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL) {
-            get_lib()->generate_vertex_prop_access_remote_lhs(prop, Body);
+
+        if (f->get_first()->getTypeInfo()->is_node_iterator()){
+            int iter_type = f->get_first()->getTypeInfo()->get_defined_iteration_from_iterator();
+            if (gm_is_all_graph_node_iteration(iter_type)) {
+                get_lib()->generate_vertex_prop_access_remote_lhs(prop, Body);
+            } else if (gm_is_out_nbr_node_iteration(iter_type) || gm_is_in_nbr_node_iteration(iter_type)) {
+                get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+            } else {
+                assert(false);
+            }
         } else if (f->get_first()->getTypeInfo()->is_edge()) {
             get_lib()->generate_vertex_prop_access_remote_lhs_edge(prop, Body);
         } else {
-            assert(f->get_first()->getTypeInfo()->is_node_compatible());
-            get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+            if (f->get_first()->getTypeInfo()->is_node_compatible()) { // random node
+                get_lib()->generate_vertex_prop_access_lhs(prop, Body);
+            } else {
+                assert(false);
+            }
         }
     } else { // vertex generate;
              //assert(f->getSourceTypeSummary() == GMTYPE_NODEITER_ALL);
@@ -332,8 +343,8 @@ void gm_gps_gen::generate_sent_return(ast_return *r) {
 
 void gm_gps_gen::generate_sent_foreach(ast_foreach* fe) {
     // must be a sending foreach
-    assert(
-            gm_is_iteration_on_out_neighbors(fe->get_iter_type()) || gm_is_iteration_on_in_neighbors(fe->get_iter_type()) || gm_is_iteration_on_down_neighbors(fe->get_iter_type()));
+    assert(gm_is_out_nbr_node_iteration(fe->get_iter_type()) || 
+           gm_is_in_nbr_node_iteration(fe->get_iter_type())); 
 
     get_lib()->generate_message_send(fe, Body);
 }

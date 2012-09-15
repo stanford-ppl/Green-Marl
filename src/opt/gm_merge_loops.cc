@@ -32,8 +32,8 @@ static bool intersect_check_for_merge(gm_rwinfo_map& S1, gm_rwinfo_map& S2, gm_r
             // found entry
             if (!e->getType()->is_property()) { // scala
                 if (e->getType()->is_collection()) {
-                    bool isSeq1 = e->getType()->is_sequential_collection();
-                    bool isSeq2 = j->first->getType()->is_sequential_collection();
+                    bool isSeq1 = e->getType()->is_inherently_unique_collection();
+                    bool isSeq2 = j->first->getType()->is_inherently_unique_collection();
 
                     if (!(isSeq1 || isSeq2)) return false;
                 }
