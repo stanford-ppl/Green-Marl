@@ -6,16 +6,12 @@
 #include <assert.h>
 #include <sys/time.h>
 
-#include "gm_graph.h"
+#include "graph_gen.h"
 #include "gm_rand.h"
 
 gm_graph* create_uniform_random_graph(node_t N, edge_t M, long seed, bool use_xorshift_rng) {
     
-#ifdef NODE64
-    gm_rand64 xorshift_rng((int64_t)seed);
-#else
-    gm_rand32 xorshift_rng((int32_t)seed);
-#endif
+    gm_rand xorshift_rng(seed);
     if (!use_xorshift_rng) {
         srand(seed);
     }
@@ -244,73 +240,73 @@ gm_graph* create_RMAT_graph(node_t N, edge_t M, long rseed, double a, double b, 
     return g;
 }
 
-#include <vector>
 /*
- gm_graph* create_graph_from_file(FILE* F)
- {
+#include <vector>
 
- // format of txt file
- // file is sorted by from_node
- // #comment
- // from_node to_node
+gm_graph* create_graph_from_file(FILE* F)
+{
 
- edge_t curr_num=0;
- edge_t base = -1;
+    // format of txt file
+    // file is sorted by from_node
+    // #comment
+    // from_node to_node
 
- std::vector<node_t> nodes;
- std::vector<edge_t> edges;
+    edge_t curr_num=0;
+    edge_t base = -1;
 
- char line[1024];
- while (fgets(line,  1024, F) != NULL)
- {
- if (line[0] == '#')
- continue;
+    std::vector<node_t> nodes;
+    std::vector<edge_t> edges;
 
- edge_t from, to;
- sscanf(line,"%d%d", &from, &to);
+    char line[1024];
+    while (fgets(line,  1024, F) != NULL)
+    {
+        if (line[0] == '#')
+            continue;
 
- if (base == -1) {
- base = from;		//make first node as 0
- }
+        edge_t from, to;
+        sscanf(line,"%d%d", &from, &to);
 
- {
- from = from - base;
- to = to - base;
+        if (base == -1) {
+            base = from;		//make first node as 0
+        }
 
- if (from < 0) continue;
- if (to < 0) continue;
- }
+        {
+            from = from - base;
+            to = to - base;
 
- // ignore non-sorted values
- if (from < curr_num)
- continue;
+            if (from < 0) continue;
+            if (to < 0) continue;
+        }
 
- // start of new node
- if (from != curr_num) {
- nodes.push_back(edges.size());
- curr_num = from;
- }
- edges.push_back(to);
- }
- nodes.push_back(edges.size());
+        // ignore non-sorted values
+        if (from < curr_num)
+            continue;
 
- node_t N = nodes.size() - 1;
- edge_t M = edges.size();
+        // start of new node
+        if (from != curr_num) {
+            nodes.push_back(edges.size());
+            curr_num = from;
+        }
+        edges.push_back(to);
+    }
+    nodes.push_back(edges.size());
 
- // sanitize edges
- srand(16384);
- for(edge_t i=0; i < M; i++)
- if (edges[i] >= N) edges[i] = rand() % N;
+    node_t N = nodes.size() - 1;
+    edge_t M = edges.size();
 
- gpgraph *g = new gpgraph();
+    // sanitize edges
+    srand(16384);
+    for(edge_t i=0; i < M; i++)
+        if (edges[i] >= N) edges[i] = rand() % N;
 
- g->allocate_nodes(N);
- g->allocate_edges(M);
+    gpgraph *g = new gpgraph();
 
- memcpy(g->begin, &(nodes[0]), sizeof(node_t)*(N+1));
- memcpy(g->node_idx, &(edges[0]), sizeof(edge_t)*M);
+    g->allocate_nodes(N);
+    g->allocate_edges(M);
 
- return g;
- }
- */
+    memcpy(g->begin, &(nodes[0]), sizeof(node_t)*(N+1));
+    memcpy(g->node_idx, &(edges[0]), sizeof(edge_t)*M);
 
+    return g;
+}
+*/

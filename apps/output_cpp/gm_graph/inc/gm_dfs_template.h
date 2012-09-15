@@ -27,13 +27,12 @@ struct _dfs_state
 template<bool has_pre_visit, bool has_post_visit, bool has_navigator, bool use_reverse_edge>
 class gm_dfs_template
 {
-
-protected:
+  protected:
     virtual void visit_pre(node_t t)=0;
     virtual void visit_post(node_t t)=0;
     virtual bool check_navigator(node_t t, edge_t idx)=0;
 
-public:
+  public:
     gm_dfs_template(gm_graph& _G) :
             G(_G) {
         visited_bitmap = NULL; // bitmap
@@ -43,7 +42,6 @@ public:
         delete visited_bitmap;
     }
 
-public:
     void prepare(node_t root_node) {
         root = root_node;
         cnt = 0;
@@ -60,8 +58,7 @@ public:
         main_loop();
     }
 
-private:
-    inline
+  private:
     void prepare_large() {
         delete[] visited_bitmap;
 
@@ -80,7 +77,6 @@ private:
         stack.reserve(G.num_nodes());
     }
 
-    inline
     void enter_node(node_t n) {
         // push current node
         _dfs_state S(curr_node, curr_idx, curr_end);
@@ -101,7 +97,6 @@ private:
         if (has_pre_visit) visit_pre(n);
     }
 
-    inline
     void exit_node(node_t n) {
         if (has_post_visit) visit_post(n);
         _dfs_state S = stack.back();
@@ -112,7 +107,6 @@ private:
         curr_end = S.end;
     }
 
-    inline
     void main_loop() {
         //----------------------------------
         // Repeat until stack is empty
@@ -153,7 +147,6 @@ private:
         }
     }
 
-    inline
     void add_visited(node_t n) {
         if (is_small)
             visited_small.insert(n);
@@ -161,7 +154,6 @@ private:
             _gm_set_bit(visited_bitmap, n);
     }
 
-    inline
     bool has_visited(node_t n) {
         if (is_small) {
             return (visited_small.find(n) != visited_small.end());
@@ -170,7 +162,7 @@ private:
         }
     }
 
-protected:
+  protected:
     node_t root;
     gm_graph& G;
 

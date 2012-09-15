@@ -15,20 +15,7 @@ template<typename level_t, bool use_multithread, bool has_navigator, bool use_re
 class gm_bfs_template
 {
 
-protected:
-    virtual void visit_fw(node_t t)=0;
-    virtual void visit_rv(node_t t)=0;
-    virtual bool check_navigator(node_t t, edge_t nx)=0;
-    virtual void do_end_of_level_fw() {
-    }
-    virtual void do_end_of_level_rv() {
-    }
-
-    node_t get_root() {
-        return root;
-    }
-
-public:
+  public:
     gm_bfs_template(gm_graph& _G) :
             G(_G) {
         visited_bitmap = NULL; // bitmap
@@ -53,7 +40,6 @@ public:
         delete down_edge_array;
     }
 
-public:
     void prepare(node_t root_node, int max_num_thread) {
         int num_thread;
         if (use_multithread) {
@@ -100,12 +86,13 @@ public:
                         node_t t = global_curr_level[i];
                         iterate_neighbor_small(t);
                         visit_fw(t);            // visit after iteration. in that way, one can check
-                                                // down-neighbors quite easily
+                        // down-neighbors quite easily
                     }
                     break;
                 }
                 case ST_QUE: {
-#pragma omp parallel if (use_multithread)
+#pragma omp parallel
+                    if (use_multithread)
                     {
                         int tid = omp_get_thread_num();
 #pragma omp for nowait
@@ -119,7 +106,8 @@ public:
                     break;
                 }
                 case ST_Q2R: {
-#pragma omp parallel if (use_multithread)
+#pragma omp parallel
+                    if (use_multithread)
                     {
                         node_t local_cnt = 0;
 #pragma omp for nowait
@@ -134,7 +122,8 @@ public:
                 }
 
                 case ST_RD: {
-#pragma omp parallel if (use_multithread)
+#pragma omp parallel
+                    if (use_multithread)
                     {
                         node_t local_cnt = 0;
 #pragma omp for nowait
@@ -149,7 +138,8 @@ public:
                     break;
                 }
                 case ST_R2Q: {
-#pragma omp parallel if (use_multithread)
+#pragma omp parallel
+                    if (use_multithread)
                     {
                         int tid = omp_get_thread_num();
 #pragma omp for nowait
@@ -170,7 +160,79 @@ public:
         } // end of while
     }
 
-private:
+    void do_bfs_reverse() {
+        // This function should be called only after do_bfs_foward has finished.
+        // assumption: small-world graph
+        level_t& level = curr_level;
+        while (true) {
+            node_t count = level_count[level];
+            node_t* queue_ptr = level_start_ptr[level];
+            if (queue_ptr == NULL) {
+#pragma omp parallel
+                if (use_multithread)
+                {
+#pragma omp for nowait
+                    for (node_t i = 0; i < G.num_nodes(); i++) {
+                        if (visited_level[i] != curr_level) continue;
+                        visit_rv(i);
+                    }
+                }
+            } else {
+#pragma omp parallel
+                if (use_multithread)
+                {
+#pragma omp for nowait
+                    for (node_t i = 0; i < count; i++) {
+                        node_t u = queue_ptr[i];
+                        visit_rv(u);
+                    }
+                }
+            }
+
+            do_end_of_level_rv();
+            if (level == 0) break;
+            level--;
+        }
+    }
+
+    bool is_down_edge(edge_t idx) {
+        if (state == ST_SMALL)
+            return (down_edge_set->find(idx) != down_edge_set->end());
+        else
+            return down_edge_array[idx];
+    }
+
+  protected:
+    virtual void visit_fw(node_t t)=0;
+    virtual void visit_rv(node_t t)=0;
+    virtual bool check_navigator(node_t t, edge_t nx)=0;
+    virtual void do_end_of_level_fw() {
+    }
+    virtual void do_end_of_level_rv() {
+    }
+
+    node_t get_root() {
+        return root;
+    }
+
+    level_t get_level(node_t t) {
+        // GCC expansion
+        if (__builtin_expect((state == ST_SMALL), 0)) {
+            if (small_visited.find(t) == small_visited.end())
+                return __INVALID_LEVEL;
+            else
+                return small_visited[t];
+        } else {
+            return visited_level[t];
+        }
+    }
+
+    level_t get_curr_level() {
+        return curr_level;
+    }
+
+
+  private:
     bool get_next_state() {
         //const char* state_name[5] = {"SMALL","QUEUE","Q2R","RD","R2Q"};
         //printf("level = %d, state=%s, next = %d\n", curr_level, state_name[state], next_count);
@@ -232,7 +294,7 @@ private:
         }
     }
 
-    inline void get_range(edge_t& begin, edge_t& end, node_t t) {
+    void get_range(edge_t& begin, edge_t& end, node_t t) {
         if (use_reverse_edge) {
             begin = G.r_begin[t];
             end = G.r_begin[t + 1];
@@ -241,7 +303,8 @@ private:
             end = G.begin[t + 1];
         }
     }
-    inline node_t get_node(edge_t& n) {
+
+    node_t get_node(edge_t& n) {
         if (use_reverse_edge) {
             return G.r_node_idx[n];
         } else {
@@ -249,7 +312,7 @@ private:
         }
     }
 
-    inline void iterate_neighbor_small(node_t t) {
+    void iterate_neighbor_small(node_t t) {
         edge_t begin;
         edge_t end;
         get_range(begin, end, t);
@@ -272,11 +335,12 @@ private:
         }
     }
 
-// should be used only when save_child is enabled
-    inline void save_down_edge_small(edge_t idx) {
+    // should be used only when save_child is enabled
+    void save_down_edge_small(edge_t idx) {
         down_edge_set->insert(idx);
     }
-    inline void save_down_edge_large(edge_t idx) {
+
+    void save_down_edge_large(edge_t idx) {
         down_edge_array[idx] = 1;
     }
 
@@ -288,34 +352,33 @@ private:
             down_edge_array = new unsigned char[G.num_edges()];
         }
 
-	if (use_multithread) {
-#pragma omp parallel 
-	  {
+        if (use_multithread) {
+#pragma omp parallel
+            {
 #pragma omp for nowait
-	      for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
-		  visited_bitmap[i] = 0;
-	    
+                for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
+                    visited_bitmap[i] = 0;
+
 #pragma omp for nowait
-	      for (node_t i = 0; i < G.num_nodes(); i++)
-		  visited_level[i] = __INVALID_LEVEL;
-	      
-	      if (save_child) {
+                for (node_t i = 0; i < G.num_nodes(); i++)
+                    visited_level[i] = __INVALID_LEVEL;
+
+                if (save_child) {
 #pragma omp for nowait
-		  for (edge_t i = 0; i < G.num_edges(); i++)
-		      down_edge_array[i] = 0;
-	      }
-	  }
-	}
-	else {
-	    for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
-		visited_bitmap[i] = 0;
-	    for (node_t i = 0; i < G.num_nodes(); i++)
-		visited_level[i] = __INVALID_LEVEL;
-	    if (save_child) {
-		for (edge_t i = 0; i < G.num_edges(); i++)
-		    down_edge_array[i] = 0;
-	    }
-	}
+                    for (edge_t i = 0; i < G.num_edges(); i++)
+                        down_edge_array[i] = 0;
+                }
+            }
+        } else {
+            for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
+                visited_bitmap[i] = 0;
+            for (node_t i = 0; i < G.num_nodes(); i++)
+                visited_level[i] = __INVALID_LEVEL;
+            if (save_child) {
+                for (edge_t i = 0; i < G.num_edges(); i++)
+                    down_edge_array[i] = 0;
+            }
+        }
 
         typename std::map<node_t, level_t>::iterator II;
         for (II = small_visited.begin(); II != small_visited.end(); II++) {
@@ -333,7 +396,7 @@ private:
         }
     }
 
-    inline void iterate_neighbor_que(node_t t, int tid) {
+    void iterate_neighbor_que(node_t t, int tid) {
         edge_t begin;
         edge_t end;
         get_range(begin, end, t);
@@ -382,7 +445,6 @@ private:
         // nothing to do
     }
 
-    inline
     void iterate_neighbor_rd(node_t t, node_t& local_cnt) {
         edge_t begin;
         edge_t end;
@@ -419,70 +481,10 @@ private:
     }
 
     void finish_thread_rd(node_t local_cnt) {
-	_gm_atomic_fetch_and_add_node(&next_count, local_cnt);
+        _gm_atomic_fetch_and_add_node(&next_count, local_cnt);
     }
 
-public:
-    void do_bfs_reverse() {
-        // This function should be called only after do_bfs_foward has finished.
-        // assumption: small-world graph
-        level_t& level = curr_level;
-        while (true) {
-            node_t count = level_count[level];
-            node_t* queue_ptr = level_start_ptr[level];
-            if (queue_ptr == NULL) {
-#pragma omp parallel if (use_multithread)
-                {
-#pragma omp for nowait
-                    for (node_t i = 0; i < G.num_nodes(); i++) {
-                        if (visited_level[i] != curr_level) continue;
-                        visit_rv(i);
-                    }
-                }
-            } else {
-#pragma omp parallel if (use_multithread)
-                {
-#pragma omp for nowait
-                    for (node_t i = 0; i < count; i++) {
-                        node_t u = queue_ptr[i];
-                        visit_rv(u);
-                    }
-                }
-            }
 
-            do_end_of_level_rv();
-            if (level == 0) break;
-            level--;
-        }
-    }
-
-public:
-
-    inline bool is_down_edge(edge_t idx) {
-        if (state == ST_SMALL)
-            return (down_edge_set->find(idx) != down_edge_set->end());
-        else
-            return down_edge_array[idx];
-    }
-
-protected:
-    inline level_t get_level(node_t t) {
-        // GCC expansion
-        if (__builtin_expect((state == ST_SMALL), 0)) {
-            if (small_visited.find(t) == small_visited.end())
-                return __INVALID_LEVEL;
-            else
-                return small_visited[t];
-        } else {
-            return visited_level[t];
-        }
-    }
-
-    inline level_t get_curr_level() {
-        return curr_level;
-    }
-
-private:
     //-----------------------------------------------------
     //-----------------------------------------------------
     static const int ST_SMALL = 0;

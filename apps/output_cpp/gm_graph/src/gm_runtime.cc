@@ -13,9 +13,11 @@ gm_runtime::gm_runtime() :
     gm_spinlock_table_init();
     initialize();
 }
+
 gm_runtime::~gm_runtime() {
     delete[] random_seeds;
 }
+
 // Called at each procedure entry
 void gm_runtime::initialize() {
 
@@ -93,10 +95,47 @@ int gm_runtime::rand(int min, int max, int tid) {
     int ret = (int) (uniform(tid) * range) + min;
     return ret;
 }
+
 long gm_runtime::rand_long(long max, int tid) {
     long ret = (long) (uniform(tid) * max);
     return ret;
 }
+
+/*
+ * Wrappers to call the gm_runtime methods
+ */
+void gm_rt_initialize() {
+    _GM_RT.initialize();
+}
+
+bool gm_rt_is_initialized() {
+    return _GM_RT.is_initialized();
+}
+
+int gm_rt_get_num_threads() {
+    return _GM_RT.get_num_threads();
+}
+
+void gm_rt_set_num_threads(int n) {
+    _GM_RT.set_num_threads(n);
+}
+
+int gm_rt_thread_id() {
+    return _GM_RT.get_thread_id();
+}
+
+double gm_rt_uniform(int tid) {
+    return _GM_RT.uniform(tid);
+}
+
+int gm_rt_rand(int min, int max, int tid) {
+    return _GM_RT.rand(min, max, tid);
+}
+
+long gm_rt_rand_long(long max, int tid) {
+    return _GM_RT.rand_long(max, tid);
+}
+
 
 #if 0
 //---------------------------------------------
