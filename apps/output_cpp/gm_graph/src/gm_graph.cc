@@ -33,7 +33,6 @@ gm_graph::gm_graph() {
     _frozen = false;
     _directed = true;
     _semi_sorted = false;
-
 }
 
 gm_graph::~gm_graph() {
