@@ -427,6 +427,7 @@ void gm_gps_gen::do_generate_master_state_body(gm_gps_basic_block* b) {
         sprintf(temp, "else _master_state_nxt = %d;", b->get_nth_exit(1)->get_id());
         Body.pushln(temp);
         sprintf(temp, "%s%d = false;\n", GPS_INTRA_MERGE_IS_FIRST, source_id);
+        Body.pushln(temp);
     } else {
         assert(false);
     }
