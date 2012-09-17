@@ -47,13 +47,6 @@ bool gm_giraph_gen::do_generate() {
         return false;
     }
 
-    // Append 'Vertex' to filename if we only generate vertex logic
-    if (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_VERTEX_ONLY)) {
-        char filename[256];
-        sprintf(filename, "%sVertex", proc->get_procname()->get_genname());
-        PREGEL_BE->setFileName(filename);
-    }
-
     if (!open_output_files()) return false;
 
     bool b = gm_apply_compiler_stage(get_gen_steps());
@@ -61,6 +54,74 @@ bool gm_giraph_gen::do_generate() {
     close_output_files();
 
     return b;
+}
+
+bool gm_giraph_gen::open_output_files() {
+    char temp[1024];
+    assert(dname != NULL);
+    assert(fname != NULL);
+
+    // vertex file
+    sprintf(temp, "%s/%sVertex.java", dname, fname);
+    f_body = fopen(temp, "w");
+    if (f_body == NULL) {
+        gm_backend_error(GM_ERROR_FILEWRITE_ERROR, temp);
+        return false;
+    }
+    Body.set_output_file(f_body);
+
+    // main file
+    sprintf(temp, "%s/%s.java", dname, fname);
+    f_body_main = fopen(temp, "w");
+    if (f_body_main == NULL) {
+        gm_backend_error(GM_ERROR_FILEWRITE_ERROR, temp);
+        return false;
+    }
+    Body_main.set_output_file(f_body_main);
+
+    // input file
+    sprintf(temp, "%s/%sVertexInputFormat.java", dname, fname);
+    f_body_input = fopen(temp, "w");
+    if (f_body_input == NULL) {
+        gm_backend_error(GM_ERROR_FILEWRITE_ERROR, temp);
+        return false;
+    }
+    Body_input.set_output_file(f_body_input);
+
+    // output file
+    sprintf(temp, "%s/%sVertexOutputFormat.java", dname, fname);
+    f_body_output = fopen(temp, "w");
+    if (f_body_output == NULL) {
+        gm_backend_error(GM_ERROR_FILEWRITE_ERROR, temp);
+        return false;
+    }
+    Body_output.set_output_file(f_body_output);
+
+    get_lib()->set_code_writer(&Body);
+    return true;
+}
+
+void gm_giraph_gen::close_output_files() {
+    if (f_body != NULL) {
+        Body.flush();
+        fclose(f_body);
+        f_body = NULL;
+    }
+    if (f_body_main != NULL) {
+        Body_main.flush();
+        fclose(f_body_main);
+        f_body_main = NULL;
+    }
+    if (f_body_input != NULL) {
+        Body_input.flush();
+        fclose(f_body_input);
+        f_body_input = NULL;
+    }
+    if (f_body_output != NULL) {
+        Body_output.flush();
+        fclose(f_body_output);
+        f_body_output = NULL;
+    }
 }
 
 void gm_giraph_gen::write_headers() {

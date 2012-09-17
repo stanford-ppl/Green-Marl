@@ -115,40 +115,46 @@ public:
     }
 
 protected:
-    void init_gen_steps();
+    virtual void init_gen_steps();
 
 protected:
     //----------------------------------
     // stages in backend gen
     //----------------------------------
 
-    void write_headers();
-    void begin_class();
-    void end_class();
+    virtual void write_headers();
+    virtual void begin_class();
+    virtual void end_class();
+    virtual bool open_output_files();
+    virtual void close_output_files();
 
-    void do_generate_global_variables();
-    void do_generate_master();
-    void do_generate_master_states();
-    void do_generate_master_class();
-    void do_generate_master_scalar();
-    void do_generate_master_serialization();
-    void do_generate_master_state_body(gm_gps_basic_block* b);
-    void do_generate_scalar_broadcast_send(gm_gps_basic_block* b);
-    void do_generate_scalar_broadcast_receive(gm_gps_basic_block *b);
-    void do_generate_shared_variables_keys();
+    virtual void do_generate_global_variables();
+    virtual void do_generate_master();
+    virtual void do_generate_master_states();
+    virtual void do_generate_master_class();
+    virtual void do_generate_master_scalar();
+    virtual void do_generate_master_serialization();
+    virtual void do_generate_master_state_body(gm_gps_basic_block* b);
+    virtual void do_generate_scalar_broadcast_send(gm_gps_basic_block* b);
+    virtual void do_generate_scalar_broadcast_receive(gm_gps_basic_block *b);
+    virtual void do_generate_shared_variables_keys();
 
-    void do_generate_vertex_begin();
-    void do_generate_vertex_body();
-    void do_generate_vertex_end();
-    void do_generate_worker_context_class();
-    void do_generate_vertex_property_class(bool is_edge_prop);
-    void do_generate_message_class();
-    void do_generate_vertex_states();
-    void do_generate_vertex_state_body(gm_gps_basic_block *b);
-    void do_generate_vertex_state_receive_global(gm_gps_basic_block *b);
+    virtual void do_generate_vertex_begin();
+    virtual void do_generate_vertex_body();
+    virtual void do_generate_vertex_end();
+    virtual void do_generate_worker_context_class();
+    virtual void do_generate_vertex_property_class(bool is_edge_prop);
+    virtual void do_generate_message_class();
+    virtual void do_generate_vertex_states();
+    virtual void do_generate_vertex_state_body(gm_gps_basic_block *b);
+    virtual void do_generate_vertex_state_receive_global(gm_gps_basic_block *b);
 
-    void do_generate_input_output_formats();
-    void do_generate_job_configuration();
+    virtual void do_generate_input_output_formats();
+    virtual void do_generate_job_configuration();
+
+protected:
+    gm_code_writer Body, Body_main, Body_input, Body_output;
+    FILE *f_body, *f_body_main, *f_body_input, *f_body_output;
 
 private:
     gm_giraphlib* glib; // graph library
