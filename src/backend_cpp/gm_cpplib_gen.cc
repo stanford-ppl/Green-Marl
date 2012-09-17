@@ -308,6 +308,8 @@ const char* gm_cpplib::get_function_name_map_seq(int methodId) {
             return "getMaxValue";
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue";
+        default:
+            return "?";
     }
 }
 
@@ -327,6 +329,8 @@ const char* gm_cpplib::get_function_name_map_par(int methodId) {
             return "getMaxValue_par";
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue_par";
+        default:
+            return "?";
     }
 }
 

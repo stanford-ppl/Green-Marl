@@ -40,6 +40,7 @@ public:
                 _targets.push_back(fe);
             }
         }
+        return true;
     }
 
     bool has_targets() {
