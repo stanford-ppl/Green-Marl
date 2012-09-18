@@ -112,6 +112,9 @@ public:
     gm_giraph_gen() :
             gm_gps_gen() {
         glib = new gm_giraphlib(this);
+        f_body_main = NULL;
+        f_body_input = NULL;
+        f_body_output = NULL;
     }
     virtual gm_giraphlib* get_lib() {
         return glib;
