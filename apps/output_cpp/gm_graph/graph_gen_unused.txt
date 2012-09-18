@@ -1,6 +1,6 @@
-
 // This file includes the functions that are unused but were present in the earlier version of
 // gm_graph library.
+
 
 bool test_backedge(gm_graph* g) {
     int repeat = g->num_nodes() * 0.001;
@@ -27,3 +27,70 @@ bool test_backedge(gm_graph* g) {
 }
 
 
+#include <vector>
+gm_graph* create_graph_from_file(FILE* F)
+{
+
+    // format of txt file
+    // file is sorted by from_node
+    // #comment
+    // from_node to_node
+
+    edge_t curr_num=0;
+    edge_t base = -1;
+
+    std::vector<node_t> nodes;
+    std::vector<edge_t> edges;
+
+    char line[1024];
+    while (fgets(line,  1024, F) != NULL)
+    {
+        if (line[0] == '#')
+            continue;
+
+        edge_t from, to;
+        sscanf(line,"%d%d", &from, &to);
+
+        if (base == -1) {
+            base = from;		//make first node as 0
+        }
+
+        {
+            from = from - base;
+            to = to - base;
+
+            if (from < 0) continue;
+            if (to < 0) continue;
+        }
+
+        // ignore non-sorted values
+        if (from < curr_num)
+            continue;
+
+        // start of new node
+        if (from != curr_num) {
+            nodes.push_back(edges.size());
+            curr_num = from;
+        }
+        edges.push_back(to);
+    }
+    nodes.push_back(edges.size());
+
+    node_t N = nodes.size() - 1;
+    edge_t M = edges.size();
+
+    // sanitize edges
+    srand(16384);
+    for(edge_t i=0; i < M; i++)
+        if (edges[i] >= N) edges[i] = rand() % N;
+
+    gpgraph *g = new gpgraph();
+
+    g->allocate_nodes(N);
+    g->allocate_edges(M);
+
+    memcpy(g->begin, &(nodes[0]), sizeof(node_t)*(N+1));
+    memcpy(g->node_idx, &(edges[0]), sizeof(edge_t)*M);
+
+    return g;
+}
