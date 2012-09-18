@@ -155,6 +155,9 @@ protected:
     virtual void do_generate_input_output_formats();
     virtual void do_generate_job_configuration();
 
+private:
+    void do_generate_parsing_from_str(gm_code_writer& body, char* input_str, int gm_prim_type);
+
 protected:
     gm_code_writer Body_main, Body_input, Body_output;
     FILE *f_body_main, *f_body_input, *f_body_output;
@@ -166,6 +169,7 @@ public:
     // from code generator interface
     virtual bool do_generate();
     virtual void generate_proc(ast_procdef* p);
+
 
 };
 

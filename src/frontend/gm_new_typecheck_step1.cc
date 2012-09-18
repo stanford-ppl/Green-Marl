@@ -563,6 +563,9 @@ bool gm_typechecker_stage_1::gm_symbol_check_bfs_header(ast_id* it, ast_id* src,
 bool gm_typechecker_stage_1::apply(ast_procdef* p) {
     bool is_okay = true;
     // add arguments to the current symbol table
+    int arg_number = 0;
+    int arg_number_in = 0;
+    int arg_number_out = 0;
     std::list<ast_argdecl*>& in_args = p->get_in_args();
     std::list<ast_argdecl*>::iterator it;
     for (it = in_args.begin(); it != in_args.end(); it++) {
@@ -578,6 +581,8 @@ bool gm_typechecker_stage_1::apply(ast_procdef* p) {
                 is_okay = gm_declare_symbol(S, id, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE) && is_okay;
                 if (is_okay) {
                     id->getSymInfo()->setArgument(true);
+                    id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_TOTAL, arg_number++);
+                    id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_IN, arg_number_in++);
                 }
             }
         }
@@ -602,6 +607,8 @@ bool gm_typechecker_stage_1::apply(ast_procdef* p) {
                     is_okay = gm_declare_symbol(curr_sym, id, type, GM_READ_NOT_AVAILABLE, GM_WRITE_AVAILABLE) && is_okay;
                     if (is_okay) {
                         id->getSymInfo()->setArgument(true);
+                        id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_TOTAL, arg_number++);
+                        id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_IN, arg_number_out++);
                     }
                 }
             }

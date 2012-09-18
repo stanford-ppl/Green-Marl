@@ -154,6 +154,8 @@ void gm_fe_check_property_argument_usage::process(ast_procdef* proc) {
         gm_symtab_entry* e = *I;
         if ((R.find(e) == R.end()) && (W.find(e) == W.end()))
             e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_UNUSED);
+        else if ((R.find(e) != R.end()) && (W.find(e) != W.end()))
+            e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_INOUT);
         else if ((R.find(e) == R.end()) && (W.find(e) != W.end()))
             e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_OUT);
         else if ((W.find(e) == W.end()) && (R.find(e) != R.end()))
@@ -164,8 +166,11 @@ void gm_fe_check_property_argument_usage::process(ast_procdef* proc) {
     }
 
     // now traverse the source and see if write after read
+    // [NEED better implementeation] [XXX]
+    /*
     gm_check_property_usage_t T;
     proc->get_body()->traverse_both(&T);
+    */
     /*
      for(I=SET.begin(); I!=SET.end(); I++)
      {

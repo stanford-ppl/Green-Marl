@@ -9,6 +9,7 @@ static const bool GM_READ_NOT_AVAILABLE = false;
 static const bool GM_WRITE_AVAILABLE = true;
 static const bool GM_WRITE_NOT_AVAILABLE = false;
 
+
 // symbol table entry
 class gm_symtab_entry
 {

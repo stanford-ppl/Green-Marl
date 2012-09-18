@@ -167,6 +167,11 @@ public:
         return congruent_msg.size() == 0;
     }
 
+    std::list<gm_symtab_entry*>& get_node_input_prop_symbols()  {return node_input_prop;}
+    std::list<gm_symtab_entry*>& get_node_output_prop_symbols() {return node_output_prop;}
+    std::list<gm_symtab_entry*>& get_edge_input_prop_symbols()  {return edge_input_prop;}
+    std::list<gm_symtab_entry*>& get_edge_output_prop_symbols() {return edge_output_prop;}
+
 private:
     ast_procdef* body;
 
@@ -177,6 +182,10 @@ private:
     std::set<gm_symtab_entry*> scalar;         // list of persistent master symbols
     std::set<gm_symtab_entry*> node_prop;      // list of persistent property symbols
     std::set<gm_symtab_entry*> edge_prop;      // list of persistent property symbols
+    std::list<gm_symtab_entry*> node_input_prop;     // list of node prop symbols for input
+    std::list<gm_symtab_entry*> node_output_prop;    // list of node prop symbols for output
+    std::list<gm_symtab_entry*> edge_input_prop;     // list of edge prop symbols for input
+    std::list<gm_symtab_entry*> edge_output_prop;    // list of edge prop symbols for output
     int total_node_prop_size;
     int total_edge_prop_size;
 

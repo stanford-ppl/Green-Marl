@@ -86,6 +86,36 @@ static int comp_start_byte(std::set<gm_symtab_entry*>& prop) {
     return byte_begin;
 }
 
+static void create_list_of_props_in_order(bool is_node_prop, bool is_input, std::list<gm_symtab_entry*>& L)
+{
+    gm_symtab* arg_fields = FE.get_current_proc()->get_symtab_field();
+    if (arg_fields->get_entries().size() != 0)  {
+        std::set<gm_symtab_entry*>& E = arg_fields->get_entries();
+        // sort by order
+        std::set<gm_symtab_entry*>::iterator I;
+        std::map<int, gm_symtab_entry*> M;
+        for(I=E.begin(); I!=E.end(); I++) {
+            gm_symtab_entry *e = *I;
+
+            int usage = e->find_info_int(GMUSAGE_PROPERTY);
+            if (is_node_prop && !e->getType()->is_node_property()) continue;
+            if (!is_node_prop && !e->getType()->is_edge_property()) continue;
+            if (is_input && !((usage == GMUSAGE_IN) || (usage == GMUSAGE_INOUT))) continue;
+            if (!is_input && !((usage == GMUSAGE_OUT) || (usage == GMUSAGE_INOUT))) continue;
+
+            int total_order = e->find_info_int(FE_INFO_ARG_POS_TOTAL);
+            assert (M.find(total_order) == M.end());
+            M[total_order] = e;
+        }
+
+        std::map<int, gm_symtab_entry*>::iterator J; 
+        for(J = M.begin(); J != M.end(); J++) {
+            gm_symtab_entry *e = J->second;
+            L.push_back(e);
+        }
+    }
+}
+
 void gm_gps_opt_analyze_symbol_summary::process(ast_procdef* p) {
 
     //-----------------------------------------------
@@ -117,6 +147,16 @@ void gm_gps_opt_analyze_symbol_summary::process(ast_procdef* p) {
     beinfo->set_total_edge_property_size(comp_start_byte(e_prop));
 
     beinfo->compute_max_communication_size();
+
+    //-----------------------------------------------------------
+    // Create a symbol table for node/edge input/out generator
+    //   create a list in the order of property
+    //-----------------------------------------------------------
+    create_list_of_props_in_order(true, true,  beinfo->get_node_input_prop_symbols());
+    create_list_of_props_in_order(true, false, beinfo->get_node_output_prop_symbols());
+    create_list_of_props_in_order(false, true, beinfo->get_edge_input_prop_symbols());
+    create_list_of_props_in_order(false, false, beinfo->get_edge_output_prop_symbols());
+    //
 
     //--------------------------------------------------------
     // check if input node parsing parsing is required

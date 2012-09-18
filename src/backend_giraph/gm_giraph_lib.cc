@@ -495,6 +495,7 @@ void gm_giraphlib::generate_master_class_details(std::set<gm_symtab_entry*>& pro
     Body.pushln("}");
 }
 
+
 void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>& prop, gm_code_writer& Body, bool is_edge_prop) {
     char temp[1024];
     int total =
@@ -504,22 +505,56 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
 
     std::set<gm_symtab_entry*>::iterator I;
 
+    std::list<gm_symtab_entry*> inputList = (is_edge_prop) ? 
+                    ((gm_gps_beinfo*) FE.get_current_backend_info())->get_edge_input_prop_symbols():
+                    ((gm_gps_beinfo*) FE.get_current_backend_info())->get_node_input_prop_symbols();
     if (is_edge_prop) {
         Body.pushln("public EdgeData() {");
         Body.pushln("// Default constructor needed for Giraph");
         Body.pushln("}");
         Body.NL();
-        Body.pushln("public EdgeData(double input) {");
     } else {
         Body.pushln("public VertexData() {");
         Body.pushln("// Default constructor needed for Giraph");
         Body.pushln("}");
         Body.NL();
-        Body.pushln("public VertexData(double input) {");
     }
-    Body.pushln("// Assign input data to node property if desired");
-    Body.pushln("}");
-    Body.NL();
+    if (inputList.size() > 0) {
+        Body.pushln("// Initalize with initData");
+
+        if (is_edge_prop) {
+            Body.push("public EdgeData(");
+        } else {
+            Body.push("public VertexData(");
+        }
+
+        int sz = inputList.size();
+        int cnt = 0;
+        std::list<gm_symtab_entry*>::iterator J;
+        char temp[128];
+        for(J= inputList.begin(); J!=inputList.end(); J++, cnt++) {
+            gm_symtab_entry* e = *J;
+            Body.push(main->get_type_string(e->getType()->getTargetTypeSummary()));
+            sprintf(temp,"__i%d",cnt);
+            Body.SPC();
+            Body.push(temp);
+            if (cnt != (sz-1)) {
+                Body.push(", ");
+            }
+        }
+        Body.pushln(") {");
+        cnt = 0;
+        for(J= inputList.begin(); J!=inputList.end(); J++, cnt++) {
+            gm_symtab_entry* e = *J;
+            if (prop.find(e) == prop.end()) continue;
+            Body.push(e->getId()->get_genname());
+            sprintf(temp," = __i%d; ",cnt);
+            Body.pushln(temp);
+        }
+        Body.pushln("}");
+        Body.NL();
+    }
+
 
     Body.pushln("@Override");
     Body.pushln("public void write(DataOutput out) throws IOException {");

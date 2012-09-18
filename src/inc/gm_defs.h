@@ -4,6 +4,8 @@
 // 'C' Functions called by gm_grammer.y
 #include <assert.h>
 
+#define TO_STR(X)   #X
+#define DEF_STRING(X)  static const char *X = TO_STR(X)
 
 //---------------------------------------------------------------------------
 // Iterations: Types are distinguished from iterations
@@ -491,7 +493,8 @@ inline static bool gm_is_collection_access_none(int i) {
 
 enum GM_PROP_USAGE_T
 {
-    GMUSAGE_UNUSED, GMUSAGE_IN,              // Read only
+    GMUSAGE_UNUSED=0, 
+    GMUSAGE_IN,              // Read only
     GMUSAGE_OUT,             // Write all, then optionally read
     GMUSAGE_INOUT,              // Read and Write
     GMUSAGE_INVALID
