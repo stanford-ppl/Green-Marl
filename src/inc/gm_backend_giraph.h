@@ -45,7 +45,10 @@ public:
     virtual void generate_broadcast_writable_type(int gm_type_id, gm_code_writer& Body);
     virtual void generate_broadcast_send_master(ast_id* id, gm_code_writer& Body);
     virtual void generate_broadcast_receive_master(ast_id* id, gm_code_writer& Body, int reduce_op = GMREDUCE_NULL);
-    virtual void generate_headers(gm_code_writer& Body);
+    virtual void generate_headers_vertex(gm_code_writer& Body);
+    virtual void generate_headers_main(gm_code_writer& Body);
+    virtual void generate_headers_input(gm_code_writer& Body);
+    virtual void generate_headers_output(gm_code_writer& Body);
     virtual void generate_reduce_assign_vertex(ast_assign* a, gm_code_writer& Body, int reduce_op_type = GMREDUCE_NULL);
 
     virtual void generate_broadcast_receive_vertex(ast_id* id, gm_code_writer& Body);
@@ -123,12 +126,9 @@ protected:
     //----------------------------------
 
     virtual void write_headers();
-    virtual void begin_class();
-    virtual void end_class();
     virtual bool open_output_files();
     virtual void close_output_files();
 
-    virtual void do_generate_global_variables();
     virtual void do_generate_master();
     virtual void do_generate_master_states();
     virtual void do_generate_master_class();
@@ -153,8 +153,8 @@ protected:
     virtual void do_generate_job_configuration();
 
 protected:
-    gm_code_writer Body, Body_main, Body_input, Body_output;
-    FILE *f_body, *f_body_main, *f_body_input, *f_body_output;
+    gm_code_writer Body_main, Body_input, Body_output;
+    FILE *f_body_main, *f_body_input, *f_body_output;
 
 private:
     gm_giraphlib* glib; // graph library
