@@ -256,8 +256,8 @@ public:
     // interafce for iteration definining ast-nodes
     virtual void set_iter_type(int i) {assert(false);}
     virtual int  get_iter_type()      {assert(false);return 0;}
-    virtual ast_id* get_source()      {assert(false);}
-    virtual ast_id* get_source2()     {assert(false);}
+    virtual ast_id* get_source()      {assert(false);return NULL;}
+    virtual ast_id* get_source2()     {assert(false);return NULL;}
 
 
 protected:
