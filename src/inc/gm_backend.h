@@ -78,7 +78,7 @@ public:
 
     virtual bool do_local_optimize()=0;
 
-    void set_code_writer(gm_code_writer* w) {
+    virtual void set_code_writer(gm_code_writer* w) {
         Body = w;
     }
     gm_code_writer* get_code_writer() {

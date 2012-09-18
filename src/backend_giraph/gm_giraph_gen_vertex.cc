@@ -23,14 +23,7 @@ void gm_giraph_gen::do_generate_vertex_body() {
 void gm_giraph_gen::do_generate_vertex_begin() {
     char temp[1024];
     const char* proc_name = FE.get_current_proc()->get_procname()->get_genname();
-    Body.pushln("//----------------------------------------------");
-    Body.pushln("// Main Vertex Class");
-    Body.pushln("//----------------------------------------------");
-    if (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_VERTEX_ONLY)) {
-        sprintf(temp, "public class %sVertex", proc_name);
-    } else {
-        sprintf(temp, "public static class %sVertex", proc_name);
-    }
+    sprintf(temp, "public class %sVertex", proc_name);
     Body.pushln(temp);
     Body.push_indent();
     if (FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
@@ -52,8 +45,7 @@ void gm_giraph_gen::do_generate_vertex_begin() {
 }
 
 void gm_giraph_gen::do_generate_vertex_end() {
-    Body.pushln("} // end of vertex class");
-    Body.NL();
+    Body.pushln("}");
 }
 
 void gm_giraph_gen::do_generate_worker_context_class() {
@@ -70,9 +62,9 @@ void gm_giraph_gen::do_generate_worker_context_class() {
     std::set<gm_symtab_entry*>::iterator I_sym;
 
     Body.pushln("//----------------------------------------------");
-    Body.pushln("// Worker Context Class");
+    Body.pushln("// WorkerContext Class");
     Body.pushln("//----------------------------------------------");
-    sprintf(temp, "public static class %sWorkerContext extends WorkerContext {", proc_name);
+    sprintf(temp, "public static class WorkerContext extends org.apache.giraph.graph.WorkerContext {");
     Body.pushln(temp);
     Body.NL();
     Body.pushln("@Override");
@@ -91,7 +83,7 @@ void gm_giraph_gen::do_generate_worker_context_class() {
     Body.pushln("public void postSuperstep() {");
     Body.pushln("}");
     Body.NL();
-    Body.pushln("} // end of worker context");
+    Body.pushln("} // end of workercontext");
     Body.NL();
 }
 
@@ -165,7 +157,6 @@ void gm_giraph_gen::do_generate_message_class() {
 
 void gm_giraph_gen::do_generate_vertex_states() {
     char temp[1024];
-    Body.NL();
     Body.pushln("@Override");
     Body.pushln("public void compute(Iterable<MessageData> _msgs) {");
     get_lib()->generate_receive_state_vertex("_state_vertex", Body);
@@ -199,6 +190,8 @@ void gm_giraph_gen::do_generate_vertex_states() {
     }
     gm_redirect_reproduce(stdout);
     gm_baseindent_reproduce(0);
+
+    Body.NL();
 }
 
 void gm_giraph_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *b) {

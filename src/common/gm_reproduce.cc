@@ -277,6 +277,7 @@ void ast_expr::reproduce(int ind_level) {
             break;
         case GMEXPR_BUILTIN_FIELD:
         case GMEXPR_FOREIGN:
+        case GMEXPR_MAPACCESS:
             //TODO add some print statements for these?
             return;
     }
