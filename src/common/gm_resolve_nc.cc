@@ -180,13 +180,15 @@ public:
                     i->setSymInfo(_target);
                     _changed = true;
                 }
-                return true;
             }
         }
+        return true;
     }
+
     bool is_changed() {
         return _changed;
     }
+
     void do_replace(gm_symtab_entry *e_old, gm_symtab_entry* e_new, ast_node* top) {
         set_for_sent(true);
         _src = e_old;

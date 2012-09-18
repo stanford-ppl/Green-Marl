@@ -127,9 +127,8 @@ public:
                 T.common_sym = t_sym;
                 _targets.push_back(T);
             }
-
-            return true;
         }
+        return true;
     }
 
     // iterate over targets

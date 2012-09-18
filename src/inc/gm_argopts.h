@@ -42,7 +42,6 @@ static const char* GMARGFLAG_FLIP_BFSUP = "FlipUp";
 
 static const char* GMARGFLAG_MERGE_BB = "GPSMerge";
 static const char* GMARGFLAG_MERGE_BB_INTRA = "GPSMergeIntra";
-static const char* GMARGFLAG_GIRAPH_VERTEX_ONLY = "GiraphVertexOnly";
 //static const char* GMARGFLAG_DUMPIR = "Dd";
 //static const char* GMARGFLAG_NOMERGE = "NoMerge";
 //static const char* GMARGFLAG_NOSCREDUCE = "NoScalarReduce";
@@ -67,8 +66,6 @@ static struct GM_comp_args GM_compiler_options[] = {
         { GMARGFLAG_REPRODUCE, GMARG_BOOL, "(For debug) When stopped, reproduce green-marl program", "1" },
         { GMARGFLAG_PRINTRW, GMARG_BOOL, "(For debug) When stopped, print rw analysis information", "0" },
         { GMARGFLAG_PRINTBB, GMARG_BOOL, "(For gps-debug) When stopped, print basicblock information", "0" },
-
-        { GMARGFLAG_GIRAPH_VERTEX_ONLY, GMARG_BOOL, "(For giraph) Only generate vertex logic", "0" },
 
         //{GMARGFLAG_DUMPIR, GMARG_BOOL, "(For internal debug) When stopped, dump IR tree", "0"},
         //{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},

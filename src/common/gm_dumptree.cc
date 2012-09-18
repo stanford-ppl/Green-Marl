@@ -196,6 +196,7 @@ void ast_expr::dump_tree(int ind_level) {
         case GMEXPR_REDUCE:
         case GMEXPR_BUILTIN_FIELD:
         case GMEXPR_FOREIGN:
+        case GMEXPR_MAPACCESS:
             //TODO add some print statements for these?
             return;
     }

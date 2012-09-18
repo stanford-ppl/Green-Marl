@@ -18,10 +18,12 @@ public:
     gm_opt_check_used_t() {
         set_for_id(true); 
     }
+
     virtual bool apply(ast_id* i) {
         gm_symtab_entry* z = i->getSymInfo(); 
         assert(z!=NULL);
         used.insert(z);
+        return true;
     }
 
     std::set<gm_symtab_entry*> & get_used_set() {return used;}
