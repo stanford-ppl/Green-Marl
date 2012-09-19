@@ -27,10 +27,9 @@ public:
         //---------------------------------
         // values
         //---------------------------------
-        printf("rank[0] = %0.9lf\n", rank[0]);
-        printf("rank[1] = %0.9lf\n", rank[1]);
-        printf("rank[2] = %0.9lf\n", rank[2]);
-        printf("rank[3] = %0.9lf\n", rank[3]);
+        for (int i = 0; i < 4; i++) {
+            printf("rank[%d] = %0.9lf\n", i, rank[i]);
+        }
         delete[] rank;
         return true;
     }
