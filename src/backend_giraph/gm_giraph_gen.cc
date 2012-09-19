@@ -136,7 +136,16 @@ void gm_giraph_gen::do_generate_parsing_from_str(gm_code_writer& Body, char* str
         case GMTYPE_LONG: Body.push("Long.parseLong("); break;
         case GMTYPE_FLOAT: Body.push("Float.parseFloat("); break;
         case GMTYPE_DOUBLE: Body.push("Double.parseDouble("); break;
-        default: assert(false);
+        case GMTYPE_BOOL: Body.push("Boolean.parseBoolean("); break;
+        case GMTYPE_NODE:
+           if (PREGEL_BE->get_lib()->is_node_type_int())
+               Body.push("Integer.parseInt(");
+            else 
+               Body.push("Long.parseLong("); 
+            break;
+        default: 
+            printf("TYPE:%s\n",gm_get_type_string(gm_prim_type));
+            assert(false);
     }
     Body.push(str);Body.push(")"); 
     return;
