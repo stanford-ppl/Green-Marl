@@ -21,6 +21,7 @@ test/giraph/.classpath
 test/giraph/.project
 test/giraph/giraph_errors/output
 test/giraph/bin
+test/giraph/lib/
 
 src/parse/gm_grammer.output
 src/parse/gm_grammer.tab.c
