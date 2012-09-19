@@ -158,6 +158,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     //----------------------------------------------
     // Vertex Input format
     //----------------------------------------------
+  {
     sprintf(temp, "public class %sVertexInputFormat extends TextVertexInputFormat<%s, %s, %s, %s> {", proc_name, vertex_id, vertex_data, edge_data, message_data);
     Body_input.pushln(temp);
     Body_input.pushln("@Override");
@@ -236,7 +237,6 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body_input.NL();
 
     // Create Vertex value Parsers
-    //-------------------------------------------------
     Body_input.pushln("// Parsing Node");
     if (PREGEL_BE->get_lib()->is_node_type_int()) {
         Body_input.pushln("IntWritable vertexId = new IntWritable(Integer.parseInt(values[0]));");
@@ -324,7 +324,8 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body_input.pushln("}");
     Body_input.pushln("}");
     Body_input.NL();
-
+  }
+  {
     // ----------------------------------------------
     // Vertex Output format
     // ----------------------------------------------
@@ -357,18 +358,91 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body_output.pushln(temp);
     Body_output.pushln("throws IOException, InterruptedException {");
     Body_output.pushln("StringBuffer sb = new StringBuffer(vertex.getId().toString());");
-    Body_output.pushln("sb.append('\\t').append(vertex.getValue());");
+
+    gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
+    std::list<gm_symtab_entry*> &L = info->get_node_output_prop_symbols();
+    std::list<gm_symtab_entry*> &L2 = info->get_edge_output_prop_symbols();
+    std::list<gm_symtab_entry*>::iterator I;
+
+    //-------------------------------------------------
+    // Print Example
+    //-------------------------------------------------
+    Body_output.pushln("//--------------------------------------");
+    Body_output.pushln("// Output format is as follows:");
+    Body_output.push("// <vertex_id");
+    if (PREGEL_BE->get_lib()->is_node_type_int()) 
+        Body_output.push("(int)> ");
+    else
+        Body_output.push("long> ");
+
+    if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        Body_output.push("<dummy value> ");
+    } else if (L.size() > 0) {
+        for(I=L.begin(); I!=L.end(); I++) {
+            gm_symtab_entry* e = *I;
+            sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));
+            Body_output.push(temp);
+        }
+    }
+    Body_output.push("{");
+    Body_output.push("<dest_id");
+    if (PREGEL_BE->get_lib()->is_node_type_int()) 
+        Body_output.push("(int)> ");
+    else
+        Body_output.push("(long)> ");
+    if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        Body_output.push("<dummy value> ");
+    } else if (L2.size() > 0) {
+        for(I=L2.begin(); I!=L2.end(); I++) {
+            gm_symtab_entry* e = *I;
+            sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));
+            Body_output.push(temp);
+        }
+    }
+    Body_output.pushln("}*");
+    Body_output.pushln("// (Entries are separated with \\t)");
+    Body_output.pushln("//--------------------------------------");
+
+    // dump Vertex values
+    //Body_output.pushln("sb.append('\\t').append(vertex.getValue());");
+    if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        Body_output.pushln("sb.append('\\t');");
+        Body_output.pushln("sb.append(\"1.0\"); // dummy value");
+    } else if (L.size() > 0) {
+        sprintf(temp,"%sVertex.VertexData v = vertex.getValue();", proc_name);
+        Body_output.pushln(temp);
+        for(I=L.begin(); I!=L.end(); I++) {
+            gm_symtab_entry* e = *I;
+            Body_output.push("sb.append('\\t').append(");
+            sprintf(temp,"v.%s);", e->getId()->get_genname());
+            Body_output.pushln(temp);
+        }
+    }
     Body_output.NL();
 
     sprintf(temp, "for (Edge<%s, %s> edge : vertex.getEdges()) {", vertex_id, edge_data);
     Body_output.pushln(temp);
-    if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
-        Body_output.pushln("sb.append('\\t').append(edge.getValue());");
-    } else {
-        Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
-        Body_output.pushln("sb.append(\"\\t1.0\");");
+
+    Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
+    if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        Body_output.pushln("sb.append('\\t').append(\"1.0\");");
+    } else if (L2.size() > 0) {
+        sprintf(temp,"%sVertex.EdgeData e = edge.getValue();", proc_name);
+        Body_output.pushln(temp);
+        for(I=L2.begin(); I!=L2.end(); I++) {
+            gm_symtab_entry* e = *I;
+            Body_output.push("sb.append('\\t').append(");
+            sprintf(temp,"e.%s);", e->getId()->get_genname());
+            Body_output.pushln(temp);
+        }
     }
+    //if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
+    //    Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
+    //    Body_output.pushln("sb.append('\\t').append(edge.getValue());");
+    //} else {
+    //    Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
+    //    Body_output.pushln("sb.append(\"\\t1.0\");");
+    //}
     Body_output.pushln("}");
     Body_output.NL();
 
@@ -376,6 +450,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     Body_output.pushln("}");
     Body_output.pushln("}");
     Body_output.pushln("}");
+  }
 }
 
 void gm_giraph_gen::do_generate_job_configuration() {

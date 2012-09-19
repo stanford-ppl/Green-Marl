@@ -108,7 +108,7 @@ void gm_giraph_gen::do_generate_vertex_property_class(bool is_edge_prop) {
     for (I = prop.begin(); I != prop.end(); I++) {
         gm_symtab_entry* sym = *I;
         //gps_syminfo* syminfo = (gps_syminfo*) sym->find_info(TAG_BB_USAGE);
-        sprintf(temp, "%s %s;", get_type_string(sym->getType()->get_target_type(), is_master_generate()), sym->getId()->get_genname());
+        sprintf(temp, "public %s %s;", get_type_string(sym->getType()->get_target_type(), is_master_generate()), sym->getId()->get_genname());
 
         Body.pushln(temp);
     }
