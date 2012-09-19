@@ -434,7 +434,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
 
     Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
     if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-        Body_output.pushln("sb.append('\\t').append(\"1.0\");");
+        Body_output.pushln("sb.append('\\t').append(\"1.0\"); // dummy value");
     } else if (L2.size() > 0) {
         sprintf(temp,"%sVertex.EdgeData e = edge.getValue();", proc_name);
         Body_output.pushln(temp);
