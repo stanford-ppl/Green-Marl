@@ -8,7 +8,7 @@
 template<typename T>
 class gm_sized_set
 {
-public:
+  public:
     gm_sized_set(size_t _max_sz) :
             max_sz(_max_sz), byte_map(NULL), setLock(0) {
         is_small = true;
@@ -107,7 +107,7 @@ public:
             intersect_large(other);
     }
 
-private:
+  private:
 
     bool is_in_small(T e) {
         return (small_set.find(e) != small_set.end());
@@ -243,7 +243,7 @@ private:
         est_size = newSize;
     }
 
-public:
+  public:
 
     //-------------------------------------------
     // should be called in seq mode
@@ -288,7 +288,7 @@ public:
     //-----------------------------------------------
     class seq_iter
     {
-    public:
+      public:
         seq_iter() : is_small(true), bytemap(NULL) {
         }
 
@@ -324,7 +324,7 @@ public:
                 return t;
             }
         }
-    private:
+      private:
         bool is_small;
         unsigned char* bytemap;
         typename std::set<T>::iterator ITER;  // for small instance use
@@ -364,7 +364,7 @@ public:
         }
     }
 
-private:
+  private:
     gm_sized_set() : max_sz(-1), is_small(true), byte_map(NULL), est_size(-1), setLock(0) {
     } // initialize without size is prohibited
 
@@ -375,7 +375,7 @@ private:
     size_t est_size;  // estimated size of the set
     gm_spinlock_t setLock;
 
-public:
+  public:
     //-------------------------------------------------
     // if size becomes larger than THRESHOLD
     // use 'byte-map' implementation

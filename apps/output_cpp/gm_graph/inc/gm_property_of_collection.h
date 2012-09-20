@@ -8,8 +8,7 @@
 
 class gm_complex_data_type
 {
-
-public:
+  public:
     virtual ~gm_complex_data_type() {
     }
 
@@ -18,8 +17,7 @@ public:
 template<class T>
 class gm_property_of_collection: public gm_complex_data_type
 {
-
-public:
+  public:
     virtual T& operator[](int index) = 0;
 
     virtual ~gm_property_of_collection() {
@@ -30,8 +28,7 @@ public:
 template<class T, bool lazy>
 class gm_property_of_collection_impl: public gm_property_of_collection<T>
 {
-
-private:
+  private:
     T** data;
     gm_spinlock_t* locks;
     int size;
@@ -42,7 +39,7 @@ private:
         gm_spinlock_release(locks + index);
     }
 
-public:
+  public:
     gm_property_of_collection_impl(int size) :
             size(size), locks(NULL) {
 

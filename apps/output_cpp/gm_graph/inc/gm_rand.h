@@ -24,13 +24,13 @@ class gm_rand64
 
 class gm_rand32
 {
-public:
+  public:
     gm_rand32() : next(2463534242u) {}
     gm_rand32(int32_t seed) : next(seed) {}
 
     int32_t rand();
 
-private:
+  private:
     int32_t next;
 };
 
