@@ -34,7 +34,14 @@ private:
     int32_t next;
 };
 
-
+/*
+ * gm_rand class acts as a wrapper for gm_rand32 and gm_rand64.
+ * It chooses one of the two based on the flag GM_NODE64.
+ * This avoids adding #ifdefs in the code that needs to use one
+ * of gm_rand32 / gm_rand64 based on the GM_NODE64 flag.
+ *
+ * Added by Raghavan Raman - raghavan.raman@oracle.com - Sept 20, 2012
+ */
 class gm_rand {
   public:
     gm_rand() {}

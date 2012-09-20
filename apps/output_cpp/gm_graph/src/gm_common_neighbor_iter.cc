@@ -1,9 +1,3 @@
-/*
- * gm_common_neighbor_iter.cc
- *
- *  Created on: Sep 14, 2012
- *      Author: raghav
- */
 #include "gm_common_neighbor_iter.h"
 
 gm_common_neighbor_iter::gm_common_neighbor_iter(gm_graph& _G, node_t s, node_t d) :
