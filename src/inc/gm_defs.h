@@ -225,7 +225,7 @@ inline static bool gm_is_property_type(int i) {
 }
 
 inline static bool gm_is_inf_type(int i) {
-    return (i == GMTYPE_INF) || (i == GMTYPE_INF_INT) || (i == GMTYPE_INF_LONG) || (i == GMTYPE_INF_FLOAT) || (i == GMTYPE_INF_FLOAT);
+    return (i == GMTYPE_INF) || (i == GMTYPE_INF_INT) || (i == GMTYPE_INF_LONG) || (i == GMTYPE_INF_FLOAT) || (i == GMTYPE_INF_DOUBLE);
 }
 inline static bool gm_is_inf_type_unsized(int i) {
     return (i == GMTYPE_INF);
