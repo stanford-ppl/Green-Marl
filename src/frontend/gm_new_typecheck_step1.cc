@@ -139,6 +139,7 @@ private:
         }
         */
         assert(false);
+        return 0;
     }
 
     void checkAndSetBoundGraphsForMap(ast_mapaccess* mapAccess) {
