@@ -538,9 +538,10 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.NL();
     Body_main.pushln("GiraphJob job = new GiraphJob(getConf(), getClass().getName());");
     Body_main.pushln("job.getConfiguration().setInt(GiraphJob.CHECKPOINT_FREQUENCY, 0);");
-    sprintf(temp, "job.setMasterComputeClass(%sVertex.MasterCompute.class);", proc_name);
-    Body_main.pushln(temp);
+    Body_main.pushln("job.getConfiguration().setBoolean(GiraphJob.USE_NETTY, true);");
     sprintf(temp, "job.setVertexClass(%sVertex.class);", proc_name);
+    Body_main.pushln(temp);
+    sprintf(temp, "job.setMasterComputeClass(%sVertex.MasterCompute.class);", proc_name);
     Body_main.pushln(temp);
     sprintf(temp, "job.setWorkerContextClass(%sVertex.WorkerContext.class);", proc_name);
     Body_main.pushln(temp);
