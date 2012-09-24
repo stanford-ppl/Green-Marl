@@ -146,6 +146,7 @@ void gm_giraph_gen::do_generate_parsing_from_str(gm_code_writer& Body, char* str
         default: 
             printf("TYPE:%s\n",gm_get_type_string(gm_prim_type));
             assert(false);
+            break;
     }
     Body.push(str);Body.push(")"); 
     return;
