@@ -54,7 +54,6 @@ void gm_giraphlib::generate_headers_output(gm_code_writer& Body) {
     Body.pushln("import org.apache.giraph.graph.*;");
     Body.pushln("import org.apache.giraph.io.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
-    Body.pushln("import org.apache.hadoop.mapreduce.RecordWriter;");
     Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
     Body.NL();
 }

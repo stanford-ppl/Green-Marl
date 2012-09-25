@@ -165,10 +165,11 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         sprintf(edge_data, "NullWritable");
     sprintf(message_data, "%sVertex.MessageData", proc_name);
 
-    //----------------------------------------------
-    // Vertex Input format
-    //----------------------------------------------
     {
+        //----------------------------------------------
+        // Vertex Input format
+        //----------------------------------------------
+
         gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
         std::list<gm_symtab_entry*> &L = info->get_node_input_prop_symbols();
         std::list<gm_symtab_entry*> &L2 = info->get_edge_input_prop_symbols();
@@ -295,10 +296,6 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         }
         // edge properties
         if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-            //Body_input.pushln("double edgeValue = Double.parseDouble(values[i+1]);");
-            //sprintf(temp, "edges.put(edgeId, new %s(edgeValue));", edge_data);
-            //Body_input.pushln(temp);
-
             sprintf(temp, "edges.put(edgeId, new %s(", edge_data);
             Body_input.push(temp);
             val = 1;
@@ -306,7 +303,6 @@ void gm_giraph_gen::do_generate_input_output_formats() {
                 Body_input.NL();
                 for(I=L2.begin(); I!=L2.end(); I++, val++) {
                     gm_symtab_entry* e = *I;
-                    //Body_input.pushln("double vertexValue = Double.parseDouble(values[1]);");
                     sprintf(temp, "values[i+%d]",val);
                     do_generate_parsing_from_str(Body_input, temp, e->getType()->getTargetTypeSummary());
                     if (val != L2.size()) Body_input.push(", ");
@@ -328,40 +324,36 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         // ----------------------------------------------
         // Vertex Output format
         // ----------------------------------------------
-        sprintf(temp, "public class %sVertexOutputFormat extends", proc_name);
-        Body_output.pushln(temp);
-        sprintf(temp, "TextVertexOutputFormat<%s, %s, %s> {", vertex_id, vertex_data, edge_data);
-        Body_output.pushln(temp);
-        Body_output.pushln("@Override");
-        sprintf(temp, "public VertexWriter<%s, %s, %s> createVertexWriter(", vertex_id, vertex_data, edge_data);
-        Body_output.pushln(temp);
-        Body_output.pushln("TaskAttemptContext context) throws IOException, InterruptedException {");
-        sprintf(temp, "return new %sVertexWriter(textOutputFormat.getRecordWriter(context));", proc_name);
-        Body_output.pushln(temp);
-        Body_output.pushln("}");
-        Body_output.NL();
-
-        sprintf(temp, "static class %sVertexWriter", proc_name);
-        Body_output.pushln(temp);
-        sprintf(temp, "extends TextVertexOutputFormat.TextVertexWriter<%s, %s, %s> {", vertex_id, vertex_data, edge_data);
-        Body_output.pushln(temp);
-        sprintf(temp, "public %sVertexWriter(RecordWriter<Text, Text> lineRecordReader) {", proc_name);
-        Body_output.pushln(temp);
-        Body_output.pushln("super(lineRecordReader);");
-        Body_output.pushln("}");
-        Body_output.NL();
-
-        Body_output.pushln("@Override");
-        Body_output.pushln("public void writeVertex(");
-        sprintf(temp, "Vertex<%s, %s, %s, ?> vertex)", vertex_id, vertex_data, edge_data);
-        Body_output.pushln(temp);
-        Body_output.pushln("throws IOException, InterruptedException {");
-        Body_output.pushln("StringBuffer sb = new StringBuffer(vertex.getId().toString());");
 
         gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
         std::list<gm_symtab_entry*> &L = info->get_node_output_prop_symbols();
         std::list<gm_symtab_entry*> &L2 = info->get_edge_output_prop_symbols();
         std::list<gm_symtab_entry*>::iterator I;
+
+        sprintf(temp, "public class %sVertexOutputFormat", proc_name);
+        Body_output.pushln(temp);
+        sprintf(temp, "extends TextVertexOutputFormat<%s, %s, %s> {", vertex_id, vertex_data, edge_data);
+        Body_output.pushln(temp);
+        Body_output.pushln("@SuppressWarnings(\"unchecked\")");
+        Body_output.pushln("@Override");
+        Body_output.pushln("public TextVertexWriter createVertexWriter(");
+        Body_output.pushln("TaskAttemptContext context) throws IOException, InterruptedException {");
+        sprintf(temp, "return new %sVertexWriter();", proc_name);
+        Body_output.pushln(temp);
+        Body_output.pushln("}");
+        Body_output.NL();
+
+        sprintf(temp, "private class %sVertexWriter", proc_name);
+        Body_output.pushln(temp);
+        sprintf(temp, "extends TextVertexOutputFormat<%s, %s, %s>.TextVertexWriterToEachLine {", vertex_id, vertex_data, edge_data);
+        Body_output.pushln(temp);
+        Body_output.NL();
+
+        Body_output.pushln("@Override");
+        sprintf(temp, "protected Text convertVertexToLine(Vertex<%s, %s, %s, ?> vertex)", vertex_id, vertex_data, edge_data);
+        Body_output.pushln(temp);
+        Body_output.pushln("throws IOException {");
+        Body_output.pushln("StringBuffer sb = new StringBuffer(vertex.getId().toString());");
 
         //-------------------------------------------------
         // Print Example
@@ -403,7 +395,6 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         Body_output.pushln("//--------------------------------------");
 
         // dump Vertex values
-        //Body_output.pushln("sb.append('\\t').append(vertex.getValue());");
         if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
             Body_output.pushln("sb.append('\\t');");
             Body_output.pushln("sb.append(\"1.0\"); // dummy value");
@@ -435,17 +426,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
                 Body_output.pushln(temp);
             }
         }
-        //if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-        //    Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
-        //    Body_output.pushln("sb.append('\\t').append(edge.getValue());");
-        //} else {
-        //    Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
-        //    Body_output.pushln("sb.append(\"\\t1.0\");");
-        //}
         Body_output.pushln("}");
         Body_output.NL();
 
-        Body_output.pushln("getRecordWriter().write(new Text(sb.toString()), null);");
+        Body_output.pushln("return new Text(sb.toString());");
         Body_output.pushln("}");
         Body_output.pushln("}");
         Body_output.pushln("}");
