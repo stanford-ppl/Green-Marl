@@ -40,11 +40,9 @@ void gm_giraphlib::generate_headers_input(gm_code_writer& Body) {
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.util.Map;");
 
-    Body.pushln("import org.apache.giraph.graph.*;");
     Body.pushln("import org.apache.giraph.io.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.hadoop.mapreduce.InputSplit;");
-    Body.pushln("import org.apache.hadoop.mapreduce.RecordReader;");
     Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
     Body.pushln("import com.google.common.collect.Maps;");
     Body.NL();
