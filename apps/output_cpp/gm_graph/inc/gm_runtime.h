@@ -15,7 +15,7 @@
 
 class gm_runtime
 {
-public:
+  public:
     gm_runtime();
     virtual ~gm_runtime();
 
@@ -29,7 +29,7 @@ public:
     long rand_long(long max, int tid = 0);           // returns [0, max-1]   : for large numbers e.g. nodes
     int rand(int min, int max, int tid = 0);   // returns [min, max-1]
 
-private:
+  private:
     void expand_random_seeds(int old, int n);
     bool is_init;
     int num_threads;

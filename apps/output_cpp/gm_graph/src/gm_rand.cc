@@ -1,9 +1,3 @@
-/*
- * gm_rand.cc
- *
- *  Created on: Sep 12, 2012
- *      Author: raghav
- */
 #include "gm_rand.h"
 
 gm_rand64::gm_rand64() {

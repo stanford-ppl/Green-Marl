@@ -1,9 +1,3 @@
-/*
- * graph_gen.h
- *
- *  Created on: Sep 11, 2012
- *      Author: raghav
- */
 #ifndef GRAPH_GEN_H_
 #define GRAPH_GEN_H_
 
