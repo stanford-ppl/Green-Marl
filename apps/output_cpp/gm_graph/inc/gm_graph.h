@@ -9,7 +9,6 @@
 #include <omp.h>
 
 #include "gm_internal.h"
-#include "gm_helper_functions.h"
 
 typedef node_t node_id;
 typedef edge_t edge_id;
@@ -67,7 +66,7 @@ class gm_graph
 // Give access to gm_graph_hdfs
 friend class gm_graph_hdfs;
 
-public:
+  public:
     gm_graph();
     virtual ~gm_graph();
 
@@ -220,7 +219,7 @@ public:
     bool load_binary_hdfs(char* filename);
 #endif  // HDFS
 
-private:
+  private:
 
     void delete_frozen_graph();
     void allocate_memory_for_frozen_graph(node_t n, edge_t m);

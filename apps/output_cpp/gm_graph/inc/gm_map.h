@@ -12,7 +12,7 @@ using namespace std;
 template<class Key, class Value>
 class gm_map
 {
-public:
+  public:
     virtual ~gm_map() {
     }
     ;
@@ -110,7 +110,7 @@ public:
 
     virtual void clear() = 0;
 
-protected:
+  protected:
 
     static bool compare_smaller(Value a, Value b) {
         return a < b;
@@ -133,7 +133,7 @@ protected:
 template<class Key, class Value>
 class gm_map_small : public gm_map<Key, Value>
 {
-private:
+  private:
     map<Key, Value> data;
     const Value defaultValue;
     gm_spinlock_t lock;
@@ -178,7 +178,7 @@ private:
         return result;
     }
 
-public:
+  public:
     gm_map_small(Value defaultValue) : lock(0), defaultValue(defaultValue) {
     }
 
@@ -254,7 +254,7 @@ public:
 template<class Key, class Value>
 class gm_map_large : public gm_map<Key, Value>
 {
-private:
+  private:
     const size_t size_;
     const Value defaultValue;
     Value* const data;
@@ -362,7 +362,7 @@ private:
             if (valid[i] && compare(data[i], value)) return false;
     }
 
-public:
+  public:
     gm_map_large(size_t size, Value defaultValue) :
             size_(size), data(new Value[size]), valid(new bool[size]), defaultValue(defaultValue) {
         #pragma omp parallel for
@@ -477,7 +477,7 @@ public:
 template<class Key, class Value>
 class gm_map_medium : public gm_map<Key, Value>
 {
-private:
+  private:
     const int innerSize;
     const Value defaultValue;
     map<Key, Value>* innerMaps;
@@ -657,7 +657,7 @@ private:
         return tmpSize;
     }
 
-public:
+  public:
     gm_map_medium(int threadCount, Value defaultValue) : innerSize(getSize(threadCount)), bitmask(getBitMask(innerSize)), defaultValue(defaultValue) {
         locks = new gm_spinlock_t[innerSize];
         innerMaps = new map<Key, Value>[innerSize];

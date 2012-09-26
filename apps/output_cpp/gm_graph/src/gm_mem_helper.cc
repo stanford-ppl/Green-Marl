@@ -1,10 +1,3 @@
-/*
- * gm_mem_helper.cc
- *
- *  Created on: Sep 14, 2012
- *      Author: raghav
- */
-
 #include <assert.h>
 #include "gm_mem_helper.h"
 
