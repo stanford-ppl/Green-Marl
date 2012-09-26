@@ -48,6 +48,7 @@ class gm_symtab_entry;
 class gm_symtab;
 class gm_scope;
 class ast_id;
+class ast_field;
 // typechecker context;
 class gm_apply;
 // defined in gm_traverse.h
@@ -258,6 +259,8 @@ public:
     virtual int  get_iter_type()      {assert(false);return 0;}
     virtual ast_id* get_source()      {assert(false);return NULL;}
     virtual ast_id* get_source2()     {assert(false);return NULL;}
+    virtual bool is_source_field()    {return false;}
+    virtual ast_field* get_source_field() {return NULL;}
 
 
 protected:
@@ -1962,6 +1965,7 @@ public:
         delete filter;
         delete src;
         delete src2;
+        delete src_field;
         delete_symtabs();
     }
 
@@ -1975,9 +1979,33 @@ public:
         e->expr_class = GMEXPR_REDUCE;
         e->reduce_type = optype;
         e->iter_type = iter_op;
+        e->is_src_field = false;
 
         iter->set_parent(e);
         src->set_parent(e);
+        body->set_parent(e);
+        body->set_up_op(e);
+        if (filter != NULL) {
+            filter->set_parent(e);
+            filter->set_up_op(e);
+        }
+
+        return e;
+    }
+    static ast_expr_reduce*
+    new_reduce_expr(int optype, ast_id* iter, ast_field* src_fld, int iter_op, ast_expr* body, ast_expr* filter = NULL) {
+        ast_expr_reduce *e = new ast_expr_reduce();
+        e->iter = iter;
+        e->body = body;
+        e->filter = filter;
+        e->src_field = src_fld;
+        e->expr_class = GMEXPR_REDUCE;
+        e->reduce_type = optype;
+        e->iter_type = iter_op;
+        e->is_src_field = true;
+
+        iter->set_parent(e);
+        src_fld->set_parent(e);
         body->set_parent(e);
         body->set_up_op(e);
         if (filter != NULL) {
@@ -2008,7 +2036,15 @@ public:
     }
 
     virtual ast_id* get_source() {
+        assert(is_src_field == false);
         return src;
+    }
+    virtual ast_field* get_source_field() {
+        assert(is_src_field == true);
+        return src_field;
+    }
+    virtual bool is_source_field() {
+        return is_src_field;
     }
 
     ast_id* get_iterator() {
@@ -2030,7 +2066,7 @@ public:
 
     void set_source2(ast_id* i) {
         src2 = i;
-        if (i != NULL) i->set_parent(this);
+        if (i != NULL) { i->set_parent(this);}
     }
 
     void set_filter(ast_expr* e) {
@@ -2047,7 +2083,7 @@ public:
 
 private:
     ast_expr_reduce() :
-            ast_expr(), iter(NULL), src(NULL), src2(NULL), body(NULL), filter(NULL), reduce_type(GMREDUCE_NULL), iter_type(0) {
+            ast_expr(), iter(NULL), src(NULL), src2(NULL), body(NULL), filter(NULL), reduce_type(GMREDUCE_NULL), iter_type(0), src_field(NULL), is_src_field(false) {
         set_nodetype(AST_EXPR_RDC);
         create_symtabs();
     }
@@ -2059,6 +2095,8 @@ private:
     ast_expr* filter;
     int reduce_type;
     int iter_type;
+    bool is_src_field;
+    ast_field* src_field;
 };
 
 //-------------------------------------------------------
@@ -2459,18 +2497,18 @@ public:
         delete iterator;
         delete source;
         delete source2;
+        delete source_field;
         delete cond;
         //delete symbol info
         delete_symtabs();
     }
 private:
     ast_foreach() :
-            ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), source2(NULL), cond(NULL), seq_exe(false), use_reverse(false), iter_type(0) {
+            ast_sent(AST_FOREACH), body(NULL), iterator(NULL), source(NULL), source2(NULL), cond(NULL), seq_exe(false), use_reverse(false), iter_type(0) , source_field(NULL), is_src_field(false) {
         create_symtabs();
     }
 
 public:
-    // iterate on a graph
     static ast_foreach* new_foreach(ast_id* it, ast_id* src, ast_sent* b, int iter_type, ast_expr* cond = NULL) {
         ast_foreach* d = new ast_foreach();
         d->iterator = it;
@@ -2478,17 +2516,41 @@ public:
         d->body = b;
         d->iter_type = iter_type;
         d->cond = cond;
+        d->is_src_field = false;
         src->set_parent(d);
         it->set_parent(d);
         b->set_parent(d);
         if (cond != NULL) cond->set_parent(d);
         return d;
     }
+    static ast_foreach* new_foreach(ast_id* it, ast_field* src_field, ast_sent* b, int iter_type, ast_expr* cond = NULL) {
+        ast_foreach* d = new ast_foreach();
+        d->iterator = it;
+        d->source_field = src_field;
+        d->body = b;
+        d->iter_type = iter_type;
+        d->cond = cond;
+        d->is_src_field = true;
+        src_field->set_parent(d);
+        it->set_parent(d);
+        b->set_parent(d);
+        if (cond != NULL) cond->set_parent(d);
+        return d;
+    }
+
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
     virtual void traverse_sent(gm_apply*a, bool is_post, bool is_pre);
 
+    virtual bool is_source_field() {
+        return is_src_field;
+    }
+    virtual ast_field* get_source_field() {
+        assert(is_src_field);
+        return source_field;
+    }
     virtual ast_id* get_source() {
+        assert(!is_src_field);
         return source;
     }
     ast_id* get_iterator() {
@@ -2571,10 +2633,12 @@ private:
     ast_id* iterator;
     ast_id* source; // graph
     ast_id* source2; // common nbr
+    ast_field* source_field;
     int iter_type; // GM_ITERATORS
     ast_expr* cond;
     bool seq_exe;
     bool use_reverse;
+    bool is_src_field;
 };
 
 // BFS or DFS

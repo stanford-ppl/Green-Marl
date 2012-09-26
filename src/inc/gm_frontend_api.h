@@ -59,7 +59,7 @@ extern ast_node* GM_expr_id_access(ast_node* id);
 extern ast_node* GM_expr_field_access(ast_node* field);
 extern ast_node* GM_expr_conversion(ast_node* left, ast_node* type, int l, int c);
 extern ast_node* GM_expr_foreign(const char* text, int l, int c);
-extern ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, ast_node* body, ast_node* filter, ast_node* src2, int l, int c);
+extern ast_node* GM_expr_reduceop(int op, ast_node* iter, ast_node* src, int iter_op, ast_node* body, ast_node* filter, ast_node* src2, int l, int c, bool is_src_field);
 extern ast_node* GM_expr_ternary(ast_node* cond, ast_node* left, ast_node* right, int l, int c);
 extern ast_node* GM_expr_builtin_expr(ast_node* id, ast_node* id2, expr_list* l);
 extern ast_node* GM_expr_builtin_field_expr(ast_node* id, ast_node* id2, expr_list* list);
@@ -82,7 +82,7 @@ extern ast_node* GM_while(ast_node* cond, ast_node* body);
 extern ast_node* GM_dowhile(ast_node* cond, ast_node* body);
 extern ast_node* GM_return(ast_node* expr, int l, int c);
 
-extern ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sent, ast_node* expr, bool is_seq, bool is_backward, ast_node* source2);
+extern ast_node* GM_foreach(ast_node* id, ast_node* source, int iter_typ, ast_node* sent, ast_node* expr, bool is_seq, bool is_backward, ast_node* source2, bool is_src_field);
 extern ast_node* GM_bfs(ast_node* it, ast_node* source, ast_node* root, ast_node* navigator, ast_node* f_filter, ast_node* b_filter, ast_node* f_sent,
         ast_node* b_sent, bool use_tp, bool is_bfs);
 
