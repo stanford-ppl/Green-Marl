@@ -339,16 +339,31 @@ void ast_expr_reduce::reproduce(int ind_level) {
     body->reproduce(0);
     Out.push("} ");
 }
+void ast_expr_builtin_field::reproduce(int ind_level) {
+    field_driver->reproduce(0);
+    Out.push('.');
+    assert(orgname != NULL);
+    Out.push(orgname);
+    std::list<ast_expr*>::iterator I;
+    int cnt = 0;
+    int size = args.size();
+    Out.push('(');
+    for (I = args.begin(); I != args.end(); I++, cnt++) {
+        (*I)->reproduce(0);
+        if (cnt != (size - 1)) Out.push(',');
+    }
+    Out.push(')');
+}
 void ast_expr_builtin::reproduce(int ind_level) {
     if (this->get_opclass() == GMEXPR_ID) {
         id1->reproduce(0);
         return;
     }
-
     if (driver != NULL) {
         driver->reproduce(0);
         Out.push('.');
-    }assert(orgname != NULL);
+    }
+    assert(orgname != NULL);
     Out.push(orgname);
     std::list<ast_expr*>::iterator I;
     int cnt = 0;

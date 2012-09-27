@@ -1,5 +1,4 @@
 
-
 ODIR = output
 COMP = ../../bin/gm_comp
 FLAGS = -o=$(ODIR) -t=cpp_omp

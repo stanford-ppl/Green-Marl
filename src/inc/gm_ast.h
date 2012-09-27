@@ -1899,6 +1899,7 @@ class ast_expr_builtin_field: public ast_expr_builtin
 {
 
 public:
+    virtual void reproduce(int id_level);
 
     ~ast_expr_builtin_field() {
         delete field_driver;

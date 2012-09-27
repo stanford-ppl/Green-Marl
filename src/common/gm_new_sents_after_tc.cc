@@ -28,9 +28,11 @@ extern bool gm_declare_symbol(gm_symtab* SYM, ast_id* id, ast_typedecl *type, bo
 //  *  Iterator ids in body still do not contain valid symtab entry, after this function.
 //  *  They should be adjusted after this function.
 //------------------------------------------------------------
-ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, int iter_type) {
+ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, int iter_type, ast_field* src_field) {
     assert(it->getSymInfo() == NULL);
-    assert(src->getSymInfo() != NULL);
+    if (src!=NULL) assert(src->getSymInfo() != NULL);
+    if (src_field!=NULL) assert(src_field->get_first()->getSymInfo() != NULL);
+    if (src_field!=NULL) assert(src_field->get_second()->getSymInfo() != NULL);
     assert(gm_is_all_graph_iteration(iter_type) || 
            gm_is_any_neighbor_iteration(iter_type) ||
            gm_is_simple_collection_iteration(iter_type));
@@ -39,7 +41,12 @@ ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, in
     // create foreach node
     //-----------------------------------------------------
     if (body == NULL) body = ast_sentblock::new_sentblock();
-    ast_foreach* fe = ast_foreach::new_foreach(it, src, body, iter_type);
+    ast_foreach* fe;
+    if (src_field == NULL) {
+        fe = ast_foreach::new_foreach(it, src, body, iter_type);
+    } else {
+        fe = ast_foreach::new_foreach(it, src_field, body, iter_type);
+    }
 
     //--------------------------------------------------
     // create iterator type
@@ -47,13 +54,21 @@ ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, in
     ast_typedecl* type;
     ast_id* target_graph;
     if (gm_is_all_graph_iteration(iter_type)) {
+        assert(src!=NULL);
         assert(gm_is_graph_type(src->getTypeSummary()));
         target_graph = src->copy(true);
     }
     else {
-        assert(src->getTypeInfo()->get_target_graph_id() != NULL);
-        target_graph = src->getTypeInfo()->get_target_graph_id()->copy(true);
+        if (src == NULL) {
+            assert(src_field != NULL);
+            assert(src_field->get_first()->getTypeInfo()->get_target_graph_id() != NULL);
+            target_graph = src_field->get_first()->getTypeInfo()->get_target_graph_id()->copy(true);
+        } else {
+            assert(src->getTypeInfo()->get_target_graph_id() != NULL);
+            target_graph = src->getTypeInfo()->get_target_graph_id()->copy(true);
+        }
     }
+
     if (gm_is_node_iteration(iter_type)) {
         type = ast_typedecl::new_iterator(target_graph, GMTYPE_NODE_ITERATOR, fe);
     } else if (gm_is_edge_iteration(iter_type)) {

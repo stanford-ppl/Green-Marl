@@ -55,6 +55,9 @@ public:
     virtual void generate_down_initializer(ast_foreach* fe, gm_code_writer& Body);
     virtual void generate_foreach_header(ast_foreach* fe, gm_code_writer& Body);
 
+protected:
+    gm_cpp_gen* get_main() {return main;}
+
 private:
     //map sizes
     static const int SMALL = 0;

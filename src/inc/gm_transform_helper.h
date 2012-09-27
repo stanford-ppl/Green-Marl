@@ -137,7 +137,7 @@ void gm_remove_symbol(ast_node* top, gm_symtab_entry* sym);
 //------------------------------------------------------------
 
 // note:see gm_new_foreach_after_tc.cc for assumptions about the argument and output.
-ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, int iter_type);
+ast_foreach* gm_new_foreach_after_tc(ast_id* it, ast_id* src, ast_sent* body, int iter_type, ast_field* src_field=NULL);
 
 ast_expr_reduce* gm_new_expr_reduce_after_tc(ast_id* it, ast_id* src, ast_expr* body, ast_expr* filter, int iter_type);
 
