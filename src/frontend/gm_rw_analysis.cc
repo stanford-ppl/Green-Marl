@@ -21,6 +21,19 @@ const char* gm_get_range_string(int access_range) {
            (access_range == GM_RANGE_LEVEL_UP) ? "LEVEL_UP" : (access_range == GM_RANGE_LEVEL_DOWN) ? "LEVEL_DOWN" : "???";
 }
 
+static int get_iteration_src_type_summary(ast_id* iterator) {
+    ast_id* src_id;
+    ast_field* src_field;
+    iterator->getTypeInfo()->get_iteration_source_from_iterator(src_id, src_field);
+
+    if (src_id != NULL)
+        return src_id->getTypeSummary();
+    else if (src_field != NULL)
+        return src_field->getTypeInfo()->getTargetTypeSummary();
+    else 
+        assert(false);
+}
+
 //----------------------------------------------------
 // Traverse for Analysis
 // (Should be 'post-applying')
@@ -317,7 +330,8 @@ void traverse_expr_for_readset_adding_reduce(ast_expr_reduce* e2, gm_rwinfo_map&
     ast_expr* f = e2->get_filter();
     ast_expr* b = e2->get_body();
     bool is_conditional = (f != NULL) || gm_is_collection_iterator_type(iter_type);
-    range_cond_t R(gm_get_range_from_itertype(iter_type, e2->get_source()->getTypeSummary()), !is_conditional);
+    int src_type = get_iteration_src_type_summary(e2->get_iterator());
+    range_cond_t R(gm_get_range_from_itertype(iter_type, src_type), !is_conditional);
     DrvMap[it] = R;
     traverse_expr_for_readset_adding(b, rset, DrvMap);
     DrvMap.erase(it);
@@ -1052,24 +1066,34 @@ bool gm_rw_analysis::apply_foreach(ast_foreach* a) {
     if (a->get_filter() != NULL) traverse_expr_for_readset_adding(a->get_filter(), R_temp);
 
     // add source to the readset
+
+    if (! a->is_source_field())
     {
         ast_id* source = a->get_source();
         gm_rwinfo* new_entry = gm_rwinfo::new_scala_inst(source);
         gm_symtab_entry *sym = source->getSymInfo();
         gm_add_rwinfo_to_set(R_temp, sym, new_entry, false);
     }
+    else {
+        // [todo]
+
+    }
 
     bool is_conditional = (a->get_filter() != NULL) || (gm_is_collection_iterator_type(a->get_iter_type()));
     is_okay = merge_body(R_temp, W_temp, D_temp, M_temp, a->get_body(), is_conditional);
+
+    ast_id* iter = a->get_iterator();
+    int src_type =  get_iteration_src_type_summary(iter);
+    int iter_type = a->get_iter_type();
 
     // 3) Eliminate access driven by the current iterator
     // 4) And construct bound set
     //printf("foreach: %s, iter_type = %s\n", a->get_iterator()->get_genname(), gm_get_type_string(a->get_iter_type()));
     gm_rwinfo_map& B = gm_get_bound_set_info(a)->bound_set;
-    is_okay = cleanup_iterator_access(a->get_iterator(), R_temp, R, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), W_temp, W, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access_reduce(a->get_iterator(), D_temp, D, W, B, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
-    is_okay = cleanup_iterator_access(a->get_iterator(), M_temp, M, a->get_iter_type(), a->get_source()->getTypeSummary(), a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(iter, R_temp, R, iter_type, src_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(iter, W_temp, W, iter_type, src_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access_reduce(iter, D_temp, D, W, B, iter_type, src_type, a->is_parallel()) && is_okay;
+    is_okay = cleanup_iterator_access(iter, M_temp, M, iter_type, src_type, a->is_parallel()) && is_okay;
 
     //printf("R:");gm_print_rwinfo_set(R);
     //printf("done\n");

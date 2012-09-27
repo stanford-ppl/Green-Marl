@@ -231,10 +231,22 @@ int ast_typedecl::get_defined_iteration_from_iterator() {
     return def_node->get_iter_type();
 }
 ast_id* ast_typedecl::get_defined_source_from_iterator() {
+    
     assert(is_iterator());
     assert(def_node != NULL);
-
     return def_node->get_source();
+}
+void ast_typedecl::get_iteration_source_from_iterator(ast_id*& src_id, ast_field*& src_field) {
+    assert(is_iterator());
+    assert(def_node != NULL);
+    src_id = NULL;
+    src_field = NULL;
+    if (def_node->is_source_field())
+        src_field = def_node->get_source_field();
+    else
+        src_id = def_node->get_source();
+
+    return; 
 }
 
 

@@ -318,7 +318,10 @@ void ast_expr_reduce::reproduce(int ind_level) {
     Out.push('(');
     iter->reproduce(0);
     Out.push(": ");
-    src->reproduce(0);
+    if (is_source_field())
+        src_field->reproduce(0);
+    else
+        src->reproduce(0);
     Out.push(".");
     Out.push(gm_get_iteration_string(iter_type));
     if (gm_is_common_nbr_iteration(iter_type)) {
@@ -463,7 +466,12 @@ void ast_foreach::reproduce(int ind_level) {
     }
     iterator->reproduce(0);
     Out.push(" : ");
-    source->reproduce(0);
+    if (is_source_field()) {
+        source_field->reproduce(0);
+    }
+    else {
+        source->reproduce(0);
+    }
     Out.push(".");
     Out.push(gm_get_iteration_string(iter_type));
     if (gm_is_common_nbr_iteration(iter_type)) {

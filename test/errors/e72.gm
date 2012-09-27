@@ -1,0 +1,12 @@
+Procedure test_iteration_of_collecion_properties(G:Graph)
+{
+    Node_Prop<Node_Set>(G) P;
+    Edge_Prop<Int> A;
+	
+    Int s = 0;
+    Foreach(n: G.Nodes) {
+	    For(x : n.P.Items) {
+		    x.A = 0;	
+        }
+	}
+}

@@ -167,16 +167,25 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
     bool for_rhs = a->is_for_rhs();
 
     if (is_pre) {
-        ast_id* src = get_source();
+        ast_id* src=NULL;
+        ast_field* src_f=NULL;
+        if (is_source_field()) 
+            src_f = get_source_field();
+        else 
+            src = get_source();
+        
         ast_id* src2 = get_source2();
         ast_id* it = get_iterator();
         if (for_id) {
-            a->apply(src);
+            if (src!= NULL) a->apply(src);
+            if (src_f!= NULL) a->apply(src_f->get_first());
+            if (src_f!= NULL) a->apply(src_f->get_second());
             a->apply(it);
             if (src2 != NULL) a->apply(src2);
         }
         if (for_rhs) {
-            a->apply_rhs(src);
+            if (src!=NULL) a->apply_rhs(src);
+            if (src_f!=NULL) a->apply_rhs(src_f);
             a->apply_rhs(it);
             if (src2 != NULL) a->apply_rhs(src2);
 
@@ -191,15 +200,26 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
     if (f != NULL) f->traverse(a, is_post, is_pre);
 
     if (is_post) {
-        ast_id* src = get_source();
+        ast_id* src=NULL;
+        ast_field* src_f=NULL;
+        if (is_source_field()) 
+            src_f = get_source_field();
+        else 
+            src = get_source();
+
         ast_id* src2 = get_source2();
         ast_id* id = get_iterator();
         if (for_id) {
             if (a->has_separate_post_apply()) {
-                a->apply2(src);
+                if (src!= NULL) a->apply2(src);
+                if (src_f!= NULL) a->apply2(src_f->get_first());
+                if (src_f!= NULL) a->apply2(src_f->get_second());
                 a->apply2(id);
                 if (src2 != NULL) a->apply2(src2);
             } else {
+                if (src!= NULL) a->apply(src);
+                if (src_f!= NULL) a->apply(src_f->get_first());
+                if (src_f!= NULL) a->apply(src_f->get_second());
                 a->apply(src);
                 a->apply(id);
                 if (src2 != NULL) a->apply(src2);
@@ -207,13 +227,15 @@ void ast_foreach::traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
         }
         if (for_rhs) {
             if (a->has_separate_post_apply()) {
-                a->apply_rhs(src);
-                a->apply_rhs(id);
-                if (src2 != NULL) a->apply_rhs(src2);
-            } else {
-                a->apply_rhs2(src);
+                if (src!= NULL) a->apply_rhs2(src);
+                if (src_f!= NULL) a->apply_rhs2(src_f);
                 a->apply_rhs2(id);
                 if (src2 != NULL) a->apply_rhs2(src2);
+            } else {
+                if (src!= NULL) a->apply_rhs(src);
+                if (src_f!= NULL) a->apply_rhs(src_f);
+                a->apply_rhs(id);
+                if (src2 != NULL) a->apply_rhs(src2);
             }
         }
     }
@@ -601,16 +623,24 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre) {
         if (for_symtab) {
             apply_symtabs(a, PRE_APPLY);
         }
-        ast_id* src = get_source();
+        ast_id* src=NULL;
+        ast_field* src_f=NULL;
+        if (is_source_field()) 
+            src_f = get_source_field();
+        else 
+            src = get_source();
         ast_id* it = get_iterator();
         ast_id* src2 = get_source2();
         if (for_id) {
-            a->apply(src);
+            if (src!=NULL) a->apply(src);
+            if (src_f!=NULL) a->apply(src_f->get_first());
+            if (src_f!=NULL) a->apply(src_f->get_second());
             a->apply(it);
             if (src2 != NULL) a->apply(src2);
         }
         if (for_rhs) {
-            a->apply_rhs(src);
+            if (src!=NULL) a->apply_rhs(src);
+            if (src_f!=NULL) a->apply_rhs(src_f);
             a->apply_rhs(it);
             if (src2 != NULL) a->apply_rhs(src2);
         }
@@ -627,27 +657,38 @@ void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre) {
         if (for_symtab) {
             apply_symtabs(a, POST_APPLY);
         }
-        ast_id* src = get_source();
+        ast_id* src=NULL;
+        ast_field* src_f=NULL;
+        if (is_source_field()) 
+            src_f = get_source_field();
+        else 
+            src = get_source();
         ast_id* it = get_iterator();
         ast_id* src2 = get_source2();
         if (for_id) {
             if (b) {
-                a->apply2(src);
+                if (src!=NULL) a->apply2(src);
+                if (src_f!=NULL) a->apply2(src_f->get_first());
+                if (src_f!=NULL) a->apply2(src_f->get_second());
                 a->apply2(it);
                 if (src2 != NULL) a->apply2(src2);
             } else {
-                a->apply(src);
+                if (src!=NULL) a->apply(src);
+                if (src_f!=NULL) a->apply(src_f->get_first());
+                if (src_f!=NULL) a->apply(src_f->get_second());
                 a->apply(it);
                 if (src2 != NULL) a->apply(src2);
             }
         }
         if (for_rhs) {
             if (b) {
-                a->apply_rhs2(src);
+                if (src!=NULL) a->apply_rhs2(src);
+                if (src_f!=NULL) a->apply_rhs2(src_f);
                 a->apply_rhs2(it);
                 if (src2 != NULL) a->apply_rhs2(src2);
             } else {
-                a->apply_rhs(src);
+                if (src!=NULL) a->apply_rhs(src);
+                if (src_f!=NULL) a->apply_rhs(src_f);
                 a->apply_rhs(it);
                 if (src2 != NULL) a->apply_rhs(src2);
             }

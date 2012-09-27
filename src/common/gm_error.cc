@@ -185,6 +185,10 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
             printf("Numeric type required for reduction\n");
             break;
 
+        case GM_ERROR_NEED_ITEM_ITERATION:
+            printf("Need Items iteration here\n");
+            break;
+
         default:
             printf("Unknown error 2\n");
             break;

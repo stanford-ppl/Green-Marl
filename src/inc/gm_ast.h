@@ -833,7 +833,8 @@ public:
     // defined in frontend/gm_typecheck.cc
     //---------------------------------------------------------------
     int           get_defined_iteration_from_iterator(); 
-    ast_id*       get_defined_source_from_iterator(); 
+    ast_id*       get_defined_source_from_iterator();  // to be depricated
+    void          get_iteration_source_from_iterator(ast_id*& src_id, ast_field*& src_field);  
 
     virtual void reproduce(int id_level);
     virtual void dump_tree(int id_level);
