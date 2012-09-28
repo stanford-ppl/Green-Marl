@@ -137,3 +137,12 @@ os.putenv("env", "cpp_omp");
 build_and_run_apps("output_cpp", True);
 
 
+# RUN CPP_BE_LINK_TEST (CHECK IF CRASH)
+def run_unit_cpp_be_link():
+    os.chdir(s_path+"/..");
+    crash_res = commands.getstatusoutput("./check_cpp_be.sh");
+    if crash_res[0] != 0:
+        print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
+        sys.exit(-1);
+
+run_unit_cpp_be_link();
