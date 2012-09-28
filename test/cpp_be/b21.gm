@@ -1,4 +1,4 @@
-Procedure test_default_graph(G : Graph, n : Node)
+Procedure b21_test_default_graph(G : Graph, n : Node)
 {
     //must compile since only one graph is present
     Edge e;

@@ -474,6 +474,8 @@ class gm_map_large : public gm_map<Key, Value>
 };
 
 
+// Map is implemnted with set of inner-maps
+
 template<class Key, class Value>
 class gm_map_medium : public gm_map<Key, Value>
 {
@@ -483,7 +485,24 @@ class gm_map_medium : public gm_map<Key, Value>
     map<Key, Value>* innerMaps;
     gm_spinlock_t* locks;
     typedef typename map<Key, Value>::iterator Iterator;
-    const unsigned bitmask;
+    const uint32_t bitmask;
+
+    inline uint32_t getPositionFromKey(const Key key)
+    {
+        uint32_t P = 0;
+
+        if (sizeof(Key) == 1) { 
+            const uint8_t* c = (const uint8_t*) &key;
+            P = *c;
+        } else if (sizeof(Key) == 2) {
+            const uint16_t* c = (const uint16_t*) &key;
+            P = *c;
+        } else if (sizeof(Key) >= 4) {
+            const uint32_t* c = (const uint32_t*) &key;
+            P = *c;
+        } 
+        return P & bitmask;
+    }
 
     template<class FunctionCompare, class FunctionMinMax>
     Value getValue_generic_par(FunctionCompare compare, FunctionMinMax func, const Value initialValue) {
@@ -594,8 +613,8 @@ class gm_map_medium : public gm_map<Key, Value>
 
     template<class Function>
     bool hasValue_generic_par(Function compare, const Key key) {
-
-        Value reference = getValueFromPosition(key % innerSize, key);
+        uint32_t position = getPositionFromKey(key);
+        Value reference = getValueFromPosition(position, key);
 
         for(int i = 0; i < innerSize; i++) {
             if (innerMaps[i].size() > 0) {
@@ -607,10 +626,20 @@ class gm_map_medium : public gm_map<Key, Value>
         return true;
     }
 
+    unsigned getKeyForMask(const Key key) {
+        unsigned new_key;
+        if (sizeof(Key) >= sizeof(new_key)) {
+            const Key* key_p = &key;
+
+        }
+        return 0;
+    }
+
     template<class Function>
     bool hasValue_generic_seq(Function compare, const Key key) {
         bool result = true;
-        Value reference = getValueFromPosition(key & bitmask, key);
+        uint32_t position = getPositionFromKey(key);
+        Value reference = getValueFromPosition(position, key);
         #pragma omp parallel for
         for(int i = 0; i < innerSize; i++) {
             bool tmp = hasValueAtPosition_generic(i, compare, reference);
@@ -654,8 +683,11 @@ class gm_map_medium : public gm_map<Key, Value>
         while(tmpSize < threadCount) {
             tmpSize *= 2;
         }
+        // we will use only up to 4B for positioninig
+        assert(tmpSize <= 1024*1024*1024);
         return tmpSize;
     }
+
 
   public:
     gm_map_medium(int threadCount, Value defaultValue) : innerSize(getSize(threadCount)), bitmask(getBitMask(innerSize)), defaultValue(defaultValue) {
@@ -673,24 +705,24 @@ class gm_map_medium : public gm_map<Key, Value>
     }
 
     bool hasKey(const Key key) {
-        int position = key & bitmask;
+        uint32_t position = getPositionFromKey(key);
         return positionHasKey(position, key);
     }
 
     Value getValue(const Key key) {
-        int position = key & bitmask;
+        uint32_t position = getPositionFromKey(key);
         return getValueFromPosition(position, key);
     }
 
     void setValue_par(const Key key, Value value) {
-        int position = key & bitmask;
+        uint32_t position = getPositionFromKey(key);
         gm_spinlock_acquire(locks + position);
         setValueAtPosition(position, key, value);
         gm_spinlock_release(locks + position);
     }
 
     void setValue_seq(const Key key, Value value) {
-        int position = key & bitmask;
+        uint32_t position = getPositionFromKey(key);
         setValueAtPosition(position, key, value);
     }
 
@@ -735,7 +767,7 @@ class gm_map_medium : public gm_map<Key, Value>
     }
 
     Value changeValueAtomicAdd(const Key key, const Value summand) {
-        int position = key & bitmask;
+        uint32_t position = getPositionFromKey(key);
         gm_spinlock_acquire(locks + position);
         Value newValue = summand;
         if(positionHasKey(position, key)) newValue += getValueFromPosition(position, key);

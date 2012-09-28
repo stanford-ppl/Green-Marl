@@ -1,4 +1,4 @@
-Procedure test_size(G:Graph)
+Procedure b36_test_size(G:Graph)
 {
     N_O o;
     N_S s;

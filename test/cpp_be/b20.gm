@@ -1,4 +1,4 @@
-Procedure test_default_graph(G:Graph)
+Procedure b20_test_default_graph(G:Graph)
 {
     //must compile since only one graph is present
     Node n;

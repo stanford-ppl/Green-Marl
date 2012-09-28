@@ -314,24 +314,64 @@ void ast_bfs::traverse_sent(gm_apply*a, bool is_post, bool is_pre) {
 
 void ast_assign_mapentry::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
 
+    bool for_id = a->is_for_id();
+    assert(!is_argminmax_assign());
     if (is_pre) {
-        a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr());
+        if (for_id) {
+            a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_map_id());
+        }
+        if (get_bound() != NULL)  // REDUCE or DEFER
+            a->apply(get_bound());
+
     }
+
+    bool b = a->has_separate_post_apply();
+    bool for_rhs = a->is_for_rhs();
+    bool for_lhs = a->is_for_lhs();
+
+    to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr()->traverse(a, is_post, is_pre);
+
+    /*
+    if (for_lhs || for_rhs) {
+        a->set_matching_lhs(to_assign_mapentry()->get_lhs_mapaccess());
+        a->set_matching_rhs_top(get_rhs());
+    }
+    if (is_pre && for_lhs) {
+        a->apply_lhs(to_assign_mapentry()->get_lhs_mapaccess());
+    }
+    */
 
     get_rhs()->traverse(a, is_post, is_pre);
 
+    /*
+    if (is_post && for_lhs) {
+        if (b)
+            a->apply_lhs2(to_assign_mapentry()->get_lhs_mapaccess());
+        else
+            a->apply_lhs(to_assign_mapentry()->get_lhs_mapaccess());
+    }
+    */
+
+
     if (is_post) {
-            a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr());
+      if (for_id) {
+        if (b)
+            a->apply2(to_assign_mapentry()->get_lhs_mapaccess()->get_map_id());
+        else
+            a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_map_id());
+        
+        if (get_bound() != NULL){  // REDUCE or DEFER
+            if (b)
+                a->apply2(to_assign_mapentry()->get_lhs_mapaccess()->get_map_id());
+            else
+                a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_map_id());
+        }
+      }
     }
 }
 
 void ast_assign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
     bool for_id = a->is_for_id();
-
-    if (is_map_entry_assign()) {
-        printf("traversexxx\n");
-        a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_key_expr());
-    }
 
     if (is_pre) {
         if (for_id) {
@@ -358,6 +398,7 @@ void ast_assign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
                     }
                 }
             }
+
         }
     }
 
@@ -475,6 +516,13 @@ void ast_assign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
                         }
                     }
                 }
+            }
+
+            if (is_map_entry_assign()) {
+                if (b) 
+                    a->apply2(to_assign_mapentry()->get_lhs_mapaccess()->get_map_id());
+                else
+                    a->apply(to_assign_mapentry()->get_lhs_mapaccess()->get_map_id());
             }
         }
     }
@@ -886,8 +934,21 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre) {
             break;
         case GMEXPR_MAPACCESS: {
             ast_mapaccess* mapAccess = ((ast_expr_mapaccess*) this)->get_mapaccess();
-            a->set_for_rhs(true);
+            if (for_id) {
+                if (is_pre) {
+                    a->apply(mapAccess->get_map_id());
+                }
+            }
             mapAccess->get_key_expr()->traverse(a, is_post, is_pre);
+            if (for_id) {
+                if (is_post) {
+                    if (b) {
+                        a->apply2(mapAccess->get_map_id());
+                    } else {
+                        a->apply(mapAccess->get_map_id());
+                    }
+                }
+            }
             a->set_for_rhs(for_rhs);
         }
             break;

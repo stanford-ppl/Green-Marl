@@ -1,4 +1,4 @@
-Procedure test_collection_iteration(G:Graph)
+Procedure b37_test_collection_iteration(G:Graph)
 {
     N_O o;
     N_S s;

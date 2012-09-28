@@ -1,4 +1,4 @@
-Procedure test_nested_sum(G:Graph)
+Procedure b19(G:Graph)
 {
     //must compile since only one graph is present
     Node n;

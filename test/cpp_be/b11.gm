@@ -1,5 +1,5 @@
 // Test of min=
-Proc foo(G: Graph, A,B: N_P<Int>(G))
+Proc b11(G: Graph, A,B: N_P<Int>(G))
 {
     Int x=0; 
     Foreach(t:G.Nodes)(t.A > 0) 

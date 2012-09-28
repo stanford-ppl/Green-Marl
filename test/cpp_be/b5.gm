@@ -1,6 +1,6 @@
 
 // test of name sanitizing
-Proc foo(int:Int, double:Double, gm_graph: Graph)
+Proc b5_foo(int:Int, double:Double, gm_graph: Graph)
 {
     Double register  = int + double;
     Int if = int * 3;

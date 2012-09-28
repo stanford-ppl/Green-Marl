@@ -1,4 +1,4 @@
-Procedure test_property_of_collection_call(G:Graph)
+Procedure b23_test_property_of_collection_call(G:Graph)
 {
 	N_P<N_S> p1;
 	Node n;

@@ -1,5 +1,5 @@
 // Test of argmin=
-Proc foo(G: Graph, A,B: N_P<Int>(G))
+Proc b12_1(G: Graph, A,B: N_P<Int>(G))
 {
     Foreach(n:G.Nodes)
     {
@@ -12,7 +12,7 @@ Proc foo(G: Graph, A,B: N_P<Int>(G))
     }
 }
 
-Proc bar(G: Graph, A,B,C: N_P<Int>(G))
+Proc b12_2(G: Graph, A,B,C: N_P<Int>(G))
 {
     Foreach(n:G.Nodes)
     {
@@ -23,7 +23,7 @@ Proc bar(G: Graph, A,B,C: N_P<Int>(G))
     }
 }
 
-Proc bar2(G: Graph, A: N_P<Int>(G))
+Proc b12_3(G: Graph, A: N_P<Int>(G))
 {
     Int x;
     Node(G) m;

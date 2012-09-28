@@ -135,8 +135,9 @@ public:
 
             ast_vardecl* v = ast_vardecl::new_vardecl(type, id);
 
-            if (id->is_instantly_assigned())
+            if (id->is_instantly_assigned()) {
                 continue; //we throw away the vardecl here, because we will declare it later at the assignment
+            }
 
             if (top == NULL)
                 gm_insert_sent_begin_of_sb(sb, v, GM_NOFIX_SYMTAB);

@@ -1,5 +1,5 @@
 
-Proc foo(G: Graph)
+Proc b14(G: Graph)
 {
 	Node_Set(G) Set;
 	Foreach(n : G.Nodes) {

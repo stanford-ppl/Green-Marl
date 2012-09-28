@@ -1,4 +1,4 @@
-Procedure test_map_builtin_function(G:Graph)
+Procedure b45_test_map_builtin_function(G:Graph)
 {
 	Map<Int, Int> map;
 	

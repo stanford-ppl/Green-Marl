@@ -11,4 +11,22 @@ $(ODIR)/%.cc: %.gm
 	$(COMP) $(FLAGS) $<
 
 clean: 
-	\rm -rf $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h
+	\rm -rf $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h $(ODIR)/*.o dummy
+
+
+CC=g++
+GM_GRAPH=../../apps/output_cpp/gm_graph
+LIB=$(GM_GRAPH)/lib
+INC=$(GM_GRAPH)/inc
+SRCS=$(wildcard output/*.cc)
+OBJS=$(addprefix output/, $(notdir $(SRCS:.cc=.o)))
+
+dummy: $(OBJS) dummy.o
+	$(CC) -L$(LIB) $(OBJS) dummy.o -fopenmp -lgmgraph -o dummy
+
+dummy.o : dummy.c
+	$(CC) -I$(INC) -c -fopenmp -o $@ $<
+
+output/%.o: output/%.cc
+	$(CC) -I$(INC) -c -fopenmp -o $@ $<
+

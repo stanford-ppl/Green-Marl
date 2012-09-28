@@ -1,4 +1,4 @@
-Procedure test_property_of_collection_init(G:Graph)
+Procedure b22_test_property_of_collection_init(G:Graph)
 {
 	N_P<N_S> n_s;
 	N_P<Node_Seq> n_seq;

@@ -1,4 +1,4 @@
-Procedure test_has_edge_to(G:Graph)
+Procedure b34_test_has_edge_to(G:Graph)
 {
     Node n;
     Node m;

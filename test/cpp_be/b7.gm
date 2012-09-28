@@ -1,6 +1,6 @@
 
 // Test of built-in functions
-Proc foo(G: Graph, n: Node(G), A : N_P<Int>(G))
+Proc b7_foo(G: Graph, n: Node(G), A : N_P<Int>(G))
 {
     Int  x, y, z;
     Double  a, b, c;
