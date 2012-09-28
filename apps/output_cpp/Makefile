@@ -1,14 +1,10 @@
-
 .PHONY: lib bin
 all: lib bin
-
-
-
 
 lib:
 	@cd gm_graph; make
 
-bin:
+bin: lib
 	@cd src; make
 
 clean_all:
@@ -17,5 +13,3 @@ clean_all:
 
 clean:
 	@cd src; make clean
-
-

@@ -511,24 +511,24 @@ void gm_giraph_gen::do_generate_job_configuration() {
     }
     Body_main.NL();
     Body_main.pushln("GiraphJob job = new GiraphJob(getConf(), getClass().getName());");
-    Body_main.pushln("job.getConfiguration().setInt(GiraphJob.CHECKPOINT_FREQUENCY, 0);");
-    Body_main.pushln("job.getConfiguration().setBoolean(GiraphJob.USE_NETTY, true);");
-    sprintf(temp, "job.setVertexClass(%sVertex.class);", proc_name);
+    Body_main.pushln("job.getConfiguration().setInt(GiraphConfiguration.CHECKPOINT_FREQUENCY, 0);");
+    Body_main.pushln("job.getConfiguration().setBoolean(GiraphConfiguration.USE_NETTY, true);");
+    sprintf(temp, "job.getConfiguration().setVertexClass(%sVertex.class);", proc_name);
     Body_main.pushln(temp);
-    sprintf(temp, "job.setMasterComputeClass(%sVertex.MasterCompute.class);", proc_name);
+    sprintf(temp, "job.getConfiguration().setMasterComputeClass(%sVertex.MasterCompute.class);", proc_name);
     Body_main.pushln(temp);
-    sprintf(temp, "job.setWorkerContextClass(%sVertex.WorkerContext.class);", proc_name);
+    sprintf(temp, "job.getConfiguration().setWorkerContextClass(%sVertex.WorkerContext.class);", proc_name);
     Body_main.pushln(temp);
-    sprintf(temp, "job.setVertexInputFormatClass(%sVertexInputFormat.class);", proc_name);
+    sprintf(temp, "job.getConfiguration().setVertexInputFormatClass(%sVertexInputFormat.class);", proc_name);
     Body_main.pushln(temp);
     Body_main.pushln("FileInputFormat.addInputPath(job.getInternalJob(), new Path(cmd.getOptionValue('i')));");
     Body_main.pushln("if (cmd.hasOption('o')) {");
-    sprintf(temp, "job.setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc_name);
+    sprintf(temp, "job.getConfiguration().setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc_name);
     Body_main.pushln(temp);
     Body_main.pushln("FileOutputFormat.setOutputPath(job.getInternalJob(), new Path(cmd.getOptionValue('o')));");
     Body_main.pushln("}");
     Body_main.pushln("int workers = Integer.parseInt(cmd.getOptionValue('w'));");
-    Body_main.pushln("job.setWorkerConfiguration(workers, workers, 100.0f);");
+    Body_main.pushln("job.getConfiguration().setWorkerConfiguration(workers, workers, 100.0f);");
     for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;

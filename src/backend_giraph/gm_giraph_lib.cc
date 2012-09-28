@@ -24,7 +24,12 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
 }
 
 void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
-    Body.pushln("import org.apache.commons.cli.*;");
+    Body.pushln("import org.apache.commons.cli.CommandLine;");
+    Body.pushln("import org.apache.commons.cli.CommandLineParser;");
+    Body.pushln("import org.apache.commons.cli.HelpFormatter;");
+    Body.pushln("import org.apache.commons.cli.Options;");
+    Body.pushln("import org.apache.commons.cli.PosixParser;");
+    Body.pushln("import org.apache.giraph.GiraphConfiguration;");
     Body.pushln("import org.apache.giraph.graph.GiraphJob;");
     Body.pushln("import org.apache.hadoop.conf.Configuration;");
     Body.pushln("import org.apache.hadoop.fs.Path;");
