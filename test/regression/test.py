@@ -126,7 +126,19 @@ def build_and_run_apps(apps_out_dir, run_apps):
             app_res = commands.getstatusoutput("./bin/"+(re.split("\.", app)[0])+" data/__regressions_graph__.bin 1");
             assert app_res[0] == 0;
             print "APP "+app+" RES: "+app_res[1];
+
+# RUN CPP_BE_LINK_TEST (CHECK IF CRASH)
+def run_unit_cpp_be_link():
+    os.chdir(s_path+"/..");
+    crash_res = commands.getstatusoutput("./check_cpp_be.sh");
+    if crash_res[0] != 0:
+        print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
+        sys.exit(-1);
             
+os.putenv("env", "cpp_omp");
+build_and_run_apps("output_cpp", False);
+
+run_unit_cpp_be_link();
             
 
 os.putenv("env", "gps");
@@ -137,12 +149,4 @@ os.putenv("env", "cpp_omp");
 build_and_run_apps("output_cpp", True);
 
 
-# RUN CPP_BE_LINK_TEST (CHECK IF CRASH)
-def run_unit_cpp_be_link():
-    os.chdir(s_path+"/..");
-    crash_res = commands.getstatusoutput("./check_cpp_be.sh");
-    if crash_res[0] != 0:
-        print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
-        sys.exit(-1);
 
-run_unit_cpp_be_link();
