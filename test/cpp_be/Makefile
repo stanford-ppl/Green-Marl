@@ -16,17 +16,24 @@ clean:
 
 CC=g++
 GM_GRAPH=../../apps/output_cpp/gm_graph
+FLAGS_DEF=../../apps/output_cpp/common.mk
+
+
 LIB=$(GM_GRAPH)/lib
 INC=$(GM_GRAPH)/inc
 SRCS=$(wildcard output/*.cc)
 OBJS=$(addprefix output/, $(notdir $(SRCS:.cc=.o)))
+CFLAGS= -O3 -g -I$(INC) -c -fopenmp
+LFLAGS= -L$(LIB) -fopenmp -lgmgraph
+include $(FLAGS_DEF)
+
 
 dummy: $(OBJS) dummy.o
-	$(CC) -L$(LIB) $(OBJS) dummy.o -fopenmp -lgmgraph -o dummy
+	$(CC) $(LFLAGS) $(OBJS) dummy.o  -o dummy
 
 dummy.o : dummy.c
-	$(CC) -I$(INC) -c -fopenmp -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 
 output/%.o: output/%.cc
-	$(CC) -I$(INC) -c -fopenmp -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $<
 

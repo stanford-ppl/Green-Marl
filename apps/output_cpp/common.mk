@@ -19,9 +19,11 @@ endif
 #-----------------------------------------
 ifdef FORCE_64BIT
 CFLAGS += -m64
+LFLAGS += -m64
 endif
 ifdef FORCE_32BIT
 CFLAGS += -m32
+LFLAGS += -m32
 endif
 
 #-----------------------------------------
