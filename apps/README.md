@@ -76,11 +76,11 @@ GPS/Giraph: Yes
 
 9. kosaraju
 -------------------------------------
-Description: Finds strongly connected components using Kosaraju's Algorithm.
+Description: Finds strongly connected components using Kosarajus Algorithm.
 
 C++: Yes
 
-GPS/Giraph: No - the Node_Sequence collection-type is not yet supported for the GPS or Giraph back-end yet.
+GPS/Giraph: No - Depth first search is not yet supported for the GPS or Giraph back-end yet. (maybe will not be ever)
 
 
 10. pagerank

@@ -211,6 +211,8 @@ protected:
             syminfo = new gps_syminfo(is_scalar);
             get_curr_BB()->add_symbol_info(sym, syminfo);
         }
+
+        //printf("curr_BB : %d, sym : %s\n", get_curr_BB()->get_id(), i->get_genname());
         return syminfo;
     }
 

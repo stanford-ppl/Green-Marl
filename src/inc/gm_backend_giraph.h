@@ -93,10 +93,10 @@ public:
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master);
 
     virtual bool is_node_type_int() {
-        return true;
+        return false;  // Node ID is long type
     }
     virtual bool is_edge_type_int() {
-        return true;
+        return false;  // Edge ID is long type
     }
 };
 
