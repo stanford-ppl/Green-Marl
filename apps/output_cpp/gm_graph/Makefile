@@ -14,8 +14,8 @@ vpath %.h $(INC)
 
 SOURCES := $(wildcard $(SRC)/*.cc)
 OBJECTS := $(subst $(SRC),$(OBJ),$(SOURCES:.cc=.o)) 
-GRAPHLIB_OBJECTS = $(OBJECTS)
 GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/graph_gen_main.o 
+GRAPHLIB_OBJECTS = $(filter-out $(OBJ)/graph_gen_main.o,$(OBJECTS))
 
 # include common define flags for gm_graph and application
 # (32/64bit environment), (bitwidth of node/edge structure), (hdfs setting)
