@@ -11,7 +11,7 @@ PROGS = pagerank
 endif
 
 ifndef GM_ARGS
-GMARGS =
+GM_ARGS =
 endif
 
 

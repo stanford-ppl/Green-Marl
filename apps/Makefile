@@ -28,6 +28,7 @@ else
     ifeq ($(env),giraph)
       TARGET=giraph
       tdir=output_giraph
+	  GM_ARGS +="-GiraphPackage=my.app"
     else
       @echo "unknown target environment"
       false

@@ -366,7 +366,7 @@ static void find_linear_segments(gps_bb* current, std::list<gps_bb*>& current_li
 }
 
 void gm_gps_opt_merge_ebb_again::process(ast_procdef* p) {
-    if (!OPTIONS.get_arg_bool(GMARGFLAG_MERGE_BB)) return;
+    //if (!OPTIONS.get_arg_bool(GMARGFLAG_MERGE_BB)) return;
 
     gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);
     gps_bb* entry = info->get_entry_basic_block();

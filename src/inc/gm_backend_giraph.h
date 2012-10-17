@@ -98,6 +98,8 @@ public:
     virtual bool is_edge_type_int() {
         return false;  // Edge ID is long type
     }
+
+    virtual void generate_package_decl_if_required(gm_code_writer& Body);
 };
 
 //-----------------------------------------------------------------
