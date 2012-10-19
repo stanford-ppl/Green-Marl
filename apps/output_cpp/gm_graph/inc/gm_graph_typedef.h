@@ -18,6 +18,15 @@ typedef int32_t node_t;
 #define GM_SIZE_CHECK_VAR link_error_becuase_gm_graph_lib_is_configured_as_node32_edge32_but_the_application_is_not
 #endif
 
+enum VALUE_TYPE {
+    GMTYPE_BOOL = 0,
+    GMTYPE_INT,
+    GMTYPE_LONG,
+    GMTYPE_FLOAT,
+    GMTYPE_DOUBLE,
+    GMTYPE_END
+};
+
 // [recommened]
 // Add a call to this function to check if the definition of node/edge size 
 // matches with that of the library (linkage-time check). 
