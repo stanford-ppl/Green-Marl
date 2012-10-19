@@ -1,4 +1,5 @@
 #include "gm_graph.h"
+#include "gm_util.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
@@ -627,6 +628,178 @@ bool gm_graph::load_binary(char* filename) {
 
     error_return: fclose(f);
     error_return_noclose: clear_graph();
+    return false;
+}
+
+void *getArrayType(VALUE_TYPE vt, int size) {
+    switch(vt) {
+        case GMTYPE_BOOL: return (void *) new bool[size];
+        case GMTYPE_INT: return (void *) new int[size];
+        case GMTYPE_LONG: return (void *) new long[size];
+        case GMTYPE_FLOAT: return (void *) new float[size];
+        case GMTYPE_DOUBLE: return (void *) new double[size];
+        case GMTYPE_END: assert(false); return NULL; // Control should never reach this case.
+    }
+    return NULL;
+}
+
+/*
+void storeValueBasedOnType(void *mem, std::string val, VALUE_TYPE vt) {
+    switch(vt) {
+        case GMTYPE_BOOL: *((bool *)mem) = (val == "true"); break;
+        case GMTYPE_INT: *((int *)mem) = atoi(val.c_str()); break;
+        case GMTYPE_LONG: *((long *)mem) = atol(val.c_str()); break;
+        case GMTYPE_FLOAT: *((float *)mem) = strtof(val.c_str(), NULL); break;
+        case GMTYPE_DOUBLE: *((double *)mem) = strtod(val.c_str(), NULL); break;
+        case GMTYPE_END: assert(false); return; // Control should never reach this case.
+    }
+}
+*/
+
+void storeValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt) {
+    switch(vt) {
+        case GMTYPE_BOOL: ((bool *)arr)[pos] = (val == "true"); break;
+        case GMTYPE_INT: ((int *)arr)[pos] = atoi(val.c_str()); break;
+        case GMTYPE_LONG: ((long *)arr)[pos] = atol(val.c_str()); break;
+        case GMTYPE_FLOAT: ((float *)arr)[pos] = strtof(val.c_str(), NULL); break;
+        case GMTYPE_DOUBLE: ((double *)arr)[pos] = strtod(val.c_str(), NULL); break;
+        case GMTYPE_END: assert(false); return; // Control should never reach this case.
+    }
+}
+
+/*
+ * Adjacency list format:
+ *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
+ */
+bool gm_graph::load_adjacency_list(const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<void *>& vertex_props, // output parameter
+            std::vector<void *>& edge_props, // output parameter
+            const char* separators, // optional input parameter
+            bool use_hdfs// optional input parameter
+            ) {
+    clear_graph();
+    std::string line, temp_str;
+    node_t N = 0, processed_nodes = 0;
+    edge_t M = 0, processed_edges = 0;
+    std::map<node_t, node_t> index_convert;
+    size_t num_vertex_values = vprop_schema.size();
+    size_t num_edge_values = eprop_schema.size();
+
+    // Open the file
+    std::ifstream file(filename);
+    if (file == NULL) {
+        goto error_return;
+    }
+
+    printf ("In load adjacency list\n");
+    // Count the number of nodes and edges to allocate memory appropriately
+    while (std::getline(file, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        Tokenizer tknzr(line, separators);
+        if ( ! tknzr.hasNextToken()) {
+            // No token in this line
+            continue;
+        }
+        // Get the first token in the line, which must be the vertex id
+        temp_str = tknzr.getNextToken();
+        index_convert[atol(temp_str.c_str())] = N;
+        N++; // increment the number of vertices by 1
+
+        long number_of_tokens = tknzr.countNumberOfTokens(); // Count the number of tokens in the line
+        number_of_tokens -= 1; // subtract 1 for vertex id
+        number_of_tokens -= num_vertex_values; // subtract the number of vertex values
+
+        // Check for invalid file formats
+        // There should be atleast the vertex id and its values
+        assert(number_of_tokens >= 0);
+        // Every edge (represented by the destination vertex) should have its id and all its values
+        assert(number_of_tokens % (num_edge_values+1) == 0);
+
+        // Number of edges from this vertex = Remaining number of tokens / (Number of edge Values + 1 for the destination vertex id itself).
+        long number_of_edges = number_of_tokens / (num_edge_values+1);
+        M += number_of_edges; // increment the number of edges appropriately
+    }
+
+    printf ("   After counting number of nodes %ld and edges %ld\n", N, M);
+
+    // Allocate memory required for the graph
+    prepare_external_creation(N, M);
+
+    // Update the vertex_props vector with arrays for vertex properties
+    for (std::vector<VALUE_TYPE>::iterator it = vprop_schema.begin(); it != vprop_schema.end(); ++it) {
+        // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of vertices.
+        void *type_arr = getArrayType(*it, N);
+        vertex_props.push_back(type_arr);
+    }
+    // Update the edge_props vector with arrays for edge properties
+    for (std::vector<VALUE_TYPE>::iterator it = eprop_schema.begin(); it != eprop_schema.end(); ++it) {
+        // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of edges.
+        void *type_arr = getArrayType(*it, M);
+        edge_props.push_back(type_arr);
+    }
+
+    printf ("   After creating arrays for vertex and edge properties\n");
+
+    // Reset the file
+    file.clear();
+    file.seekg(0, std::ios::beg);
+
+    // Fill the node and edge arrays
+    while (std::getline(file, line)) {
+        if (line.empty()) {
+            continue;
+        }
+        Tokenizer tknzr(line, separators);
+        if ( ! tknzr.hasNextToken()) {
+            // No token in this line
+            continue;
+        }
+        // Get the first token in the line, which must be the vertex id
+        temp_str = tknzr.getNextToken();
+        this->begin[processed_nodes] = processed_edges;
+
+        // Get the next "num_vertex_values" tokens, which represent the vertex values
+        for (size_t i = 0; i < num_vertex_values; ++i) {
+            // Convert each token into a value of the appropriate type
+            // Store it in the corresponding array in the vertex_props vector
+            temp_str = tknzr.getNextToken();
+//            storeValueBasedOnType(&vertex_props[i][processed_nodes], temp_str, vprop_schema[i]);
+            storeValueBasedOnType(vertex_props[i], processed_nodes, temp_str, vprop_schema[i]);
+        }
+
+        while (tknzr.hasNextToken()) {
+            // Get the next token in the line, which must be a vertex id representing an edge
+            // Place this in the node_idx array, that holds the destination of all the edges
+            temp_str = tknzr.getNextToken();
+            this->node_idx[processed_edges] = index_convert[atol(temp_str.c_str())];
+
+            // Get the next "num_edge_values" tokens, which represent the edge values
+            for (size_t j = 0; j < num_edge_values; ++j) {
+                // Convert each token into a value of the appropriate type
+                // Store it in the corresponding array in the edge_props vector
+                assert (tknzr.hasNextToken());
+                temp_str = tknzr.getNextToken();
+//                storeValueBasedOnType(&edge_props[j][processed_edges], temp_str, eprop_schema[j]);
+                storeValueBasedOnType(edge_props[j], processed_edges, temp_str, eprop_schema[j]);
+            }
+
+            processed_edges++;
+        }
+        processed_nodes++;
+    }
+
+    printf ("   After loading the graph\n");
+
+    // Close the file and freeze graph
+    file.close();
+    _frozen = true;
+    return true;
+
+    error_return: clear_graph();
     return false;
 }
 
