@@ -693,7 +693,6 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         goto error_return;
     }
 
-    printf ("In load adjacency list\n");
     // Count the number of nodes and edges to allocate memory appropriately
     while (std::getline(file, line)) {
         if (line.empty()) {
@@ -724,8 +723,6 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         M += number_of_edges; // increment the number of edges appropriately
     }
 
-    printf ("   After counting number of nodes %ld and edges %ld\n", N, M);
-
     // Allocate memory required for the graph
     prepare_external_creation(N, M);
 
@@ -741,8 +738,6 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         void *type_arr = getArrayType(*it, M);
         edge_props.push_back(type_arr);
     }
-
-    printf ("   After creating arrays for vertex and edge properties\n");
 
     // Reset the file
     file.clear();
@@ -791,8 +786,6 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         }
         processed_nodes++;
     }
-
-    printf ("   After loading the graph\n");
 
     // Close the file and freeze graph
     file.close();
