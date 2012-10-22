@@ -726,7 +726,6 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
             // Convert each token into a value of the appropriate type
             // Store it in the corresponding array in the vertex_props vector
             temp_str = tknzr.getNextToken();
-//            storeValueBasedOnType(&vertex_props[i][processed_nodes], temp_str, vprop_schema[i]);
             storeValueBasedOnType(vertex_props[i], processed_nodes, temp_str, vprop_schema[i]);
         }
 
@@ -742,10 +741,8 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
                 // Store it in the corresponding array in the edge_props vector
                 assert (tknzr.hasNextToken());
                 temp_str = tknzr.getNextToken();
-//                storeValueBasedOnType(&edge_props[j][processed_edges], temp_str, eprop_schema[j]);
                 storeValueBasedOnType(edge_props[j], processed_edges, temp_str, eprop_schema[j]);
             }
-
             processed_edges++;
         }
         processed_nodes++;
