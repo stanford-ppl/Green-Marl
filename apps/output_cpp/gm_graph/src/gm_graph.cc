@@ -631,42 +631,6 @@ bool gm_graph::load_binary(char* filename) {
     return false;
 }
 
-void *getArrayType(VALUE_TYPE vt, int size) {
-    switch(vt) {
-        case GMTYPE_BOOL: return (void *) new bool[size];
-        case GMTYPE_INT: return (void *) new int[size];
-        case GMTYPE_LONG: return (void *) new long[size];
-        case GMTYPE_FLOAT: return (void *) new float[size];
-        case GMTYPE_DOUBLE: return (void *) new double[size];
-        case GMTYPE_END: assert(false); return NULL; // Control should never reach this case.
-    }
-    return NULL;
-}
-
-/*
-void storeValueBasedOnType(void *mem, std::string val, VALUE_TYPE vt) {
-    switch(vt) {
-        case GMTYPE_BOOL: *((bool *)mem) = (val == "true"); break;
-        case GMTYPE_INT: *((int *)mem) = atoi(val.c_str()); break;
-        case GMTYPE_LONG: *((long *)mem) = atol(val.c_str()); break;
-        case GMTYPE_FLOAT: *((float *)mem) = strtof(val.c_str(), NULL); break;
-        case GMTYPE_DOUBLE: *((double *)mem) = strtod(val.c_str(), NULL); break;
-        case GMTYPE_END: assert(false); return; // Control should never reach this case.
-    }
-}
-*/
-
-void storeValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt) {
-    switch(vt) {
-        case GMTYPE_BOOL: ((bool *)arr)[pos] = (val == "true"); break;
-        case GMTYPE_INT: ((int *)arr)[pos] = atoi(val.c_str()); break;
-        case GMTYPE_LONG: ((long *)arr)[pos] = atol(val.c_str()); break;
-        case GMTYPE_FLOAT: ((float *)arr)[pos] = strtof(val.c_str(), NULL); break;
-        case GMTYPE_DOUBLE: ((double *)arr)[pos] = strtod(val.c_str(), NULL); break;
-        case GMTYPE_END: assert(false); return; // Control should never reach this case.
-    }
-}
-
 /*
  * Adjacency list format:
  *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*

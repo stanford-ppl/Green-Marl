@@ -1,7 +1,9 @@
 #ifndef GM_UTIL_H_
 #define GM_UTIL_H_
 
+#include <stdint.h>
 #include <string>
+#include "gm_internal.h"
 
 /*
  * A class to tokenize a string.
@@ -36,5 +38,11 @@ class Tokenizer {
     bool found_next_token_start_; // flag to indicate if the next token start has been found
     long number_of_tokens_; // the number of tokens in the given string with the given delimiter
 };
+
+/*
+ * Methods to manipulate arrays based on different value types.
+ */
+void *getArrayType(VALUE_TYPE vt, int size);
+void storeValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt);
 
 #endif /* GM_UTIL_H_ */
