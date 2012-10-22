@@ -16,6 +16,11 @@ class Tokenizer {
     Tokenizer(std::string s, const char *d) : str_(s), delim_(d) { reset(); }
     Tokenizer(const char *s, const char *d) : str_(s), delim_(d) { reset(); }
 
+    void setString (std::string s) { str_ = s; reset(); }
+    void setDelimiter (std::string d) { delim_ = d; reset(); }
+    std::string getString () { return str_; }
+    std::string getDelimiter () { return delim_; }
+
     void reset();
     void findNextTokenStart();
     std::string getNextToken();
