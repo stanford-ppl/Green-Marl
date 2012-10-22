@@ -53,17 +53,17 @@ int main(int argc, char** argv) {
 
     std::vector<VALUE_TYPE> vprop_schema;
     // format for sample.adj
-//    vprop_schema.push_back(GMTYPE_FLOAT);
+    vprop_schema.push_back(GMTYPE_FLOAT);
     // format for testgraph_generic.adj
-    vprop_schema.push_back(GMTYPE_INT);
-    vprop_schema.push_back(GMTYPE_BOOL);
+//    vprop_schema.push_back(GMTYPE_INT);
+//    vprop_schema.push_back(GMTYPE_BOOL);
     
     std::vector<VALUE_TYPE> eprop_schema;
     // format for sample.adj
-//    eprop_schema.push_back(GMTYPE_DOUBLE);
+    eprop_schema.push_back(GMTYPE_DOUBLE);
     // format for testgraph_generic.adj
-    eprop_schema.push_back(GMTYPE_INT);
-    eprop_schema.push_back(GMTYPE_FLOAT);
+//    eprop_schema.push_back(GMTYPE_INT);
+//    eprop_schema.push_back(GMTYPE_FLOAT);
 
     std::vector<void*> vertex_props;
     std::vector<void*> edge_props;
@@ -74,13 +74,18 @@ int main(int argc, char** argv) {
     printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
     G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t");
 
+    //------------------------------
+    // Print graph details for manual verification 
+    //------------------------------
     printf ("Number of nodes = %d\n", G.num_nodes());
     printf ("Number of edges = %d\n", G.num_edges());
 
     int count = 0;
     printf ("  Vertex Properties\n");
     for (std::vector<void*>::iterator it = vertex_props.begin(); it != vertex_props.end(); ++it) {
+        printf ("Value type = %d\n", vprop_schema[count]);
         printBasedOnType(*it, vprop_schema[count++], G.num_nodes());
+        printf ("\n");
     }
     count = 0;
     printf ("\n");
