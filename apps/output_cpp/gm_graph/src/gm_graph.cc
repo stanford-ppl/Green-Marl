@@ -28,6 +28,8 @@ gm_graph::gm_graph() {
     e_idx2id = NULL;
     e_id2idx = NULL;
 
+    n_index2id = NULL;
+
     _numNodes = 0;
     _numEdges = 0;
     _reverse_edge = false;
@@ -762,6 +764,8 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
 
     // Allocate memory required for the graph
     prepare_external_creation(N, M);
+    // Allocate additional memory specific to data structures used with adjacency list graphs
+    n_index2id = new node_t[N];
 
     // Update the vertex_props vector with arrays for vertex properties
     for (std::vector<VALUE_TYPE>::iterator it = vprop_schema.begin(); it != vprop_schema.end(); ++it) {
@@ -793,13 +797,14 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         // Get the first token in the line, which must be the vertex id
         temp_str = tknzr.getNextToken();
         this->begin[processed_nodes] = processed_edges;
+        this->n_index2id[processed_nodes] = (node_t) atol(temp_str.c_str());
 
         // Get the next "num_vertex_values" tokens, which represent the vertex values
         for (size_t i = 0; i < num_vertex_values; ++i) {
             // Convert each token into a value of the appropriate type
             // Store it in the corresponding array in the vertex_props vector
             temp_str = tknzr.getNextToken();
-            storeValueBasedOnType(vertex_props[i], processed_nodes, temp_str, vprop_schema[i]);
+            loadValueBasedOnType(vertex_props[i], processed_nodes, temp_str, vprop_schema[i]);
         }
 
         while (tknzr.hasNextToken()) {
@@ -814,12 +819,13 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
                 // Store it in the corresponding array in the edge_props vector
                 assert (tknzr.hasNextToken());
                 temp_str = tknzr.getNextToken();
-                storeValueBasedOnType(edge_props[j], processed_edges, temp_str, eprop_schema[j]);
+                loadValueBasedOnType(edge_props[j], processed_edges, temp_str, eprop_schema[j]);
             }
             processed_edges++;
         }
         processed_nodes++;
     }
+    this->begin[processed_nodes] = processed_edges;
 
     // Close the file and freeze graph
     file.close();
@@ -828,6 +834,52 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
 
     error_return: clear_graph();
     return false;
+}
+
+/*
+ * Adjacency List Format:
+ *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
+ */
+bool gm_graph::store_adjacency_list (const char* filename, // input parameter
+        std::vector<VALUE_TYPE> vprop_schema, // input parameter
+        std::vector<VALUE_TYPE> eprop_schema, // input parameter
+        std::vector<void*>& vertex_props, // input parameter
+        std::vector<void*>& edge_props, // input parameter
+        const char* separators, // input parameter
+        bool use_hdfs // input parameter
+        ) {
+    size_t num_vertex_values = vprop_schema.size();
+    size_t num_edge_values = eprop_schema.size();
+
+    std::ofstream file(filename);
+    if (file == NULL) {
+        fprintf (stderr, "cannot open %s for writing\n", filename);
+        return false;
+    }
+
+    for (node_t i = 0; i < _numNodes; ++i) {
+        // Write the vertex id corresponding to this index
+        file << this->n_index2id[i];
+        // Write the values corresponding to this vertex
+        for (size_t j = 0; j < num_vertex_values; ++j) {
+            file << separators;
+            storeValueBasedOnType (vertex_props[j], i, file, vprop_schema[j]);
+        }
+
+        for (edge_t j = this->begin[i]; j < this->begin[i+1]; ++j) {
+            // For each edge, write its destination vertex's id
+            file << separators << this->n_index2id[this->node_idx[j]];
+            // Write the values corresponding to this edge
+            for (size_t k = 0; k < num_edge_values; ++k) {
+                file << separators;
+                storeValueBasedOnType (edge_props[k], j, file, eprop_schema[k]);
+            }
+        }
+        file << "\n";
+    }
+
+    file.close();
+    return true;
 }
 
 bool gm_graph::is_neighbor(node_t src, node_t to) {

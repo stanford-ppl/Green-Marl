@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <fstream>
 #include "gm_internal.h"
 
 /*
@@ -43,6 +44,7 @@ class Tokenizer {
  * Methods to manipulate arrays based on different value types.
  */
 void *getArrayType(VALUE_TYPE vt, int size);
-void storeValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt);
+void loadValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt);
+void storeValueBasedOnType(void *arr, long pos, std::ofstream& file, VALUE_TYPE vt);
 
 #endif /* GM_UTIL_H_ */

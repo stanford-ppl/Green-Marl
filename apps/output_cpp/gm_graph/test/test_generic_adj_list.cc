@@ -40,11 +40,12 @@ void printBasedOnType (void *mem, VALUE_TYPE type, int num) {
 
 int main(int argc, char** argv) {
 
-    if (argc < 2) {
-        printf ("Usage: ./test_generic_adj_list <input_file>\n");
+    if (argc < 3) {
+        printf ("Usage: ./test_generic_adj_list <input_file> <output_file>\n");
         exit(1);
     }
     char *inputFile = argv[1];
+    char *outputFile = argv[2];
 
     //------------------------------
     // Empty graph creation
@@ -96,4 +97,10 @@ int main(int argc, char** argv) {
         printf ("\n");
     }
     printf ("\n");
+
+    //------------------------------
+    // Write adjacency list graph
+    //------------------------------
+    printf ("Storing graph into file \'%s\' in adjacency list format...\n", outputFile);
+    G.store_adjacency_list(outputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " ");
 }

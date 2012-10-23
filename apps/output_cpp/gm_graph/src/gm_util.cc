@@ -66,10 +66,10 @@ void *getArrayType(VALUE_TYPE vt, int size) {
 }
 
 /*
- * Method to write to a given location in an array based on the given value type.
- * The value to be written is extracted from the given string 'val'.
+ * Method to load a value from the given string 'val'
+ * and write to a given location in an array based on the given value type.
  */
-void storeValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt) {
+void loadValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt) {
     switch(vt) {
         case GMTYPE_BOOL: ((bool *)arr)[pos] = (val == "true"); break;
         case GMTYPE_INT: ((int *)arr)[pos] = atoi(val.c_str()); break;
@@ -79,5 +79,21 @@ void storeValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt) 
         case GMTYPE_END: assert(false); return; // Control should never reach this case.
     }
 }
+
+/*
+ * Method to read a value from the given location in an array based on the given value type
+ * and store it in the file
+ */
+void storeValueBasedOnType(void *arr, long pos, std::ofstream& file, VALUE_TYPE vt) {
+    switch(vt) {
+        case GMTYPE_BOOL: file << std::boolalpha << ((bool *)arr)[pos]; break;
+        case GMTYPE_INT: file << ((int *)arr)[pos]; break;
+        case GMTYPE_LONG: file << ((long *)arr)[pos]; break;
+        case GMTYPE_FLOAT: file << ((float *)arr)[pos]; break;
+        case GMTYPE_DOUBLE: file << ((double *)arr)[pos]; break;
+        case GMTYPE_END: assert (false); return; // Control should never reach this case.
+    }
+}
+
 
 
