@@ -7,7 +7,19 @@
 #include "gm_builtin.h"
 #include "gm_argopts.h"
 
+void gm_giraphlib::generate_package_decl_if_required(gm_code_writer& Body)
+{
+    const char* p= OPTIONS.get_arg_string(GMARGFLAG_GIRAPH_PACKAGE);
+    if ((p != NULL) && (strlen(p) > 0)) {
+        Body.push("package ");
+        Body.push(p);
+        Body.pushln(";");
+    }
+}
+
 void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
+
+    generate_package_decl_if_required(Body);
     Body.pushln("import java.io.DataInput;");
     Body.pushln("import java.io.DataOutput;");
     Body.pushln("import java.io.IOException;");
@@ -24,6 +36,7 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
 }
 
 void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
+    generate_package_decl_if_required(Body);
     Body.pushln("import org.apache.commons.cli.CommandLine;");
     Body.pushln("import org.apache.commons.cli.CommandLineParser;");
     Body.pushln("import org.apache.commons.cli.HelpFormatter;");
@@ -42,6 +55,7 @@ void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
 }
 
 void gm_giraphlib::generate_headers_input(gm_code_writer& Body) {
+    generate_package_decl_if_required(Body);
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.util.Map;");
 
@@ -54,6 +68,7 @@ void gm_giraphlib::generate_headers_input(gm_code_writer& Body) {
 }
 
 void gm_giraphlib::generate_headers_output(gm_code_writer& Body) {
+    generate_package_decl_if_required(Body);
     Body.pushln("import java.io.IOException;");
 
     Body.pushln("import org.apache.giraph.graph.*;");
