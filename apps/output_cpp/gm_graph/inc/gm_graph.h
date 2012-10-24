@@ -181,7 +181,37 @@ friend class gm_graph_hdfs;
     virtual void prepare_external_creation(node_t n, edge_t m);
     virtual bool store_binary(char* filename);          // attributes not saved
     virtual bool load_binary(char* filename);           // call this to an empty graph object
+
+    /*
+     * A specialized function to load a graph represented using the adjacency list format.
+     */
     virtual bool load_adjacency_list(char* filename, char separator = '\t');
+    /*
+     * A generic function to load a graph represented using the adjacency list format.
+     * Adjacency List Format:
+     *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
+     */
+    virtual bool load_adjacency_list(const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<void *>& vertex_props, // output parameter
+            std::vector<void *>& edge_props, // output parameter
+            const char* separators = "\t", // optional input parameter
+            bool use_hdfs = false // optional input parameter
+            );
+    /*
+     * A generic function to store a graph represented using the adjacency list format.
+     * Adjacency List Format:
+     *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
+     */
+    virtual bool store_adjacency_list (const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<void*>& vertex_props, // input parameter
+            std::vector<void*>& edge_props, // input parameter
+            const char* separators = "\t", // input parameter
+            bool use_hdfs = false // input parameter
+            );
 
     //--------------------------------------------------------------
     // conversion between idx and id
@@ -238,6 +268,8 @@ friend class gm_graph_hdfs;
 
     edge_t* e_id2idx;
     edge_t* e_idx2id;
+
+    node_t* n_index2id;
 };
 
 #endif
