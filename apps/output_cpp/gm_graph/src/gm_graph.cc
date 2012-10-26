@@ -737,7 +737,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         if (line.empty()) {
             continue;
         }
-        Tokenizer tknzr(line, separators);
+        GM_Tokenizer tknzr(line, separators);
         if ( ! tknzr.hasNextToken()) {
             // No token in this line
             continue;
@@ -789,7 +789,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         if (line.empty()) {
             continue;
         }
-        Tokenizer tknzr(line, separators);
+        GM_Tokenizer tknzr(line, separators);
         if ( ! tknzr.hasNextToken()) {
             // No token in this line
             continue;

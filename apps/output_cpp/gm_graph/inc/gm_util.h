@@ -12,12 +12,12 @@
  * This implementation uses the methods in the C++ string class,
  * specifically, find_first_not_of, find_first_of, and substr.
  */
-class Tokenizer {
+class GM_Tokenizer {
   public:
-    Tokenizer(std::string s, std::string d) : str_(s), delim_(d) { reset(); }
-    Tokenizer(const char *s, std::string d) : str_(s), delim_(d) { reset(); }
-    Tokenizer(std::string s, const char *d) : str_(s), delim_(d) { reset(); }
-    Tokenizer(const char *s, const char *d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(std::string s, std::string d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(const char *s, std::string d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(std::string s, const char *d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(const char *s, const char *d) : str_(s), delim_(d) { reset(); }
 
     void setString (std::string s) { str_ = s; reset(); }
     void setDelimiter (std::string d) { delim_ = d; reset(); }
