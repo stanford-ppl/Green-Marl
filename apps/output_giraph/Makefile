@@ -9,7 +9,7 @@ all: target
 lib:
 
 bin: lib/$(GIRAPH_JAR) lib/$(HADOOP_JAR)
-	javac generated/*.java -d bin/ -cp lib/$(GIRAPH_JAR):lib/$(HADOOP_JAR)
+	javac generated/*.java -d bin/ -classpath lib/$(GIRAPH_JAR):lib/$(HADOOP_JAR)
 
 target: bin
 	jar cf target/$(TARGET_JAR) -C bin/ .
