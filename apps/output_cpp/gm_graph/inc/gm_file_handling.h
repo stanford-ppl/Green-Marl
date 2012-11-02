@@ -3,6 +3,9 @@
 
 #include <string>
 #include <fstream>
+#ifdef HDFS
+#include <jni.h>
+#endif
 
 /*
  * A class to read a file and return one line at a time.
@@ -24,6 +27,15 @@ class GM_LineReader {
     bool hdfs_;
     std::ifstream fs_;
     bool failed_;
+#ifdef HDFS
+    JNIEnv *env_;
+    JavaVM *jvm_;
+    JavaVMOption  opts_[1];
+    JavaVMInitArgs vmargs_;
+    jclass cls_;
+    jobject lineReaderObject_;
+    jmethodID getLineMethod_;
+#endif
 };
 
 
