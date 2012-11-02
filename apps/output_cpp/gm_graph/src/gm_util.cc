@@ -1,5 +1,7 @@
 #include "gm_util.h"
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * This is an implementation of the Tokenizer class.
