@@ -82,6 +82,9 @@ def build_compiler():
         sys.exit(-1);
     assert os.path.isfile(COMP_BINARY_PATH)
 
+if (interactive): 
+    print "Building compiler";
+
 build_compiler();
 
 # RUN UNIT TEST (CHECK IF CRASH)
@@ -91,6 +94,9 @@ def run_unit_test_crash():
     if crash_res[0] != 0:
         print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
         sys.exit(-1);
+
+if (interactive): 
+    print "Running Unit Test compiler";
 
 run_unit_test_crash();
 
@@ -106,6 +112,8 @@ def get_apps_names(apps_out_dir):
 
 def build_and_run_apps(apps_out_dir, run_apps):
     os.chdir(APPS_PATH);
+    if (interactive): 
+        print "Building at " + apps_out_dir;
     make_res = commands.getstatusoutput("make clean_all");
     assert make_res[0] == 0;
     make_res = commands.getstatusoutput("make all -j" + str(NUM_THREADS));
