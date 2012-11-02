@@ -1,5 +1,6 @@
 #include "gm_graph.h"
 #include "gm_util.h"
+#include "gm_file_handling.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
@@ -727,13 +728,20 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     size_t num_edge_values = eprop_schema.size();
 
     // Open the file
+    GM_LineReader lineReader(filename, use_hdfs);
+    if (lineReader.failed()) {
+        goto error_return;
+    }
+    /*
     std::ifstream file(filename);
     if (file == NULL) {
         goto error_return;
     }
+    */
 
     // Count the number of nodes and edges to allocate memory appropriately
-    while (std::getline(file, line)) {
+//    while (std::getline(file, line)) {
+    while (lineReader.getNextLine(line)) {
         if (line.empty()) {
             continue;
         }
@@ -781,11 +789,13 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     }
 
     // Reset the file
-    file.clear();
-    file.seekg(0, std::ios::beg);
+    lineReader.reset();
+//    file.clear();
+//    file.seekg(0, std::ios::beg);
 
     // Fill the node and edge arrays
-    while (std::getline(file, line)) {
+//    while (std::getline(file, line)) {
+    while (lineReader.getNextLine(line)) {
         if (line.empty()) {
             continue;
         }
@@ -828,7 +838,8 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     this->begin[processed_nodes] = processed_edges;
 
     // Close the file and freeze graph
-    file.close();
+    lineReader.terminate();
+//    file.close();
     _frozen = true;
     return true;
 
