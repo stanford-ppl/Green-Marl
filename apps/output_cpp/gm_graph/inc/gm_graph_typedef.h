@@ -24,8 +24,20 @@ enum VALUE_TYPE {
     GMTYPE_LONG,
     GMTYPE_FLOAT,
     GMTYPE_DOUBLE,
+    GMTYPE_NODE,
+    GMTYPE_EDGE,
     GMTYPE_END
 };
+
+#include <vector>
+
+typedef std::vector<double> GM_DVECT;
+typedef std::vector<float> GM_FVECT;
+typedef std::vector<bool> GM_BVECT;
+typedef std::vector<long> GM_LVECT;
+typedef std::vector<int> GM_IVECT;
+typedef std::vector<node_t> GM_NVECT;
+typedef std::vector<edge_t> GM_EVECT;
 
 // [recommened]
 // Add a call to this function to check if the definition of node/edge size 

@@ -1,9 +1,9 @@
-Useless nonterminals
+Nonterminals useless in grammar
 
    numeric_expr
 
 
-Terminals which are not used
+Terminals unused in grammar
 
    T_RBFS
    T_TO
@@ -11,7 +11,7 @@ Terminals which are not used
    T_RARROW
 
 
-Useless rules
+Rules useless in grammar
 
   218 numeric_expr: expr
 
@@ -315,9 +315,9 @@ Grammar
 
   214 rhs_list2: '<' expr ';' expr_list '>'
 
-  215 @1: /* empty */
+  215 $@1: /* empty */
 
-  216 expr_user: '[' @1 USER_TEXT ']'
+  216 expr_user: '[' $@1 USER_TEXT ']'
 
   217 id: ID
 
@@ -486,8 +486,8 @@ sb_end (125)
 sent_list (126)
     on left: 69 70, on right: 66 70
 sent (127)
-    on left: 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86,
-    on right: 70 90 91 149 150
+    on left: 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86, on right:
+    70 90 91 149 150
 sent_call (128)
     on left: 87, on right: 83
 sent_while (129)
@@ -588,7 +588,7 @@ rhs_list2 (174)
     on left: 214, on right: 135
 expr_user (175)
     on left: 216, on right: 151 152 184
-@1 (176)
+$@1 (176)
     on left: 215, on right: 216
 id (177)
     on left: 217, on right: 6 7 34 36 38 40 42 44 51 52 53 57 58 59
@@ -1123,11 +1123,11 @@ state 48
 
 state 49
 
-  216 expr_user: '[' . @1 USER_TEXT ']'
+  216 expr_user: '[' . $@1 USER_TEXT ']'
 
-    $default  reduce using rule 215 (@1)
+    $default  reduce using rule 215 ($@1)
 
-    @1  go to state 138
+    $@1  go to state 138
 
 
 state 50
@@ -2163,7 +2163,7 @@ state 137
 
 state 138
 
-  216 expr_user: '[' @1 . USER_TEXT ']'
+  216 expr_user: '[' $@1 . USER_TEXT ']'
 
     USER_TEXT  shift, and go to state 233
 
@@ -3827,7 +3827,7 @@ state 232
 
 state 233
 
-  216 expr_user: '[' @1 USER_TEXT . ']'
+  216 expr_user: '[' $@1 USER_TEXT . ']'
 
     ']'  shift, and go to state 306
 
@@ -5150,7 +5150,7 @@ state 305
 
 state 306
 
-  216 expr_user: '[' @1 USER_TEXT ']' .
+  216 expr_user: '[' $@1 USER_TEXT ']' .
 
     $default  reduce using rule 216 (expr_user)
 

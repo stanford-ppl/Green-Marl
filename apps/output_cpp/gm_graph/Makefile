@@ -14,7 +14,7 @@ vpath %.h $(INC)
 
 SOURCES := $(wildcard $(SRC)/*.cc)
 OBJECTS := $(subst $(SRC),$(OBJ),$(SOURCES:.cc=.o)) 
-GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/graph_gen_main.o $(OBJ)/gm_util.o 
+GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/graph_gen_main.o $(OBJ)/gm_util.o  $(OBJ)/gm_lock.o
 GRAPHLIB_OBJECTS = $(filter-out $(OBJ)/graph_gen_main.o,$(OBJECTS))
 
 # include common define flags for gm_graph and application

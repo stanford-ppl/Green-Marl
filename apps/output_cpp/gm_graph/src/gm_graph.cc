@@ -1,5 +1,3 @@
-#include "gm_graph.h"
-#include "gm_util.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
@@ -7,6 +5,12 @@
 #include <string.h>
 #include <sstream>
 #include <map>
+#include <set>
+
+#include "gm_graph.h"
+#include "gm_util.h"
+#include "gm_lock.h"
+
 
 // If the following flag is on, we let the correct thread 'touches' the data strcutre
 // for the first time, so that the memory is allocated in the corresponding socket.
@@ -28,7 +32,7 @@ gm_graph::gm_graph() {
     e_idx2id = NULL;
     e_id2idx = NULL;
 
-    n_index2id = NULL;
+    //n_index2id = NULL;
 
     _numNodes = 0;
     _numEdges = 0;
@@ -36,6 +40,10 @@ gm_graph::gm_graph() {
     _frozen = false;
     _directed = true;
     _semi_sorted = false;
+
+    _nodekey_defined = false;
+    _reverse_nodekey_defined = false;
+    _nodekey_type_is_numeric = true;
 }
 
 gm_graph::~gm_graph() {
@@ -446,6 +454,9 @@ void gm_graph::clear_graph() {
 
     _numNodes = 0;
     _numEdges = 0;
+
+    if (_nodekey_defined) {_numeric_key.clear();}
+    if (_reverse_nodekey_defined) {_numeric_reverse_key.clear();}
 }
 
 //--------------------------------------------------
@@ -566,7 +577,7 @@ bool gm_graph::load_binary(char* filename) {
         goto error_return;
     }
 
-    printf("N = %ld, M = %ld\n", N,M);
+    printf("N = %ld, M = %ld\n", (long)N,(long)M);
     allocate_memory_for_frozen_graph(N, M);
 
 #if GM_GRAPH_NUMA_OPT 
@@ -621,7 +632,6 @@ bool gm_graph::load_binary(char* filename) {
             this->node_idx[j] = temp_node_idx[j];
     }
     delete [] temp_node_idx;
-
 #endif
 
     fclose(f);
@@ -634,75 +644,8 @@ bool gm_graph::load_binary(char* filename) {
 }
 
 bool gm_graph::load_adjacency_list(char* filename, char separator) {
-    clear_graph();
-    std::string line, temp_str;
-    long temp_long, field_index;
-    node_t N = 0, processed_nodes = 0;
-    edge_t M = 0, processed_edges = 0;
-    std::map<node_t,node_t> index_convert;
+    assert (false);  // deprecated
 
-    // Open the file
-    std::ifstream file(filename);
-    if (file == NULL) {
-        goto error_return;
-    }
-
-    // Determine number of nodes and edges so we can allocate memory
-    while(std::getline(file, line)) {
-        if (line.at(0) < '0' || line.at(0) > '9') {
-            continue;
-        }
-        field_index = 0;
-        std::stringstream linestream(line);
-        while(std::getline(linestream, temp_str, separator)) {
-            if (field_index == 0) {
-                // Parsing node id
-                temp_long = atol(temp_str.c_str());
-                index_convert[temp_long] = N;
-                N++;
-            } else if (field_index % 2 == 0) {
-                // Parsing edge id
-                M++;
-            }
-            field_index++;
-        }
-    }
-
-    // Allocate the memory
-    prepare_external_creation(N, M);
-
-    // Reset the file
-    file.clear();
-    file.seekg(0, std::ios::beg);
-
-    // Fill the node and edges arrays
-    while(std::getline(file, line)) {
-        if (line.at(0) < '0' || line.at(0) > '9') {
-            continue;
-        }
-        field_index = 0;
-        std::stringstream linestream(line);
-        while(std::getline(linestream, temp_str, separator)) {
-            if (field_index == 0) {
-                // Parsing node id
-                this->begin[processed_nodes] = processed_edges;
-            } else if (field_index % 2 == 0) {
-                // Parsing edge id
-                temp_long = atol(temp_str.c_str());
-                this->node_idx[processed_edges] = index_convert[temp_long];
-                processed_edges++;
-            }
-            field_index++;
-        }
-        processed_nodes++;
-    }
-
-    // Close file and freeze graph
-    file.close();
-    _frozen = true;
-    return true;
-
-    error_return: clear_graph();
     return false;
 }
 
@@ -720,17 +663,40 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
             ) {
     clear_graph();
     std::string line, temp_str;
-    node_t N = 0, processed_nodes = 0;
-    edge_t M = 0, processed_edges = 0;
-    std::map<node_t, node_t> index_convert;
+    //node_t N = 0, processed_nodes = 0;
+    //edge_t M = 0, processed_edges = 0;
+    //std::map<node_t, node_t> index_convert;
+    node_t N = 0;
+    edge_t M = 0;
     size_t num_vertex_values = vprop_schema.size();
     size_t num_edge_values = eprop_schema.size();
+
+    std::vector<edge_t> EDGE_CNT;
+    std::vector<node_t> DEST;
+    std::vector<void*> node_prop_vectors;
+    std::vector<void*> edge_prop_vectors;
+    std::set<node_t> DEST_ONLY;
+    gm_spinlock_t LOCK = 0;
+
 
     // Open the file
     std::ifstream file(filename);
     if (file == NULL) {
         goto error_return;
     }
+
+    //---------------------------------------------------
+    // Create vectors
+    //---------------------------------------------------
+    for(size_t i = 0; i < num_vertex_values; i++) {
+        node_prop_vectors.push_back( gmutil_createVectorType( vprop_schema[i] ) );
+    }
+    for(size_t i = 0; i < num_edge_values; i++) {
+        edge_prop_vectors.push_back( gmutil_createVectorType( eprop_schema[i] ) );
+    }
+
+    // prepare nodekey structure and its reverse structure
+    prepare_nodekey(true);
 
     // Count the number of nodes and edges to allocate memory appropriately
     while (std::getline(file, line)) {
@@ -744,42 +710,118 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         }
         // Get the first token in the line, which must be the vertex id
         temp_str = tknzr.getNextToken();
-        index_convert[atol(temp_str.c_str())] = N;
-        N++; // increment the number of vertices by 1
+        //index_convert[atol(temp_str.c_str())] = N;
+        add_nodekey(atol(temp_str.c_str()));
+        EDGE_CNT.push_back(M);
+        N++;
 
-        long number_of_tokens = tknzr.countNumberOfTokens(); // Count the number of tokens in the line
-        number_of_tokens -= 1; // subtract 1 for vertex id
-        number_of_tokens -= num_vertex_values; // subtract the number of vertex values
+        // Get the next "num_vertex_values" tokens, which represent the vertex values
+        for (size_t i = 0; i < num_vertex_values; ++i) {
+            // Convert each token into a value of the appropriate type
+            // Store it in the corresponding array in the vertex_props vector
+            temp_str = tknzr.getNextToken();
+            gmutil_loadValueIntoVector(node_prop_vectors[i], temp_str, vprop_schema[i]);
+        }
 
-        // Check for invalid file formats
-        // There should be atleast the vertex id and its values
-        assert(number_of_tokens >= 0);
-        // Every edge (represented by the destination vertex) should have its id and all its values
-        assert(number_of_tokens % (num_edge_values+1) == 0);
+        while (tknzr.hasNextToken()) {
+            // Get the next token in the line, which must be a vertex id representing an edge
+            // Place this in the node_idx array, that holds the destination of all the edges
+            temp_str = tknzr.getNextToken();
+            //this->node_idx[processed_edges] = index_convert[atol(temp_str.c_str())];
+            DEST.push_back(atol(temp_str.c_str()));
+            M++;
 
-        // Number of edges from this vertex = Remaining number of tokens / (Number of edge Values + 1 for the destination vertex id itself).
-        long number_of_edges = number_of_tokens / (num_edge_values+1);
-        M += number_of_edges; // increment the number of edges appropriately
+            // Get the next "num_edge_values" tokens, which represent the edge values
+            for (size_t j = 0; j < num_edge_values; ++j) {
+                // Convert each token into a value of the appropriate type
+                // Store it in the corresponding array in the edge_props vector
+                assert (tknzr.hasNextToken());
+                temp_str = tknzr.getNextToken();
+                gmutil_loadValueIntoVector(edge_prop_vectors[j], temp_str, eprop_schema[j]);
+            }
+        }
     }
 
-    // Allocate memory required for the graph
-    prepare_external_creation(N, M);
+    // check 'how many destination only nodes' 
+    #pragma omp parallel for 
+    for(edge_t i = 0; i < (edge_t)DEST.size(); i++)
+    {
+        node_t key = DEST[i];
+        if (!find_nodekey(key)) {
+            gm_spinlock_acquire(&LOCK);
+            DEST_ONLY.insert(key);
+            gm_spinlock_release(&LOCK);
+        } 
+    }
+
+    if (DEST_ONLY.size() > 0) {
+        node_t more = DEST_ONLY.size();
+        N+= more;
+        // add dummy node properties 
+        std::set<node_t>::iterator J;
+        for(J = DEST_ONLY.begin(); J != DEST_ONLY.end(); J++) {
+            node_t dest = *J;
+            add_nodekey(dest);
+            EDGE_CNT.push_back(M);
+            for (size_t i = 0; i < num_vertex_values; ++i) {
+                gmutil_loadDummyValueIntoVector(node_prop_vectors[i], vprop_schema[i]);
+            }
+        }
+    }
+
+    // key -> idx
+    #pragma omp parallel for 
+    for(edge_t i = 0; i < (edge_t) DEST.size(); i++)
+    {
+        node_t key = DEST[i];
+        DEST[i] = nodekey_to_nodeid(key);
+    }
+
+    // Copy 
+    prepare_external_creation(N, M); 
+    #pragma omp parallel for 
+    for(size_t i = 0; i < (size_t) N; i++) {
+        begin[i] = EDGE_CNT[i];
+        for(size_t j = EDGE_CNT[i]; j < (size_t) EDGE_CNT[i+1]; j++) {
+            node_idx[j] = DEST[j];
+        }
+    }
+    begin[N] = M;
+    
+    // extract array from vectors
+    for (size_t i = 0; i < num_vertex_values; ++i) {
+        void *array = getArrayType(vprop_schema[i], N);
+        gmutil_copyVectorIntoArray(node_prop_vectors[i], array, vprop_schema[i]);
+        gmutil_deleteVectorType(node_prop_vectors[i], vprop_schema[i] );
+        vertex_props.push_back ( array ) ;
+    }
+    for (size_t i = 0; i < num_vertex_values; ++i) {
+        void *array = getArrayType(eprop_schema[i], M);
+        gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i]);
+        gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );
+        edge_props.push_back ( array ) ;
+    }
+
+    // [todo] delete nodekey? 
+    return true;
+
     // Allocate additional memory specific to data structures used with adjacency list graphs
-    n_index2id = new node_t[N];
+    //n_index2id = new node_t[N];
 
     // Update the vertex_props vector with arrays for vertex properties
-    for (std::vector<VALUE_TYPE>::iterator it = vprop_schema.begin(); it != vprop_schema.end(); ++it) {
+    //for (std::vector<VALUE_TYPE>::iterator it = vprop_schema.begin(); it != vprop_schema.end(); ++it) {
         // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of vertices.
-        void *type_arr = getArrayType(*it, N);
-        vertex_props.push_back(type_arr);
-    }
+        //void *type_arr = getArrayType(*it, N);
+        //vertex_props.push_back(type_arr);
+    //}
     // Update the edge_props vector with arrays for edge properties
-    for (std::vector<VALUE_TYPE>::iterator it = eprop_schema.begin(); it != eprop_schema.end(); ++it) {
+    //for (std::vector<VALUE_TYPE>::iterator it = eprop_schema.begin(); it != eprop_schema.end(); ++it) {
         // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of edges.
-        void *type_arr = getArrayType(*it, M);
-        edge_props.push_back(type_arr);
-    }
+        //void *type_arr = getArrayType(*it, M);
+        //edge_props.push_back(type_arr);
+    //}
 
+    /*
     // Reset the file
     file.clear();
     file.seekg(0, std::ios::beg);
@@ -797,7 +839,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         // Get the first token in the line, which must be the vertex id
         temp_str = tknzr.getNextToken();
         this->begin[processed_nodes] = processed_edges;
-        this->n_index2id[processed_nodes] = (node_t) atol(temp_str.c_str());
+        //this->n_index2id[processed_nodes] = (node_t) atol(temp_str.c_str());
 
         // Get the next "num_vertex_values" tokens, which represent the vertex values
         for (size_t i = 0; i < num_vertex_values; ++i) {
@@ -831,6 +873,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     file.close();
     _frozen = true;
     return true;
+    */
 
     error_return: clear_graph();
     return false;
@@ -856,10 +899,13 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
         fprintf (stderr, "cannot open %s for writing\n", filename);
         return false;
     }
+    assert(_reverse_nodekey_defined == true);
+
 
     for (node_t i = 0; i < _numNodes; ++i) {
         // Write the vertex id corresponding to this index
-        file << this->n_index2id[i];
+        //file << this->n_index2id[i];
+        file << nodeid_to_nodekey(i);
         // Write the values corresponding to this vertex
         for (size_t j = 0; j < num_vertex_values; ++j) {
             file << separators;
@@ -868,7 +914,8 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
 
         for (edge_t j = this->begin[i]; j < this->begin[i+1]; ++j) {
             // For each edge, write its destination vertex's id
-            file << separators << this->n_index2id[this->node_idx[j]];
+            //file << separators << this->n_index2id[this->node_idx[j]];
+            file << separators << nodeid_to_nodekey(this->node_idx[j]);
             // Write the values corresponding to this edge
             for (size_t k = 0; k < num_edge_values; ++k) {
                 file << separators;
@@ -942,6 +989,76 @@ void gm_graph_check_if_size_is_correct(int node_size, int edge_size)
 }
 
 int GM_SIZE_CHECK_VAR;
+
+void gm_graph::prepare_nodekey(bool _prepare_reverse)
+{
+    assert(_numNodes == 0);
+    assert(_nodekey_defined == false);
+    assert(_reverse_nodekey_defined == false);
+    assert(_nodekey_type_is_numeric == true);
+
+    _nodekey_defined = true;
+    if (_prepare_reverse) {
+        _reverse_nodekey_defined = true;
+        _numeric_reverse_key.reserve(4*1024*1024);    // initial reservation = 4 M
+    }
+}
+
+void gm_graph::create_reverse_nodekey() 
+{
+    assert(_nodekey_defined == true);
+    assert(_reverse_nodekey_defined == false);
+    assert(_nodekey_type_is_numeric == true);
+
+    _numeric_reverse_key.reserve(_numeric_key.size());
+
+    std::map<node_t, node_t>::iterator I;
+    for(I= _numeric_key.begin(); I!=_numeric_key.end(); I++)      
+    {
+        node_t key = I->first;
+        node_t id = I->second;
+        _numeric_reverse_key[id] = key;
+    }
+}
+
+void gm_graph::delete_nodekey() {
+    _nodekey_defined = false; 
+    assert(_nodekey_type_is_numeric == true);
+    _numeric_key.clear();
+}
+void gm_graph::delete_reverse_nodekey() {
+    _reverse_nodekey_defined = false;
+    assert(_nodekey_type_is_numeric == true);
+
+    _numeric_reverse_key.clear();
+    _numeric_reverse_key.resize(4*1024*1024);    // initial reservation = 4 M
+}
+node_t gm_graph::add_nodekey(node_t key) {
+    assert(_nodekey_defined == true);
+    assert(_nodekey_type_is_numeric == true);
+
+    std::map<node_t, node_t>::iterator I = _numeric_key.find(key);
+    if (I == _numeric_key.end())  {
+        node_t nid = _numeric_key.size();
+        _numeric_key[key] = nid;
+
+        if (_reverse_nodekey_defined) 
+        {
+            if ((size_t)nid >= _numeric_reverse_key.capacity()) {
+                _numeric_reverse_key.reserve(nid*2);
+            }
+            _numeric_reverse_key[nid] = key;
+        }
+        return nid;
+    }
+    else {
+        return I->second;
+    }
+}
+
+
+
+
 
 #ifdef HDFS
 #include <hdfs.h>

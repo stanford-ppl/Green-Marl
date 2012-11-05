@@ -47,4 +47,11 @@ void *getArrayType(VALUE_TYPE vt, int size);
 void loadValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt);
 void storeValueBasedOnType(void *arr, long pos, std::ofstream& file, VALUE_TYPE vt);
 
+void* gmutil_createVectorType(VALUE_TYPE vt); 
+void* gmutil_deleteVectorType(void* vector, VALUE_TYPE vt) ;
+void  gmutil_loadValueIntoVector(void *vector, std::string val, VALUE_TYPE vt); 
+void  gmutil_loadDummyValueIntoVector(void *vector, VALUE_TYPE vt); 
+//void* gmutil_getArrayFromVector(void* vector, VALUE_TYPE vt);
+void  gmutil_copyVectorIntoArray(void* vector, void* array, VALUE_TYPE rt);
+
 #endif /* GM_UTIL_H_ */
