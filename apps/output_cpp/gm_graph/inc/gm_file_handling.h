@@ -33,7 +33,7 @@ class GM_LineReader {
     JavaVMOption  opts_[1];
     JavaVMInitArgs vmargs_;
     jclass cls_;
-    jobject lineReaderObject_;
+    jobject lineReaderObj_;
     jmethodID getLineMethod_;
 #endif
 };

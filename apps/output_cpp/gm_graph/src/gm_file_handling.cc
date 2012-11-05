@@ -14,7 +14,7 @@ GM_LineReader::GM_LineReader (const char *filename, bool hdfs) {
 void GM_LineReader::initialize() {
 #ifdef HDFS
     // Initialize for reading a file from HDFS
-    opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:.";
+    opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
     memset(&vmargs_, 0, sizeof(vmargs_));
     vmargs_.version = JNI_VERSION_1_6;
     vmargs_.nOptions = 1;
@@ -55,11 +55,12 @@ void GM_LineReader::initialize() {
 
     // Get the methodID of getLine in LineReader class
     getLineMethod_ = env_->GetMethodID(cls_, "getLine", "()Ljava/lang/String;");
-    if (getLineMethod == 0) {
+    if (getLineMethod_ == 0) {
         fprintf (stderr, "JNI Error: Cannot get getLine method in LineReader\n");
         failed_ = true;
         return;
     }
+    failed_ = false;
 #else
     // Initialize for reading a file from NFS
     fs_.open(filename_);

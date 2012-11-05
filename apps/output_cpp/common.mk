@@ -86,6 +86,7 @@ CFLAGS += -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
 # Change this path to point to the location of hdfs.h
 CFLAGS += -I$(HADOOP_HOME)/src/c++/libhdfs/
 
-CFLAGS += -lhdfs -ljvm -D__HDFS__
-GRAPHLIB_OBJECTS += $(OBJ)/gm_hdfs.o
+CFLAGS += -lhdfs -ljvm -DHDFS
+
+JFLAGS = -classpath $(HADOOP_HOME)/hadoop-core-0.20.2-cdh3u4.jar
 endif
