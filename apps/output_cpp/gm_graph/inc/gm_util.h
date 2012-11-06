@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include "gm_internal.h"
+#include "gm_file_handling.h"
 
 /*
  * A class to tokenize a string.
@@ -46,5 +47,6 @@ class GM_Tokenizer {
 void *getArrayType(VALUE_TYPE vt, int size);
 void loadValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt);
 void storeValueBasedOnType(void *arr, long pos, std::ofstream& file, VALUE_TYPE vt);
+void storeValueBasedOnType(void *arr, long pos, GM_Writer& writer, VALUE_TYPE vt);
 
 #endif /* GM_UTIL_H_ */
