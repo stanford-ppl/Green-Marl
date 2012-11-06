@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #ifdef HDFS
+#include <sstream>
 #include <jni.h>
 #endif
 
@@ -25,7 +26,6 @@ class GM_LineReader {
   private:
     const char *filename_;
     bool hdfs_;
-    std::ifstream fs_;
     bool failed_;
 #ifdef HDFS
     JNIEnv *env_;
@@ -35,6 +35,8 @@ class GM_LineReader {
     jclass cls_;
     jobject lineReaderObj_;
     jmethodID getLineMethod_;
+#else
+    std::ifstream fs_;
 #endif
 };
 
@@ -58,7 +60,6 @@ public:
   private:
     const char *filename_;
     bool hdfs_;
-    std::ofstream fs_;
     bool failed_;
 #ifdef HDFS
     JNIEnv *env_;
@@ -68,6 +69,9 @@ public:
     jclass cls_;
     jobject writerObj_;
     jmethodID writeMethod_;
+    std::stringstream outstream_;
+#else
+    std::ofstream outstream_;
 #endif
 };
 

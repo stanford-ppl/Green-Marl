@@ -156,12 +156,59 @@ GM_Writer::GM_Writer (const char *filename, bool hdfs) {
 
 void GM_Writer::initialize () {
 #ifdef HDFS
-   // Initialize for writing a file to HDFS
+    // Initialize for writing a file to HDFS
+    opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
+    memset(&vmargs_, 0, sizeof(vmargs_));
+    vmargs_.version = JNI_VERSION_1_6;
+    vmargs_.nOptions = 1;
+    vmargs_.options = opts_;
+
+    // Create a JVM
+    long status = JNI_CreateJavaVM(&jvm_, (void **)&env_, &vmargs_);
+    if (status == JNI_ERR) {
+        fprintf (stderr, "JNI Error: Cannot create JVM\n");
+        failed_ = true;
+        return;
+    }
+
+    // Find the HDFS Line Reader clas
+    cls_ = env_->FindClass("HDFSWriter");
+    if (cls_ == 0) {
+        fprintf (stderr, "JNI Error: Cannot find class HDFSWriter\n");
+        failed_ = true;
+        return;
+    }
+
+
+    // Get the methodID of the constructor of LineReader class that takes java.lang.String as the only input parameter
+    jmethodID writerConstructor = env_->GetMethodID(cls_, "<init>", "(Ljava/lang/String;)V");
+    if (writerConstructor == 0) {
+        fprintf (stderr, "JNI Error: Cannot get Constructor of HDFSWriter class with String as the only input parameter\n");
+        failed_ = true;
+        return;
+    }
+
+    // Create a new object of LineReader class, and also invoke its constructor
+    writerObj_ = env_->NewObject(cls_, writerConstructor, env_->NewStringUTF(filename_));
+    if (writerObj_ == 0) {
+        fprintf (stderr, "JNI Error: Cannot create new object of HDFSWriter class\n");
+        failed_ = true;
+        return;
+    }
+
+    // Get the methodID of getLine in LineReader class
+    writeMethod_ = env_->GetMethodID(cls_, "write", "()Ljava/lang/String;");
+    if (writeMethod_ == 0) {
+        fprintf (stderr, "JNI Error: Cannot get write method in HDFSWriter\n");
+        failed_ = true;
+        return;
+    }
+    failed_ = false;
 #else
    // Initialize for writing a file to NFS
-   fs_.open(filename_);
+   outstream_.open(filename_);
    failed_ = false;
-   if (fs_.fail()) {
+   if (outstream_.fail()) {
        fprintf (stderr, "Cannot open %s for writing\n", filename_);
        failed_ = true;
    }
@@ -174,62 +221,61 @@ bool GM_Writer::failed() {
 
 void GM_Writer::terminate() {
 #ifdef HDFS
+    flush();
+    // Get the methodID of terminate in LineReader class
+    jmethodID terminateMethod = env_->GetMethodID(cls_, "terminate", "()V");
+    if (terminateMethod == 0) {
+        fprintf (stderr, "JNI Error: Cannot get terminate method in HDFSWriter\n");
+        failed_ = true;
+        return;
+    }
+
+    // Call the terminate method in LineReader class
+    env_->CallVoidMethod(writerObj_, terminateMethod);
+
+    // Destroy the jvm
+    jvm_->DestroyJavaVM();
 #else
-    fs_.close();
+    outstream_.close();
 #endif
 }
 
 void GM_Writer::write (bool val) {
-#ifdef HDFS
-#else
-    fs_ << std::boolalpha << val;
-#endif
+    outstream_ << std::boolalpha << val;
 }
 
 void GM_Writer::write (int val) {
-#ifdef HDFS
-#else
-    fs_ << val;
-#endif
+    outstream_ << val;
 }
 
 void GM_Writer::write (long val) {
-#ifdef HDFS
-#else
-    fs_ << val;
-#endif
+    outstream_ << val;
 }
 
 void GM_Writer::write (float val) {
-#ifdef HDFS
-#else
-    fs_ << val;
-#endif
+    outstream_ << val;
 }
 
 void GM_Writer::write (double val) {
-#ifdef HDFS
-#else
-    fs_ << val;
-#endif
+    outstream_ << val;
 }
 
 void GM_Writer::write (const char *val) {
-#ifdef HDFS
-#else
-    fs_ << val;
-#endif
+    outstream_ << val;
 }
 
 void GM_Writer::write (std::string &val) {
-#ifdef HDFS
-#else
-    fs_ << val;
-#endif
+    outstream_ << val;
 }
 
 void GM_Writer::flush () {
 #ifdef HDFS
+    // write the stringstream to file through a JNI call
+    // Call write method in HDFSWriter class
+    env_->CallVoidMethod(writerObj_, writeMethod_, env_->NewStringUTF(outstream_.str().c_str()));
+    // clear the stringstream object
+    outstream_.str("");
+    outstream_.clear();
 #else
     // Do nothing
 #endif
