@@ -5,6 +5,10 @@
 #include <hdfs.h>
 #endif
 
+/***********************************************************
+ * Method definitions for GM_LineReader class
+ **********************************************************/
+
 GM_LineReader::GM_LineReader (const char *filename, bool hdfs) {
     filename_ = filename;
     hdfs_ = hdfs;
@@ -137,5 +141,96 @@ void GM_LineReader::terminate() {
     jvm_->DestroyJavaVM();
 #else
     fs_.close();
+#endif
+}
+
+/***********************************************************
+ * Method definitions for GM_Writer class
+ **********************************************************/
+
+GM_Writer::GM_Writer (const char *filename, bool hdfs) {
+    filename_ = filename;
+    hdfs_ = hdfs;
+    initialize();
+}
+
+void GM_Writer::initialize () {
+#ifdef HDFS
+   // Initialize for writing a file to HDFS
+#else
+   // Initialize for writing a file to NFS
+   fs_.open(filename_);
+   failed_ = false;
+   if (fs_.fail()) {
+       fprintf (stderr, "Cannot open %s for writing\n", filename_);
+       failed_ = true;
+   }
+#endif  // HDFS
+}
+
+bool GM_Writer::failed() {
+    return failed_;
+}
+
+void GM_Writer::terminate() {
+#ifdef HDFS
+#else
+    fs_.close();
+#endif
+}
+
+void GM_Writer::write (bool val) {
+#ifdef HDFS
+#else
+    fs_ << std::boolalpha << val;
+#endif
+}
+
+void GM_Writer::write (int val) {
+#ifdef HDFS
+#else
+    fs_ << val;
+#endif
+}
+
+void GM_Writer::write (long val) {
+#ifdef HDFS
+#else
+    fs_ << val;
+#endif
+}
+
+void GM_Writer::write (float val) {
+#ifdef HDFS
+#else
+    fs_ << val;
+#endif
+}
+
+void GM_Writer::write (double val) {
+#ifdef HDFS
+#else
+    fs_ << val;
+#endif
+}
+
+void GM_Writer::write (const char *val) {
+#ifdef HDFS
+#else
+    fs_ << val;
+#endif
+}
+
+void GM_Writer::write (std::string &val) {
+#ifdef HDFS
+#else
+    fs_ << val;
+#endif
+}
+
+void GM_Writer::flush () {
+#ifdef HDFS
+#else
+    // Do nothing
 #endif
 }

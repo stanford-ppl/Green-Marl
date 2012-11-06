@@ -38,5 +38,37 @@ class GM_LineReader {
 #endif
 };
 
+class GM_Writer {
+public:
+    GM_Writer (const char *filename, bool hdfs = false);
+
+    void initialize();
+    bool failed();
+    void terminate();
+
+    void write (bool val);
+    void write (int val);
+    void write (long val);
+    void write (float val);
+    void write (double val);
+    void write (const char *val);
+    void write (std::string &val);
+    void flush ();
+
+  private:
+    const char *filename_;
+    bool hdfs_;
+    std::ofstream fs_;
+    bool failed_;
+#ifdef HDFS
+    JNIEnv *env_;
+    JavaVM *jvm_;
+    JavaVMOption opts_[1];
+    JavaVMInitArgs vmargs_;
+    jclass cls_;
+    jobject writerObj_;
+    jmethodID writeMethod_;
+#endif
+};
 
 #endif /* GM_FILE_HANDLING_H_ */
