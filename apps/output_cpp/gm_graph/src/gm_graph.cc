@@ -894,6 +894,7 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
             }
         }
         writer.write("\n");
+        writer.flush();
     }
 
     writer.terminate();

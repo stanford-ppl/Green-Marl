@@ -8,6 +8,25 @@
 #include <jni.h>
 #endif
 
+#ifdef HDFS
+class GM_JNI_Handler {
+  public:
+    static GM_JNI_Handler* getInstance();
+    bool failed();
+    JNIEnv *env_;
+    JavaVM *jvm_;
+
+  private:
+    GM_JNI_Handler();
+    ~GM_JNI_Handler();
+
+    static GM_JNI_Handler *singleton_;
+    JavaVMOption  opts_[1];
+    JavaVMInitArgs vmargs_;
+    bool failed_;
+};
+#endif
+
 /*
  * A class to read a file and return one line at a time.
  * This basically performs the function of std::getline using fprintf.
@@ -29,9 +48,6 @@ class GM_LineReader {
     bool failed_;
 #ifdef HDFS
     JNIEnv *env_;
-    JavaVM *jvm_;
-    JavaVMOption  opts_[1];
-    JavaVMInitArgs vmargs_;
     jclass cls_;
     jobject lineReaderObj_;
     jmethodID getLineMethod_;
@@ -63,9 +79,6 @@ public:
     bool failed_;
 #ifdef HDFS
     JNIEnv *env_;
-    JavaVM *jvm_;
-    JavaVMOption opts_[1];
-    JavaVMInitArgs vmargs_;
     jclass cls_;
     jobject writerObj_;
     jmethodID writeMethod_;

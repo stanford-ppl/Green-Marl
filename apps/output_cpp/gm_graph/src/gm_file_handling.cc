@@ -6,18 +6,25 @@
 #endif
 
 /***********************************************************
- * Method definitions for GM_LineReader class
+ * Definitions for GM_JNI_Handler class
  **********************************************************/
+#ifdef HDFS
+GM_JNI_Handler* GM_JNI_Handler::singleton_ = NULL;
 
-GM_LineReader::GM_LineReader (const char *filename, bool hdfs) {
-    filename_ = filename;
-    hdfs_ = hdfs;
-    initialize();
+GM_JNI_Handler* GM_JNI_Handler::getInstance() {
+    if (singleton_ == NULL) {
+        singleton_ = new GM_JNI_Handler();
+        singleton_->initialize();
+    }
+    return singleton_;
 }
 
-void GM_LineReader::initialize() {
-#ifdef HDFS
-    // Initialize for reading a file from HDFS
+bool GM_JNI_Handler::failed() {
+    return failed_;
+}
+
+GM_JNI_Handler::GM_JNI_Handler() {
+    // Initialize parameters for creating a JavaVM
     opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
     memset(&vmargs_, 0, sizeof(vmargs_));
     vmargs_.version = JNI_VERSION_1_6;
@@ -31,6 +38,41 @@ void GM_LineReader::initialize() {
         failed_ = true;
         return;
     }
+
+    failed_ = false;
+}
+
+GM_JNI_Handler::~GM_JNI_Handler() {
+    if (singleton_ != NULL && (! failed_)) {
+        // Destroy the jvm
+        jvm_->DestroyJavaVM();
+        singleton_ = NULL;
+    }
+}
+
+#endif
+
+/***********************************************************
+ * Method definitions for GM_LineReader class
+ **********************************************************/
+
+GM_LineReader::GM_LineReader (const char *filename, bool hdfs) {
+    filename_ = filename;
+    hdfs_ = hdfs;
+    initialize();
+}
+
+void GM_LineReader::initialize() {
+#ifdef HDFS
+    // Initialize for reading a file from HDFS
+    // Get the JNI environment from the GM_JNI_Handler
+    GM_JNI_Handler *jni_handler = GM_JNI_Handler::getInstance();
+    if (jni_handler->failed()) {
+        fprintf (stderr, "JNI Error: Initialization failed\n");
+        failed_ = true;
+        return;
+    }
+    env_ = jni_handler->env_;
 
     // Find the HDFS Line Reader clas
     cls_ = env_->FindClass("HDFSLineReader");
@@ -136,9 +178,6 @@ void GM_LineReader::terminate() {
 
     // Call the terminate method in LineReader class
     env_->CallVoidMethod(lineReaderObj_, terminateMethod);
-
-    // Destroy the jvm
-    jvm_->DestroyJavaVM();
 #else
     fs_.close();
 #endif
@@ -157,19 +196,14 @@ GM_Writer::GM_Writer (const char *filename, bool hdfs) {
 void GM_Writer::initialize () {
 #ifdef HDFS
     // Initialize for writing a file to HDFS
-    opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
-    memset(&vmargs_, 0, sizeof(vmargs_));
-    vmargs_.version = JNI_VERSION_1_6;
-    vmargs_.nOptions = 1;
-    vmargs_.options = opts_;
-
-    // Create a JVM
-    long status = JNI_CreateJavaVM(&jvm_, (void **)&env_, &vmargs_);
-    if (status == JNI_ERR) {
-        fprintf (stderr, "JNI Error: Cannot create JVM\n");
+    // Get the JNI environment from the GM_JNI_Handler
+    GM_JNI_Handler *jni_handler = GM_JNI_Handler::getInstance();
+    if (jni_handler->failed()) {
+        fprintf (stderr, "JNI Error: Initialization failed\n");
         failed_ = true;
         return;
     }
+    env_ = jni_handler->env_;
 
     // Find the HDFS Line Reader clas
     cls_ = env_->FindClass("HDFSWriter");
@@ -232,9 +266,6 @@ void GM_Writer::terminate() {
 
     // Call the terminate method in LineReader class
     env_->CallVoidMethod(writerObj_, terminateMethod);
-
-    // Destroy the jvm
-    jvm_->DestroyJavaVM();
 #else
     outstream_.close();
 #endif
