@@ -862,34 +862,41 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
     size_t num_vertex_values = vprop_schema.size();
     size_t num_edge_values = eprop_schema.size();
 
-    std::ofstream file(filename);
-    if (file == NULL) {
+    // Open the file for writing
+    GM_Writer writer(filename, use_hdfs);
+    if (writer.failed()) {
         fprintf (stderr, "cannot open %s for writing\n", filename);
         return false;
     }
+//    std::ofstream file(filename);
+//    if (file == NULL) {
+//        fprintf (stderr, "cannot open %s for writing\n", filename);
+//        return false;
+//    }
 
     for (node_t i = 0; i < _numNodes; ++i) {
         // Write the vertex id corresponding to this index
-        file << this->n_index2id[i];
+        writer.write(this->n_index2id[i]);
         // Write the values corresponding to this vertex
         for (size_t j = 0; j < num_vertex_values; ++j) {
-            file << separators;
-            storeValueBasedOnType (vertex_props[j], i, file, vprop_schema[j]);
+            writer.write(separators);
+            storeValueBasedOnType (vertex_props[j], i, writer, vprop_schema[j]);
         }
 
         for (edge_t j = this->begin[i]; j < this->begin[i+1]; ++j) {
             // For each edge, write its destination vertex's id
-            file << separators << this->n_index2id[this->node_idx[j]];
+            writer.write(separators);
+            writer.write(this->n_index2id[this->node_idx[j]]);
             // Write the values corresponding to this edge
             for (size_t k = 0; k < num_edge_values; ++k) {
-                file << separators;
-                storeValueBasedOnType (edge_props[k], j, file, eprop_schema[k]);
+                writer.write(separators);
+                storeValueBasedOnType (edge_props[k], j, writer, eprop_schema[k]);
             }
         }
-        file << "\n";
+        writer.write("\n");
     }
 
-    file.close();
+    writer.terminate();
     return true;
 }
 
