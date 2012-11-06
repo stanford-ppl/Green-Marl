@@ -21,6 +21,8 @@ clean:
 	@cd apps; make clean_all
 	@cd src; make clean
 
+clean_all: veryclean
+
 veryclean:
 	@cd apps; make clean_all
 	@cd src; make veryclean

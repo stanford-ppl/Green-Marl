@@ -144,7 +144,7 @@ HEADS = $(addprefix $(INC)/, $(HEADERS))
 
 all: $(BIN)/gm_comp
 
-$(BIN)/gm_comp: $(OBJS) $(HEADS)
+$(BIN)/gm_comp: $(SRCS1) $(OBJS) $(HEADS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ 
 
 $(OBJ)/%.o : %.c 

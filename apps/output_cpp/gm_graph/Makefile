@@ -35,3 +35,6 @@ $(OBJ)/%.o: %.cc
 
 clean:
 	rm -f $(OBJ)/*.o $(OUT)
+
+echo:
+	echo "$(CFLAGS)"

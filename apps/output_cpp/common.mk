@@ -89,3 +89,4 @@ CFLAGS += -I$(HADOOP_HOME)/src/c++/libhdfs/
 CFLAGS += -lhdfs -ljvm -D__HDFS__
 GRAPHLIB_OBJECTS += $(OBJ)/gm_hdfs.o
 endif
+
