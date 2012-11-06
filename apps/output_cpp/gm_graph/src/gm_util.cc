@@ -82,19 +82,20 @@ void* gmutil_createVectorType(VALUE_TYPE vt)
         default: assert(false); return NULL; // Control should never reach this case.
     }
 }
-void* gmutil_deleteVectorType(void* vector, VALUE_TYPE vt) 
+void gmutil_deleteVectorType(void* vector, VALUE_TYPE vt) 
 {
     switch(vt) {
-        case GMTYPE_BOOL: delete ((GM_BVECT*) vector);
-        case GMTYPE_INT: delete ((GM_IVECT*) vector);
-        case GMTYPE_LONG: delete ((GM_LVECT*) vector);
-        case GMTYPE_FLOAT: delete ((GM_FVECT*) vector);
-        case GMTYPE_DOUBLE: delete ((GM_DVECT*) vector);
-        case GMTYPE_NODE: delete ((GM_NVECT*) vector);
-        case GMTYPE_EDGE: delete ((GM_EVECT*) vector);
+        case GMTYPE_BOOL: delete ((GM_BVECT*) vector); break;
+        case GMTYPE_INT: delete ((GM_IVECT*) vector); break;
+        case GMTYPE_LONG: delete ((GM_LVECT*) vector); break;
+        case GMTYPE_FLOAT: delete ((GM_FVECT*) vector); break;
+        case GMTYPE_DOUBLE: delete ((GM_DVECT*) vector); break;
+        case GMTYPE_NODE: delete ((GM_NVECT*) vector); break;
+        case GMTYPE_EDGE: delete ((GM_EVECT*) vector); break;
         case GMTYPE_END: 
-        default: assert(false); return NULL; // Control should never reach this case.
+        default: assert(false); // Control should never reach this case.
     }
+    return;
 }
 
 void gmutil_loadValueIntoVector(void *vector, std::string val, VALUE_TYPE vt) 

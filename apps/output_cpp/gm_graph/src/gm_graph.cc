@@ -795,7 +795,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         gmutil_deleteVectorType(node_prop_vectors[i], vprop_schema[i] );
         vertex_props.push_back ( array ) ;
     }
-    for (size_t i = 0; i < num_vertex_values; ++i) {
+    for (size_t i = 0; i < num_edge_values; ++i) {
         void *array = getArrayType(eprop_schema[i], M);
         gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i]);
         gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );

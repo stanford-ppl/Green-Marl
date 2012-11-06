@@ -48,7 +48,7 @@ void loadValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt);
 void storeValueBasedOnType(void *arr, long pos, std::ofstream& file, VALUE_TYPE vt);
 
 void* gmutil_createVectorType(VALUE_TYPE vt); 
-void* gmutil_deleteVectorType(void* vector, VALUE_TYPE vt) ;
+void  gmutil_deleteVectorType(void* vector, VALUE_TYPE vt) ;
 void  gmutil_loadValueIntoVector(void *vector, std::string val, VALUE_TYPE vt); 
 void  gmutil_loadDummyValueIntoVector(void *vector, VALUE_TYPE vt); 
 //void* gmutil_getArrayFromVector(void* vector, VALUE_TYPE vt);

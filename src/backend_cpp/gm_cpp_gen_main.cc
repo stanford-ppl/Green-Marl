@@ -1,5 +1,7 @@
 #include "gm_frontend.h"
 #include "gm_backend_cpp.h"
+#include "gm_argopts.h"
+#include "gm_error.h"
 
 void gm_cpp_gen::init_gen_steps() {
     std::list<gm_compile_step*> &LIST = this->gen_steps;
@@ -15,6 +17,14 @@ void gm_cpp_gen::init_gen_steps() {
 }
 
 bool gm_cpp_gen::do_generate() {
+
+    if (OPTIONS.get_arg_bool(GMARGFLAG_CPP_CREATE_MAIN)) {
+        if (FE.get_num_procs() != 1) {
+            gm_backend_error(GM_ERROR_GPS_NUM_PROCS, "");
+            return false;
+        }
+    }
+
     if (!open_output_files()) return false;
 
     do_generate_begin();
