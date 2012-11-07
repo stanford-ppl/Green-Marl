@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include "gm_internal.h"
+#include "gm_file_handling.h"
 
 /*
  * A class to tokenize a string.
@@ -12,12 +13,12 @@
  * This implementation uses the methods in the C++ string class,
  * specifically, find_first_not_of, find_first_of, and substr.
  */
-class Tokenizer {
+class GM_Tokenizer {
   public:
-    Tokenizer(std::string s, std::string d) : str_(s), delim_(d) { reset(); }
-    Tokenizer(const char *s, std::string d) : str_(s), delim_(d) { reset(); }
-    Tokenizer(std::string s, const char *d) : str_(s), delim_(d) { reset(); }
-    Tokenizer(const char *s, const char *d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(std::string s, std::string d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(const char *s, std::string d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(std::string s, const char *d) : str_(s), delim_(d) { reset(); }
+    GM_Tokenizer(const char *s, const char *d) : str_(s), delim_(d) { reset(); }
 
     void setString (std::string s) { str_ = s; reset(); }
     void setDelimiter (std::string d) { delim_ = d; reset(); }
@@ -46,6 +47,7 @@ class Tokenizer {
 void *getArrayType(VALUE_TYPE vt, int size);
 void loadValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt);
 void storeValueBasedOnType(void *arr, long pos, std::ofstream& file, VALUE_TYPE vt);
+void storeValueBasedOnType(void *arr, long pos, GM_Writer& writer, VALUE_TYPE vt);
 
 void* gmutil_createVectorType(VALUE_TYPE vt); 
 void  gmutil_deleteVectorType(void* vector, VALUE_TYPE vt) ;
