@@ -90,3 +90,4 @@ CFLAGS += -lhdfs -ljvm -DHDFS
 
 JFLAGS = -classpath $(HADOOP_HOME)/hadoop-core-0.20.2-cdh3u4.jar
 endif
+

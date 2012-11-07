@@ -52,7 +52,7 @@ static bool is_common_nbr_expression(ast_expr* e, gm_symtab_entry*& s) {
         if (!driver->getTypeInfo()->is_node_compatible())
             return false;
 
-        if (b->get_builtin_def()->get_method_id() == GM_BLTIN_NODE_IS_NBR) {
+        if (b->get_builtin_def()->get_method_id() == GM_BLTIN_NODE_IS_NBR_FROM) {
             std::list<ast_expr*>& L = b->get_args();
             ast_expr* arg = L.front();  assert(arg!=NULL);
             if (!arg->is_id())

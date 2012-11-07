@@ -232,11 +232,13 @@ friend class gm_graph_hdfs;
     void clear_graph();                         // invalidate everything and make the graph empty
 
     //returns one of the outgoing neighbors of 'node' - by random choice
-    // if 'node' does not have a neighbor, 'node' is returned
+    // if 'node' does not have a neighbor, 'node' is returned -> assert(false)
     node_t pick_random_out_neighbor(node_t node) {
         edge_t outCount = get_num_edges(node);
-        if (outCount == 0)
+        if (outCount == 0) {
+            assert(false);
             return node;
+        }
         else
             return node_idx[begin[node]] + (rand() % outCount); //TODO make 64bit compatible
     }
@@ -269,7 +271,33 @@ friend class gm_graph_hdfs;
     edge_t* e_id2idx;
     edge_t* e_idx2id;
 
-    node_t* n_index2id;
+    //-----------------------------------------------------
+    // Use node key that is different from node idx.
+    //-----------------------------------------------------
+    bool _nodekey_defined;          // 
+    bool _reverse_nodekey_defined;  // 
+    bool _nodekey_type_is_numeric; //
+    std::map<node_t, node_t> _numeric_key;          // node_key -> node_dix
+    std::vector<node_t>      _numeric_reverse_key;  // node_idx -> node_key
+
+    void   prepare_nodekey(bool _prepare_reverse);  // should call this function before graph is create
+    void   create_reverse_nodekey();
+    void   delete_nodekey();
+    void   delete_reverse_nodekey();
+    node_t add_nodekey(node_t key);
+
+    //bool _cstr_nodekey_defined;             // 
+    //bool _cstr_reverse_nodekey_defined;     // 
+    //std::map<char*, node_t> _numeric_key;          // node_key -> node_dix
+    //std::vector<char*>      _numeric_reverse_key;  // node_idx -> node_key
+    //void prepare_cstr_nodekey(node_t estimated_size, bool use_reverse_key);
+    //void delete_cstr_nodekey(bool keep_reverse_key);
+    //
+ private:
+    inline bool find_nodekey(node_t key) {return _numeric_key.find(key) != _numeric_key.end();}
+    inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
+    inline node_t nodeid_to_nodekey(node_t nodeid) {return _numeric_reverse_key[nodeid];}
+    inline node_t get_num_nodekeys() {return (node_t) _numeric_key.size();}
 };
 
 #endif

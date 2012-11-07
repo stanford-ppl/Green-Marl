@@ -142,7 +142,7 @@ typedef union YYSTYPE
     lhs_list* l_list;   // list of lhs
     struct parse_temp_t pair;
 }
-/* Line 2616 of glr.c.  */
+/* Line 2604 of glr.c.  */
 #line 147 "./parse/gm_grammer.tab.h"
 	YYSTYPE;
 # define YYSTYPE_IS_DECLARED 1

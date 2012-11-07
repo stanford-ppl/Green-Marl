@@ -39,6 +39,7 @@ static const char* GMARGFLAG_PRINTBB = "Db";
 static const char* GMARGFLAG_FLIP_REVERSE = "FlipRev";
 static const char* GMARGFLAG_FLIP_PULL = "FlipPull";
 static const char* GMARGFLAG_FLIP_BFSUP = "FlipUp";
+static const char* GMARGFLAG_CPP_CREATE_MAIN = "CppMain";
 
 //static const char* GMARGFLAG_MERGE_BB = "GPSMerge";
 //static const char* GMARGFLAG_MERGE_BB_INTRA = "GPSMergeIntra";
@@ -60,6 +61,7 @@ static struct GM_comp_args GM_compiler_options[] = {
         { GMARGFLAG_FLIP_BFSUP, GMARG_BOOL, "Enable 'flipping edges for BFS Up-nbrs'", "1" },
         { GMARGFLAG_FLIP_REVERSE, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of reverse edges", "0" },
         { GMARGFLAG_FLIP_PULL, GMARG_BOOL, "Enable 'flipping edges' to avoid the use of pull-based computation", "0" },
+        { GMARGFLAG_CPP_CREATE_MAIN, GMARG_BOOL, "Generate Main for C++ backend", "0" },
         //{ GMARGFLAG_MERGE_BB, GMARG_BOOL, "(For gps) Enable bb merge optimization", "1" },
         //{ GMARGFLAG_MERGE_BB_INTRA, GMARG_BOOL, "(For gps) Enable intra-loop bb merge optimization", "1" },
         { GMARGFLAG_GIRAPH_DUMMY_VALUE, GMARG_BOOL, "(For giraph) InputFormat assumes that there are at least one (dummy) value for node and edge in the input adj-list", "1" },
