@@ -14,7 +14,6 @@ GM_JNI_Handler* GM_JNI_Handler::singleton_ = NULL;
 GM_JNI_Handler* GM_JNI_Handler::getInstance() {
     if (singleton_ == NULL) {
         singleton_ = new GM_JNI_Handler();
-        singleton_->initialize();
     }
     return singleton_;
 }
@@ -231,7 +230,7 @@ void GM_Writer::initialize () {
     }
 
     // Get the methodID of getLine in LineReader class
-    writeMethod_ = env_->GetMethodID(cls_, "write", "()Ljava/lang/String;");
+    writeMethod_ = env_->GetMethodID(cls_, "write", "(Ljava/lang/String;)V");
     if (writeMethod_ == 0) {
         fprintf (stderr, "JNI Error: Cannot get write method in HDFSWriter\n");
         failed_ = true;
