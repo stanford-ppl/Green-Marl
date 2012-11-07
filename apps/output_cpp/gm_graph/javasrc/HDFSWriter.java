@@ -21,8 +21,8 @@ public class HDFSWriter {
 		try {
 			fileName = s;
 			Configuration conf = new Configuration();
-			conf.addResource(new Path("/cm/shared/apps/hadoop/current/conf/core-site.xml"));
-			conf.addResource(new Path("/cm/shared/apps/hadoop/current/conf/hdfs-site.xml"));
+			conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/core-site.xml"));
+			conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/hdfs-site.xml"));
 			fs = FileSystem.get(conf);
 		    filePath = new Path(fileName);
 			fdos = fs.create(filePath);
