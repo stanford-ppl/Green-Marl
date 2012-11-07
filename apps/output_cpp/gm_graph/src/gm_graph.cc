@@ -10,6 +10,7 @@
 #include "gm_graph.h"
 #include "gm_util.h"
 #include "gm_lock.h"
+#include "gm_file_handling.h"
 
 
 // If the following flag is on, we let the correct thread 'touches' the data strcutre
@@ -680,8 +681,8 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
 
 
     // Open the file
-    std::ifstream file(filename);
-    if (file == NULL) {
+    GM_LineReader lineReader(filename, use_hdfs);
+    if (lineReader.failed()) {
         goto error_return;
     }
 
@@ -699,11 +700,11 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     prepare_nodekey(true);
 
     // Count the number of nodes and edges to allocate memory appropriately
-    while (std::getline(file, line)) {
+    while (lineReader.getNextLine(line)) {
         if (line.empty()) {
             continue;
         }
-        Tokenizer tknzr(line, separators);
+        GM_Tokenizer tknzr(line, separators);
         if ( ! tknzr.hasNextToken()) {
             // No token in this line
             continue;
@@ -823,15 +824,14 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
 
     /*
     // Reset the file
-    file.clear();
-    file.seekg(0, std::ios::beg);
+    lineReader.reset();
 
     // Fill the node and edge arrays
-    while (std::getline(file, line)) {
+    while (lineReader.getNextLine(line)) {
         if (line.empty()) {
             continue;
         }
-        Tokenizer tknzr(line, separators);
+        GM_Tokenizer tknzr(line, separators);
         if ( ! tknzr.hasNextToken()) {
             // No token in this line
             continue;
@@ -870,7 +870,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     this->begin[processed_nodes] = processed_edges;
 
     // Close the file and freeze graph
-    file.close();
+    lineReader.terminate();
     _frozen = true;
     return true;
     */
@@ -894,8 +894,9 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
     size_t num_vertex_values = vprop_schema.size();
     size_t num_edge_values = eprop_schema.size();
 
-    std::ofstream file(filename);
-    if (file == NULL) {
+    // Open the file for writing
+    GM_Writer writer(filename, use_hdfs);
+    if (writer.failed()) {
         fprintf (stderr, "cannot open %s for writing\n", filename);
         return false;
     }
@@ -904,28 +905,28 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
 
     for (node_t i = 0; i < _numNodes; ++i) {
         // Write the vertex id corresponding to this index
-        //file << this->n_index2id[i];
-        file << nodeid_to_nodekey(i);
+        writer.write(nodeid_to_nodekey(i));
         // Write the values corresponding to this vertex
         for (size_t j = 0; j < num_vertex_values; ++j) {
-            file << separators;
-            storeValueBasedOnType (vertex_props[j], i, file, vprop_schema[j]);
+            writer.write(separators);
+            storeValueBasedOnType (vertex_props[j], i, writer, vprop_schema[j]);
         }
 
         for (edge_t j = this->begin[i]; j < this->begin[i+1]; ++j) {
             // For each edge, write its destination vertex's id
-            //file << separators << this->n_index2id[this->node_idx[j]];
-            file << separators << nodeid_to_nodekey(this->node_idx[j]);
+            writer.write(separators);
+            writer.write(nodeid_to_nodekey(this->node_idx[j]));
             // Write the values corresponding to this edge
             for (size_t k = 0; k < num_edge_values; ++k) {
-                file << separators;
-                storeValueBasedOnType (edge_props[k], j, file, eprop_schema[k]);
+                writer.write(separators);
+                storeValueBasedOnType (edge_props[k], j, writer, eprop_schema[k]);
             }
         }
-        file << "\n";
+        writer.write("\n");
+        writer.flush();
     }
 
-    file.close();
+    writer.terminate();
     return true;
 }
 
