@@ -6,6 +6,9 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+/*
+ * A Java class thar writes to a text file in HDFS
+ */
 public class HDFSWriter {
 	String fileName;
 	BufferedWriter out;
@@ -13,6 +16,7 @@ public class HDFSWriter {
     Path filePath;
     FSDataOutputStream fdos;
 	
+    // Constructor and initialization
 	public HDFSWriter (String s) {
 		try {
 			fileName = s;
@@ -28,6 +32,7 @@ public class HDFSWriter {
 		}
 	}
 
+	// Write the string to file
     public void write (String str) {
         try {
             out.write (str, 0, str.length());
@@ -37,6 +42,7 @@ public class HDFSWriter {
         }
     }
 	
+    // Close the input stream and the hdfs file system
     public void terminate() {
         try {
             fdos.close();
@@ -45,7 +51,9 @@ public class HDFSWriter {
             System.err.println (e);
         }
     }
-
+    
+    // A sample usage for HDFSWriter
+    //     - Only used for debugging purposes
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println ("Usage: java HDFSWriter <outputFile>");

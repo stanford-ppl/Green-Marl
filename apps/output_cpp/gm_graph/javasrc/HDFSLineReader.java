@@ -6,6 +6,9 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+/*
+ * A Java class that reads one line at a time from a file in HDFS
+ */
 public class HDFSLineReader {
 	String fileName;
 	BufferedReader in;
@@ -13,6 +16,7 @@ public class HDFSLineReader {
     Path filePath;
     FSDataInputStream fdis;
 	
+    // Constructor and initialization
 	public HDFSLineReader (String s) {
 		try {
 			fileName = s;
@@ -32,6 +36,7 @@ public class HDFSLineReader {
 		}
 	}
 	
+	// Get the next line from the file
 	public String getLine() {
 		try {
 			return in.readLine();
@@ -41,6 +46,7 @@ public class HDFSLineReader {
 		return null;
 	}
 
+	// Reset the pointer (reader) to the start of the file
     public void reset() {
         try {
             fdis.seek(0);
@@ -49,6 +55,7 @@ public class HDFSLineReader {
         }
     }
 
+    // Close the input stream and the hdfs file system
     public void terminate() {
         try {
             fdis.close();
@@ -58,6 +65,8 @@ public class HDFSLineReader {
         }
     }
 
+    // A sample usage for HDFSLineReader
+    //     - Only used for debugging purposes
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println ("Usage: java HDFSLineReader <inputFile>");
