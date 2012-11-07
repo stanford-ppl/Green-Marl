@@ -73,7 +73,7 @@ void GM_LineReader::initialize() {
     }
     env_ = jni_handler->env_;
 
-    // Find the HDFS Line Reader clas
+    // Find the HDFSLineReader class
     cls_ = env_->FindClass("HDFSLineReader");
     if (cls_ == 0) {
         fprintf (stderr, "JNI Error: Cannot find class\n");
@@ -82,7 +82,7 @@ void GM_LineReader::initialize() {
     }
 
 
-    // Get the methodID of the constructor of LineReader class that takes java.lang.String as the only input parameter
+    // Get the methodID of the constructor of HDFSLineReader class that takes java.lang.String as the only input parameter
     jmethodID lineReaderConstructor = env_->GetMethodID(cls_, "<init>", "(Ljava/lang/String;)V");
     if (lineReaderConstructor == 0) {
         fprintf (stderr, "JNI Error: Cannot get Constructor\n");
@@ -90,7 +90,7 @@ void GM_LineReader::initialize() {
         return;
     }
 
-    // Create a new object of LineReader class, and also invoke its constructor
+    // Create a new object of HDFSLineReader class, and also invoke its constructor
     lineReaderObj_ = env_->NewObject(cls_, lineReaderConstructor, env_->NewStringUTF(filename_));
     if (lineReaderObj_ == 0) {
         fprintf (stderr, "JNI Error: Cannot create new object of LineReader class\n");
@@ -98,7 +98,7 @@ void GM_LineReader::initialize() {
         return;
     }
 
-    // Get the methodID of getLine in LineReader class
+    // Get the methodID of getLine in HDFSLineReader class
     getLineMethod_ = env_->GetMethodID(cls_, "getLine", "()Ljava/lang/String;");
     if (getLineMethod_ == 0) {
         fprintf (stderr, "JNI Error: Cannot get getLine method in LineReader\n");
@@ -123,7 +123,7 @@ bool GM_LineReader::failed() {
 
 void GM_LineReader::reset() {
 #ifdef HDFS
-    // Get the methodID of reset in LineReader class
+    // Get the methodID of reset in HDFSLineReader class
     jmethodID resetMethod = env_->GetMethodID(cls_, "reset", "()V");
     if (resetMethod == 0) {
         fprintf (stderr, "JNI Error: Cannot get reset method in LineReader\n");
@@ -131,7 +131,7 @@ void GM_LineReader::reset() {
         return;
     }
 
-    // Call the reset method in LineReader class
+    // Call the reset method in HDFSLineReader class
     env_->CallVoidMethod(lineReaderObj_, resetMethod);
 #else
     fs_.clear();
@@ -144,7 +144,7 @@ void GM_LineReader::reset() {
 
 bool GM_LineReader::getNextLine(std::string &line) {
 #ifdef HDFS
-    // Call getLine method in LineReader class
+    // Call getLine method in HDFSLineReader class
     jobject strObj = env_->CallObjectMethod(lineReaderObj_, getLineMethod_, "");
     if (strObj == 0) {
         return false; // indicating end of file
@@ -167,7 +167,7 @@ bool GM_LineReader::getNextLine(std::string &line) {
 
 void GM_LineReader::terminate() {
 #ifdef HDFS
-    // Get the methodID of terminate in LineReader class
+    // Get the methodID of terminate in HDFSLineReader class
     jmethodID terminateMethod = env_->GetMethodID(cls_, "terminate", "()V");
     if (terminateMethod == 0) {
         fprintf (stderr, "JNI Error: Cannot get terminate method in LineReader\n");
@@ -175,7 +175,7 @@ void GM_LineReader::terminate() {
         return;
     }
 
-    // Call the terminate method in LineReader class
+    // Call the terminate method in HDFSLineReader class
     env_->CallVoidMethod(lineReaderObj_, terminateMethod);
 #else
     fs_.close();
@@ -204,7 +204,7 @@ void GM_Writer::initialize () {
     }
     env_ = jni_handler->env_;
 
-    // Find the HDFS Line Reader clas
+    // Find the HDFSWriter class
     cls_ = env_->FindClass("HDFSWriter");
     if (cls_ == 0) {
         fprintf (stderr, "JNI Error: Cannot find class HDFSWriter\n");
@@ -213,7 +213,7 @@ void GM_Writer::initialize () {
     }
 
 
-    // Get the methodID of the constructor of LineReader class that takes java.lang.String as the only input parameter
+    // Get the methodID of the constructor of HDFSWriter class that takes java.lang.String as the only input parameter
     jmethodID writerConstructor = env_->GetMethodID(cls_, "<init>", "(Ljava/lang/String;)V");
     if (writerConstructor == 0) {
         fprintf (stderr, "JNI Error: Cannot get Constructor of HDFSWriter class with String as the only input parameter\n");
@@ -221,7 +221,7 @@ void GM_Writer::initialize () {
         return;
     }
 
-    // Create a new object of LineReader class, and also invoke its constructor
+    // Create a new object of HDFSWriter class, and also invoke its constructor
     writerObj_ = env_->NewObject(cls_, writerConstructor, env_->NewStringUTF(filename_));
     if (writerObj_ == 0) {
         fprintf (stderr, "JNI Error: Cannot create new object of HDFSWriter class\n");
@@ -229,7 +229,7 @@ void GM_Writer::initialize () {
         return;
     }
 
-    // Get the methodID of getLine in LineReader class
+    // Get the methodID of getLine in HDFSWriter class
     writeMethod_ = env_->GetMethodID(cls_, "write", "(Ljava/lang/String;)V");
     if (writeMethod_ == 0) {
         fprintf (stderr, "JNI Error: Cannot get write method in HDFSWriter\n");
@@ -255,7 +255,7 @@ bool GM_Writer::failed() {
 void GM_Writer::terminate() {
 #ifdef HDFS
     flush();
-    // Get the methodID of terminate in LineReader class
+    // Get the methodID of terminate in HDFSWriter class
     jmethodID terminateMethod = env_->GetMethodID(cls_, "terminate", "()V");
     if (terminateMethod == 0) {
         fprintf (stderr, "JNI Error: Cannot get terminate method in HDFSWriter\n");
@@ -263,7 +263,7 @@ void GM_Writer::terminate() {
         return;
     }
 
-    // Call the terminate method in LineReader class
+    // Call the terminate method in HDFSWriter class
     env_->CallVoidMethod(writerObj_, terminateMethod);
 #else
     outstream_.close();

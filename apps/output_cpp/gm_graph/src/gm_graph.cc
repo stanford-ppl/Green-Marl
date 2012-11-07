@@ -732,15 +732,8 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     if (lineReader.failed()) {
         goto error_return;
     }
-    /*
-    std::ifstream file(filename);
-    if (file == NULL) {
-        goto error_return;
-    }
-    */
 
     // Count the number of nodes and edges to allocate memory appropriately
-//    while (std::getline(file, line)) {
     while (lineReader.getNextLine(line)) {
         if (line.empty()) {
             continue;
@@ -790,11 +783,8 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
 
     // Reset the file
     lineReader.reset();
-//    file.clear();
-//    file.seekg(0, std::ios::beg);
 
     // Fill the node and edge arrays
-//    while (std::getline(file, line)) {
     while (lineReader.getNextLine(line)) {
         if (line.empty()) {
             continue;
@@ -839,7 +829,6 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
 
     // Close the file and freeze graph
     lineReader.terminate();
-//    file.close();
     _frozen = true;
     return true;
 
@@ -868,11 +857,6 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
         fprintf (stderr, "cannot open %s for writing\n", filename);
         return false;
     }
-//    std::ofstream file(filename);
-//    if (file == NULL) {
-//        fprintf (stderr, "cannot open %s for writing\n", filename);
-//        return false;
-//    }
 
     for (node_t i = 0; i < _numNodes; ++i) {
         // Write the vertex id corresponding to this index
