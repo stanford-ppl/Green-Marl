@@ -650,6 +650,85 @@ bool gm_graph::load_adjacency_list(char* filename, char separator) {
     return false;
 }
 
+void gm_graph::load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema,
+            std::vector<VALUE_TYPE> eprop_schema,
+            std::vector<void *>& vertex_props,
+            std::vector<void *>& edge_props,
+            std::vector<edge_t>& EDGE_CNT,
+            std::vector<node_t>& DEST,
+            std::vector<void*>& node_prop_vectors,
+            std::vector<void*>& edge_prop_vectors,
+            node_t N,
+            edge_t M
+            ) {
+    std::set<node_t> DEST_ONLY;
+    gm_spinlock_t LOCK = 0;
+
+    size_t num_vertex_values = vprop_schema.size();
+    size_t num_edge_values = eprop_schema.size();
+
+    // check 'how many destination only nodes' 
+#pragma omp parallel for 
+    for(edge_t i = 0; i < (edge_t)DEST.size(); i++)
+    {
+        node_t key = DEST[i];
+        if (!find_nodekey(key)) {
+            gm_spinlock_acquire(&LOCK);
+            DEST_ONLY.insert(key);
+            gm_spinlock_release(&LOCK);
+        } 
+    }
+
+    if (DEST_ONLY.size() > 0) {
+        node_t more = DEST_ONLY.size();
+        N+= more;
+        // add dummy node properties 
+        std::set<node_t>::iterator J;
+        for(J = DEST_ONLY.begin(); J != DEST_ONLY.end(); J++) {
+            node_t dest = *J;
+            add_nodekey(dest);
+            EDGE_CNT.push_back(M);
+            for (size_t i = 0; i < num_vertex_values; ++i) {
+                gmutil_loadDummyValueIntoVector(node_prop_vectors[i], vprop_schema[i]);
+            }
+        }
+    }
+    
+    // key -> idx
+#pragma omp parallel for 
+    for(edge_t i = 0; i < (edge_t) DEST.size(); i++)
+    {
+        node_t key = DEST[i];
+        DEST[i] = nodekey_to_nodeid(key);
+    }
+
+    // Copy 
+    prepare_external_creation(N, M); 
+    #pragma omp parallel for 
+    for(size_t i = 0; i < (size_t) N; i++) {
+        begin[i] = EDGE_CNT[i];
+        for(size_t j = EDGE_CNT[i]; j < (size_t) EDGE_CNT[i+1]; j++) {
+            node_idx[j] = DEST[j];
+        }
+    }
+    begin[N] = M;
+    
+    // extract array from vectors
+    for (size_t i = 0; i < num_vertex_values; ++i) {
+        void *array = getArrayType(vprop_schema[i], N);
+        gmutil_copyVectorIntoArray(node_prop_vectors[i], array, vprop_schema[i]);
+        gmutil_deleteVectorType(node_prop_vectors[i], vprop_schema[i] );
+        vertex_props.push_back ( array ) ;
+    }
+    for (size_t i = 0; i < num_edge_values; ++i) {
+        void *array = getArrayType(eprop_schema[i], M);
+        gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i]);
+        gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );
+        edge_props.push_back ( array ) ;
+    }
+
+}
+
 /*
  * Adjacency list format:
  *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
@@ -676,14 +755,12 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     std::vector<node_t> DEST;
     std::vector<void*> node_prop_vectors;
     std::vector<void*> edge_prop_vectors;
-    std::set<node_t> DEST_ONLY;
-    gm_spinlock_t LOCK = 0;
 
 
     // Open the file
     GM_LineReader lineReader(filename, use_hdfs);
     if (lineReader.failed()) {
-        goto error_return;
+        return false;
     }
 
     //---------------------------------------------------
@@ -744,140 +821,19 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     }
     EDGE_CNT.push_back(M); // have to record number of edges for the last node
 
-    // check 'how many destination only nodes' 
-    #pragma omp parallel for 
-    for(edge_t i = 0; i < (edge_t)DEST.size(); i++)
-    {
-        node_t key = DEST[i];
-        if (!find_nodekey(key)) {
-            gm_spinlock_acquire(&LOCK);
-            DEST_ONLY.insert(key);
-            gm_spinlock_release(&LOCK);
-        } 
-    }
-
-    if (DEST_ONLY.size() > 0) {
-        node_t more = DEST_ONLY.size();
-        N+= more;
-        // add dummy node properties 
-        std::set<node_t>::iterator J;
-        for(J = DEST_ONLY.begin(); J != DEST_ONLY.end(); J++) {
-            node_t dest = *J;
-            add_nodekey(dest);
-            EDGE_CNT.push_back(M);
-            for (size_t i = 0; i < num_vertex_values; ++i) {
-                gmutil_loadDummyValueIntoVector(node_prop_vectors[i], vprop_schema[i]);
-            }
-        }
-    }
-
-    // key -> idx
-    #pragma omp parallel for 
-    for(edge_t i = 0; i < (edge_t) DEST.size(); i++)
-    {
-        node_t key = DEST[i];
-        DEST[i] = nodekey_to_nodeid(key);
-    }
-
-    // Copy 
-    prepare_external_creation(N, M); 
-    #pragma omp parallel for 
-    for(size_t i = 0; i < (size_t) N; i++) {
-        begin[i] = EDGE_CNT[i];
-        for(size_t j = EDGE_CNT[i]; j < (size_t) EDGE_CNT[i+1]; j++) {
-            node_idx[j] = DEST[j];
-        }
-    }
-    begin[N] = M;
-    
-    // extract array from vectors
-    for (size_t i = 0; i < num_vertex_values; ++i) {
-        void *array = getArrayType(vprop_schema[i], N);
-        gmutil_copyVectorIntoArray(node_prop_vectors[i], array, vprop_schema[i]);
-        gmutil_deleteVectorType(node_prop_vectors[i], vprop_schema[i] );
-        vertex_props.push_back ( array ) ;
-    }
-    for (size_t i = 0; i < num_edge_values; ++i) {
-        void *array = getArrayType(eprop_schema[i], M);
-        gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i]);
-        gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );
-        edge_props.push_back ( array ) ;
-    }
+    load_adjacency_list_internal(vprop_schema,
+                                 eprop_schema,
+                                 vertex_props,
+                                 edge_props,
+                                 EDGE_CNT,
+                                 DEST,
+                                 node_prop_vectors,
+                                 edge_prop_vectors,
+                                 N,
+                                 M);
 
     // [todo] delete nodekey? 
     return true;
-
-    // Allocate additional memory specific to data structures used with adjacency list graphs
-    //n_index2id = new node_t[N];
-
-    // Update the vertex_props vector with arrays for vertex properties
-    //for (std::vector<VALUE_TYPE>::iterator it = vprop_schema.begin(); it != vprop_schema.end(); ++it) {
-        // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of vertices.
-        //void *type_arr = getArrayType(*it, N);
-        //vertex_props.push_back(type_arr);
-    //}
-    // Update the edge_props vector with arrays for edge properties
-    //for (std::vector<VALUE_TYPE>::iterator it = eprop_schema.begin(); it != eprop_schema.end(); ++it) {
-        // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of edges.
-        //void *type_arr = getArrayType(*it, M);
-        //edge_props.push_back(type_arr);
-    //}
-
-    /*
-    // Reset the file
-    lineReader.reset();
-
-    // Fill the node and edge arrays
-    while (lineReader.getNextLine(line)) {
-        if (line.empty()) {
-            continue;
-        }
-        GM_Tokenizer tknzr(line, separators);
-        if ( ! tknzr.hasNextToken()) {
-            // No token in this line
-            continue;
-        }
-        // Get the first token in the line, which must be the vertex id
-        temp_str = tknzr.getNextToken();
-        this->begin[processed_nodes] = processed_edges;
-        //this->n_index2id[processed_nodes] = (node_t) atol(temp_str.c_str());
-
-        // Get the next "num_vertex_values" tokens, which represent the vertex values
-        for (size_t i = 0; i < num_vertex_values; ++i) {
-            // Convert each token into a value of the appropriate type
-            // Store it in the corresponding array in the vertex_props vector
-            temp_str = tknzr.getNextToken();
-            loadValueBasedOnType(vertex_props[i], processed_nodes, temp_str, vprop_schema[i]);
-        }
-
-        while (tknzr.hasNextToken()) {
-            // Get the next token in the line, which must be a vertex id representing an edge
-            // Place this in the node_idx array, that holds the destination of all the edges
-            temp_str = tknzr.getNextToken();
-            this->node_idx[processed_edges] = index_convert[atol(temp_str.c_str())];
-
-            // Get the next "num_edge_values" tokens, which represent the edge values
-            for (size_t j = 0; j < num_edge_values; ++j) {
-                // Convert each token into a value of the appropriate type
-                // Store it in the corresponding array in the edge_props vector
-                assert (tknzr.hasNextToken());
-                temp_str = tknzr.getNextToken();
-                loadValueBasedOnType(edge_props[j], processed_edges, temp_str, eprop_schema[j]);
-            }
-            processed_edges++;
-        }
-        processed_nodes++;
-    }
-    this->begin[processed_nodes] = processed_edges;
-
-    // Close the file and freeze graph
-    lineReader.terminate();
-    _frozen = true;
-    return true;
-    */
-
-    error_return: clear_graph();
-    return false;
 }
 
 /*
