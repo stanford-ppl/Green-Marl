@@ -82,6 +82,7 @@ int main(int argc, char** argv) {
     printf ("Number of nodes = %d\n", G.num_nodes());
     printf ("Number of edges = %d\n", G.num_edges());
 
+    /*
     int count = 0;
     printf ("  Vertex Properties\n");
     for (std::vector<void*>::iterator it = vertex_props.begin(); it != vertex_props.end(); ++it) {
@@ -98,6 +99,7 @@ int main(int argc, char** argv) {
         printf ("\n");
     }
     printf ("\n");
+    */
 
     //------------------------------
     // Write adjacency list graph

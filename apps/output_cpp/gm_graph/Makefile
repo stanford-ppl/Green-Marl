@@ -10,6 +10,7 @@ OUT = $(BIN)/graph_gen $(LIB)/libgmgraph.a
 JC = javac
 JSRC = javasrc
 JBIN = javabin
+AVRO = ../avro
 
 # where to find source codes
 vpath %.cc $(SRC)
@@ -23,6 +24,12 @@ GRAPHLIB_OBJECTS = $(filter-out $(OBJ)/graph_gen_main.o,$(OBJECTS))
 JAVASOURCES := $(wildcard $(JSRC)/*.java)
 JAVACLASSES := $(subst $(JSRC),$(JBIN),$(JAVASOURCES:.java=.class))
 
+ifneq ($(wildcard $(AVRO)),)
+	CFLAGS += -DAVRO -I$(AVRO)/include
+	LINK_AVRO_LIB = -L$(AVRO)/lib -lavro
+endif
+
+
 # include common define flags for gm_graph and application
 # (32/64bit environment), (bitwidth of node/edge structure), (hdfs setting)
 include ../common.mk
@@ -30,10 +37,12 @@ include ../common.mk
 all: $(OUT)
 
 $(BIN)/graph_gen: $(GRAPHGEN_OBJECTS)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ $(LINK_AVRO_LIB) -o $@
 
 $(LIB)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
-	$(AR) r $@ $^
+#	if test -d $(AVRO); then cd $(AVRO)/lib; ar x libavro.a; fi
+#	$(AR) r $@  $(shell ls $(AVRO)/lib/*.o) $^
+	$(AR) r $@  $^  
 
 ifdef HDFS
 $(JBIN)/%.class: %.java
