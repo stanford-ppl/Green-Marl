@@ -186,6 +186,20 @@ friend class gm_graph_hdfs;
      * A specialized function to load a graph represented using the adjacency list format.
      */
     virtual bool load_adjacency_list(char* filename, char separator = '\t');
+
+    void load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema,
+            std::vector<VALUE_TYPE> eprop_schema,
+            std::vector<void *>& vertex_props,
+            std::vector<void *>& edge_props,
+            std::vector<edge_t>& EDGE_CNT,
+            std::vector<node_t>& DEST,
+            std::vector<void*>& node_prop_vectors,
+            std::vector<void*>& edge_prop_vectors,
+            node_t N,
+            edge_t M
+                                      );
+
+
     /*
      * A generic function to load a graph represented using the adjacency list format.
      * Adjacency List Format:
