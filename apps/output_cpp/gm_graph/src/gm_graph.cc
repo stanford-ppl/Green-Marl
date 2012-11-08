@@ -742,6 +742,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
             }
         }
     }
+    EDGE_CNT.push_back(M); // have to record number of edges for the last node
 
     // check 'how many destination only nodes' 
     #pragma omp parallel for 
