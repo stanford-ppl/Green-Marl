@@ -35,8 +35,8 @@ enum VALUE_TYPE {
 typedef std::vector<double> GM_DVECT;
 typedef std::vector<float> GM_FVECT;
 typedef std::vector<bool> GM_BVECT;
-typedef std::vector<long> GM_LVECT;
-typedef std::vector<int> GM_IVECT;
+typedef std::vector<int64_t> GM_LVECT;
+typedef std::vector<int32_t> GM_IVECT;
 typedef std::vector<node_t> GM_NVECT;
 typedef std::vector<edge_t> GM_EVECT;
 

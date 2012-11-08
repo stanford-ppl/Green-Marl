@@ -10,6 +10,7 @@
 #include "gm_graph.h"
 #include "gm_util.h"
 #include "gm_lock.h"
+#include "gm_file_handling.h"
 
 
 // If the following flag is on, we let the correct thread 'touches' the data strcutre
@@ -649,6 +650,85 @@ bool gm_graph::load_adjacency_list(char* filename, char separator) {
     return false;
 }
 
+void gm_graph::load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema,
+            std::vector<VALUE_TYPE> eprop_schema,
+            std::vector<void *>& vertex_props,
+            std::vector<void *>& edge_props,
+            std::vector<edge_t>& EDGE_CNT,
+            std::vector<node_t>& DEST,
+            std::vector<void*>& node_prop_vectors,
+            std::vector<void*>& edge_prop_vectors,
+            node_t N,
+            edge_t M
+            ) {
+    std::set<node_t> DEST_ONLY;
+    gm_spinlock_t LOCK = 0;
+
+    size_t num_vertex_values = vprop_schema.size();
+    size_t num_edge_values = eprop_schema.size();
+
+    // check 'how many destination only nodes' 
+#pragma omp parallel for 
+    for(edge_t i = 0; i < (edge_t)DEST.size(); i++)
+    {
+        node_t key = DEST[i];
+        if (!find_nodekey(key)) {
+            gm_spinlock_acquire(&LOCK);
+            DEST_ONLY.insert(key);
+            gm_spinlock_release(&LOCK);
+        } 
+    }
+
+    if (DEST_ONLY.size() > 0) {
+        node_t more = DEST_ONLY.size();
+        N+= more;
+        // add dummy node properties 
+        std::set<node_t>::iterator J;
+        for(J = DEST_ONLY.begin(); J != DEST_ONLY.end(); J++) {
+            node_t dest = *J;
+            add_nodekey(dest);
+            EDGE_CNT.push_back(M);
+            for (size_t i = 0; i < num_vertex_values; ++i) {
+                gmutil_loadDummyValueIntoVector(node_prop_vectors[i], vprop_schema[i]);
+            }
+        }
+    }
+    
+    // key -> idx
+#pragma omp parallel for 
+    for(edge_t i = 0; i < (edge_t) DEST.size(); i++)
+    {
+        node_t key = DEST[i];
+        DEST[i] = nodekey_to_nodeid(key);
+    }
+
+    // Copy 
+    prepare_external_creation(N, M); 
+    #pragma omp parallel for 
+    for(size_t i = 0; i < (size_t) N; i++) {
+        begin[i] = EDGE_CNT[i];
+        for(size_t j = EDGE_CNT[i]; j < (size_t) EDGE_CNT[i+1]; j++) {
+            node_idx[j] = DEST[j];
+        }
+    }
+    begin[N] = M;
+    
+    // extract array from vectors
+    for (size_t i = 0; i < num_vertex_values; ++i) {
+        void *array = getArrayType(vprop_schema[i], N);
+        gmutil_copyVectorIntoArray(node_prop_vectors[i], array, vprop_schema[i]);
+        gmutil_deleteVectorType(node_prop_vectors[i], vprop_schema[i] );
+        vertex_props.push_back ( array ) ;
+    }
+    for (size_t i = 0; i < num_edge_values; ++i) {
+        void *array = getArrayType(eprop_schema[i], M);
+        gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i]);
+        gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );
+        edge_props.push_back ( array ) ;
+    }
+
+}
+
 /*
  * Adjacency list format:
  *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
@@ -675,14 +755,12 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     std::vector<node_t> DEST;
     std::vector<void*> node_prop_vectors;
     std::vector<void*> edge_prop_vectors;
-    std::set<node_t> DEST_ONLY;
-    gm_spinlock_t LOCK = 0;
 
 
     // Open the file
-    std::ifstream file(filename);
-    if (file == NULL) {
-        goto error_return;
+    GM_LineReader lineReader(filename, use_hdfs);
+    if (lineReader.failed()) {
+        return false;
     }
 
     //---------------------------------------------------
@@ -699,11 +777,11 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     prepare_nodekey(true);
 
     // Count the number of nodes and edges to allocate memory appropriately
-    while (std::getline(file, line)) {
+    while (lineReader.getNextLine(line)) {
         if (line.empty()) {
             continue;
         }
-        Tokenizer tknzr(line, separators);
+        GM_Tokenizer tknzr(line, separators);
         if ( ! tknzr.hasNextToken()) {
             // No token in this line
             continue;
@@ -741,142 +819,21 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
             }
         }
     }
+    EDGE_CNT.push_back(M); // have to record number of edges for the last node
 
-    // check 'how many destination only nodes' 
-    #pragma omp parallel for 
-    for(edge_t i = 0; i < (edge_t)DEST.size(); i++)
-    {
-        node_t key = DEST[i];
-        if (!find_nodekey(key)) {
-            gm_spinlock_acquire(&LOCK);
-            DEST_ONLY.insert(key);
-            gm_spinlock_release(&LOCK);
-        } 
-    }
-
-    if (DEST_ONLY.size() > 0) {
-        node_t more = DEST_ONLY.size();
-        N+= more;
-        // add dummy node properties 
-        std::set<node_t>::iterator J;
-        for(J = DEST_ONLY.begin(); J != DEST_ONLY.end(); J++) {
-            node_t dest = *J;
-            add_nodekey(dest);
-            EDGE_CNT.push_back(M);
-            for (size_t i = 0; i < num_vertex_values; ++i) {
-                gmutil_loadDummyValueIntoVector(node_prop_vectors[i], vprop_schema[i]);
-            }
-        }
-    }
-
-    // key -> idx
-    #pragma omp parallel for 
-    for(edge_t i = 0; i < (edge_t) DEST.size(); i++)
-    {
-        node_t key = DEST[i];
-        DEST[i] = nodekey_to_nodeid(key);
-    }
-
-    // Copy 
-    prepare_external_creation(N, M); 
-    #pragma omp parallel for 
-    for(size_t i = 0; i < (size_t) N; i++) {
-        begin[i] = EDGE_CNT[i];
-        for(size_t j = EDGE_CNT[i]; j < (size_t) EDGE_CNT[i+1]; j++) {
-            node_idx[j] = DEST[j];
-        }
-    }
-    begin[N] = M;
-    
-    // extract array from vectors
-    for (size_t i = 0; i < num_vertex_values; ++i) {
-        void *array = getArrayType(vprop_schema[i], N);
-        gmutil_copyVectorIntoArray(node_prop_vectors[i], array, vprop_schema[i]);
-        gmutil_deleteVectorType(node_prop_vectors[i], vprop_schema[i] );
-        vertex_props.push_back ( array ) ;
-    }
-    for (size_t i = 0; i < num_edge_values; ++i) {
-        void *array = getArrayType(eprop_schema[i], M);
-        gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i]);
-        gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );
-        edge_props.push_back ( array ) ;
-    }
+    load_adjacency_list_internal(vprop_schema,
+                                 eprop_schema,
+                                 vertex_props,
+                                 edge_props,
+                                 EDGE_CNT,
+                                 DEST,
+                                 node_prop_vectors,
+                                 edge_prop_vectors,
+                                 N,
+                                 M);
 
     // [todo] delete nodekey? 
     return true;
-
-    // Allocate additional memory specific to data structures used with adjacency list graphs
-    //n_index2id = new node_t[N];
-
-    // Update the vertex_props vector with arrays for vertex properties
-    //for (std::vector<VALUE_TYPE>::iterator it = vprop_schema.begin(); it != vprop_schema.end(); ++it) {
-        // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of vertices.
-        //void *type_arr = getArrayType(*it, N);
-        //vertex_props.push_back(type_arr);
-    //}
-    // Update the edge_props vector with arrays for edge properties
-    //for (std::vector<VALUE_TYPE>::iterator it = eprop_schema.begin(); it != eprop_schema.end(); ++it) {
-        // create an array of the type corresponding to the value_type *it. The array must be of size equal to the number of edges.
-        //void *type_arr = getArrayType(*it, M);
-        //edge_props.push_back(type_arr);
-    //}
-
-    /*
-    // Reset the file
-    file.clear();
-    file.seekg(0, std::ios::beg);
-
-    // Fill the node and edge arrays
-    while (std::getline(file, line)) {
-        if (line.empty()) {
-            continue;
-        }
-        Tokenizer tknzr(line, separators);
-        if ( ! tknzr.hasNextToken()) {
-            // No token in this line
-            continue;
-        }
-        // Get the first token in the line, which must be the vertex id
-        temp_str = tknzr.getNextToken();
-        this->begin[processed_nodes] = processed_edges;
-        //this->n_index2id[processed_nodes] = (node_t) atol(temp_str.c_str());
-
-        // Get the next "num_vertex_values" tokens, which represent the vertex values
-        for (size_t i = 0; i < num_vertex_values; ++i) {
-            // Convert each token into a value of the appropriate type
-            // Store it in the corresponding array in the vertex_props vector
-            temp_str = tknzr.getNextToken();
-            loadValueBasedOnType(vertex_props[i], processed_nodes, temp_str, vprop_schema[i]);
-        }
-
-        while (tknzr.hasNextToken()) {
-            // Get the next token in the line, which must be a vertex id representing an edge
-            // Place this in the node_idx array, that holds the destination of all the edges
-            temp_str = tknzr.getNextToken();
-            this->node_idx[processed_edges] = index_convert[atol(temp_str.c_str())];
-
-            // Get the next "num_edge_values" tokens, which represent the edge values
-            for (size_t j = 0; j < num_edge_values; ++j) {
-                // Convert each token into a value of the appropriate type
-                // Store it in the corresponding array in the edge_props vector
-                assert (tknzr.hasNextToken());
-                temp_str = tknzr.getNextToken();
-                loadValueBasedOnType(edge_props[j], processed_edges, temp_str, eprop_schema[j]);
-            }
-            processed_edges++;
-        }
-        processed_nodes++;
-    }
-    this->begin[processed_nodes] = processed_edges;
-
-    // Close the file and freeze graph
-    file.close();
-    _frozen = true;
-    return true;
-    */
-
-    error_return: clear_graph();
-    return false;
 }
 
 /*
@@ -894,8 +851,9 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
     size_t num_vertex_values = vprop_schema.size();
     size_t num_edge_values = eprop_schema.size();
 
-    std::ofstream file(filename);
-    if (file == NULL) {
+    // Open the file for writing
+    GM_Writer writer(filename, use_hdfs);
+    if (writer.failed()) {
         fprintf (stderr, "cannot open %s for writing\n", filename);
         return false;
     }
@@ -904,28 +862,28 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
 
     for (node_t i = 0; i < _numNodes; ++i) {
         // Write the vertex id corresponding to this index
-        //file << this->n_index2id[i];
-        file << nodeid_to_nodekey(i);
+        writer.write(nodeid_to_nodekey(i));
         // Write the values corresponding to this vertex
         for (size_t j = 0; j < num_vertex_values; ++j) {
-            file << separators;
-            storeValueBasedOnType (vertex_props[j], i, file, vprop_schema[j]);
+            writer.write(separators);
+            storeValueBasedOnType (vertex_props[j], i, writer, vprop_schema[j]);
         }
 
         for (edge_t j = this->begin[i]; j < this->begin[i+1]; ++j) {
             // For each edge, write its destination vertex's id
-            //file << separators << this->n_index2id[this->node_idx[j]];
-            file << separators << nodeid_to_nodekey(this->node_idx[j]);
+            writer.write(separators);
+            writer.write(nodeid_to_nodekey(this->node_idx[j]));
             // Write the values corresponding to this edge
             for (size_t k = 0; k < num_edge_values; ++k) {
-                file << separators;
-                storeValueBasedOnType (edge_props[k], j, file, eprop_schema[k]);
+                writer.write(separators);
+                storeValueBasedOnType (edge_props[k], j, writer, eprop_schema[k]);
             }
         }
-        file << "\n";
+        writer.write("\n");
+        writer.flush();
     }
 
-    file.close();
+    writer.terminate();
     return true;
 }
 
@@ -1158,3 +1116,325 @@ bool gm_graph::load_binary_hdfs(char* filename) {
 
 #endif  // HDFS
 
+#ifdef AVRO
+#include "avro.h"
+
+VALUE_TYPE avroTypeNameToValueType(const char* type_name) {
+    if (!strcmp(type_name, "bool")) return GMTYPE_BOOL;
+    else if (!strcmp(type_name, "int")) return GMTYPE_INT;
+    else if (!strcmp(type_name, "long")) return GMTYPE_LONG;
+    else if (!strcmp(type_name, "float")) return GMTYPE_FLOAT;
+    else if (!strcmp(type_name, "double")) return GMTYPE_DOUBLE;
+    else return GMTYPE_END;
+}
+
+int loadAvroValueIntoVector(void *vector, avro_value_t val, VALUE_TYPE vt) 
+{
+    switch(vt) {
+    case GMTYPE_BOOL: 
+        {
+            int v;
+            int res = avro_value_get_boolean(&val, &v);
+            if (!res) {
+                GM_BVECT* V = (GM_BVECT*) vector;
+                V->push_back((bool)v);
+            }
+            return res;
+        }
+        
+    case GMTYPE_INT:
+        {
+            int v;
+            int res = avro_value_get_int(&val, &v);
+            if (!res) {
+                GM_IVECT* V = (GM_IVECT*) vector;
+                V->push_back(v);
+            }
+            return res;
+        }
+        
+    case GMTYPE_LONG: 
+        {
+            int64_t v;
+            int res = avro_value_get_long(&val, &v);
+            if (!res) {
+                GM_LVECT* V = (GM_LVECT*) vector;
+                V->push_back(v);
+            }
+            return res;
+        }
+        
+    case GMTYPE_FLOAT: 
+        {
+            float v;
+            int res = avro_value_get_float(&val, &v);
+            if (!res) {
+                GM_FVECT* V = (GM_FVECT*) vector;
+                V->push_back(v);
+            }
+            return res;
+        }
+        
+    case GMTYPE_DOUBLE: 
+        {
+            double v;
+            int res = avro_value_get_double(&val, &v);
+            if (!res) {
+                GM_DVECT* V = (GM_DVECT*) vector;
+                V->push_back(v);
+            }
+            return res;
+        }
+        
+    case GMTYPE_END: 
+    default:
+        return 1; // Control should never reach this case.
+    }
+}
+
+
+int loadValueBasedOnTypeAvro(void *arr, long pos, avro_value_t val, VALUE_TYPE vt) {
+    switch(vt) {
+    case GMTYPE_BOOL:
+        {
+            int v;
+            int res = avro_value_get_boolean(&val, &v);
+            if (!res)
+                ((bool *)arr)[pos] = (bool)v;
+            return res;
+        }
+    case GMTYPE_INT: return avro_value_get_int(&val, &(((int *)arr)[pos]));
+    case GMTYPE_LONG: return avro_value_get_long(&val, &(((int64_t *)arr)[pos]));
+    case GMTYPE_FLOAT: return avro_value_get_float(&val, &(((float *)arr)[pos]));
+    case GMTYPE_DOUBLE: return avro_value_get_double(&val, &(((double *)arr)[pos]));
+    default: return 1; // Control should never reach this case.
+    }
+}
+
+#define avro_fail_0(err_msg, r) {               \
+        fprintf(stderr, err_msg);               \
+        avro_file_reader_close(r);              \
+        return false;                           \
+    }
+
+#define avro_fail_1(err_msg, err_arg, r) {      \
+        fprintf(stderr, err_msg, err_arg);      \
+        avro_file_reader_close(r);              \
+        return false;                           \
+    }
+
+bool parse_avro_header(avro_file_reader_t reader,
+                      std::vector<VALUE_TYPE>& vprop_schema,
+                      std::vector<VALUE_TYPE>& eprop_schema) {
+	avro_schema_t rec_schema = avro_file_reader_get_writer_schema(reader);
+    
+    size_t rec_field_count = avro_schema_record_size(rec_schema);
+    size_t rec_field_ind = 0;
+    // assume that first field is the id of the source node, last
+    // field is the edge list and (optional) middle fields are
+    // properties of the source node
+    if (rec_field_count < 2)
+        avro_fail_1("Edge list record should have at least 2 fields (detected: %d)\n", rec_field_count, reader);
+	avro_schema_t src_id_schema =
+        avro_schema_union_branch(avro_schema_record_field_get_by_index(rec_schema, rec_field_ind++), 1);
+    if (src_id_schema == NULL)
+        avro_fail_0("Type of source node identifier should a union\n", reader);
+    const char* src_id_schema_tname = avro_schema_type_name(src_id_schema);
+    if (strcmp(src_id_schema_tname, "long"))
+        avro_fail_1("Unknown src node id type %s (expected: long))\n", src_id_schema_tname, reader);
+    
+    for (;rec_field_ind<rec_field_count-1; rec_field_ind++) {
+        avro_schema_t node_prop_schema = avro_schema_union_branch(avro_schema_record_field_get_by_index(rec_schema, rec_field_ind), 1);
+        if (node_prop_schema == NULL)
+            avro_fail_0("Type of source node property should be a union\n", reader);
+        const char* node_prop_schema_tname = avro_schema_type_name(node_prop_schema);
+        VALUE_TYPE node_prop_type = avroTypeNameToValueType(node_prop_schema_tname);
+        if (node_prop_type == GMTYPE_END)
+            avro_fail_1("Unknown source node property type %s\n", node_prop_schema_tname, reader);
+        vprop_schema.push_back(node_prop_type);
+    }
+    
+	avro_schema_t adj_list_schema =
+        avro_schema_union_branch(avro_schema_record_field_get_by_index(rec_schema, rec_field_ind), 1);
+    if (adj_list_schema == NULL)
+        avro_fail_0("Type of edge list should be a union\n", reader);
+
+    const char* adj_list_schema_tname = avro_schema_type_name(adj_list_schema);
+    if (strcmp(adj_list_schema_tname, "array"))
+        avro_fail_1("Unknown type of edge list %s (expected: array))\n", adj_list_schema_tname, reader);
+    
+	avro_schema_t item_rec_schema =
+        avro_schema_union_branch(avro_schema_array_items(adj_list_schema), 1);
+    if (item_rec_schema == NULL)
+        avro_fail_0("Type of edge list item should be a union\n", reader);
+
+    size_t item_rec_field_count = avro_schema_record_size(item_rec_schema);
+    size_t item_rec_field_ind = 0;
+
+	avro_schema_t dst_id_schema =
+        avro_schema_union_branch(avro_schema_record_field_get_by_index(item_rec_schema, item_rec_field_ind++), 1);
+    if (dst_id_schema == NULL)
+        avro_fail_0("Type of destination node identifier should be a union\n", reader);
+
+    const char* dst_id_schema_tname = avro_schema_type_name(dst_id_schema);
+    if (strcmp(src_id_schema_tname, "long"))
+        avro_fail_1("Unknown dest node id type %s (expected: long))\n", dst_id_schema_tname, reader);
+    
+    for (;item_rec_field_ind<item_rec_field_count; item_rec_field_ind++) {
+        avro_schema_t edge_prop_schema = avro_schema_union_branch(avro_schema_record_field_get_by_index(item_rec_schema, item_rec_field_ind), 1);
+        if (edge_prop_schema == NULL)
+            avro_fail_0("Type of edge property should be a union\n", reader);
+
+        const char* edge_prop_schema_tname = avro_schema_type_name(edge_prop_schema);
+        VALUE_TYPE edge_prop_type = avroTypeNameToValueType(edge_prop_schema_tname);
+        if (edge_prop_type == GMTYPE_END)
+            avro_fail_1("Unknown type of the edge property %s\n", edge_prop_schema_tname, reader);
+
+        eprop_schema.push_back(edge_prop_type);
+    }
+    return true;
+}
+
+bool gm_graph::load_adjacency_list_avro(const char* filename, // input parameter
+            std::vector<VALUE_TYPE>& vprop_schema, // output parameter
+            std::vector<VALUE_TYPE>& eprop_schema, // output parameter
+            std::vector<void *>& vertex_props, // output parameter
+            std::vector<void *>& edge_props // output parameter
+            ) {
+    clear_graph();
+	avro_file_reader_t reader;
+    if (avro_file_reader(filename, &reader)) {
+        fprintf(stderr, "Cannot open file %s\n", filename);
+        return false;
+    }
+    if (!parse_avro_header(reader, vprop_schema, eprop_schema)) {
+        return false;
+    }
+    node_t N = 0;
+    edge_t M = 0;
+    size_t num_vertex_values = vprop_schema.size();
+    size_t num_edge_values = eprop_schema.size();
+       
+    std::vector<edge_t> EDGE_CNT;
+    std::vector<node_t> DEST;
+    std::vector<void*> node_prop_vectors;
+    std::vector<void*> edge_prop_vectors;
+    std::set<node_t> DEST_ONLY;
+
+    //---------------------------------------------------
+    // Create vectors
+    //---------------------------------------------------
+    for(size_t i = 0; i < num_vertex_values; i++) {
+        node_prop_vectors.push_back( gmutil_createVectorType( vprop_schema[i] ) );
+    }
+    for(size_t i = 0; i < num_edge_values; i++) {
+        edge_prop_vectors.push_back( gmutil_createVectorType( eprop_schema[i] ) );
+    }
+
+    // prepare nodekey structure and its reverse structure
+    prepare_nodekey(true);
+
+    // count nodes and edges
+	avro_schema_t rec_schema = avro_file_reader_get_writer_schema(reader);
+	avro_value_iface_t* iface = avro_generic_class_from_schema(rec_schema);
+    avro_value_t rec_val;
+	avro_generic_value_new(iface, &rec_val);
+    while (avro_file_reader_read_value(reader, &rec_val) == 0) {
+        // get source node id
+        avro_value_t node_id_union;
+        if (avro_value_get_by_index(&rec_val, 0,  &node_id_union, NULL))
+            avro_fail_0("Error reading source node id union\n", reader);
+
+        avro_value_t node_id;
+        if (avro_value_set_branch(&node_id_union, 1,  &node_id))
+            avro_fail_0("Error reading source node id\n", reader);
+
+        int64_t node_id_num;
+        if (avro_value_get_long(&node_id, &node_id_num))
+            avro_fail_0("Error reading source node id value\n", reader);
+
+        add_nodekey((long)node_id_num);
+        EDGE_CNT.push_back(M);
+        N++;
+
+
+        for (size_t i = 0; i < num_vertex_values; ++i) {
+            // get surce node properties
+            avro_value_t node_val_union;
+            if (avro_value_get_by_index(&rec_val, i+1,  &node_val_union, NULL))
+                avro_fail_0("Error reading source node property union\n", reader);
+
+            avro_value_t node_val;
+            if (avro_value_set_branch(&node_val_union, 1,  &node_val))
+                avro_fail_0("Error reading source node property\n", reader);
+
+            if (loadAvroValueIntoVector(node_prop_vectors[i], node_val, vprop_schema[i]))
+                avro_fail_0("Error reading source node property value\n", reader);
+        }
+
+        avro_value_t edge_array_union;
+        if (avro_value_get_by_index(&rec_val, 2,  &edge_array_union, NULL))
+            avro_fail_0("Error reading edge list union\n", reader);
+
+        avro_value_t edge_array;
+        if (avro_value_set_branch(&edge_array_union, 1,  &edge_array))
+            avro_fail_0("Error reading edge list\n", reader);
+
+        size_t edge_array_size;
+        avro_value_get_size(&edge_array, &edge_array_size);
+
+
+        for (size_t i=0; i<edge_array_size; i++) {
+            // get array item record
+            avro_value_t item_rec_union;
+            if (avro_value_get_by_index(&edge_array, i,  &item_rec_union, NULL))
+                avro_fail_0("Error reading item record union from edge array\n", reader);
+            avro_value_t item_rec_val;
+            if (avro_value_set_branch(&item_rec_union, 1,&item_rec_val))
+                avro_fail_0("Error reading item record from edge array\n", reader);
+            
+            // get source node id
+            avro_value_t dest_id_union;
+            if (avro_value_get_by_index(&item_rec_val, 0,  &dest_id_union, NULL))
+                avro_fail_0("Error reading destination node id union\n", reader);
+            avro_value_t dest_id;
+            if (avro_value_set_branch(&dest_id_union, 1,  &dest_id))
+                avro_fail_0("Error reading destination node id\n", reader);
+            int64_t dest_id_num;
+            if (avro_value_get_long(&dest_id, &dest_id_num))
+                avro_fail_0("Error reading destination node id value\n", reader);
+
+            DEST.push_back((node_t)dest_id_num);
+            M++;
+
+            for (size_t j = 0; j < num_edge_values; ++j) {
+                // get edge property
+                avro_value_t edge_val_union;
+                if (avro_value_get_by_index(&item_rec_val, j+1,  &edge_val_union, NULL))
+                    avro_fail_0("Error reading edge property union\n", reader);
+                avro_value_t edge_val;
+                if (avro_value_set_branch(&edge_val_union, 1,  &edge_val))
+                    avro_fail_0("Error reading edge property\n", reader);
+                if (loadAvroValueIntoVector(edge_prop_vectors[j], edge_val, eprop_schema[j]))
+                    avro_fail_0("Error reading edge property value\n", reader);
+            }
+        }
+    }
+    EDGE_CNT.push_back(M); // have to record number of edges for the last node
+    
+    load_adjacency_list_internal(vprop_schema,
+                                 eprop_schema,
+                                 vertex_props,
+                                 edge_props,
+                                 EDGE_CNT,
+                                 DEST,
+                                 node_prop_vectors,
+                                 edge_prop_vectors,
+                                 N,
+                                 M);
+
+    avro_file_reader_close(reader);
+    return true;
+}
+
+#endif // AVRO

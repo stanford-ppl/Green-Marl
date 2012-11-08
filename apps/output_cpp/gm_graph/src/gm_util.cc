@@ -9,21 +9,21 @@
  * specifically, find_first_not_of, find_first_of, and substr.
  */
 
-void Tokenizer::reset() {
+void GM_Tokenizer::reset() {
     current_pos_ = 0;
     next_token_start_ = 0;
     found_next_token_start_ = false;
     number_of_tokens_ = 0;
 }
 
-void Tokenizer::findNextTokenStart() {
+void GM_Tokenizer::findNextTokenStart() {
     if ( ! found_next_token_start_) {
         next_token_start_ = str_.find_first_not_of(delim_, current_pos_);
         found_next_token_start_ = true;
     }
 }
 
-std::string Tokenizer::getNextToken() {
+std::string GM_Tokenizer::getNextToken() {
     if ( ! found_next_token_start_) {
         findNextTokenStart();
     }
@@ -33,14 +33,14 @@ std::string Tokenizer::getNextToken() {
     return str_.substr(next_token_start_, next_token_end - next_token_start_);
 }
 
-bool Tokenizer::hasNextToken() {
+bool GM_Tokenizer::hasNextToken() {
     if ( ! found_next_token_start_) {
         findNextTokenStart();
     }
     return next_token_start_ != std::string::npos;
 }
 
-long Tokenizer::countNumberOfTokens() {
+long GM_Tokenizer::countNumberOfTokens() {
     if (number_of_tokens_ == 0) {
         for (size_t pos = 0; pos != std::string::npos; number_of_tokens_++) {
             pos = str_.find_first_not_of(delim_, pos);
@@ -234,6 +234,19 @@ void storeValueBasedOnType(void *arr, long pos, std::ofstream& file, VALUE_TYPE 
     }
 }
 
-
+/*
+ * Method to read a value from the given location in an array based on the given value type
+ * and write to a file using GM_Writer
+ */
+void storeValueBasedOnType(void *arr, long pos, GM_Writer& writer, VALUE_TYPE vt) {
+    switch(vt) {
+        case GMTYPE_BOOL: writer.write(((bool *)arr)[pos]); break;
+        case GMTYPE_INT: writer.write(((int *)arr)[pos]); break;
+        case GMTYPE_LONG: writer.write(((long *)arr)[pos]); break;
+        case GMTYPE_FLOAT: writer.write(((float *)arr)[pos]); break;
+        case GMTYPE_DOUBLE: writer.write(((double *)arr)[pos]); break;
+        case GMTYPE_END: assert (false); return; // Control should never reach this case.
+    }
+}
 
 

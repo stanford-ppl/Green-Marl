@@ -279,9 +279,44 @@ Now, do the following steps and execute sample programs:
     %%%% Try remaining sample applications (pagerank, bc, kosaraju)
     %%%% All of them have the same following command-line arguments
     %%%%   <program name> <graph name> <# of threads>
-        
 
-4-7 Adding your own Green-Marl Program
+   
+4-7 Apache Avro Support
+-------------------------------------
+
+Avro support relies on the external Avro library, Avro C
+(http://avro.apache.org/docs/current/api/c/index.html). Before you can
+process Avro files you need to install Avro C. Currently, the only
+supported version of Avro C is v1.7.2 (currently the most recent
+version). Unfortunately, Avro C has a problem that prevents it from
+correctly handling Avro files with the encoding parameter omitted from
+the header (legal according to Avro specification), and needs to be
+patched. A general installation procedure for Avro C is provided with
+its distribution but we provide an abbreviated version (including
+patching instructions) below:
+     
+1. Create a temporary installation directory denoted below as
+$(avro_install).  1. Download avro-c-1.7.2.tar.gz tarball (e.g. from
+http://mirror.reverse.net/pub/apache/avro/stable/c/avro-c-1.7.2.tar.gz)
+to $(avro_install) 3. Execute the following commands to unpack, patch
+and build Avro C sources (the location of the installed files
+specified below with CMAKE_INSTALL_PREFIX is crucial!):
+
+   cd $(avro_install)
+   tar -zxf avro-c-1.7.2.tar.gz
+   patch -p1 < $(top)/avro.patch
+   mkdir build
+   cd build
+   cmake .. -DCMAKE_INSTALL_PREFIX=$(top)/apps/output_cpp/ -DCMAKE_BUILD_TYPE=Release
+   make test
+   make install
+
+In order to be able to process Avro files you also must put the path
+the dynamic Avro C library, that is $(top)/apps/output_cpp/avro/lib,
+on your library path (LD_LIBRARY_PATH).
+
+
+4-8 Adding your own Green-Marl Program
 -------------------------------------
 
 Refer to [tutorial document](Green-Marl/blob/master/doc/tutorial.md) which provides a walk-through to write your own Green-Marl

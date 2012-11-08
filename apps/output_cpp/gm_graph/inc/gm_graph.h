@@ -68,7 +68,7 @@ friend class gm_graph_hdfs;
 
   public:
     gm_graph();
-    virtual ~gm_graph();
+    ~gm_graph();
 
     //-----------------------------------------------------
     // Direct access (only avaiable after frozen) 
@@ -178,20 +178,34 @@ friend class gm_graph_hdfs;
     // The graph will be frozen automatically.
     //--------------------------------------------------------------
     #define MAGIC_WORD 0x03939999
-    virtual void prepare_external_creation(node_t n, edge_t m);
-    virtual bool store_binary(char* filename);          // attributes not saved
-    virtual bool load_binary(char* filename);           // call this to an empty graph object
+    void prepare_external_creation(node_t n, edge_t m);
+    bool store_binary(char* filename);          // attributes not saved
+    bool load_binary(char* filename);           // call this to an empty graph object
 
     /*
      * A specialized function to load a graph represented using the adjacency list format.
      */
-    virtual bool load_adjacency_list(char* filename, char separator = '\t');
+    bool load_adjacency_list(char* filename, char separator = '\t');
+
+    void load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema,
+            std::vector<VALUE_TYPE> eprop_schema,
+            std::vector<void *>& vertex_props,
+            std::vector<void *>& edge_props,
+            std::vector<edge_t>& EDGE_CNT,
+            std::vector<node_t>& DEST,
+            std::vector<void*>& node_prop_vectors,
+            std::vector<void*>& edge_prop_vectors,
+            node_t N,
+            edge_t M
+            );
+
+
     /*
      * A generic function to load a graph represented using the adjacency list format.
      * Adjacency List Format:
      *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
      */
-    virtual bool load_adjacency_list(const char* filename, // input parameter
+    bool load_adjacency_list(const char* filename, // input parameter
             std::vector<VALUE_TYPE> vprop_schema, // input parameter
             std::vector<VALUE_TYPE> eprop_schema, // input parameter
             std::vector<void *>& vertex_props, // output parameter
@@ -204,13 +218,20 @@ friend class gm_graph_hdfs;
      * Adjacency List Format:
      *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
      */
-    virtual bool store_adjacency_list (const char* filename, // input parameter
+    bool store_adjacency_list (const char* filename, // input parameter
             std::vector<VALUE_TYPE> vprop_schema, // input parameter
             std::vector<VALUE_TYPE> eprop_schema, // input parameter
             std::vector<void*>& vertex_props, // input parameter
             std::vector<void*>& edge_props, // input parameter
             const char* separators = "\t", // input parameter
             bool use_hdfs = false // input parameter
+            );
+
+    bool load_adjacency_list_avro(const char* filename, // input parameter
+            std::vector<VALUE_TYPE>& vprop_schema, // output parameter
+            std::vector<VALUE_TYPE>& eprop_schema, // output parameter
+            std::vector<void *>& vertex_props, // output parameter
+            std::vector<void *>& edge_props // output parameter
             );
 
     //--------------------------------------------------------------

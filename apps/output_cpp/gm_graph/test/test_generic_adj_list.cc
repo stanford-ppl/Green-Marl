@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include "gm.h"
 #include "assert.h"
 
@@ -8,31 +9,31 @@ void printBasedOnType (void *mem, VALUE_TYPE type, int num) {
         case GMTYPE_BOOL:
             for (int i = 0; i < num; i++) {
                 bool *mem_b = (bool *)mem;
-                printf (" %d ", mem_b[i]);
+                std::cout << " " << std::boolalpha << mem_b[i] << " ";
             }
             break;
         case GMTYPE_INT:
             for (int i = 0; i < num; i++) {
                 int *mem_i = (int *)mem;
-                printf (" %d ", mem_i[i]);
+                std::cout << " " << mem_i[i] << " ";
             }
             break;
         case GMTYPE_LONG:
             for (int i = 0; i < num; i++) {
                 long *mem_l = (long *)mem;
-                printf (" %ld ", mem_l[i]);
+                std::cout << " " << mem_l[i] << " ";
             }
             break;
         case GMTYPE_FLOAT:
             for (int i = 0; i < num; i++) {
                 float *mem_f = (float *)mem;
-                printf (" %f ", mem_f[i]);
+                std::cout << " " << mem_f[i] << " ";
             }
             break;
         case GMTYPE_DOUBLE:
             for (int i = 0; i < num; i++) {
                 double *mem_d = (double *)mem;
-                printf (" %f ", mem_d[i]);
+                std::cout << " " << mem_d[i] << " ";
             }
             break;
     }
@@ -81,6 +82,7 @@ int main(int argc, char** argv) {
     printf ("Number of nodes = %d\n", G.num_nodes());
     printf ("Number of edges = %d\n", G.num_edges());
 
+    /*
     int count = 0;
     printf ("  Vertex Properties\n");
     for (std::vector<void*>::iterator it = vertex_props.begin(); it != vertex_props.end(); ++it) {
@@ -97,6 +99,7 @@ int main(int argc, char** argv) {
         printf ("\n");
     }
     printf ("\n");
+    */
 
     //------------------------------
     // Write adjacency list graph
