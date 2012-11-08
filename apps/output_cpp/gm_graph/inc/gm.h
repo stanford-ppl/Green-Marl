@@ -28,5 +28,6 @@
 #include "gm_map.h"
 
 #include "gm_useropt.h"
+#include "gm_default_usermain.h"
 
 #endif  // GM_H_
