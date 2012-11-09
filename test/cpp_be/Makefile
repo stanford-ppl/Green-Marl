@@ -16,6 +16,7 @@ clean:
 
 CC=g++
 GM_GRAPH=../../apps/output_cpp/gm_graph
+SETUP = ../../setup.mk
 FLAGS_DEF=../../apps/output_cpp/common.mk
 
 
@@ -25,6 +26,7 @@ SRCS=$(wildcard output/*.cc)
 OBJS=$(addprefix output/, $(notdir $(SRCS:.cc=.o)))
 CFLAGS= -O3 -g -I$(INC) -c -fopenmp
 LFLAGS= -L$(LIB) -fopenmp -lgmgraph
+include $(SETUP)
 include $(FLAGS_DEF)
 
 
