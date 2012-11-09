@@ -1,0 +1,72 @@
+#==================================================================================
+# A common setup file  for all makefile in the source tree.
+# Note that all the flags in this file can be overreide by the command line 
+# arguement: e.g. make env=gps
+#==================================================================================
+
+#-------------------------------------------------------------
+# 0. Java/Hadoop directories, only required for HDFS suport and 
+# Giraph backend
+#-------------------------------------------------------------
+# hadoop distribution
+HADOOP_HOME=/cm/shared/apps/hadoop/current
+#jdk
+JAVA_HOME=/usr/java/default
+# Name of hadoop core jar
+HADOOP_CORE_JAR=hadooop-core-0.20.2-cdh3u4.jar
+
+
+#-------------------------------------------------------------
+# 1. Building the compiler
+#-------------------------------------------------------------
+# (nothing)
+
+
+#-------------------------------------------------------------
+# 2. Building the applications
+#-------------------------------------------------------------
+# Choose the backend where the gm source file is be compiled into:
+#  cpp_omp, cpp_seq, gps, giraph
+env=cpp_omp
+
+# gm_comp arguments to be applied when compiling sample programs
+GM_ARGS=""
+
+
+#-------------------------------------------------------------
+# 3. Building shared-memory backend (gm_graph)
+#-------------------------------------------------------------
+# Flag for Oracle SPARC environment
+ORACLE=0  
+
+# Enforce 64bit binary or 32bit binary
+FORCE64_BIT=0
+FORCE32_BIT=0
+
+# Bit width of node-id type and, edge-id type: 
+# one of (32,32), (32,64), (64,64)
+NODE_SIZE=32
+EDGE_SIZE=32
+
+# Support reading/writing graph files from HDFS
+SUPPORT_HDFS=1
+
+# Directories for SUPPORT_HDFS
+#location of libhdfs.so
+LIBHDFS_DIR =$(HADOOP_HOME)/c++/lib
+#location of hdfs.h
+INCHDFS_DIR = $(HADOOP_HOME)/src/c++/libhdfs 
+#location of libhdfs.so
+LIBJVM_DIR  =$(JAVA_HOME)/jre/lib/amd64/server
+#location of jni.h
+INCJNI_DIR  =$(JAVA_HOME)/include
+#location of jni_md.h
+INCJNIMD_DIR = $(JAVA_HOME)/include/linux
+
+
+
+#--------------------------------------------------------
+# 4. Building Giraph bakcend 
+#--------------------------------------------------------
+# Pacakge name of generated giraph applications
+OUTPUT_PACKAGE="my.app"

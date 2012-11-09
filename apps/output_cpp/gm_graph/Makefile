@@ -11,6 +11,7 @@ JC = javac
 JSRC = javasrc
 JBIN = javabin
 AVRO = ../avro
+BUILD_DIRS=$(JBIN)
 
 # where to find source codes
 vpath %.cc $(SRC)
@@ -32,9 +33,10 @@ endif
 
 # include common define flags for gm_graph and application
 # (32/64bit environment), (bitwidth of node/edge structure), (hdfs setting)
+include ../../../setup.mk
 include ../common.mk
 
-all: $(OUT)
+all: $(BUILD_DIRS) $(OUT)
 
 $(BIN)/graph_gen: $(GRAPHGEN_OBJECTS)
 	$(CC) $(CFLAGS) $^ $(LINK_AVRO_LIB) -o $@
@@ -44,7 +46,10 @@ $(LIB)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
 #	$(AR) r $@  $(shell ls $(AVRO)/lib/*.o) $^
 	$(AR) r $@  $^  
 
-ifdef HDFS
+$(BUILD_DIRS): 
+	mkdir $(JBIN)
+
+ifeq ($(HDFS_SUPPORT),1)
 $(JBIN)/%.class: %.java
 	$(JC) $(JFLAGS) -d $(JBIN) $<
 $(OBJ)/%.o: %.cc $(JAVACLASSES)

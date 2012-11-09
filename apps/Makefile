@@ -1,6 +1,5 @@
-#----------------------------------------
-# Set target envrionment (cpp or gps)
-#----------------------------------------
+include ../setup.mk
+
 ifndef gm_args
  GM_ARGS=
 else
@@ -28,9 +27,8 @@ else
     ifeq ($(env),giraph)
       TARGET=giraph
       tdir=output_giraph
-	  GM_ARGS +="-GiraphPackage=my.app"
     else
-      @echo "unknown target environment"
+      echo "unknown target environment"
       false
     endif
    endif

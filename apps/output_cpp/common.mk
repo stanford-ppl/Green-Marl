@@ -3,25 +3,24 @@
 #   gm_graph/Makefile (the makefile for gm_graph)
 #   src/Makefile (the makefile for user-application)
 #
-# All the common flags are defined in here
+# Include ../../../setup.mk before this file
 #----------------------------------------------------------------------------
-
 
 #-----------------------------------------
 # Flags for ORACLE SPARC compiler
 #-----------------------------------------
-ifdef ORACLE
+ifeq ($(ORACLE),1)
 CFLAGS += -D__ORACLE__
 endif
 
 #-----------------------------------------
 # 32bit OS(machine) vs. 64bit OS(machine)
 #-----------------------------------------
-ifdef FORCE_64BIT
+ifeq  ($(FORCE_64BIT),1)
 CFLAGS += -m64
 LFLAGS += -m64
 endif
-ifdef FORCE_32BIT
+ifeq ($(FORCE_32BIT),1)
 CFLAGS += -m32
 LFLAGS += -m32
 endif
@@ -42,7 +41,6 @@ endif
 ifndef EDGE_SIZE
   EDGE_SIZE=32
 endif
-
 
 ifeq (${EDGE_SIZE},64)
   ifeq (${NODE_SIZE},64)
@@ -67,7 +65,7 @@ endif
 #-----------------------------------------------
 # Set up for HDFS
 #-----------------------------------------------
-ifdef HDFS
+ifeq (${SUPPORT_HDFS},1)
 # Make sure to compile hadoop with
 #    ant -Dcompile.c++=true -Dlibhdfs=true compile-c++-libhdfs
 #
@@ -78,16 +76,16 @@ ifdef HDFS
 #    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 
 # Change this path to point to the location of libhdfs.so
-CFLAGS += -L$(HADOOP_HOME)/c++/lib
+CFLAGS += -L$(LIBHDFS_DIR)
 # Change this path to point to the location of libjvm.so
-CFLAGS += -L$(JAVA_HOME)/jre/lib/amd64/server
+CFLAGS += -L$(LIBJVM_DIR)
 # Change this path to point to the location of jni.h and jni_md.h
-CFLAGS += -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux
+CFLAGS += -I$(INCJNI_DIR) -I$(INCJNIMD_DIR)
 # Change this path to point to the location of hdfs.h
-CFLAGS += -I$(HADOOP_HOME)/src/c++/libhdfs/
+CFLAGS += -I$(INCHDFS_DIR)
 
 CFLAGS += -lhdfs -ljvm -DHDFS
 
-JFLAGS = -classpath $(HADOOP_HOME)/hadoop-core-0.20.2-cdh3u4.jar
+JFLAGS = -classpath $(HADOOP_HOME)/$(HADOOP_CORE_JAR)
 endif
 
