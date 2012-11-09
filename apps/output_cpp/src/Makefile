@@ -8,11 +8,6 @@ CFLAGS = -O3 -g -I$(GEN_SRC) -I$(INCDIR) -I. -fopenmp
 LFLAGS = -L$(LIBDIR) -l$(LIB)
 INCFILES = $(shell ls $(INCDIR))
 H_FILES = $(addprefix $(INCDIR)/, $(INCFILES))
-AVRO = ../avro
-
-ifneq ($(wildcard $(AVRO)),)
-	LFLAGS += -L$(AVRO)/lib -lavro
-endif
 
 # include common define flags for gm_graph and application
 # (32/64bit environment), (bitwidth of node/edge structure), (hdfs setting)
