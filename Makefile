@@ -19,13 +19,13 @@ $(CONFIG_FILE): setup.mk.in
 	@echo "Initializing setup.mk";
 	@cp setup.mk.in setup.mk
 
-compiler: dirs
+compiler: dirs $(CONFIG_FILE)
 	@cd src; make
 
-apps: dirs compiler
+apps: dirs compiler $(CONFIG_FILE)
 	@cd apps; make
 
-dirs: $(BUILD_DIRS) $(TEST_DIRS)
+dirs: $(BUILD_DIRS) $(TEST_DIRS) $(CONFIG_FILE)
 
 clean:
 	@cd apps; make clean_all
@@ -33,7 +33,7 @@ clean:
 
 clean_all: veryclean
 
-veryclean:
+veryclean: $(CONFIG_FILE)
 	@cd apps; make clean_all 
 	@cd src; make veryclean
 	rm -rf $(BUILD_DIRS) $(TEST_DIRS)
