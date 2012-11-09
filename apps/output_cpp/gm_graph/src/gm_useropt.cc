@@ -47,13 +47,17 @@ bool gm_useropt::parse_bool_string(const char* str)
 
 void gm_useropt::print_help()
 {
+    printf("usage: ");
     if (_execname == NULL)
         printf("<program_name> ");
     else 
         printf("%s ", _execname);
 
     for(size_t i=0;i<arg_names.size();i++) {
-        printf("<%s:%s> ", arg_names[i], get_type_string(arg_types[i]));
+        if (arg_types[i] == GMTYPE_END)
+            printf("<%s> ", arg_names[i]);
+        else 
+            printf("<%s:%s> ", arg_names[i], get_type_string(arg_types[i]));
     }
     if (option_desc.size() > 0) 
         printf("[");
@@ -64,15 +68,20 @@ void gm_useropt::print_help()
     }
 
     if (option_desc.size() > 0) 
-        printf("]");
+        printf(" ]");
     printf("\n");
     
+    if (arg_names.size() > 0) 
+        printf("Arguments: \n");
     for(size_t i=0;i<arg_names.size();i++) {
-        printf("<%s>:%s\n", arg_names[i], arg_descs[i]);
+        printf("    <%s>:%s\n", arg_names[i], arg_descs[i]);
     }
+
+    if (option_desc.size() > 0) 
+        printf("Options: \n");
     for(I=option_desc.begin(); I!=option_desc.end(); I++)
     {
-        printf(" -%s:%s\n", I->first, I->second);
+        printf("     -%s:%s\n", I->first, I->second);
     }
 }
 
@@ -102,8 +111,9 @@ bool gm_useropt::parse_command_args(int argc, char** argv)
             else {
                 opt_val = &p[i+1];
             }
-            if (is_option_declared(opt_name)) 
+            if (is_option_declared(opt_name)) {
                 set_option(opt_name, opt_val);
+            }
             else  {
                 printf("Unknown option: %s\n", opt_name);
                 ret = false;
