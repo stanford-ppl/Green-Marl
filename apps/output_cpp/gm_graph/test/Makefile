@@ -1,7 +1,6 @@
 CC = g++
 INC=../inc/
 LIB=../lib
-AVRO = ../../avro
 
 CFLAGS = -I$(INC) -g -fopenmp
 LFLAGS = -L$(LIB) -lgmgraph
@@ -18,12 +17,7 @@ CFLAGS += -lhdfs -ljvm -DHDFS
 endif
 
 #TARGET = a_main test_graph test_set test_seq test_order
-TARGET = test_adj_list test_generic_adj_list
-
-ifneq ($(wildcard $(AVRO)),)
-	TARGET +=  test_adj_list_avro
-	LFLAGS += -L$(AVRO)/lib -lavro
-endif
+TARGET = test_adj_list test_generic_adj_list test_adj_list_avro
 
 all: $(TARGET)
 
