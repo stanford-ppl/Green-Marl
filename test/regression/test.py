@@ -21,6 +21,7 @@ if (len(sys.argv) == 2 and sys.argv[1] == "-nostop") or os.getenv("gm_regress_no
 
 PLATFORM=platform.machine();
 PROCESSOR=platform.processor();
+MAKE_FLAGS = "";
 if (PROCESSOR == "sparc"):
     MAKE_FLAGS = " ORACLE=1 FORCE_64BIT=1";
 	
