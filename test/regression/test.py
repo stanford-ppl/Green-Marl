@@ -82,6 +82,9 @@ if (interactive):
 def build_compiler():
     os.chdir(TOP_LEVEL_PATH);
     make_res = commands.getstatusoutput("make veryclean");
+    if (make_res[0] != 0):
+        print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
     assert make_res[0] == 0;
     make_res = commands.getstatusoutput("make compiler -j "); # str(NUM_THREADS));
     if make_res[0] != 0:
@@ -122,6 +125,9 @@ def build_and_run_apps(apps_out_dir, run_apps):
     if (interactive): 
         print "Building at " + apps_out_dir;
     make_res = commands.getstatusoutput("make clean_all");
+    if (make_res[0] != 0):
+        print "APPLICATION BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
     assert make_res[0] == 0;
     build_cmd = "make all -j" + MAKE_FLAGS;
 	
