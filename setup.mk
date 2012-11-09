@@ -8,12 +8,15 @@
 # 0. Java/Hadoop directories, only required for HDFS suport and 
 # Giraph backend
 #-------------------------------------------------------------
-# hadoop distribution
+# Top directory of GM
+GM_TOP= $(dir $(lastword $(MAKEFILE_LIST)))
+# hadoop distribution (for HDFS suupport and Giraph backend)
 HADOOP_HOME=/cm/shared/apps/hadoop/current
-#jdk
+#jdk (for HDFS support and Giraph backend)
 JAVA_HOME=/usr/java/default
-# Name of hadoop core jar
-HADOOP_CORE_JAR=hadooop-core-0.20.2-cdh3u4.jar
+# Name of hadoop core jar (For HDFS support and Giraph backend)
+#HADOOP_CORE_JAR=hadooop-core-0.20.2-cdh3u4.jar
+HADOOP_CORE_JAR=hadooop-core-1.0.3.jar
 
 
 #-------------------------------------------------------------
@@ -62,6 +65,9 @@ LIBJVM_DIR  =$(JAVA_HOME)/jre/lib/amd64/server
 INCJNI_DIR  =$(JAVA_HOME)/include
 #location of jni_md.h
 INCJNIMD_DIR = $(JAVA_HOME)/include/linux
+#location of hadoop core
+#HADOOP_CORE_DIR = $(HADOOP_HOM)
+HADOOP_CORE_DIR=$(GM_TOP)/apps/output_giraph/lib
 
 
 

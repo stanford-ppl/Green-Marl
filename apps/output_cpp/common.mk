@@ -86,6 +86,7 @@ CFLAGS += -I$(INCHDFS_DIR)
 
 CFLAGS += -lhdfs -ljvm -DHDFS
 
-JFLAGS = -classpath $(HADOOP_HOME)/$(HADOOP_CORE_JAR)
+#JFLAGS = -classpath $(HADOOP_HOME)/$(HADOOP_CORE_JAR)
+JFLAGS = -classpath  $(HADOOP_CORE_DIR)/$(HADOOP_CORE_JAR)
 endif
 

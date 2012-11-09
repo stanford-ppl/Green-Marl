@@ -36,7 +36,7 @@ endif
 include ../../../setup.mk
 include ../common.mk
 
-all: $(BUILD_DIRS) $(OUT)
+all: $(BUILD_DIRS) $(OUT) $(JAVACLASSES)
 
 $(BIN)/graph_gen: $(GRAPHGEN_OBJECTS)
 	$(CC) $(CFLAGS) $^ $(LINK_AVRO_LIB) -o $@
@@ -49,7 +49,7 @@ $(LIB)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
 $(BUILD_DIRS): 
 	mkdir $(JBIN)
 
-ifeq ($(HDFS_SUPPORT),1)
+ifeq ($(SUPPORT_HDFS),1)
 $(JBIN)/%.class: %.java
 	$(JC) $(JFLAGS) -d $(JBIN) $<
 $(OBJ)/%.o: %.cc $(JAVACLASSES)
@@ -60,7 +60,7 @@ $(OBJ)/%.o: %.cc
 endif
 
 clean:
-	rm -f $(OBJ)/*.o $(OUT)
+	rm -f $(OBJ)/*.o $(OUT) $(JAVACLASSES)
 
 echo:
 	echo "$(CFLAGS)"
