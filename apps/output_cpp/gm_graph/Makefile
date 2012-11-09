@@ -33,6 +33,7 @@ JAVACLASSES := $(subst $(JSRC),$(JBIN),$(JAVASOURCES:.java=.class))
 
 # include common define flags for gm_graph and application
 # (32/64bit environment), (bitwidth of node/edge structure), (hdfs setting)
+GM_TOP= ../../../
 include ../../../setup.mk
 include ../common.mk
 
