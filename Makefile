@@ -27,7 +27,7 @@ apps: dirs compiler $(CONFIG_FILE)
 
 dirs: $(BUILD_DIRS) $(TEST_DIRS) $(CONFIG_FILE)
 
-clean:
+clean: $(CONFIG_FILE)
 	@cd apps; make clean_all
 	@cd src; make clean
 
