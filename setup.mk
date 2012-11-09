@@ -26,15 +26,17 @@ HADOOP_CORE_JAR=hadooop-core-1.0.3.jar
 
 
 #-------------------------------------------------------------
-# 2. Building the applications
+# 2. Compiling the GM applications
 #-------------------------------------------------------------
 # Choose the backend where the gm source file is be compiled into:
 #  cpp_omp, cpp_seq, gps, giraph
 env=cpp_omp
 
-# gm_comp arguments to be applied when compiling sample programs
-GM_ARGS=""
+# any other gm_comp arguments to be applied when compiling sample programs
+GM_ARGS=
 
+# Pacakge name of generated giraph applications (for Giraph)
+OUTPUT_PACKAGE=my.app
 
 #-------------------------------------------------------------
 # 3. Building shared-memory backend (gm_graph)
@@ -52,7 +54,7 @@ NODE_SIZE=32
 EDGE_SIZE=32
 
 # Support reading/writing graph files from HDFS
-SUPPORT_HDFS=1
+SUPPORT_HDFS=0
 
 # Directories for SUPPORT_HDFS
 #location of libhdfs.so
@@ -74,5 +76,3 @@ HADOOP_CORE_DIR=$(GM_TOP)/apps/output_giraph/lib
 #--------------------------------------------------------
 # 4. Building Giraph bakcend 
 #--------------------------------------------------------
-# Pacakge name of generated giraph applications
-OUTPUT_PACKAGE="my.app"
