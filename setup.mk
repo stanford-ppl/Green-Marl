@@ -50,7 +50,7 @@ NODE_SIZE=32
 EDGE_SIZE=32
 
 # Support reading/writing graph files from HDFS
-SUPPORT_HDFS=1
+SUPPORT_HDFS=0
 
 # Directories for SUPPORT_HDFS
 #location of libhdfs.so
