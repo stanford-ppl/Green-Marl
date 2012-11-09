@@ -1,4 +1,5 @@
 MKDIR=mkdir
+CONFIG_FILE=setup.mk
 CPP=apps/output_cpp
 LIB=apps/output_cpp/gm_graph
 GPS=apps/output_gps
@@ -7,7 +8,16 @@ BUILD_DIRS=bin obj $(CPP)/bin $(LIB)/javabin $(CPP)/generated $(CPP)/data $(LIB)
 TEST_DIRS=test/cpp_be/output test/errors/output test/gps/output test/giraph/output test/opt/output test/parse/output test/rw_check/output test/sugars/output
 
 .PHONY: dirs compiler apps
-all: dirs compiler apps
+all: dirs $(CONFIG_FILE) compiler apps
+
+$(CONFIG_FILE): setup.mk.in
+	@if [ -a setup.mk ];   \
+	then \
+		@echo "setup.mk.in changed. Please re-adjuset setup.mk. (Backing up previous setup.mk)"\
+		@cp setup.mk setup.mk.bak; \
+	fi; 
+	@echo "Initializing setup.mk";
+	@cp setup.mk.in setup.mk
 
 compiler: dirs
 	@cd src; make
