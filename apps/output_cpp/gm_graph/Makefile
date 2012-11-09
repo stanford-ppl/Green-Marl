@@ -16,6 +16,8 @@ AVRO_PATH=./avro-c-1.7.2
 AVRO = $(AVRO_PATH)/src
 JANSSON = $(AVRO_PATH)/jansson/src
 CFLAGS += -DAVRO -I$(AVRO)
+BUILD_DIRS=$(JBIN)
+
 
 # where to find source codes
 vpath %.cc $(SRC)
@@ -31,9 +33,14 @@ JAVACLASSES := $(subst $(JSRC),$(JBIN),$(JAVASOURCES:.java=.class))
 
 # include common define flags for gm_graph and application
 # (32/64bit environment), (bitwidth of node/edge structure), (hdfs setting)
+include ../../../setup.mk
 include ../common.mk
 
-all: $(OUT)
+ifeq ($(SUPPORT_HDFS),1)
+all: $(BUILD_DIRS) $(OUT) $(JAVACLASSES)
+else
+all: $(BUILD_DIRS) $(OUT)
+endif
 
 $(BIN)/graph_gen: $(GRAPHGEN_OBJECTS)
 	$(CC) $(CFLAGS) $^ $(wildcard $(AVRO)/*.o) $(wildcard $(JANSSON)/*.o) -o $@
@@ -41,7 +48,10 @@ $(BIN)/graph_gen: $(GRAPHGEN_OBJECTS)
 $(LIB)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
 	$(AR) r $@  $^  
 
-ifdef HDFS
+$(BUILD_DIRS): 
+	mkdir $(JBIN)
+
+ifeq ($(SUPPORT_HDFS),1)
 $(JBIN)/%.class: %.java
 	$(JC) $(JFLAGS) -d $(JBIN) $<
 $(OBJ)/%.o: %.cc $(JAVACLASSES)
@@ -52,7 +62,7 @@ $(OBJ)/%.o: %.cc
 endif
 
 clean:
-	rm -f $(OBJ)/*.o $(OUT)
+	rm -f $(OBJ)/*.o $(OUT) $(JAVACLASSES)
 
 echo:
 	echo "$(CFLAGS)"

@@ -11,6 +11,7 @@ H_FILES = $(addprefix $(INCDIR)/, $(INCFILES))
 
 # include common define flags for gm_graph and application
 # (32/64bit environment), (bitwidth of node/edge structure), (hdfs setting)
+include ../../../setup.mk
 include ../common.mk
 
 #include program list

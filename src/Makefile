@@ -12,6 +12,8 @@ ifneq ($(UNAME),Darwin)
     LDFLAGS += -lrt
 endif
 
+include ../setup.mk
+
 # where to find source codes
 vpath %.h  inc
 vpath %.c parse
@@ -154,6 +156,8 @@ $(OBJ)/%.o : %.cc
 
 clean:
 	rm $(OBJ)/*.o
+
+clean_all: veryclean
 
 veryclean:
 	-rm $(OBJ)/*.o
