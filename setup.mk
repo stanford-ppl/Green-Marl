@@ -30,11 +30,7 @@ HADOOP_CORE_JAR=hadoop-core-1.0.3.jar
 #  cpp_omp, cpp_seq, gps, giraph
 env=cpp_omp
 
-<<<<<<< HEAD
-# any other gm_comp arguments to be applied when compiling sample programs
-=======
 # gm_comp arguments to be applied when compiling sample programs
->>>>>>> a5d53c8c30673d0d4de5bde862b947a66ef82ce6
 GM_ARGS=
 
 # Pacakge name of generated giraph applications (for Giraph)
@@ -72,8 +68,7 @@ INCJNIMD_DIR = $(JAVA_HOME)/include/linux
 #location of hadoop core
 #HADOOP_CORE_DIR = $(HADOOP_HOME)
 HADOOP_CORE_DIR=$(GM_TOP)/apps/output_giraph/lib
-
-
+# (GM_TOP SHOULD BE DEFINED AT makefile that includes this file)
 
 #--------------------------------------------------------
 # 4. Building Giraph bakcend 
