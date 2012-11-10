@@ -1,3 +1,4 @@
+SHELL=bash
 MKDIR=mkdir
 CONFIG_FILE=setup.mk
 CPP=apps/output_cpp
@@ -19,7 +20,7 @@ $(CONFIG_FILE): setup.mk.in
 	fi; 
 	@echo "Initializing setup.mk";
 	@head --lines=5 setup.mk.in >> setup.mk
-	@echo -n "GM_TOP=" >> setup.mk
+	@echo -n GM_TOP= >> setup.mk
 	@pwd >> setup.mk
 	@tail --lines=+6 setup.mk.in >> setup.mk
 
