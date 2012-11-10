@@ -5,15 +5,26 @@
 #include "gm_graph.h"
 #include "gm_useropt.h"
 
+#define OPT_DUMPGRAPH       "GMDumpOutput"
+#define OPT_OUTDIR          "GMOutputDir"
+#define OPT_OUTNAME         "GMOutputName"
+#define OPT_OUTTYPE         "GMOutputType"
+#define OPT_INDIR           "GMInputDir"
+#define OPT_INTYPE          "GMInputType"
+#define OPT_NUMTHREAD       "GMNumThreads"
+
 gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
-   OPTIONS.add_option("GMDump",      GMTYPE_BOOL, "1",   "Dump output graph");
-   OPTIONS.add_option("GMOutDir",    GMTYPE_END,  "./",  "Output directory (meaningful only if GMDump is enabled).");
-   OPTIONS.add_option("GMOutput",    GMTYPE_END,  "output.adj",  "Output filename (meaningful only if GMDump is enabled).");
-   OPTIONS.add_option("GMInputType", GMTYPE_END,  "ADJ", "Input graph type -- (ADJ: adjacency list)");
-   OPTIONS.add_option("GMNumThreads", GMTYPE_INT, NULL,  "Number of threads");
-   OPTIONS.add_argument("Input",     GMTYPE_END,  "Input graph filename");
-   format = GM_ADJ_LIST;
+   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_BOOL, "1",   "0 -- do not store the graph nor the output properties");
+   OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  "",  "Output directory ");
+   OPTIONS.add_option(OPT_OUTNAME,    GMTYPE_END,  "output.adj",  "Output filename ");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  "ADJ", "Input format -- ADJ: adjacency list, ADJ_NP: adj-list node property only");
+   OPTIONS.add_option(OPT_INDIR,      GMTYPE_END,  "",  "Input directory ");
+   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  "ADJ", "Input format -- ADJ: adjacency list");
+   OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
+   OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input graph filename");
+   in_format = GM_ADJ_LIST;
+   out_format = GM_ADJ_LIST;
 }
 
 void gm_default_usermain::declare_return(VALUE_TYPE t) {
@@ -24,6 +35,21 @@ void gm_default_usermain::declare_return(VALUE_TYPE t) {
     return_schema.is_output = false;
     return_schema.schema_type = GM_SCALAR;
 } 
+
+static void load_scalar_variable_from_option(gm_useropt &O, const char* name, VALUE_TYPE t, void* var) 
+{
+    switch(t) {
+        case GMTYPE_BOOL:   *((bool*)var)    = O.get_option_bool(name); break;
+        case GMTYPE_INT:    *((int32_t*)var) = O.get_option_int(name); break;
+        case GMTYPE_LONG:   *((int64_t*)var) = O.get_option_long(name); break;
+        case GMTYPE_FLOAT:  *((float*)var) = O.get_option_float(name); break;
+        case GMTYPE_DOUBLE: *((double*)var) = O.get_option_double(name); break;
+        case GMTYPE_NODE:   *((node_t*)var) = O.get_option_node(name); break;
+        case GMTYPE_EDGE:   *((edge_t*)var) = O.get_option_edge(name); break;
+        default:
+            assert(false);
+    }
+}
 
 static void* create_scalar_variable(VALUE_TYPE t) 
 {
@@ -84,14 +110,32 @@ void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool 
     property_schema.push_back(schema);
 }
 
+void gm_default_usermain::set_path()
+{
+    const char* out_dir = OPTIONS.get_option(OPT_OUTDIR);
+    const char* in_dir = OPTIONS.get_option(OPT_INDIR);
+    int ol = strlen(out_dir);
+    int il = strlen(in_dir);
+
+    if (ol > 0) {
+        if (out_dir[ol] != '/') sprintf(output_path, "%s/",out_dir);
+        else sprintf(output_path, "%s",out_dir);
+    } else {
+        sprintf(output_path, "%s","");
+    }
+    if (il > 0) {
+        if (in_dir[il] != '/') sprintf(input_path, "%s/",in_dir);
+        else sprintf(input_path, "%s",in_dir);
+    } else {
+        sprintf(input_path, "%s","");
+    }
+}
+
 bool gm_default_usermain::process_arguments(int argc, char** argv)
 {
     const char* input_format;
     char buffer1[4096];
     char buffer2[4096];
-    const char* out_dir = OPTIONS.get_option("GMOutDir");
-    char c = out_dir[strlen(out_dir)];
-
     OPTIONS.set_execname(argv[0]);
     if (!OPTIONS.parse_command_args(argc, argv))
         goto err_return;
@@ -100,17 +144,17 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         goto err_return;
 
     // check input graph file format
-    input_format = OPTIONS.get_option("GMInputType");  
+    input_format = OPTIONS.get_option(OPT_INTYPE);  
     if (!strcmp(input_format, "ADJ")) {
-        format = GM_ADJ_LIST;
+        in_format = GM_ADJ_LIST;
     } else if (!strcmp(input_format, "BIN")) {
-        format = GM_BINARY;
+        in_format = GM_BINARY;
     } else { 
         printf("Error:Unknown format:%s\n", input_format);
         goto err_return;
     }
 
-    if (format == GM_BINARY) 
+    if (in_format == GM_BINARY) 
     {
         for(size_t i=0;i<property_schema.size(); i++) 
         {
@@ -146,11 +190,8 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         }
     }
 
-    if (c != '/') {
-        char* new_out_dir = new char [strlen(out_dir)+2];
-        sprintf(new_out_dir,"%s/", out_dir);
-        OPTIONS.set_option("GMOutDir", new_out_dir);
-    }
+    set_path();
+
 
     return true;
 
@@ -167,14 +208,18 @@ bool gm_default_usermain::do_preprocess()
         gm_schema S = scalar_schema[i];
         void* scalar_var = create_scalar_variable(S.type);
         scalars[S.name] = scalar_var;
+        load_scalar_variable_from_option(OPTIONS, S.name, S.type, scalar_var);
     }
 
     create_property_in_out_schema();
 
-    if (get_format() == GM_ADJ_LIST) 
+    // load the graph from ADJ LIST
+    char fullpath_name[1024*64];
+    sprintf(fullpath_name,"%s%s",input_path, OPTIONS.get_arg(0));
+
+    if (get_input_format() == GM_ADJ_LIST) 
     {
-        // load the graph from ADJ LIST
-        GRAPH.load_adjacency_list(OPTIONS.get_arg(0),
+        GRAPH.load_adjacency_list(fullpath_name,
                 vprop_in_schema,
                 eprop_in_schema,
                 vprop_in_array,
@@ -247,11 +292,44 @@ void gm_default_usermain::create_and_register_property_arrays()
     }
 }
 
+static void print_value(VALUE_TYPE t, void* v)
+{
+        switch(t) {
+            case GMTYPE_INT: printf("%d", *((int32_t*)v)); break;
+            case GMTYPE_LONG: printf("%ld",*((int64_t*)v)); break;
+            case GMTYPE_BOOL: printf("%s", *((bool*)v)?"true":"false"); break;
+            case GMTYPE_FLOAT: printf("%f", *((float*)v)); break;
+            case GMTYPE_DOUBLE: printf("%lf", *((double*)v)); break;
+            case GMTYPE_NODE: printf("%ld", (int64_t)  *((node_t*)v)); break;
+            case GMTYPE_EDGE: printf("%ld", (int64_t) *((edge_t*)v)); break;
+            default: assert(false);
+        }
+}
+
 bool gm_default_usermain::do_postprocess()
 {
-    // dump file
+    // print output scalar
+    if (is_return_defined)
+    {
+        printf("return value = ");
+        print_value(return_schema.type, &ret_val);
+        printf("\n");
+    }
+    for(size_t i=0; i < scalar_schema.size(); i++)
+    {
+        gm_schema S = scalar_schema[i];
+        void* scalar_var = scalars[S.name];
+        printf("%s = ", S.name);
+        print_value(S.type, scalar_var);
+        printf("\n");
+    }
     
-    // print output 
+    // dump graph or properties
+    if (OPTIONS.get_option_bool(OPT_DUMPGRAPH))
+    {
+
+
+    }
 
     return true;
 }

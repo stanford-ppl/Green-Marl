@@ -20,6 +20,7 @@ enum GM_SCHEMA_TYPE {
 enum GM_FILE_FORMAT {
     GM_BINARY,
     GM_ADJ_LIST,
+    GM_ADJ_LIST_NP,
     GM_EDGE_LIST,
     GM_ADJ_LIST_AVRO,
 };
@@ -60,7 +61,8 @@ public:
     void set_return_n(node_t n) {ret_val.n = n;}
     void set_return_e(edge_t e) {ret_val.e = e;}
 
-    GM_FILE_FORMAT get_format() {return format;}
+    GM_FILE_FORMAT get_input_format() {return in_format;}
+    GM_FILE_FORMAT get_output_format() {return out_format;}
 
 private:
     gm_useropt   OPTIONS;
@@ -72,7 +74,8 @@ private:
     bool is_return_defined;
     gm_schema return_schema;
     const char* input_filetype;
-    GM_FILE_FORMAT format; 
+    GM_FILE_FORMAT in_format; 
+    GM_FILE_FORMAT out_format; 
 
     void create_property_in_out_schema();
     void create_and_register_property_arrays();
@@ -94,7 +97,10 @@ private:
         node_t n;
         edge_t e;
     } ret_val;
+    void set_path();
 
+    char input_path[1024*64];
+    char output_path[1024*64];
 };
 
 #endif
