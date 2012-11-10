@@ -6,6 +6,12 @@ GPS=apps/output_gps
 GIRAPH=apps/output_giraph
 BUILD_DIRS=bin obj $(CPP)/bin $(LIB)/javabin $(CPP)/generated $(CPP)/data $(LIB)/lib $(LIB)/obj $(GPS)/generated $(GIRAPH)/generated $(GIRAPH)/bin $(GIRAPH)/target
 TEST_DIRS=test/cpp_be/output test/errors/output test/gps/output test/giraph/output test/opt/output test/parse/output test/rw_check/output test/sugars/output
+UNAME := $(shell uname)
+ifeq ($(UNAME), Solaris)
+TAIL=tail 
+else
+TAIL=tail -n
+endif 
 
 .PHONY: dirs compiler apps
 all: dirs $(CONFIG_FILE) compiler apps
@@ -18,10 +24,10 @@ $(CONFIG_FILE): setup.mk.in
 		rm setup.mk; \
 	fi; 
 	@echo "Initializing setup.mk";
-	@head --lines=5 setup.mk.in >> setup.mk
+	@head -5 setup.mk.in >> setup.mk
 	@echo -n "GM_TOP=" >> setup.mk
 	@pwd >> setup.mk
-	@tail --lines=+6 setup.mk.in >> setup.mk
+	@$(TAIL)+6 setup.mk.in >> setup.mk
 
 compiler: dirs $(CONFIG_FILE)
 	@cd src; make

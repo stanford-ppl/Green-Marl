@@ -34,7 +34,7 @@ public:
     bool    get_option_bool(const char* option)   {return parse_bool_string(get_option(option));}
     float   get_option_float(const char* option)  {return atof(get_option(option));}
 
-    const char*   get_arg(int i)        {assert(arg_values.size() < (size_t)i); return arg_values[i];}
+    const char*   get_arg(int i)        {assert(arg_values.size() > (size_t)i); return arg_values[i];}
     int     get_arg_int(int i)    {return atoi(get_arg(i));}
     bool    get_arg_bool(int i)   {return parse_bool_string(get_arg(i));}
     float   get_arg_float(int i)  {return atof(get_arg(i));}
@@ -45,6 +45,7 @@ public:
     bool parse_command_args(int argc, char** argv);
     void set_execname(const char* ename) {_execname = ename;}
     const char* get_execname() {return _execname;}
+    void    set_option(const char* option, const char* value) {option_values[option] = value;}
 
 
 
@@ -60,7 +61,6 @@ protected:
 
     bool parse_bool_string(const char* str);
     const char* _execname;
-    void set_option(const char* option, const char* value) {option_values[option] = value;}
     void push_argument(const char* value) {arg_values.push_back(value);}
 
 };

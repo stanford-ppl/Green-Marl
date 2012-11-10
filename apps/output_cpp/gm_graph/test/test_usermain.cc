@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "gm.h"
 
-int test_procedure(gm_graph& G, int a, float* np, float* ep)
+int32_t test_procedure(gm_graph& G, int a, float* np, float* ep)
 {
 #pragma omp parallel for
     for(node_t i = 0; i < G.num_nodes(); i++) {
@@ -30,6 +30,13 @@ int main(int argc, char** argv)
 
     if (!Main.do_preprocess())
         return EXIT_FAILURE;
+
+    Main.set_return_i(
+        test_procedure(Main.get_graph(),
+            *((int32_t*)Main.get_scalar("a")),
+            (float*)Main.get_property("np"),
+            (float*)Main.get_property("ep")
+            ));
 
     if (!Main.do_postprocess())
         return EXIT_FAILURE;

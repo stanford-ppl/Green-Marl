@@ -52,7 +52,16 @@ public:
     bool do_preprocess();           // load the graph and properties. retruns false if error
     bool do_postprocess();          // dump the output. returns false if error
 
+    void set_return_i(int32_t i) {ret_val.i = i;}
+    void set_return_b(bool b) {ret_val.b = b;}
+    void set_return_l(int64_t l) {ret_val.l = l;}
+    void set_return_d(double d) {ret_val.d = d;}
+    void set_return_f(float f) {ret_val.f = f;}
+    void set_return_n(node_t n) {ret_val.n = n;}
+    void set_return_e(edge_t e) {ret_val.e = e;}
+
     GM_FILE_FORMAT get_format() {return format;}
+
 private:
     gm_useropt   OPTIONS;
     gm_graph     GRAPH;
@@ -64,6 +73,28 @@ private:
     gm_schema return_schema;
     const char* input_filetype;
     GM_FILE_FORMAT format; 
+
+    void create_property_in_out_schema();
+    void create_and_register_property_arrays();
+    std::vector<VALUE_TYPE> vprop_in_schema;
+    std::vector<VALUE_TYPE> eprop_in_schema;
+    std::vector<VALUE_TYPE> vprop_out_schema;
+    std::vector<VALUE_TYPE> eprop_out_schema;
+    std::vector<void *> vprop_in_array;
+    std::vector<void *> eprop_in_array;
+    std::vector<void *> vprop_out_array;
+    std::vector<void *> eprop_out_array;
+
+    union  {
+        int32_t i;
+        int64_t l;
+        bool b;
+        double d;
+        float f;
+        node_t n;
+        edge_t e;
+    } ret_val;
+
 };
 
 #endif

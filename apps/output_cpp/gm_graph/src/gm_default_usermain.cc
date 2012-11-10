@@ -7,11 +7,12 @@
 
 gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
-   OPTIONS.add_option("GMDump",      GMTYPE_BOOL, "1",  "Dump output graph");
-   OPTIONS.add_option("GMOutput",    GMTYPE_END,  NULL, "Output Filename (meaningful only if GMDump is enabled.");
-   OPTIONS.add_option("GMInputType", GMTYPE_END,  "ADJ", "Input Graph Type: (ADJ: adjacency list, BIN: Binary)");
-   OPTIONS.add_option("GMNumThreads", GMTYPE_INT, NULL, "Number of threads");
-   OPTIONS.add_argument("Input",     GMTYPE_END,  "Input Graph Filename");
+   OPTIONS.add_option("GMDump",      GMTYPE_BOOL, "1",   "Dump output graph");
+   OPTIONS.add_option("GMOutDir",    GMTYPE_END,  "./",  "Output directory (meaningful only if GMDump is enabled).");
+   OPTIONS.add_option("GMOutput",    GMTYPE_END,  "output.adj",  "Output filename (meaningful only if GMDump is enabled).");
+   OPTIONS.add_option("GMInputType", GMTYPE_END,  "ADJ", "Input graph type -- (ADJ: adjacency list)");
+   OPTIONS.add_option("GMNumThreads", GMTYPE_INT, NULL,  "Number of threads");
+   OPTIONS.add_argument("Input",     GMTYPE_END,  "Input graph filename");
    format = GM_ADJ_LIST;
 }
 
@@ -38,6 +39,21 @@ static void* create_scalar_variable(VALUE_TYPE t)
             assert(false);
     }
 }
+static void* create_array_variable(VALUE_TYPE t, size_t s) 
+{
+    switch(t) {
+        case GMTYPE_BOOL: return new bool[s];
+        case GMTYPE_INT:  return new int32_t[s];
+        case GMTYPE_LONG: return new int64_t[s];
+        case GMTYPE_FLOAT: return new float[s];
+        case GMTYPE_DOUBLE: return new double[s];
+        case GMTYPE_NODE: return new node_t[s];
+        case GMTYPE_EDGE: return new edge_t[s];
+        default:
+            assert(false);
+    }
+}
+
 
 void gm_default_usermain::declare_scalar(const char* name, VALUE_TYPE t, bool is_input, bool is_output)
 {
@@ -73,6 +89,8 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
     const char* input_format;
     char buffer1[4096];
     char buffer2[4096];
+    const char* out_dir = OPTIONS.get_option("GMOutDir");
+    char c = out_dir[strlen(out_dir)];
 
     OPTIONS.set_execname(argv[0]);
     if (!OPTIONS.parse_command_args(argc, argv))
@@ -128,6 +146,12 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         }
     }
 
+    if (c != '/') {
+        char* new_out_dir = new char [strlen(out_dir)+2];
+        sprintf(new_out_dir,"%s/", out_dir);
+        OPTIONS.set_option("GMOutDir", new_out_dir);
+    }
+
     return true;
 
 err_return:
@@ -145,24 +169,89 @@ bool gm_default_usermain::do_preprocess()
         scalars[S.name] = scalar_var;
     }
 
+    create_property_in_out_schema();
+
     if (get_format() == GM_ADJ_LIST) 
     {
-
-
+        // load the graph from ADJ LIST
+        GRAPH.load_adjacency_list(OPTIONS.get_arg(0),
+                vprop_in_schema,
+                eprop_in_schema,
+                vprop_in_array,
+                eprop_in_array,
+                " \t",
+                false);
     }
-    else {
+    else 
+    {
         printf("format not supported yet\n");
         return false;
     }
 
+    // create & register arrays
+    create_and_register_property_arrays();
+
     return true;
+}
+
+void gm_default_usermain::create_property_in_out_schema()
+{
+    for(size_t i=0; i < property_schema.size(); i++)
+    {
+        gm_schema S = property_schema[i];
+        //void* scalar_var = create_scalar_variable(S.type);
+        if (S.is_input) {
+            if (S.schema_type == GM_NODEPROP) {
+                vprop_in_schema.push_back(S.type);
+            } else {
+                eprop_in_schema.push_back(S.type);
+            }
+        }
+        else {
+            if (S.schema_type == GM_NODEPROP) {
+                vprop_out_schema.push_back(S.type);
+            } else {
+                eprop_out_schema.push_back(S.type);
+            }
+        }
+    }
+}
+
+void gm_default_usermain::create_and_register_property_arrays()
+{
+    int vprop_in_cnt = 0;
+    int eprop_in_cnt = 0;
+
+    for(size_t i=0; i < property_schema.size(); i++)
+    {
+        gm_schema S = property_schema[i];
+        //void* scalar_var = create_scalar_variable(S.type);
+        if (S.is_input) {
+            if (S.schema_type == GM_NODEPROP) {
+                void* array = vprop_in_array[vprop_in_cnt++];
+                properties[S.name] = array;
+            } else {
+                void* array = eprop_in_array[eprop_in_cnt++];
+                properties[S.name] = array;
+            }
+        }
+        else {
+            if (S.schema_type == GM_NODEPROP) {
+                void* array = create_array_variable(S.type, GRAPH.num_nodes());
+                properties[S.name] = array;
+            } else {
+                void* array = create_array_variable(S.type, GRAPH.num_edges());
+                properties[S.name] = array;
+            }
+        }
+    }
 }
 
 bool gm_default_usermain::do_postprocess()
 {
-
-
-
+    // dump file
+    
+    // print output 
 
     return true;
 }
