@@ -12,6 +12,7 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
    OPTIONS.add_option("GMInputType", GMTYPE_END,  "ADJ", "Input Graph Type: (ADJ: adjacency list, BIN: Binary)");
    OPTIONS.add_option("GMNumThreads", GMTYPE_INT, NULL, "Number of threads");
    OPTIONS.add_argument("Input",     GMTYPE_END,  "Input Graph Filename");
+   format = GM_ADJ_LIST;
 }
 
 void gm_default_usermain::declare_return(VALUE_TYPE t) {
@@ -51,8 +52,6 @@ void gm_default_usermain::declare_scalar(const char* name, VALUE_TYPE t, bool is
     scalar_schema.push_back(schema);
     if (is_input) 
         OPTIONS.add_option(name, t, NULL, "input argument");
-    void* scalar_var = create_scalar_variable(t);
-    scalars[name] = scalar_var;
 }
 
 void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool is_input, bool is_output, GM_SCHEMA_TYPE i)
@@ -71,7 +70,6 @@ void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool 
 
 bool gm_default_usermain::process_arguments(int argc, char** argv)
 {
-    GM_FILE_FORMAT format = GM_ADJ_LIST;
     const char* input_format;
     char buffer1[4096];
     char buffer2[4096];
@@ -91,6 +89,7 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         format = GM_BINARY;
     } else { 
         printf("Error:Unknown format:%s\n", input_format);
+        goto err_return;
     }
 
     if (format == GM_BINARY) 
@@ -117,7 +116,17 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         goto err_return;
     }
 
-
+    // check if every scalar variables are declared
+    for(size_t i=0; i < scalar_schema.size(); i++)
+    {
+        gm_schema S = scalar_schema[i];
+        if (S.is_input) {
+            if (!OPTIONS.is_option_defined(S.name)) {
+                printf("Error: option not defined: %s\n", S.name);
+                goto err_return;
+            }
+        }
+    }
 
     return true;
 
@@ -128,15 +137,32 @@ err_return:
 
 bool gm_default_usermain::do_preprocess()
 {
+    // create scalar varabiles
+    for(size_t i=0; i < scalar_schema.size(); i++)
+    {
+        gm_schema S = scalar_schema[i];
+        void* scalar_var = create_scalar_variable(S.type);
+        scalars[S.name] = scalar_var;
+    }
+
+    if (get_format() == GM_ADJ_LIST) 
+    {
 
 
-
+    }
+    else {
+        printf("format not supported yet\n");
+        return false;
+    }
 
     return true;
 }
 
 bool gm_default_usermain::do_postprocess()
 {
+
+
+
 
     return true;
 }

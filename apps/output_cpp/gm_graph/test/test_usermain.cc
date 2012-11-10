@@ -28,5 +28,11 @@ int main(int argc, char** argv)
     if (!Main.process_arguments(argc, argv))
         return EXIT_FAILURE;
 
+    if (!Main.do_preprocess())
+        return EXIT_FAILURE;
 
+    if (!Main.do_postprocess())
+        return EXIT_FAILURE;
+
+    return EXIT_SUCCESS;
 }
