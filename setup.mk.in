@@ -43,8 +43,8 @@ OUTPUT_PACKAGE=my.app
 ORACLE=0
 
 # Enforce 64bit binary or 32bit binary
-FORCE64_BIT=0
-FORCE32_BIT=0
+FORCE_64BIT=0
+FORCE_32BIT=0
 
 # Bit width of node-id type and, edge-id type: 
 # one of (32,32), (32,64), (64,64)

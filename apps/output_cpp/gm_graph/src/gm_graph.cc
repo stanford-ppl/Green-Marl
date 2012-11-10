@@ -1299,11 +1299,12 @@ bool gm_graph::load_adjacency_list_avro(const char* filename, // input parameter
             std::vector<VALUE_TYPE>& vprop_schema, // output parameter
             std::vector<VALUE_TYPE>& eprop_schema, // output parameter
             std::vector<void *>& vertex_props, // output parameter
-            std::vector<void *>& edge_props // output parameter
+	    std::vector<void *>& edge_props, // output parameter
+	    bool use_hdfs // input parameter
             ) {
     clear_graph();
 	avro_file_reader_t reader;
-    if (avro_gen_file_reader(filename, &reader, 0)) {
+	if (avro_gen_file_reader(filename, &reader, (int)use_hdfs)) {
         fprintf(stderr, "Cannot open file %s\n", filename);
         return false;
     }

@@ -231,7 +231,8 @@ friend class gm_graph_hdfs;
             std::vector<VALUE_TYPE>& vprop_schema, // output parameter
             std::vector<VALUE_TYPE>& eprop_schema, // output parameter
             std::vector<void *>& vertex_props, // output parameter
-            std::vector<void *>& edge_props // output parameter
+            std::vector<void *>& edge_props, // output parameter
+	    bool use_hdfs = false // input parameter
             );
 
     //--------------------------------------------------------------

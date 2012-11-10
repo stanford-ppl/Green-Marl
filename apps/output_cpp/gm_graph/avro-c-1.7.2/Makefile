@@ -11,7 +11,9 @@ AVRO_OBJECTS := $(subst ,,$(AVRO_SOURCES:.c=_avro.o))
 AVRO_OBJECTS := $(filter-out $(AVRO)/avroappend_avro.o $(AVRO)/avropipe_avro.o $(AVRO)/avrocat_avro.o $(AVRO)/avromod_avro.o $(AVRO)/datum_equal_avro.o $(AVRO)/datum_size_avro.o  $(AVRO)/schema_specific_avro.o,$(AVRO_OBJECTS))
 JANSSON_OBJECTS := $(subst ,,$(JANSSON_SOURCES:.c=_json.o)) 
 
+include ../../../../setup.mk
 include ../../common.mk
+
 
 all: $(AVRO_OBJECTS) $(JANSSON_OBJECTS)
 #	$(CC) $(CFLAGS) $^ $(LINK_AVRO_LIB) -o $@
