@@ -7,6 +7,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <omp.h>
+#include <string>
 
 #include "gm_internal.h"
 
@@ -230,9 +231,11 @@ friend class gm_graph_hdfs;
     bool load_adjacency_list_avro(const char* filename, // input parameter
             std::vector<VALUE_TYPE>& vprop_schema, // output parameter
             std::vector<VALUE_TYPE>& eprop_schema, // output parameter
+            std::vector<std::string>& vprop_names, // output parameter
+            std::vector<std::string>& eprop_names, // output parameter
             std::vector<void *>& vertex_props, // output parameter
             std::vector<void *>& edge_props, // output parameter
-	    bool use_hdfs = false // input parameter
+            bool use_hdfs = false // input parameter
             );
 
     //--------------------------------------------------------------

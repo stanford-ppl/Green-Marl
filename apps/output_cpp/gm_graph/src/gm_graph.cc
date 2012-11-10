@@ -1225,7 +1225,9 @@ int loadValueBasedOnTypeAvro(void *arr, long pos, avro_value_t val, VALUE_TYPE v
 
 bool parse_avro_header(avro_file_reader_t reader,
                       std::vector<VALUE_TYPE>& vprop_schema,
-                      std::vector<VALUE_TYPE>& eprop_schema) {
+                       std::vector<VALUE_TYPE>& eprop_schema,
+                       std::vector<std::string>& vprop_names,
+                       std::vector<std::string>& eprop_names) {
 	avro_schema_t rec_schema = avro_file_reader_get_writer_schema(reader);
     
     size_t rec_field_count = avro_schema_record_size(rec_schema);
@@ -1244,7 +1246,8 @@ bool parse_avro_header(avro_file_reader_t reader,
         avro_fail_1("Unknown src node id type %s (expected: long))\n", src_id_schema_tname, reader);
     
     for (;rec_field_ind<rec_field_count-1; rec_field_ind++) {
-        avro_schema_t node_prop_schema = avro_schema_union_branch(avro_schema_record_field_get_by_index(rec_schema, rec_field_ind), 1);
+        avro_schema_t node_prop_schema =
+            avro_schema_union_branch(avro_schema_record_field_get_by_index(rec_schema, rec_field_ind), 1);
         if (node_prop_schema == NULL)
             avro_fail_0("Type of source node property should be a union\n", reader);
         const char* node_prop_schema_tname = avro_schema_type_name(node_prop_schema);
@@ -1252,6 +1255,12 @@ bool parse_avro_header(avro_file_reader_t reader,
         if (node_prop_type == GMTYPE_END)
             avro_fail_1("Unknown source node property type %s\n", node_prop_schema_tname, reader);
         vprop_schema.push_back(node_prop_type);
+        const char* node_prop_schema_name = avro_schema_record_field_name(rec_schema, rec_field_ind);
+        if (node_prop_schema_name == NULL) {
+            avro_fail_0("Cannot read node property name\n", reader);
+        }
+        std::string node_prop_name(node_prop_schema_name);
+        vprop_names.push_back(node_prop_name);
     }
     
 	avro_schema_t adj_list_schema =
@@ -1289,8 +1298,14 @@ bool parse_avro_header(avro_file_reader_t reader,
         VALUE_TYPE edge_prop_type = avroTypeNameToValueType(edge_prop_schema_tname);
         if (edge_prop_type == GMTYPE_END)
             avro_fail_1("Unknown type of the edge property %s\n", edge_prop_schema_tname, reader);
-
         eprop_schema.push_back(edge_prop_type);
+
+        const char* edge_prop_schema_name = avro_schema_record_field_name(item_rec_schema, item_rec_field_ind);
+        if (edge_prop_schema_name == NULL) {
+            avro_fail_0("Cannot read edge property name\n", reader);
+        }
+        std::string edge_prop_name(edge_prop_schema_name);
+        eprop_names.push_back(edge_prop_name);
     }
     return true;
 }
@@ -1298,6 +1313,8 @@ bool parse_avro_header(avro_file_reader_t reader,
 bool gm_graph::load_adjacency_list_avro(const char* filename, // input parameter
             std::vector<VALUE_TYPE>& vprop_schema, // output parameter
             std::vector<VALUE_TYPE>& eprop_schema, // output parameter
+            std::vector<std::string>& vprop_names, // output parameter
+            std::vector<std::string>& eprop_names, // output parameter
             std::vector<void *>& vertex_props, // output parameter
 	    std::vector<void *>& edge_props, // output parameter
 	    bool use_hdfs // input parameter
@@ -1308,7 +1325,7 @@ bool gm_graph::load_adjacency_list_avro(const char* filename, // input parameter
         fprintf(stderr, "Cannot open file %s\n", filename);
         return false;
     }
-    if (!parse_avro_header(reader, vprop_schema, eprop_schema)) {
+    if (!parse_avro_header(reader, vprop_schema, eprop_schema, vprop_names, eprop_names)) {
         return false;
     }
     node_t N = 0;
