@@ -11,13 +11,17 @@ TEST_DIRS=test/cpp_be/output test/errors/output test/gps/output test/giraph/outp
 all: dirs $(CONFIG_FILE) compiler apps
 
 $(CONFIG_FILE): setup.mk.in
-	@if [ -a setup.mk ];   \
+	@if [ -f setup.mk ];   \
 	then \
-		@echo "setup.mk.in changed. Please re-adjuset setup.mk. (Backing up previous setup.mk)"\
-		@cp setup.mk setup.mk.bak; \
+		echo "setup.mk.in changed. Please re-adjuset setup.mk. (Backing up previous setup.mk into setup.mk.bak)";\
+		cp setup.mk setup.mk.bak; \
+		rm setup.mk; \
 	fi; 
 	@echo "Initializing setup.mk";
-	@cp setup.mk.in setup.mk
+	@head --lines=5 setup.mk.in >> setup.mk
+	@echo -n "GM_TOP=" >> setup.mk
+	@pwd >> setup.mk
+	@tail --lines=+6 setup.mk.in >> setup.mk
 
 compiler: dirs $(CONFIG_FILE)
 	@cd src; make
