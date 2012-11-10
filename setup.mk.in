@@ -40,11 +40,11 @@ OUTPUT_PACKAGE=my.app
 # 3. Building shared-memory backend (gm_graph)
 #-------------------------------------------------------------
 # Flag for Oracle SPARC environment
-#ORACLE=1
+ORACLE=0
 
 # Enforce 64bit binary or 32bit binary
-#FORCE64_BIT=1
-#FORCE32_BIT=1
+FORCE64_BIT=0
+FORCE32_BIT=0
 
 # Bit width of node-id type and, edge-id type: 
 # one of (32,32), (32,64), (64,64)
@@ -52,7 +52,7 @@ NODE_SIZE=32
 EDGE_SIZE=32
 
 # Support reading/writing graph files from HDFS
-#SUPPORT_HDFS=1
+SUPPORT_HDFS=0
 
 # Directories for SUPPORT_HDFS
 #location of libhdfs.so

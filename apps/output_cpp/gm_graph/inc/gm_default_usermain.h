@@ -52,16 +52,18 @@ public:
     bool do_preprocess();           // load the graph and properties. retruns false if error
     bool do_postprocess();          // dump the output. returns false if error
 
+    GM_FILE_FORMAT get_format() {return format;}
 private:
     gm_useropt   OPTIONS;
     gm_graph     GRAPH;
     std::vector<gm_schema> property_schema;
     std::vector<gm_schema> scalar_schema;
-    std::map<const char*, void*> properties;
-    std::map<const char*, void*> scalars;
+    std::map<const char*, void*, gm_cmp_str> properties;
+    std::map<const char*, void*, gm_cmp_str> scalars;
     bool is_return_defined;
     gm_schema return_schema;
     const char* input_filetype;
+    GM_FILE_FORMAT format; 
 };
 
 #endif
