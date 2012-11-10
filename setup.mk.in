@@ -13,8 +13,8 @@ HADOOP_HOME=/cm/shared/apps/hadoop/current
 #jdk (for HDFS support and Giraph backend)
 JAVA_HOME=/usr/java/default
 # Name of hadoop core jar (For HDFS support and Giraph backend)
-#HADOOP_CORE_JAR=hadooop-core-0.20.2-cdh3u4.jar
-HADOOP_CORE_JAR=hadoop-core-1.0.3.jar
+HADOOP_CORE_JAR=hadooop-core-0.20.2-cdh3u4.jar
+#HADOOP_CORE_JAR=hadoop-core-1.0.3.jar
 
 
 #-------------------------------------------------------------
