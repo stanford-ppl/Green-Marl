@@ -52,16 +52,16 @@ GM_JNI_Handler::~GM_JNI_Handler() {
 #endif
 
 /***********************************************************
- * Method definitions for GM_LineReader class
+ * Method definitions for GM_Reader class
  **********************************************************/
 
-GM_LineReader::GM_LineReader (const char *filename, bool hdfs) {
+GM_Reader::GM_Reader (const char *filename, bool hdfs) {
     filename_ = filename;
     hdfs_ = hdfs;
     initialize();
 }
 
-void GM_LineReader::initialize() {
+void GM_Reader::initialize() {
 #ifdef HDFS
     // Initialize for reading a file from HDFS
     // Get the JNI environment from the GM_JNI_Handler
@@ -117,11 +117,11 @@ void GM_LineReader::initialize() {
 #endif  // HDFS
 }
 
-bool GM_LineReader::failed() {
+bool GM_Reader::failed() {
     return failed_;
 }
 
-void GM_LineReader::reset() {
+void GM_Reader::reset() {
 #ifdef HDFS
     // Get the methodID of reset in HDFSLineReader class
     jmethodID resetMethod = env_->GetMethodID(cls_, "reset", "()V");
@@ -142,7 +142,7 @@ void GM_LineReader::reset() {
 #endif  // HDFS
 }
 
-bool GM_LineReader::getNextLine(std::string &line) {
+bool GM_Reader::getNextLine(std::string &line) {
 #ifdef HDFS
     // Call getLine method in HDFSLineReader class
     jobject strObj = env_->CallObjectMethod(lineReaderObj_, getLineMethod_, "");
@@ -165,7 +165,26 @@ bool GM_LineReader::getNextLine(std::string &line) {
 #endif  // HDFS
 }
 
-void GM_LineReader::terminate() {
+int GM_Reader::getBytes(char* buf, size_t num_bytes) {
+#ifdef HDFS
+#error getBytes for HDFS not yet implemented
+#else
+    fs_.read(buf, num_bytes);
+    return fs_.gcount();
+#endif
+}
+
+int GM_Reader::seekCurrent(long int pos) {
+#ifdef HDFS
+#error seekCurrent for HDFS not yet implemented
+#else
+    fs_.seekg(pos, std::ios::cur);    
+    return 0; // TODO: error check?
+#endif
+}
+
+
+void GM_Reader::terminate() {
 #ifdef HDFS
     // Get the methodID of terminate in HDFSLineReader class
     jmethodID terminateMethod = env_->GetMethodID(cls_, "terminate", "()V");

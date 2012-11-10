@@ -26,9 +26,12 @@
 #include <string.h>
 #include "dump.h"
 
+#include "gm_file_c.h"
+
 enum avro_io_type_t {
 	AVRO_FILE_IO,
-	AVRO_MEMORY_IO
+	AVRO_MEMORY_IO,
+    AVRO_GEN_FILE_IO
 };
 typedef enum avro_io_type_t avro_io_type_t;
 
@@ -41,6 +44,15 @@ struct avro_writer_t_ {
 	avro_io_type_t type;
 	volatile int  refcount;
 };
+
+struct _avro_reader_gen_file_t {
+	struct avro_reader_t_ reader;
+	void *gm_file_reader;
+	char *cur;
+	char *end;
+	char buffer[4096];
+};
+
 
 struct _avro_reader_file_t {
 	struct avro_reader_t_ reader;
@@ -74,11 +86,13 @@ struct _avro_writer_memory_t {
 #define avro_io_typeof(obj)      ((obj)->type)
 #define is_memory_io(obj)        (obj && avro_io_typeof(obj) == AVRO_MEMORY_IO)
 #define is_file_io(obj)          (obj && avro_io_typeof(obj) == AVRO_FILE_IO)
+#define is_gen_file_io(obj)      (obj && avro_io_typeof(obj) == AVRO_GEN_FILE_IO)
 
 #define avro_reader_to_memory(reader_)  container_of(reader_, struct _avro_reader_memory_t, reader)
 #define avro_reader_to_file(reader_)    container_of(reader_, struct _avro_reader_file_t, reader)
 #define avro_writer_to_memory(writer_)  container_of(writer_, struct _avro_writer_memory_t, writer)
 #define avro_writer_to_file(writer_)    container_of(writer_, struct _avro_writer_file_t, writer)
+#define avro_reader_to_gen_file(reader_)    container_of(reader_, struct _avro_reader_gen_file_t, reader)
 
 static void reader_init(avro_reader_t reader, avro_io_type_t type)
 {
@@ -91,6 +105,22 @@ static void writer_init(avro_writer_t writer, avro_io_type_t type)
 	writer->type = type;
 	avro_refcount_set(&writer->refcount, 1);
 }
+
+
+avro_reader_t avro_reader_gen_file(void *gm_file_reader)
+{
+	struct _avro_reader_gen_file_t *file_reader =
+	    (struct _avro_reader_gen_file_t *) avro_new(struct _avro_reader_gen_file_t);
+	if (!file_reader) {
+		avro_set_error("Cannot allocate new file reader");
+		return NULL;
+	}
+	memset(file_reader, 0, sizeof(struct _avro_reader_gen_file_t));
+	file_reader->gm_file_reader = gm_file_reader;
+	reader_init(&file_reader->reader, AVRO_GEN_FILE_IO);
+	return &file_reader->reader;
+}
+
 
 avro_reader_t avro_reader_file_fp(FILE * fp, int should_close)
 {
@@ -260,6 +290,63 @@ avro_read_file(struct _avro_reader_file_t *reader, void *buf, int64_t len)
 	return -1;
 }
 
+static int
+avro_read_gen_file(struct _avro_reader_gen_file_t *reader, void *buf, int64_t len)
+{
+	int64_t needed = len;
+	char *p = (char *) buf;
+	int rval;
+
+	if (len == 0) {
+		return 0;
+	}
+
+	if (needed > (int64_t) sizeof(reader->buffer)) {
+		if (bytes_available(reader) > 0) {
+			memcpy(p, reader->cur, bytes_available(reader));
+			p += bytes_available(reader);
+			needed -= bytes_available(reader);
+			buffer_reset(reader);
+		}
+		rval = gmGenFileReaderGetBytes(reader->gm_file_reader, p, needed);
+		if (rval != needed) {
+			avro_set_error("Cannot read %" PRIsz " bytes from file",
+				       (size_t) needed);
+			return -1;
+		}
+		return 0;
+	} else if (needed <= bytes_available(reader)) {
+		memcpy(p, reader->cur, needed);
+		reader->cur += needed;
+		return 0;
+	} else {
+		memcpy(p, reader->cur, bytes_available(reader));
+		p += bytes_available(reader);
+		needed -= bytes_available(reader);
+
+		rval = gmGenFileReaderGetBytes(reader->gm_file_reader, reader->buffer, sizeof(reader->buffer));
+		if (rval == 0) {
+			avro_set_error("Cannot read %" PRIsz " bytes from file",
+				       (size_t) needed);
+			return -1;
+		}
+		reader->cur = reader->buffer;
+		reader->end = reader->cur + rval;
+
+		if (bytes_available(reader) < needed) {
+			avro_set_error("Cannot read %" PRIsz " bytes from file",
+				       (size_t) needed);
+			return -1;
+		}
+		memcpy(p, reader->cur, needed);
+		reader->cur += needed;
+		return 0;
+	}
+	avro_set_error("Cannot read %" PRIsz " bytes from file",
+		       (size_t) needed);
+	return -1;
+}
+
 int avro_read(avro_reader_t reader, void *buf, int64_t len)
 {
 	if (buf && len >= 0) {
@@ -268,6 +355,9 @@ int avro_read(avro_reader_t reader, void *buf, int64_t len)
 						buf, len);
 		} else if (is_file_io(reader)) {
 			return avro_read_file(avro_reader_to_file(reader), buf,
+					      len);
+		} else if (is_gen_file_io(reader)) {
+			return avro_read_gen_file(avro_reader_to_gen_file(reader), buf,
 					      len);
 		}
 	}
@@ -310,6 +400,30 @@ static int avro_skip_file(struct _avro_reader_file_t *reader, int64_t len)
 	return 0;
 }
 
+static int avro_skip_gen_file(struct _avro_reader_gen_file_t *reader, int64_t len)
+{
+	int rval;
+	int64_t needed = len;
+
+	if (len == 0) {
+		return 0;
+	}
+	if (needed <= bytes_available(reader)) {
+		reader->cur += needed;
+	} else {
+		needed -= bytes_available(reader);
+		buffer_reset(reader);
+		rval = gmGenFileReaderSeekCurrent(reader->gm_file_reader, needed);
+		if (rval < 0) {
+			avro_set_error("Cannot skip %" PRIsz " bytes in file",
+				       (size_t) len);
+			return rval;
+		}
+	}
+	return 0;
+}
+
+
 int avro_skip(avro_reader_t reader, int64_t len)
 {
 	if (len >= 0) {
@@ -318,6 +432,8 @@ int avro_skip(avro_reader_t reader, int64_t len)
 						len);
 		} else if (is_file_io(reader)) {
 			return avro_skip_file(avro_reader_to_file(reader), len);
+		} else if (is_gen_file_io(reader)) {
+			return avro_skip_gen_file(avro_reader_to_gen_file(reader), len);
 		}
 	}
 	return 0;
@@ -420,6 +536,9 @@ void avro_reader_free(avro_reader_t reader)
 			fclose(avro_reader_to_file(reader)->fp);
 		}
 		avro_freet(struct _avro_reader_file_t, reader);
+	} else if (is_gen_file_io(reader)) {
+        gmGenFileReaderClose(avro_reader_to_gen_file(reader)->gm_file_reader);
+		avro_freet(struct _avro_reader_gen_file_t, reader);
 	}
 }
 

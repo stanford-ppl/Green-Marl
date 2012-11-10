@@ -758,7 +758,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
 
 
     // Open the file
-    GM_LineReader lineReader(filename, use_hdfs);
+    GM_Reader lineReader(filename, use_hdfs);
     if (lineReader.failed()) {
         return false;
     }
@@ -1303,7 +1303,7 @@ bool gm_graph::load_adjacency_list_avro(const char* filename, // input parameter
             ) {
     clear_graph();
 	avro_file_reader_t reader;
-    if (avro_file_reader(filename, &reader)) {
+    if (avro_gen_file_reader(filename, &reader, 0)) {
         fprintf(stderr, "Cannot open file %s\n", filename);
         return false;
     }

@@ -39,6 +39,7 @@ typedef struct avro_writer_t_ *avro_writer_t;
  * io
  */
 
+avro_reader_t avro_reader_gen_file(void *gm_file_reader);
 avro_reader_t avro_reader_file(FILE * fp);
 avro_reader_t avro_reader_file_fp(FILE * fp, int should_close);
 avro_writer_t avro_writer_file(FILE * fp);
@@ -112,6 +113,7 @@ int avro_file_writer_open_bs(const char *path, avro_file_writer_t * writer, size
 int avro_file_reader(const char *path, avro_file_reader_t * reader);
 int avro_file_reader_fp(FILE *fp, const char *path, int should_close,
 			avro_file_reader_t * reader);
+  int avro_gen_file_reader(const char *path, avro_file_reader_t * reader, int hdfs);
 
 avro_schema_t
 avro_file_reader_get_writer_schema(avro_file_reader_t reader);

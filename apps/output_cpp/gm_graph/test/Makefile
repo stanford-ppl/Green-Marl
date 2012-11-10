@@ -9,8 +9,8 @@ GM_TOP = ../../../..
 include ../../../../setup.mk
 include ../../common.mk
 
-#TARGET = a_main test_graph test_set test_seq test_order
-TARGET = test_generic_adj_list test_argopt test_adj_list_avro
+#TARGET = test_generic_adj_list test_argopt test_adj_list_avro
+TARGET = test_generic_adj_list test_adj_list_avro
 
 all: $(TARGET)
 

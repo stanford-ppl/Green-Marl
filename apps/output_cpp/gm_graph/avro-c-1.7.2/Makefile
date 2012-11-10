@@ -1,8 +1,9 @@
 CC= gcc
 AVRO = src
 JANSSON = jansson/src
+GM_INC = ../inc
 OBJ = obj
-CFLAGS = -O3 -g -I$(AVRO) -I$(JANSSON) -Wall 
+CFLAGS = -O3 -g -I$(AVRO) -I$(JANSSON) -I$(GM_INC) -Wall 
 
 AVRO_SOURCES := $(wildcard $(AVRO)/*.c)
 JANSSON_SOURCES := $(wildcard $(JANSSON)/*.c) 

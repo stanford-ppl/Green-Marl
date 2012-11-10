@@ -26,7 +26,7 @@ vpath %.java $(JSRC)
 
 SOURCES := $(wildcard $(SRC)/*.cc)
 OBJECTS := $(subst $(SRC),$(OBJ),$(SOURCES:.cc=.o)) 
-GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/graph_gen_main.o $(OBJ)/gm_util.o $(OBJ)/gm_lock.o $(OBJ)/gm_file_handling.o 
+GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/graph_gen_main.o $(OBJ)/gm_util.o $(OBJ)/gm_lock.o $(OBJ)/gm_file_handling.o $(OBJ)/gm_file_c.o 
 GRAPHLIB_OBJECTS = $(filter-out $(OBJ)/graph_gen_main.o,$(OBJECTS)) $(wildcard $(AVRO)/*.o) $(wildcard $(JANSSON)/*.o) 
 JAVASOURCES := $(wildcard $(JSRC)/*.java)
 JAVACLASSES := $(subst $(JSRC),$(JBIN),$(JAVASOURCES:.java=.class))

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <fstream>
+#include <iostream>
 #ifdef HDFS
 #include <sstream>
 #include <jni.h>
@@ -32,14 +33,16 @@ class GM_JNI_Handler {
  * This basically performs the function of std::getline using fprintf.
  * Additionally, this class has the options of reading from an NFS or a HDFS file system.
  */
-class GM_LineReader {
+class GM_Reader {
   public:
-    GM_LineReader (const char *filename, bool hdfs = false);
+    GM_Reader (const char *filename, bool hdfs = false);
 
     void initialize();
     bool failed();
     void reset();
     bool getNextLine(std::string &line);
+    int getBytes(char* buf, size_t num_bytes);
+    int seekCurrent(long int pos);
     void terminate();
 
   private:
