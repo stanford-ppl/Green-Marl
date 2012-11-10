@@ -19,8 +19,13 @@ $(CONFIG_FILE): setup.mk.in
 		rm setup.mk; \
 	fi; 
 	@echo "Initializing setup.mk";
+<<<<<<< HEAD
 	@head --lines=5 setup.mk.in >> setup.mk
 	@echo -n GM_TOP= >> setup.mk
+=======
+	@head -n 5 setup.mk.in >> setup.mk
+	@echo -n "GM_TOP=" >> setup.mk
+>>>>>>> 61b04c9c8cbc096371eaada649a2b55bc465f607
 	@pwd >> setup.mk
 	@tail --lines=+6 setup.mk.in >> setup.mk
 

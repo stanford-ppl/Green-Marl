@@ -52,8 +52,10 @@ class GM_Reader {
 #ifdef HDFS
     JNIEnv *env_;
     jclass cls_;
-    jobject lineReaderObj_;
+    jobject readerObj_;
     jmethodID getLineMethod_;
+    jmethodID getBytesMethod_;
+    jmethodID seekCurrentMethod_;
 #else
     std::ifstream fs_;
 #endif
