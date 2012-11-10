@@ -24,7 +24,7 @@ $(CONFIG_FILE): setup.mk.in
 		cp setup.mk setup.mk.bak; \
 		rm setup.mk; \
 	fi; 
-	@echo "Initializing setup.mk from ${UNAME}";
+	@echo "Initializing setup.mk from ${UNAME} $(TAIL)";
 	@head -5 setup.mk.in >> setup.mk
 	@echo -n GM_TOP= >> setup.mk
 	@pwd >> setup.mk
