@@ -110,6 +110,24 @@ static int write_header(avro_file_writer_t w)
 }
 
 static int
+gen_file_writer_init(const char *path, const char *mode, avro_file_writer_t w, int hdfs)
+{
+    void* gm_file_writer = gmGenFileWriterOpen(path, hdfs);
+    if (!gm_file_writer) {
+		avro_set_error("Cannot allocate gm file writer for file %s", path);
+		return ENOMEM;
+    }
+	w->writer = avro_writer_gen_file(gm_file_writer);
+	if (!w->writer) {
+        gmGenFileWriterClose(gm_file_writer);
+		avro_set_error("Cannot create file writer for %s", path);
+		return ENOMEM;
+	}
+	return 0;
+}
+
+
+static int
 file_writer_init_fp(FILE *fp, const char *path, int should_close, const char *mode, avro_file_writer_t w)
 {
 	if (!fp) {
@@ -140,6 +158,40 @@ file_writer_init_fp(FILE *fp, const char *path, int should_close, const char *mo
 #else
   #define EXCLUSIVE_WRITE_MODE   "wbx"
 #endif
+
+static int
+gen_file_writer_create(const char *path, avro_schema_t schema, avro_file_writer_t w, size_t block_size, int hdfs)
+{
+	int rval;
+
+	w->block_count = 0;
+	rval = gen_file_writer_init(path, EXCLUSIVE_WRITE_MODE, w, hdfs);
+    if (rval) {
+		avro_set_error("Could not initialize file writer\n");
+		return ENOMEM;
+    }
+
+	w->datum_buffer_size = block_size;
+	w->datum_buffer = (char *) avro_malloc(w->datum_buffer_size);
+
+	if(!w->datum_buffer) {
+		avro_set_error("Could not allocate datum buffer\n");
+		avro_writer_free(w->writer);
+		return ENOMEM;
+	}
+
+	w->datum_writer =
+	    avro_writer_memory(w->datum_buffer, w->datum_buffer_size);
+	if (!w->datum_writer) {
+		avro_set_error("Cannot create datum writer for file %s", path);
+		avro_writer_free(w->writer);
+		avro_free(w->datum_buffer, w->datum_buffer_size);
+		return ENOMEM;
+	}
+
+	w->writers_schema = avro_schema_incref(schema);
+	return write_header(w);
+}
 
 static int
 file_writer_create(FILE *fp, const char *path, int should_close, avro_schema_t schema, avro_file_writer_t w, size_t block_size)
@@ -193,6 +245,50 @@ int avro_file_writer_create_with_codec(const char *path,
 			const char *codec, size_t block_size)
 {
 	return avro_file_writer_create_with_codec_fp(NULL, path, 1, schema, writer, codec, block_size);
+}
+
+int
+avro_gen_file_writer_create(const char *path, avro_schema_t schema,
+                            avro_file_writer_t * writer, int hdfs)
+{
+	avro_file_writer_t w;
+	int rval;
+	check_param(EINVAL, path, "path");
+	check_param(EINVAL, is_avro_schema(schema), "schema");
+	check_param(EINVAL, writer, "writer");
+
+    const char *codec = "null";
+	size_t block_size = DEFAULT_BLOCK_SIZE;
+
+
+	w = (avro_file_writer_t) avro_new(struct avro_file_writer_t_);
+	if (!w) {
+		avro_set_error("Cannot allocate new file writer");
+		return ENOMEM;
+	}
+	w->codec = (avro_codec_t) avro_new(struct avro_codec_t_);
+	if (!w->codec) {
+		avro_set_error("Cannot allocate new codec");
+		avro_freet(struct avro_file_writer_t_, w);
+		return ENOMEM;
+	}
+	rval = avro_codec(w->codec, codec);
+	if (rval) {
+		avro_codec_reset(w->codec);
+		avro_freet(struct avro_codec_t_, w->codec);
+		avro_freet(struct avro_file_writer_t_, w);
+		return rval;
+	}
+	rval = gen_file_writer_create(path, schema, w, block_size, hdfs);
+	if (rval) {
+		avro_codec_reset(w->codec);
+		avro_freet(struct avro_codec_t_, w->codec);
+		avro_freet(struct avro_file_writer_t_, w);
+		return rval;
+	}
+	*writer = w;
+
+	return 0;
 }
 
 int avro_file_writer_create_with_codec_fp(FILE *fp, const char *path, int should_close,

@@ -41,7 +41,7 @@ class GM_Reader {
     bool failed();
     void reset();
     bool getNextLine(std::string &line);
-    int getBytes(char* buf, size_t num_bytes);
+    int readBytes(char* buf, size_t num_bytes);
     int seekCurrent(long int pos);
     void terminate();
 
@@ -76,6 +76,8 @@ public:
     void write (double val);
     void write (const char *val);
     void write (std::string &val);
+    void writeBytes(char* buf, size_t num_bytes);
+
     void flush ();
 
   private:
@@ -87,6 +89,8 @@ public:
     jclass cls_;
     jobject writerObj_;
     jmethodID writeMethod_;
+    jmethodID writeBytesMethod_;
+    jmethodID flushMethod_;
     std::stringstream outstream_;
 #else
     std::ofstream outstream_;

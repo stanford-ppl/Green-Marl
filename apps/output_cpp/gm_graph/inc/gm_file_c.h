@@ -13,9 +13,17 @@ void* gmGenFileReaderOpen(const char* filename, int hdfs);
 
 void gmGenFileReaderClose(void* reader);
 
-int gmGenFileReaderGetBytes(void* reader, char* buf, size_t num_bytes);
+int gmGenFileReaderReadBytes(void* reader, char* buf, size_t num_bytes);
 
 int gmGenFileReaderSeekCurrent(void* reader, long int pos);
+
+void* gmGenFileWriterOpen(const char* filename, int hdfs);
+
+void gmGenFileWriterClose(void* writer);
+
+void gmGenFileWriterWriteBytes(void* writer, char* buf, size_t num_bytes);
+
+void gmGenFileWriterFlush(void* writer);
 
 #ifdef __cplusplus
 }

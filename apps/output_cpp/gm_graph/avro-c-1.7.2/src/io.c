@@ -63,6 +63,11 @@ struct _avro_reader_file_t {
 	char buffer[4096];
 };
 
+struct _avro_writer_gen_file_t {
+	struct avro_writer_t_ writer;
+	void *gm_file_writer;
+};
+
 struct _avro_writer_file_t {
 	struct avro_writer_t_ writer;
 	FILE *fp;
@@ -93,6 +98,7 @@ struct _avro_writer_memory_t {
 #define avro_writer_to_memory(writer_)  container_of(writer_, struct _avro_writer_memory_t, writer)
 #define avro_writer_to_file(writer_)    container_of(writer_, struct _avro_writer_file_t, writer)
 #define avro_reader_to_gen_file(reader_)    container_of(reader_, struct _avro_reader_gen_file_t, reader)
+#define avro_writer_to_gen_file(writer_)    container_of(writer_, struct _avro_writer_gen_file_t, writer)
 
 static void reader_init(avro_reader_t reader, avro_io_type_t type)
 {
@@ -140,6 +146,19 @@ avro_reader_t avro_reader_file_fp(FILE * fp, int should_close)
 avro_reader_t avro_reader_file(FILE * fp)
 {
 	return avro_reader_file_fp(fp, 1);
+}
+
+avro_writer_t avro_writer_gen_file(void *gm_file_writer)
+{
+	struct _avro_writer_gen_file_t *file_writer =
+	    (struct _avro_writer_gen_file_t *) avro_new(struct _avro_writer_gen_file_t);
+	if (!file_writer) {
+		avro_set_error("Cannot allocate new file writer");
+		return NULL;
+	}
+	file_writer->gm_file_writer = gm_file_writer;
+	writer_init(&file_writer->writer, AVRO_GEN_FILE_IO);
+	return &file_writer->writer;
 }
 
 avro_writer_t avro_writer_file_fp(FILE * fp, int should_close)
@@ -308,7 +327,7 @@ avro_read_gen_file(struct _avro_reader_gen_file_t *reader, void *buf, int64_t le
 			needed -= bytes_available(reader);
 			buffer_reset(reader);
 		}
-		rval = gmGenFileReaderGetBytes(reader->gm_file_reader, p, needed);
+		rval = gmGenFileReaderReadBytes(reader->gm_file_reader, p, needed);
 		if (rval != needed) {
 			avro_set_error("Cannot read %" PRIsz " bytes from file",
 				       (size_t) needed);
@@ -324,7 +343,7 @@ avro_read_gen_file(struct _avro_reader_gen_file_t *reader, void *buf, int64_t le
 		p += bytes_available(reader);
 		needed -= bytes_available(reader);
 
-		rval = gmGenFileReaderGetBytes(reader->gm_file_reader, reader->buffer, sizeof(reader->buffer));
+		rval = gmGenFileReaderReadBytes(reader->gm_file_reader, reader->buffer, sizeof(reader->buffer));
 		if (rval == 0) {
 			avro_set_error("Cannot read %" PRIsz " bytes from file",
 				       (size_t) needed);
@@ -467,6 +486,16 @@ avro_write_file(struct _avro_writer_file_t *writer, void *buf, int64_t len)
 	return 0;
 }
 
+static int
+avro_write_gen_file(struct _avro_writer_gen_file_t *writer, void *buf, int64_t len)
+{
+	if (len > 0) {
+        gmGenFileWriterWriteBytes(writer->gm_file_writer, buf, len);
+	}
+	return 0;
+}
+
+
 int avro_write(avro_writer_t writer, void *buf, int64_t len)
 {
 	if (buf && len >= 0) {
@@ -475,6 +504,9 @@ int avro_write(avro_writer_t writer, void *buf, int64_t len)
 						 buf, len);
 		} else if (is_file_io(writer)) {
 			return avro_write_file(avro_writer_to_file(writer), buf,
+					       len);
+		} else if (is_gen_file_io(writer)) {
+			return avro_write_gen_file(avro_writer_to_gen_file(writer), buf,
 					       len);
 		}
 	}
@@ -508,7 +540,10 @@ void avro_writer_flush(avro_writer_t writer)
 {
 	if (is_file_io(writer)) {
 		fflush(avro_writer_to_file(writer)->fp);
+	} else if (is_gen_file_io(writer)) {
+        gmGenFileWriterFlush(avro_writer_to_gen_file(writer)->gm_file_writer);
 	}
+
 }
 
 void avro_writer_dump(avro_writer_t writer, FILE * fp)
@@ -551,5 +586,8 @@ void avro_writer_free(avro_writer_t writer)
 			fclose(avro_writer_to_file(writer)->fp);
 		}
 		avro_freet(struct _avro_writer_file_t, writer);
+	} else if (is_gen_file_io(writer)) {
+        gmGenFileWriterClose(avro_writer_to_gen_file(writer)->gm_file_writer);
+		avro_freet(struct _avro_writer_gen_file_t, writer);
 	}
 }

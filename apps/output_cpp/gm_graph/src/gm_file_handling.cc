@@ -181,7 +181,7 @@ bool GM_Reader::getNextLine(std::string &line) {
 #endif  // HDFS
 }
 
-int GM_Reader::getBytes(char* buf, size_t num_bytes) {
+int GM_Reader::readBytes(char* buf, size_t num_bytes) {
 #ifdef HDFS
     // Call getBytes method in HDFSReader class
     jobject byteArray = env_->CallObjectMethod(readerObj_, getBytesMethod_, (jint)num_bytes);
@@ -284,6 +284,22 @@ void GM_Writer::initialize () {
         failed_ = true;
         return;
     }
+
+    // Get the methodID of writeBytes in HDFSWriter class
+    writeBytesMethod_ = env_->GetMethodID(cls_, "writeBytes", "([B)V");
+    if (writeBytesMethod_ == 0) {
+        fprintf (stderr, "JNI Error: Cannot get writeBytes method in HDFSWriter\n");
+        failed_ = true;
+        return;
+    }
+
+    // Get the methodID of flush in HDFSWriter class
+    flushMethod_ = env_->GetMethodID(cls_, "flush", "()V");
+    if (flushMethod_ == 0) {
+        fprintf (stderr, "JNI Error: Cannot get flush method in HDFSWriter\n");
+        failed_ = true;
+        return;
+    }
     failed_ = false;
 #else
    // Initialize for writing a file to NFS
@@ -346,15 +362,31 @@ void GM_Writer::write (std::string &val) {
     outstream_ << val;
 }
 
+void GM_Writer::writeBytes(char* buf, size_t num_bytes) {
+#ifdef HDFS
+    jobject byteArray = env_->NewByteArray((jsize)num_bytes);
+    env_->SetByteArrayRegion((jbyteArray)byteArray, 0, num_bytes, (jbyte*)buf);
+    env_->CallVoidMethod(writerObj_, writeBytesMethod_, byteArray);
+#else
+  outstream_.write(buf, num_bytes);
+#endif
+}
+
+
 void GM_Writer::flush () {
 #ifdef HDFS
-    // write the stringstream to file through a JNI call
-    // Call write method in HDFSWriter class
-    env_->CallVoidMethod(writerObj_, writeMethod_, env_->NewStringUTF(outstream_.str().c_str()));
-    // clear the stringstream object
-    outstream_.str("");
-    outstream_.clear();
+    if (outstream_.str() == "") {
+	env_->CallVoidMethod(writerObj_, flushMethod_, "");
+    }
+    else {
+	// write the stringstream to file through a JNI call
+	// Call write method in HDFSWriter class
+	env_->CallVoidMethod(writerObj_, writeMethod_, env_->NewStringUTF(outstream_.str().c_str()));
+	// clear the stringstream object
+	outstream_.str("");
+	outstream_.clear();
+    }
 #else
-    // Do nothing
+    outstream_.flush();
 #endif
 }
