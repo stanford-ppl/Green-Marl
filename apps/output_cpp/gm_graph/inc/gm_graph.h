@@ -238,6 +238,16 @@ friend class gm_graph_hdfs;
             bool use_hdfs = false // input parameter
             );
 
+    bool store_adjacency_list_avro(const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<std::string> vprop_names, // input parameter
+            std::vector<std::string> eprop_names, // input parameter
+            std::vector<void*>& vertex_props, // input parameter
+            std::vector<void*>& edge_props, // input parameter
+            bool use_hdfs = false // input parameter
+            );
+
     //--------------------------------------------------------------
     // conversion between idx and id
     //--------------------------------------------------------------
