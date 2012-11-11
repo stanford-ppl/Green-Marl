@@ -47,6 +47,7 @@ public class HDFSWriter {
         try {
             fdos.write(buf);
 	    fdos.flush();
+	    fdos.sync();
         } catch (Exception e) {
             System.err.println (e);
         }
@@ -56,6 +57,7 @@ public class HDFSWriter {
     public void flush () {
         try {
             fdos.flush ();
+	    fdos.sync();
         } catch (Exception e) {
             System.err.println (e);
         }

@@ -8,6 +8,7 @@ void* gmGenFileReaderOpen(const char* filename, int hdfs) {
 
 extern "C"
 void gmGenFileReaderClose(void* reader) {
+  ((GM_Reader*)reader)->terminate();
   delete (GM_Reader*)reader;
 }
 
@@ -29,7 +30,8 @@ void* gmGenFileWriterOpen(const char* filename, int hdfs) {
 
 extern "C"
 void gmGenFileWriterClose(void* writer) {
-  delete ((GM_Writer*)writer);
+  ((GM_Writer*)writer)->terminate();
+  delete (GM_Writer*)writer;
 }
 
 
