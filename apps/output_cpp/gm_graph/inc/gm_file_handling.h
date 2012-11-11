@@ -89,6 +89,8 @@ public:
     jclass cls_;
     jobject writerObj_;
     jmethodID writeMethod_;
+    jmethodID writeBytesMethod_;
+    jmethodID flushMethod_;
     std::stringstream outstream_;
 #else
     std::ofstream outstream_;

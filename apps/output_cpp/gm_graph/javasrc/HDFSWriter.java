@@ -42,6 +42,25 @@ public class HDFSWriter {
         }
     }
 	
+	// Write the a sequence of bytes to file
+    public void writeBytes (byte[] buf) {
+        try {
+            fdos.write(buf);
+	    fdos.flush();
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+    }
+
+	// Write the a sequence of bytes to file
+    public void flush () {
+        try {
+            fdos.flush ();
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+    }
+
     // Close the input stream and the hdfs file system
     public void terminate() {
         try {
