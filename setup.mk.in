@@ -56,18 +56,18 @@ SUPPORT_HDFS=0
 
 # Directories for SUPPORT_HDFS
 #location of libhdfs.so
-LIBHDFS_DIR =$(HADOOP_HOME)/c++/lib
+LIBHDFS_DIR =${HADOOP_HOME}/c++/lib
 #location of hdfs.h
-INCHDFS_DIR = $(HADOOP_HOME)/src/c++/libhdfs 
+INCHDFS_DIR = ${HADOOP_HOME}/src/c++/libhdfs 
 #location of libhdfs.so
-LIBJVM_DIR  =$(JAVA_HOME)/jre/lib/amd64/server
+LIBJVM_DIR  =${JAVA_HOME}/jre/lib/amd64/server
 #location of jni.h
-INCJNI_DIR  =$(JAVA_HOME)/include
+INCJNI_DIR  =${JAVA_HOME}/include
 #location of jni_md.h
-INCJNIMD_DIR = $(JAVA_HOME)/include/linux
+INCJNIMD_DIR = ${JAVA_HOME}/include/linux
 #location of hadoop core
-#HADOOP_CORE_DIR = $(HADOOP_HOME)
-HADOOP_CORE_DIR=$(GM_TOP)/apps/output_giraph/lib
+#HADOOP_CORE_DIR = ${HADOOP_HOME}
+HADOOP_CORE_DIR=${GM_TOP}/apps/output_giraph/lib
 # (GM_TOP SHOULD BE DEFINED AT makefile that includes this file)
 
 #--------------------------------------------------------
