@@ -1557,7 +1557,7 @@ bool gm_graph::store_adjacency_list_avro(const char* filename, // input paramete
     }
 
 	avro_file_writer_t writer;
-	if (avro_file_writer_create(filename, rec_schema, &writer))
+	if (avro_gen_file_writer_create(filename, rec_schema, &writer, (int)use_hdfs))
         avro_write_fail_1("Cannot open file %s\n", filename, NULL);
 
 

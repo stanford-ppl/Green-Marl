@@ -181,7 +181,7 @@ bool GM_Reader::getNextLine(std::string &line) {
 #endif  // HDFS
 }
 
-int GM_Reader::getBytes(char* buf, size_t num_bytes) {
+int GM_Reader::readBytes(char* buf, size_t num_bytes) {
 #ifdef HDFS
     // Call getBytes method in HDFSReader class
     jobject byteArray = env_->CallObjectMethod(readerObj_, getBytesMethod_, (jint)num_bytes);
@@ -346,6 +346,15 @@ void GM_Writer::write (std::string &val) {
     outstream_ << val;
 }
 
+void GM_Writer::writeBytes(char* buf, size_t num_bytes) {
+#ifdef HDFS
+#error writeBytes not working with HDFS yet
+#else
+  outstream_.write(buf, num_bytes);
+#endif
+}
+
+
 void GM_Writer::flush () {
 #ifdef HDFS
     // write the stringstream to file through a JNI call
@@ -355,6 +364,6 @@ void GM_Writer::flush () {
     outstream_.str("");
     outstream_.clear();
 #else
-    // Do nothing
+    outstream_.flush();
 #endif
 }
