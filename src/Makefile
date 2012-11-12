@@ -13,6 +13,7 @@ ifneq ($(UNAME),Darwin)
 endif
 
 include ../setup.mk
+CFLAGS += -DDEFAULT_GM_TOP="\"${GM_TOP}\""
 
 # where to find source codes
 vpath %.h  inc
@@ -42,7 +43,7 @@ SRCS2 =\
        gm_parse_foreign_syntax.cc \
        gm_reproduce.cc gm_dumptree.cc gm_misc.cc \
        gm_main.cc gm_argopts.cc gm_copy.cc \
-       gm_code_generator.cc\
+       gm_code_generator.cc gm_read_setup.cc \
        gm_error.cc gm_builtin.cc \
        gm_node_info.cc\
        gm_version_string.cc\

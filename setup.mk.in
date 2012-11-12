@@ -1,7 +1,7 @@
 #==================================================================================
-# A common setup file  for all makefile in the source tree.
-# Note that all the flags in this file can be overreide by the command line 
-# arguement: e.g. make env=gps
+# A common setup file  for all makefile in the source tree. This file will be included
+# in Makefile(s) as well as be loaded as properti file. Therefore, specified only simple key-value
+# pairs in this file. Variable extensions should use ${} istead of $(). 
 #==================================================================================
 
 #-------------------------------------------------------------
@@ -66,8 +66,8 @@ INCJNI_DIR  =${JAVA_HOME}/include
 #location of jni_md.h
 INCJNIMD_DIR = ${JAVA_HOME}/include/linux
 #location of hadoop core
-#HADOOP_CORE_DIR = ${HADOOP_HOME}
-HADOOP_CORE_DIR=${GM_TOP}/apps/output_giraph/lib
+HADOOP_CORE_DIR = ${HADOOP_HOME}
+#HADOOP_CORE_DIR=${GM_TOP}/apps/output_giraph/lib
 # (GM_TOP SHOULD BE DEFINED AT makefile that includes this file)
 
 #--------------------------------------------------------

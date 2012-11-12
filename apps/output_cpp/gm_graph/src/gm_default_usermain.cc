@@ -20,7 +20,7 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
    OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[Never creates an output file], 1:[Always create output as graph format], 2:[Omit edges in output if edge properties are not modified.; create nothing if no properties are modified.]");
    OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
-   //OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "1 -- Measure running time");
+   OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "1 -- Measure running time");
    //OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  NULL,  "Output directory ");
    OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
    //,ADJ_NP: adj-list node property only");
@@ -423,6 +423,10 @@ bool gm_default_usermain::do_preprocess()
     // load the graph 
     sprintf(fullpath_name,"%s%s",input_path, OPTIONS.get_arg(0));
 
+    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+        gettimeofday(&TV1, NULL);
+    }
+
     if (get_input_format() == GM_ADJ_LIST) 
     {
         bool okay = GRAPH.load_adjacency_list(fullpath_name,
@@ -483,6 +487,11 @@ bool gm_default_usermain::do_preprocess()
     // create & register arrays
     create_and_register_property_arrays();
 
+    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+        gettimeofday(&TV2, NULL);
+        printf("loading time:%8.3lf (ms)\n", (TV2.tv_sec - TV1.tv_sec)*1000 + (TV2.tv_usec - TV1.tv_usec)*0.001);
+    }
+
     return true;
 }
 
@@ -509,6 +518,38 @@ void gm_default_usermain::create_property_in_out_schema()
             }
         }
     }
+
+    // adding dummy schema
+    if (OPTIONS.get_option_bool(OPT_DUMMYPROP))
+    {
+        if ((vprop_in_schema.size() == 0) || (vprop_out_schema.size() == 0))
+        {
+            gm_schema schema; 
+            schema.name = "dummy np";
+            schema.type = GMTYPE_DOUBLE;
+            schema.is_input = (vprop_in_schema.size() == 0) ? true : false;
+            schema.is_output = (vprop_out_schema.size() == 0) ? true : false;
+            schema.schema_type = GM_NODEPROP;
+            property_schema.push_back(schema);
+            if (vprop_in_schema.size() == 0) vprop_in_schema.push_back(GMTYPE_DOUBLE);
+            if (vprop_out_schema.size() == 0) vprop_out_schema.push_back(GMTYPE_DOUBLE);
+        }
+        if ((eprop_in_schema.size() == 0) || (eprop_out_schema.size() == 0))
+        {
+            gm_schema schema; 
+            schema.name = "dummy ep";
+            schema.type = GMTYPE_DOUBLE;
+            schema.is_input = (eprop_in_schema.size() == 0) ? true : false;
+            schema.is_output = (eprop_out_schema.size() == 0) ? true : false;
+            schema.schema_type = GM_EDGEPROP;
+            property_schema.push_back(schema);
+            if (eprop_in_schema.size() == 0) eprop_in_schema.push_back(GMTYPE_DOUBLE);
+            if (eprop_out_schema.size() == 0) eprop_out_schema.push_back(GMTYPE_DOUBLE);
+        }
+    }
+
+
+
 }
 
 void gm_default_usermain::create_and_register_property_arrays()
@@ -592,8 +633,11 @@ bool gm_default_usermain::do_postprocess()
     char fullpath_name[1024*64];
     sprintf(fullpath_name,"%s%s",output_path, OPTIONS.get_arg(1));
 
-    if (OPTIONS.get_option_bool(OPT_DUMPGRAPH))
-    {
+    if (create_output_graph) {
+        if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+            gettimeofday(&TV1, NULL);
+        }
+
         bool okay = true;
         // dump output graph
         if (get_output_format() == GM_ADJ_LIST) 
@@ -625,7 +669,29 @@ bool gm_default_usermain::do_postprocess()
             printf("Error in storing graph\n");
             return false;
         }
+
+        if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+            gettimeofday(&TV2, NULL);
+            printf("storing time:%8.3lf (ms)\n", (TV2.tv_sec - TV1.tv_sec)*1000 + (TV2.tv_usec - TV1.tv_usec)*0.001);
+        }
+    }
+    else if (create_output_text) {
+        assert(false);
     }
 
     return true;
+}
+
+void gm_default_usermain::begin_usermain()
+{
+    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+        gettimeofday(&TV1, NULL);
+    }
+}
+void gm_default_usermain::end_usermain()
+{
+    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+        gettimeofday(&TV2, NULL);
+        printf("main execution time:%8.3lf (ms)\n", (TV2.tv_sec - TV1.tv_sec)*1000 + (TV2.tv_usec - TV1.tv_usec)*0.001);
+    }
 }

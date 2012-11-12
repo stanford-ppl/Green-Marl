@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include "gm_internal.h"
 
 #include "gm_useropt.h"
@@ -63,6 +64,10 @@ public:
     GM_FILE_FORMAT get_input_format() {return in_format;}
     GM_FILE_FORMAT get_output_format() {return out_format;}
 
+    // used only for time measuring
+    void begin_usermain();
+    void end_usermain();
+
 private:
     gm_useropt   OPTIONS;
     gm_graph     GRAPH;
@@ -108,6 +113,8 @@ private:
 
     char input_path[1024*64];
     char output_path[1024*64];
+
+    struct timeval TV1,TV2;
 };
 
 #endif
