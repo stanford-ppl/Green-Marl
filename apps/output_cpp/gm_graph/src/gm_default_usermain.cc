@@ -5,6 +5,8 @@
 #include "gm_graph.h"
 #include "gm_useropt.h"
 
+#define OPT_MEASURETIME     "GMTimeMeasure"
+#define OPT_DUMMYPROP       "GMUseDummyProp"
 #define OPT_DUMPGRAPH       "GMDumpOutput"
 #define OPT_OUTDIR          "GMOutputDir"
 #define OPT_OUTNAME         "GMOutputName"
@@ -15,11 +17,13 @@
 
 gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
-   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_BOOL, "1",   "0 -- do not store the graph nor the output properties");
-   OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  "",  "Output directory ");
+   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_BOOL, "1",   "To store the graph nor the output properties");
+   OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0",   "To assume that there is at least one node & edge property in ADJ format. Insert one if not.");
+   //OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "1 -- Measure running time");
+   OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  "./",  "Output directory ");
    OPTIONS.add_option(OPT_OUTNAME,    GMTYPE_END,  "output.adj",  "Output filename ");
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  "ADJ", "Input format -- ADJ: adjacency list, ADJ_NP: adj-list node property only");
-   OPTIONS.add_option(OPT_INDIR,      GMTYPE_END,  "",  "Input directory ");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  "ADJ", "Output format -- ADJ: adjacency list, ADJ_NP: adj-list node property only");
+   OPTIONS.add_option(OPT_INDIR,      GMTYPE_END,  "./",  "Input directory ");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  "ADJ", "Input format -- ADJ: adjacency list");
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
    OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input graph filename");
@@ -117,23 +121,46 @@ void gm_default_usermain::set_path()
     int ol = strlen(out_dir);
     int il = strlen(in_dir);
 
-    if (ol > 0) {
-        if (out_dir[ol] != '/') sprintf(output_path, "%s/",out_dir);
-        else sprintf(output_path, "%s",out_dir);
-    } else {
-        sprintf(output_path, "%s","");
-    }
     if (il > 0) {
         if (in_dir[il] != '/') sprintf(input_path, "%s/",in_dir);
         else sprintf(input_path, "%s",in_dir);
     } else {
-        sprintf(input_path, "%s","");
+        sprintf(input_path, "%s","./");
     }
+
+    if (ol > 0) {
+        if (out_dir[ol] != '/') sprintf(output_path, "%s/",out_dir);
+        else sprintf(output_path, "%s",out_dir);
+    } else {
+        sprintf(output_path, "%s","./");
+    }
+}
+
+static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
+{
+    if (!strcmp(str, "ADJ")) {
+        format = GM_ADJ_LIST;
+        return true;
+    }
+    if (!strcmp(str, "ADJ_NP")) {
+        format = GM_ADJ_LIST_NP;
+        return true;
+    }
+    if (!strcmp(str, "ADJ_AVRO")) {
+        format = GM_ADJ_LIST_AVRO;
+        return true;
+    }
+    if (!strcmp(str, "BIN")) {
+        format = GM_BINARY;
+        return true;
+    }
+
+    return false;
 }
 
 bool gm_default_usermain::process_arguments(int argc, char** argv)
 {
-    const char* input_format;
+    const char* format;
     char buffer1[4096];
     char buffer2[4096];
     OPTIONS.set_execname(argv[0]);
@@ -144,13 +171,13 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         goto err_return;
 
     // check input graph file format
-    input_format = OPTIONS.get_option(OPT_INTYPE);  
-    if (!strcmp(input_format, "ADJ")) {
-        in_format = GM_ADJ_LIST;
-    } else if (!strcmp(input_format, "BIN")) {
-        in_format = GM_BINARY;
-    } else { 
-        printf("Error:Unknown format:%s\n", input_format);
+    format = OPTIONS.get_option(OPT_INTYPE);  
+    if (parse_format_string(format, this->in_format) == false) {
+        printf("Error:Unknown input format:%s\n", format);
+        goto err_return;
+    }
+    else if (in_format != GM_ADJ_LIST) {
+        printf("Error:input Format not supported: %s\n", format);
         goto err_return;
     }
 
@@ -171,11 +198,24 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         }
     }
 
-
     if (OPTIONS.get_num_args_defined() <  OPTIONS.get_num_args_declared()) 
     {
         printf("Error: need more arguements\n");
         goto err_return;
+    }
+
+    // dump graph or properties
+    if (OPTIONS.get_option_bool(OPT_DUMPGRAPH))
+    {
+        format = OPTIONS.get_option(OPT_INTYPE);  
+        if (parse_format_string(format, this->out_format) == false) {
+            printf("Error:Unknown output format:%s\n", format);
+            goto err_return;
+        }
+        else if (out_format != GM_ADJ_LIST) {
+            printf("Error:output format not supported: %s\n", format);
+            goto err_return;
+        }
     }
 
     // check if every scalar variables are declared
@@ -202,6 +242,13 @@ err_return:
 
 bool gm_default_usermain::do_preprocess()
 {
+    // setup number of threads
+    if (OPTIONS.is_option_defined(OPT_NUMTHREAD)) 
+    {
+        int num_threads = OPTIONS.get_option_int(OPT_NUMTHREAD);
+        gm_rt_set_num_threads(num_threads);
+    }
+
     // create scalar varabiles
     for(size_t i=0; i < scalar_schema.size(); i++)
     {
@@ -213,8 +260,23 @@ bool gm_default_usermain::do_preprocess()
 
     create_property_in_out_schema();
 
-    // load the graph from ADJ LIST
     char fullpath_name[1024*64];
+
+    // check output directory is open for writing
+    if (OPTIONS.get_option_bool(OPT_DUMPGRAPH)) 
+    {
+        if (strlen(output_path) >= 1) {
+            sprintf(fullpath_name, "%s%s",output_path, "__temp_test");
+            FILE *f = fopen(fullpath_name, "w");
+            if (f==NULL) {
+                printf("Error: failed to write in output directory:%s\n",output_path);
+            }
+            fclose(f);
+            remove(fullpath_name);
+        }
+    }
+
+    // load the graph 
     sprintf(fullpath_name,"%s%s",input_path, OPTIONS.get_arg(0));
 
     if (get_input_format() == GM_ADJ_LIST) 
@@ -325,10 +387,30 @@ bool gm_default_usermain::do_postprocess()
     }
     
     // dump graph or properties
+    char fullpath_name[1024*64];
+    sprintf(fullpath_name,"%s%s",output_path, OPTIONS.get_option(OPT_OUTNAME));
+
     if (OPTIONS.get_option_bool(OPT_DUMPGRAPH))
     {
-
-
+        // dump output graph
+        if (get_output_format() == GM_ADJ_LIST) 
+        {
+            bool b = GRAPH.store_adjacency_list(fullpath_name,
+                vprop_in_schema,
+                eprop_in_schema,
+                vprop_in_array,
+                eprop_in_array,
+                "\t",
+                false);
+            if (!b) {
+                printf("Error in storing graph\n");
+                return false;
+            }
+        }
+        else {
+            printf("Unknown graph format\n");
+            return false;
+        }
     }
 
     return true;

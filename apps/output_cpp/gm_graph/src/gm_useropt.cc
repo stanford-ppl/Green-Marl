@@ -81,7 +81,10 @@ void gm_useropt::print_help()
         printf("Options: \n");
     for(I=option_desc.begin(); I!=option_desc.end(); I++)
     {
-        printf("     -%s:%s\n", I->first, I->second);
+        printf("     -%s: ", I->first);
+        if (is_option_defined(I->first))
+            printf("(val:%s) ", option_values[I->first]);
+        printf("%s\n", I->second);
     }
 }
 
