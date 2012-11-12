@@ -56,9 +56,8 @@ class GM_Reader {
     jmethodID getLineMethod_;
     jmethodID getBytesMethod_;
     jmethodID seekCurrentMethod_;
-#else
-    std::ifstream fs_;
 #endif
+    std::ifstream fs_;  // file system is enabled even when HDFS is enabled
 };
 
 class GM_Writer {
@@ -92,9 +91,8 @@ public:
     jmethodID writeBytesMethod_;
     jmethodID flushMethod_;
     std::stringstream outstream_;
-#else
-    std::ofstream outstream_;
 #endif
+    std::ofstream outstreamfs_;
 };
 
 #endif /* GM_FILE_HANDLING_H_ */

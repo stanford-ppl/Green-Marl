@@ -15,3 +15,5 @@ clean_all:
 
 clean:
 	@cd src; make clean
+
+

@@ -32,3 +32,4 @@ $(BINDIR)/% : $(GEN_SRC)/%.cc %_main.cc $(LIBDIR)/libgmgraph.a
 
 clean:
 	\rm -f $(OUT)
+

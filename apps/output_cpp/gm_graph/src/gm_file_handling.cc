@@ -81,9 +81,13 @@ GM_Reader::GM_Reader (const char *filename, bool hdfs) {
     filename_ = filename;
     hdfs_ = hdfs;
     initialize();
+#ifndef HDFS
+    assert (hdfs == false);
+#endif
 }
 
 void GM_Reader::initialize() {
+if (hdfs_) {
 #ifdef HDFS
     // Initialize for reading a file from HDFS
     // Get the JNI environment from the GM_JNI_Handler
@@ -102,7 +106,6 @@ void GM_Reader::initialize() {
         failed_ = true;
         return;
     }
-
 
     // Get the methodID of the constructor of HDFSReader class that takes java.lang.String as the only input parameter
     jmethodID readerConstructor = env_->GetMethodID(cls_, "<init>", "(Ljava/lang/String;)V");
@@ -145,6 +148,12 @@ void GM_Reader::initialize() {
     }
     failed_ = false;
 #else
+    failed_ = true;
+    return;
+#endif  // HDFS
+}
+//#else
+else {
     // Initialize for reading a file from NFS
     fs_.open(filename_);
     failed_ = false;
@@ -152,7 +161,8 @@ void GM_Reader::initialize() {
         fprintf (stderr, "Cannot open %s for reading\n", filename_);
         failed_ = true;
     }
-#endif  // HDFS
+}
+//#endif  // HDFS
 }
 
 bool GM_Reader::failed() {
@@ -160,6 +170,8 @@ bool GM_Reader::failed() {
 }
 
 void GM_Reader::reset() {
+if (hdfs_)
+{
 #ifdef HDFS
     // Get the methodID of reset in HDFSReader class
     jmethodID resetMethod = env_->GetMethodID(cls_, "reset", "()V");
@@ -171,16 +183,20 @@ void GM_Reader::reset() {
 
     // Call the reset method in HDFSReader class
     env_->CallVoidMethod(readerObj_, resetMethod);
-#else
+#endif
+}
+else {
     fs_.clear();
     fs_.seekg(0, std::ios::beg);
     if (fs_.fail()) {
         fprintf (stderr, "Error moving file pointer to the beginning of file %s\n", filename_);
     }
-#endif  // HDFS
+}
 }
 
 bool GM_Reader::getNextLine(std::string &line) {
+if (hdfs_)
+{
 #ifdef HDFS
     // Call getLine method in HDFSReader class
     jobject strObj = env_->CallObjectMethod(readerObj_, getLineMethod_, "");
@@ -198,12 +214,16 @@ bool GM_Reader::getNextLine(std::string &line) {
     env_->ReleaseStringUTFChars((jstring) strObj, str);
     return true;
 #else
+    return false;
+#endif // HDFS
+} else {
     std::getline(fs_, line);
     return ! fs_.fail();
-#endif  // HDFS
+}
 }
 
 int GM_Reader::readBytes(char* buf, size_t num_bytes) {
+if (hdfs_) {
 #ifdef HDFS
     // Call getBytes method in HDFSReader class
     jobject byteArray = env_->CallObjectMethod(readerObj_, getBytesMethod_, (jint)num_bytes);
@@ -219,23 +239,31 @@ int GM_Reader::readBytes(char* buf, size_t num_bytes) {
     env_->ReleaseByteArrayElements((jbyteArray) byteArray, bytes, JNI_ABORT); // no changes to copy back
     return bytes_read;
 #else
+    return 0;
+#endif
+} else {
     fs_.read(buf, num_bytes);
     return fs_.gcount();
-#endif
+}
 }
 
 int GM_Reader::seekCurrent(long int pos) {
+if (hdfs_) {
 #ifdef HDFS
     // Call seekCurrent method in HDFSReader class
     return env_->CallIntMethod(readerObj_, seekCurrentMethod_, (jlong)pos);
 #else
+    return 0;
+#endif
+} else {
     fs_.seekg(pos, std::ios::cur);    
     return 0; // TODO: error check?
-#endif
+}
 }
 
 
 void GM_Reader::terminate() {
+if (hdfs_) {
 #ifdef HDFS
     // Get the methodID of terminate in HDFSReader class
     jmethodID terminateMethod = env_->GetMethodID(cls_, "terminate", "()V");
@@ -248,8 +276,11 @@ void GM_Reader::terminate() {
     // Call the terminate method in HDFSReader class
     env_->CallVoidMethod(readerObj_, terminateMethod);
 #else
-    fs_.close();
+    return ;
 #endif
+} else {
+    fs_.close();
+}
 }
 
 /***********************************************************
@@ -260,9 +291,13 @@ GM_Writer::GM_Writer (const char *filename, bool hdfs) {
     filename_ = filename;
     hdfs_ = hdfs;
     initialize();
+#ifndef HDFS
+    assert(hdfs_ == false);
+#endif
 }
 
 void GM_Writer::initialize () {
+if (hdfs_) {
 #ifdef HDFS
     // Initialize for writing a file to HDFS
     // Get the JNI environment from the GM_JNI_Handler
@@ -324,14 +359,17 @@ void GM_Writer::initialize () {
     }
     failed_ = false;
 #else
+    failed_ = true;
+#endif // HDFS
+} else {
    // Initialize for writing a file to NFS
-   outstream_.open(filename_);
+   outstreamfs_.open(filename_);
    failed_ = false;
-   if (outstream_.fail()) {
+   if (outstreamfs_.fail()) {
        fprintf (stderr, "Cannot open %s for writing\n", filename_);
        failed_ = true;
    }
-#endif  // HDFS
+}
 }
 
 bool GM_Writer::failed() {
@@ -339,6 +377,7 @@ bool GM_Writer::failed() {
 }
 
 void GM_Writer::terminate() {
+if (hdfs_) {
 #ifdef HDFS
     flush();
     // Get the methodID of terminate in HDFSWriter class
@@ -348,54 +387,74 @@ void GM_Writer::terminate() {
         failed_ = true;
         return;
     }
-
     // Call the terminate method in HDFSWriter class
     env_->CallVoidMethod(writerObj_, terminateMethod);
-#else
-    outstream_.close();
+#else 
+    return;
 #endif
+} else {
+    outstreamfs_.close();
+}
 }
 
+#ifdef HDFS 
+#define WRITE_STREAM(val) if (hdfs_) {outstream_ << val;} else { outstreamfs_ << val;}
+#else
+#define WRITE_STREAM(val) if (hdfs_) {} else { outstreamfs_ << val;}
+#endif
+
 void GM_Writer::write (bool val) {
+if (hdfs_) {
+#ifdef HDFS
     outstream_ << std::boolalpha << val;
+#endif
+} else {
+    outstreamfs_ << std::boolalpha << val;
+}
 }
 
 void GM_Writer::write (int val) {
-    outstream_ << val;
+    WRITE_STREAM(val);
 }
 
 void GM_Writer::write (long val) {
-    outstream_ << val;
+    WRITE_STREAM(val);
 }
 
 void GM_Writer::write (float val) {
-    outstream_ << val;
+    WRITE_STREAM(val);
 }
 
 void GM_Writer::write (double val) {
-    outstream_ << val;
+    WRITE_STREAM(val);
 }
 
 void GM_Writer::write (const char *val) {
-    outstream_ << val;
+    WRITE_STREAM(val);
 }
 
 void GM_Writer::write (std::string &val) {
-    outstream_ << val;
+    WRITE_STREAM(val);
 }
 
 void GM_Writer::writeBytes(char* buf, size_t num_bytes) {
+if (hdfs_) {
 #ifdef HDFS
     jobject byteArray = env_->NewByteArray((jsize)num_bytes);
     env_->SetByteArrayRegion((jbyteArray)byteArray, 0, num_bytes, (jbyte*)buf);
     env_->CallVoidMethod(writerObj_, writeBytesMethod_, byteArray);
 #else
-  outstream_.write(buf, num_bytes);
+    return;
 #endif
+}
+else {
+  outstream_.write(buf, num_bytes);
+}
 }
 
 
 void GM_Writer::flush () {
+if (hdfs_) {
 #ifdef HDFS
     if (outstream_.str() == "") {
 	env_->CallVoidMethod(writerObj_, flushMethod_, "");
@@ -409,6 +468,8 @@ void GM_Writer::flush () {
 	outstream_.clear();
     }
 #else
-    outstream_.flush();
 #endif
+} else {
+    outstream_.flush();
+} 
 }
