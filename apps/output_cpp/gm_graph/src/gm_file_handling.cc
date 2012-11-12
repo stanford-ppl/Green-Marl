@@ -116,7 +116,7 @@ if (hdfs_) {
     }
 
     // Create a new object of HDFSReader class, and also invoke its constructor
-    readerObj_ = env_->NewObject(cls_, readerConstructor, env_->NewStringUTF(filename_));
+    readerObj_ = env_->NewObject(cls_, readerConstructor, env_->NewStringUTF(filename_.c_str()));
     if (readerObj_ == 0) {
         fprintf (stderr, "JNI Error: Cannot create new object of Reader class\n");
         failed_ = true;
@@ -155,10 +155,10 @@ if (hdfs_) {
 //#else
 else {
     // Initialize for reading a file from NFS
-    fs_.open(filename_);
+    fs_.open(filename_.c_str());
     failed_ = false;
     if (fs_.fail()) {
-        fprintf (stderr, "Cannot open %s for reading\n", filename_);
+        fprintf (stderr, "Cannot open %s for reading\n", filename_.c_str());
         failed_ = true;
     }
 }
@@ -189,7 +189,7 @@ else {
     fs_.clear();
     fs_.seekg(0, std::ios::beg);
     if (fs_.fail()) {
-        fprintf (stderr, "Error moving file pointer to the beginning of file %s\n", filename_);
+        fprintf (stderr, "Error moving file pointer to the beginning of file %s\n", filename_.c_str());
     }
 }
 }
@@ -327,7 +327,7 @@ if (hdfs_) {
     }
 
     // Create a new object of HDFSWriter class, and also invoke its constructor
-    writerObj_ = env_->NewObject(cls_, writerConstructor, env_->NewStringUTF(filename_));
+    writerObj_ = env_->NewObject(cls_, writerConstructor, env_->NewStringUTF(filename_.c_str()));
     if (writerObj_ == 0) {
         fprintf (stderr, "JNI Error: Cannot create new object of HDFSWriter class\n");
         failed_ = true;
@@ -363,10 +363,10 @@ if (hdfs_) {
 #endif // HDFS
 } else {
    // Initialize for writing a file to NFS
-   outstreamfs_.open(filename_);
+   outstreamfs_.open(filename_.c_str());
    failed_ = false;
    if (outstreamfs_.fail()) {
-       fprintf (stderr, "Cannot open %s for writing\n", filename_);
+       fprintf (stderr, "Cannot open %s for writing\n", filename_.c_str());
        failed_ = true;
    }
 }

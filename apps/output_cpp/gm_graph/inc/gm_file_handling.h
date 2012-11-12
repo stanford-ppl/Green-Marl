@@ -46,7 +46,8 @@ class GM_Reader {
     void terminate();
 
   private:
-    const char *filename_;
+    //const char *filename_;
+    std::string filename_;
     bool hdfs_;
     bool failed_;
 #ifdef HDFS
@@ -80,7 +81,8 @@ public:
     void flush ();
 
   private:
-    const char *filename_;
+    //const char *filename_;
+    std::string filename_;
     bool hdfs_;
     bool failed_;
 #ifdef HDFS
