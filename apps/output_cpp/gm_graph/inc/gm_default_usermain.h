@@ -20,9 +20,8 @@ enum GM_SCHEMA_TYPE {
 enum GM_FILE_FORMAT {
     GM_BINARY,
     GM_ADJ_LIST,
-    GM_ADJ_LIST_NP,
-    GM_EDGE_LIST,
     GM_ADJ_LIST_AVRO,
+    GM_EDGE_LIST,
 };
 
 struct gm_schema {
@@ -76,6 +75,8 @@ private:
     const char* input_filetype;
     GM_FILE_FORMAT in_format; 
     GM_FILE_FORMAT out_format; 
+    bool create_output_graph;
+    bool create_output_text;
 
     void create_property_in_out_schema();
     void create_and_register_property_arrays();
@@ -88,6 +89,10 @@ private:
     std::vector<void *> vprop_out_array;
     std::vector<void *> eprop_out_array;
 
+    // only for avro reader-writer
+    std::vector<std::string> vprop_out_names; // input parameter
+    std::vector<std::string> eprop_out_names; // input parameter
+
     union  {
         int32_t i;
         int64_t l;
@@ -97,7 +102,9 @@ private:
         node_t n;
         edge_t e;
     } ret_val;
-    void set_path();
+    //void set_path();
+
+    bool determine_formats();
 
     char input_path[1024*64];
     char output_path[1024*64];

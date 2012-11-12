@@ -4,31 +4,37 @@
 #include "gm_default_usermain.h"
 #include "gm_graph.h"
 #include "gm_useropt.h"
+#include "gm_util.h"
 
-#define OPT_MEASURETIME     "GMTimeMeasure"
-#define OPT_DUMMYPROP       "GMUseDummyProp"
+#define OPT_MEASURETIME     "GMMeasureTime"
+#define OPT_DUMMYPROP       "GMDummyProperty"
 #define OPT_DUMPGRAPH       "GMDumpOutput"
-#define OPT_OUTDIR          "GMOutputDir"
-#define OPT_OUTNAME         "GMOutputName"
-#define OPT_OUTTYPE         "GMOutputType"
-#define OPT_INDIR           "GMInputDir"
-#define OPT_INTYPE          "GMInputType"
+#define OPT_OUTTYPE         "GMOutType"
+#define OPT_INTYPE          "GMInType"
 #define OPT_NUMTHREAD       "GMNumThreads"
+
+//#define OPT_OUTDIR          "GMOutputDir"
+//#define OPT_INDIR           "GMInputDir"
 
 gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
-   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_BOOL, "1",   "To store the graph nor the output properties");
-   OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0",   "To assume that there is at least one node & edge property in ADJ format. Insert one if not.");
+   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[Never creates an output file], 1:[Always create output as graph format], 2:[Omit edges in output if edge properties are not modified.; create nothing if no properties are modified.]");
+   OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
    //OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "1 -- Measure running time");
-   OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  "./",  "Output directory ");
-   OPTIONS.add_option(OPT_OUTNAME,    GMTYPE_END,  "output.adj",  "Output filename ");
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  "ADJ", "Output format -- ADJ: adjacency list, ADJ_NP: adj-list node property only");
-   OPTIONS.add_option(OPT_INDIR,      GMTYPE_END,  "./",  "Input directory ");
-   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  "ADJ", "Input format -- ADJ: adjacency list");
+   //OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  NULL,  "Output directory ");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
+   //,ADJ_NP: adj-list node property only");
+   //OPTIONS.add_option(OPT_INDIR,      GMTYPE_END,  NULL,  "Input directory ");
+   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
-   OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input graph filename");
+   OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input filename");
+   OPTIONS.add_argument("OutputName",  GMTYPE_END,  "Output filename");
    in_format = GM_ADJ_LIST;
    out_format = GM_ADJ_LIST;
+   sprintf(input_path,"%s","");
+   sprintf(output_path,"%s","");
+   create_output_graph = false;
+   create_output_text = false;
 }
 
 void gm_default_usermain::declare_return(VALUE_TYPE t) {
@@ -114,10 +120,11 @@ void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool 
     property_schema.push_back(schema);
 }
 
+/*
 void gm_default_usermain::set_path()
 {
-    const char* out_dir = OPTIONS.get_option(OPT_OUTDIR);
-    const char* in_dir = OPTIONS.get_option(OPT_INDIR);
+    const char* out_dir = OPTIONS.is_option_defined(OPT_OUTDIR) ? OPTIONS.get_option(OPT_OUTDIR) : "";
+    const char* in_dir = OPTIONS.is_option_defined(OPT_INDIR) ? OPTIONS.get_option(OPT_INDIR) : "";
     int ol = strlen(out_dir);
     int il = strlen(in_dir);
 
@@ -125,32 +132,33 @@ void gm_default_usermain::set_path()
         if (in_dir[il] != '/') sprintf(input_path, "%s/",in_dir);
         else sprintf(input_path, "%s",in_dir);
     } else {
-        sprintf(input_path, "%s","./");
+        sprintf(input_path, "%s","");
     }
 
     if (ol > 0) {
         if (out_dir[ol] != '/') sprintf(output_path, "%s/",out_dir);
         else sprintf(output_path, "%s",out_dir);
     } else {
-        sprintf(output_path, "%s","./");
+        sprintf(output_path, "%s","");
     }
 }
+*/
 
 static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
 {
-    if (!strcmp(str, "ADJ")) {
+    if (!strcmp(str, "ADJ") || !strcmp(str,"adj")) {
         format = GM_ADJ_LIST;
         return true;
     }
-    if (!strcmp(str, "ADJ_NP")) {
-        format = GM_ADJ_LIST_NP;
-        return true;
-    }
-    if (!strcmp(str, "ADJ_AVRO")) {
+    if (!strcmp(str, "ADJ_AVRO") || !strcmp(str,"adj_avro")) {
         format = GM_ADJ_LIST_AVRO;
         return true;
     }
-    if (!strcmp(str, "BIN")) {
+    if (!strcmp(str, "AVRO") || !strcmp(str,"avro")) {
+        format = GM_ADJ_LIST_AVRO;
+        return true;
+    }
+    if (!strcmp(str, "BIN") || !strcmp(str,"bin")) {
         format = GM_BINARY;
         return true;
     }
@@ -158,11 +166,68 @@ static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
     return false;
 }
 
+static bool guess_file_format_from_extension(const char* fname, GM_FILE_FORMAT& fmt)
+{
+    std::string path(fname);
+
+    size_t dot = path.find_last_of(".");
+    if (dot != path.npos)
+    {
+        std::string name = path.substr(0, dot);
+        std::string ext  = path.substr(dot, path.size() - dot);
+
+        if (ext == ".adj") {fmt = GM_ADJ_LIST; return true;}
+        else if (ext == ".avro") {fmt = GM_ADJ_LIST_AVRO; return true;}
+        else if (ext == ".bin")  {fmt = GM_BINARY; return true;}
+    }
+
+    return false; // donno
+}
+
+bool gm_default_usermain::determine_formats()
+{
+    const char* format="";
+    
+    if (OPTIONS.is_option_defined(OPT_INTYPE))
+    {
+        format = OPTIONS.get_option(OPT_INTYPE);  
+        if (parse_format_string(format, this->in_format) == false) {
+            printf("Error:Unknown input format:%s\n", format);
+            return false;
+        }
+    }
+    if (guess_file_format_from_extension(
+            OPTIONS.get_arg(0), this->in_format) == false) {
+        printf("Warning: assuming input is ADJ list\n");
+    }
+    if ((in_format != GM_ADJ_LIST) && (in_format != GM_ADJ_LIST_AVRO)) {
+        printf("Error:output format not supported.\n");
+        return false;
+    }
+
+    if (create_output_graph) {
+        if (OPTIONS.is_option_defined(OPT_OUTTYPE)) {
+            format = OPTIONS.get_option(OPT_OUTTYPE);  
+            if (parse_format_string(format, this->out_format) == false) {
+                printf("Error:Unknown output format:%s\n", format);
+                return false;
+            }
+        }
+        if (guess_file_format_from_extension(
+                OPTIONS.get_arg(1), this->out_format) == false) {
+            printf("Warning: assuming output is ADJ list\n");
+        }
+        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO)) {
+            printf("Error:output format not supported.\n");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool gm_default_usermain::process_arguments(int argc, char** argv)
 {
-    const char* format;
-    char buffer1[4096];
-    char buffer2[4096];
     OPTIONS.set_execname(argv[0]);
     if (!OPTIONS.parse_command_args(argc, argv))
         goto err_return;
@@ -170,17 +235,59 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
     if (OPTIONS.is_option_defined("?"))
         goto err_return;
 
+    create_property_in_out_schema();
+
+    if (OPTIONS.get_option_int(OPT_DUMPGRAPH) == 2) 
+    {
+        // should create a graph format
+        create_output_graph = true;
+    }
+    else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) == 1)
+    {
+        if (eprop_out_schema.size() > 0) 
+            create_output_graph = true;
+        else if (vprop_out_schema.size() > 0 )
+        {
+            assert(false); // TODO
+            create_output_text = true;
+        }
+    }
+    else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) != 0)
+    {
+        printf("Undfined option for %s\n", OPT_DUMPGRAPH);
+    }
+
+    if (!create_output_graph && !create_output_text)
+    {
+        OPTIONS.remove_last_argument();
+    }
+
+    if (OPTIONS.get_num_args_defined() <  OPTIONS.get_num_args_declared()) 
+    {
+        printf("Error: need more arguements\n");
+        goto err_return;
+    }
+
+    if (!determine_formats())
+    {
+        printf("Error in determining formats\n");
+        return false;
+    }
+
     // check input graph file format
+    /*
     format = OPTIONS.get_option(OPT_INTYPE);  
     if (parse_format_string(format, this->in_format) == false) {
         printf("Error:Unknown input format:%s\n", format);
         goto err_return;
     }
-    else if (in_format != GM_ADJ_LIST) {
+    else if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO)) {
         printf("Error:input Format not supported: %s\n", format);
         goto err_return;
     }
-
+    */
+    
+    /*
     if (in_format == GM_BINARY) 
     {
         for(size_t i=0;i<property_schema.size(); i++) 
@@ -197,26 +304,24 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
             }
         }
     }
+    */
 
-    if (OPTIONS.get_num_args_defined() <  OPTIONS.get_num_args_declared()) 
-    {
-        printf("Error: need more arguements\n");
-        goto err_return;
-    }
 
     // dump graph or properties
+    /*
     if (OPTIONS.get_option_bool(OPT_DUMPGRAPH))
     {
-        format = OPTIONS.get_option(OPT_INTYPE);  
+        format = OPTIONS.get_option(OPT_OUTTYPE);  
         if (parse_format_string(format, this->out_format) == false) {
             printf("Error:Unknown output format:%s\n", format);
             goto err_return;
         }
-        else if (out_format != GM_ADJ_LIST) {
+        else if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO)) {
             printf("Error:output format not supported: %s\n", format);
             goto err_return;
         }
     }
+    */
 
     // check if every scalar variables are declared
     for(size_t i=0; i < scalar_schema.size(); i++)
@@ -230,7 +335,7 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         }
     }
 
-    set_path();
+    //set_path();
 
 
     return true;
@@ -239,6 +344,46 @@ err_return:
     OPTIONS.print_help();
     return false;
 }
+static bool check_schema_consistency(
+        std::vector<VALUE_TYPE>& vprop_avro_schema,
+        std::vector<std::string>& vprop_avro_names,
+        std::vector<VALUE_TYPE>& vprop_in_schema,
+        std::vector<VALUE_TYPE>& eprop_avro_schema,
+        std::vector<std::string>& eprop_avro_names,
+        std::vector<VALUE_TYPE>& eprop_in_schema
+        )
+{
+    if (vprop_avro_schema.size() != vprop_in_schema.size()) {
+        printf("Expected number of node props : %d, read: %d\n", (int)vprop_in_schema.size(), (int)vprop_avro_schema.size());
+        return false;
+    }
+    if (eprop_avro_schema.size() != eprop_in_schema.size()) {
+        printf("Expected number of edge props : %d, read: %d\n", (int)eprop_in_schema.size(), (int)eprop_avro_schema.size());
+        return false;
+    }
+
+    for(size_t i=0;i<vprop_avro_schema.size();i++) {
+        if (vprop_avro_schema[i] != vprop_in_schema[i]) {
+            printf("Schema type mismatch for %s, expected type: %s, read: %s\n",
+                    vprop_avro_names[i].c_str(), 
+                    gmutil_getTypeString(vprop_in_schema[i]),
+                    gmutil_getTypeString(vprop_avro_schema[i]));
+            return false;
+        }
+    }
+    for(size_t i=0;i<eprop_avro_schema.size();i++) {
+        if (eprop_avro_schema[i] != eprop_in_schema[i]) {
+            printf("Schema type mismatch for %s, expected type: %s, read: %s\n",
+                    eprop_avro_names[i].c_str(), 
+                    gmutil_getTypeString(eprop_in_schema[i]),
+                    gmutil_getTypeString(eprop_avro_schema[i]));
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 bool gm_default_usermain::do_preprocess()
 {
@@ -258,7 +403,6 @@ bool gm_default_usermain::do_preprocess()
         load_scalar_variable_from_option(OPTIONS, S.name, S.type, scalar_var);
     }
 
-    create_property_in_out_schema();
 
     char fullpath_name[1024*64];
 
@@ -281,13 +425,54 @@ bool gm_default_usermain::do_preprocess()
 
     if (get_input_format() == GM_ADJ_LIST) 
     {
-        GRAPH.load_adjacency_list(fullpath_name,
+        bool okay = GRAPH.load_adjacency_list(fullpath_name,
                 vprop_in_schema,
                 eprop_in_schema,
                 vprop_in_array,
                 eprop_in_array,
                 " \t",
                 false);
+
+        if (!okay) {
+            printf("Error: cannot open file\n");
+            return false;
+        }
+    }
+    else if (get_input_format() == GM_ADJ_LIST_AVRO)
+    {
+        std::vector<VALUE_TYPE> vprop_avro_schema;
+        std::vector<VALUE_TYPE> eprop_avro_schema;
+        std::vector<std::string> vprop_avro_names;
+        std::vector<std::string> eprop_avro_names;
+
+        bool okay = GRAPH.load_adjacency_list_avro(fullpath_name,
+                vprop_avro_schema,
+                eprop_avro_schema,
+                vprop_avro_names,
+                eprop_avro_names,
+                vprop_in_array,
+                eprop_in_array,
+                false);
+
+        if (!okay) {
+            printf("Error: cannot open file\n");
+            return false;
+        }
+
+        okay = check_schema_consistency(
+                vprop_avro_schema,
+                vprop_avro_names,
+                vprop_in_schema,
+                eprop_avro_schema,
+                eprop_avro_names,
+                eprop_in_schema);
+
+        if (!okay) {
+            printf("Error: avro schema mismatch\n");
+            return false;
+        }
+
+
     }
     else 
     {
@@ -306,7 +491,9 @@ void gm_default_usermain::create_property_in_out_schema()
     for(size_t i=0; i < property_schema.size(); i++)
     {
         gm_schema S = property_schema[i];
-        //void* scalar_var = create_scalar_variable(S.type);
+        //printf("name = %s, type = %s\n", S.name,
+        //        gmutil_getTypeString(S.type));
+
         if (S.is_input) {
             if (S.schema_type == GM_NODEPROP) {
                 vprop_in_schema.push_back(S.type);
@@ -314,7 +501,7 @@ void gm_default_usermain::create_property_in_out_schema()
                 eprop_in_schema.push_back(S.type);
             }
         }
-        else {
+        if (S.is_output) {
             if (S.schema_type == GM_NODEPROP) {
                 vprop_out_schema.push_back(S.type);
             } else {
@@ -342,13 +529,28 @@ void gm_default_usermain::create_and_register_property_arrays()
                 properties[S.name] = array;
             }
         }
-        else {
+        if (S.is_output) {
+            void* array;
             if (S.schema_type == GM_NODEPROP) {
-                void* array = create_array_variable(S.type, GRAPH.num_nodes());
-                properties[S.name] = array;
+                if (S.is_input) 
+                    array = properties[S.name];
+                else {
+                    array = create_array_variable(S.type, GRAPH.num_nodes());
+                    properties[S.name] = array;
+                }
+                vprop_out_array.push_back(array);
+                std::string N(S.name);
+                vprop_out_names.push_back(N);
             } else {
-                void* array = create_array_variable(S.type, GRAPH.num_edges());
-                properties[S.name] = array;
+                if (S.is_input) 
+                    array = properties[S.name];
+                else {
+                    array = create_array_variable(S.type, GRAPH.num_edges());
+                    properties[S.name] = array;
+                }
+                eprop_out_array.push_back(array);
+                std::string N(S.name);
+                eprop_out_names.push_back(N);
             }
         }
     }
@@ -388,27 +590,39 @@ bool gm_default_usermain::do_postprocess()
     
     // dump graph or properties
     char fullpath_name[1024*64];
-    sprintf(fullpath_name,"%s%s",output_path, OPTIONS.get_option(OPT_OUTNAME));
+    sprintf(fullpath_name,"%s%s",output_path, OPTIONS.get_arg(1));
 
     if (OPTIONS.get_option_bool(OPT_DUMPGRAPH))
     {
+        bool okay = true;
         // dump output graph
         if (get_output_format() == GM_ADJ_LIST) 
         {
-            bool b = GRAPH.store_adjacency_list(fullpath_name,
-                vprop_in_schema,
-                eprop_in_schema,
-                vprop_in_array,
-                eprop_in_array,
+           okay = GRAPH.store_adjacency_list(fullpath_name,
+                vprop_out_schema,
+                eprop_out_schema,
+                vprop_out_array,
+                eprop_out_array,
                 "\t",
                 false);
-            if (!b) {
-                printf("Error in storing graph\n");
-                return false;
-            }
+        }
+        else if (get_output_format() == GM_ADJ_LIST_AVRO) 
+        {
+           okay = GRAPH.store_adjacency_list_avro(fullpath_name,
+                vprop_out_schema,
+                eprop_out_schema,
+                vprop_out_names,
+                eprop_out_names,
+                vprop_out_array,
+                eprop_out_array,
+                false);
         }
         else {
             printf("Unknown graph format\n");
+            return false;
+        }
+        if (!okay) {
+            printf("Error in storing graph\n");
             return false;
         }
     }

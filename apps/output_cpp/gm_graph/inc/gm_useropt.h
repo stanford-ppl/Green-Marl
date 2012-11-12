@@ -25,6 +25,7 @@ public:
 
     void add_option(const char* opt_name, VALUE_TYPE t, const char* def_value, const char* description);
     void add_argument(const char* arg_name,  VALUE_TYPE t, const char* description);
+    void remove_last_argument();
     void print_help();
 
     bool    is_option_declared(const char* option) {return option_type.find(option)!=option_type.end(); }

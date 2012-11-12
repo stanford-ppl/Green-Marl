@@ -19,6 +19,13 @@ void gm_useropt::add_argument(const char* arg_name, VALUE_TYPE t, const char* de
     arg_descs.push_back(description);
     arg_types.push_back(t);
 }
+void gm_useropt::remove_last_argument()
+{
+    assert(arg_names.size() > 0);
+    arg_names.pop_back();
+    arg_types.pop_back();
+    arg_descs.pop_back();
+}
 
 static const char* get_type_string(VALUE_TYPE t) {
     switch(t) {

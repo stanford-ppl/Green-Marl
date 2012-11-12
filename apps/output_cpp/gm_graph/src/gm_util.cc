@@ -217,6 +217,18 @@ void loadValueBasedOnType(void *arr, long pos, std::string val, VALUE_TYPE vt) {
     }
 }
 
+const char* gmutil_getTypeString(VALUE_TYPE v)
+{
+    return
+                (v == GMTYPE_BOOL) ? "bool" :
+                (v == GMTYPE_INT) ? "int" :
+                (v == GMTYPE_LONG) ? "long" :
+                (v == GMTYPE_FLOAT) ? "float" :
+                (v == GMTYPE_DOUBLE) ? "double" :
+                (v == GMTYPE_EDGE) ? "edge" :
+                (v == GMTYPE_NODE) ? "node" : "??";
+}
+        //void* scalar_var = create_scalar_variable(S.type);
 /*
  * Method to read a value from the given location in an array based on the given value type
  * and store it in the file
