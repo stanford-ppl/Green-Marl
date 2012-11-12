@@ -55,10 +55,10 @@ $(BUILD_DIRS):
 ifeq ($(SUPPORT_HDFS),1)
 $(JBIN)/%.class: %.java
 	$(JC) $(JFLAGS) -d $(JBIN) $<
-$(OBJ)/%.o: %.cc $(JAVACLASSES)
+$(OBJ)/%.o: %.cc $(JAVACLASSES)	../../../setup.mk
 	$(CC) $(CFLAGS) -c $< -o $@
 else
-$(OBJ)/%.o: %.cc
+$(OBJ)/%.o: %.cc ../../../setup.mk
 	$(CC) $(CFLAGS) -c $< -o $@
 endif
 

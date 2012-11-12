@@ -1,6 +1,7 @@
 #include "gm_file_handling.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <map>
 #ifdef HDFS
 #include <hdfs.h>
@@ -448,7 +449,7 @@ if (hdfs_) {
 #endif
 }
 else {
-  outstream_.write(buf, num_bytes);
+  outstreamfs_.write(buf, num_bytes);
 }
 }
 
@@ -470,6 +471,6 @@ if (hdfs_) {
 #else
 #endif
 } else {
-    outstream_.flush();
+    outstreamfs_.flush();
 } 
 }

@@ -12,6 +12,7 @@
 #define OPT_OUTTYPE         "GMOutType"
 #define OPT_INTYPE          "GMInType"
 #define OPT_NUMTHREAD       "GMNumThreads"
+#define OPT_USEHDFS         "GMHDFS"
 
 //#define OPT_OUTDIR          "GMOutputDir"
 //#define OPT_INDIR           "GMInputDir"
@@ -27,6 +28,9 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
    //OPTIONS.add_option(OPT_INDIR,      GMTYPE_END,  NULL,  "Input directory ");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
+#ifdef HDFS
+   OPTIONS.add_option(OPT_USEHDFS, GMTYPE_BOOL, "0", "Use HDFS instead of local file system");
+#endif
    OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input filename");
    OPTIONS.add_argument("OutputName",  GMTYPE_END,  "Output filename");
    in_format = GM_ADJ_LIST;
@@ -274,19 +278,6 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         return false;
     }
 
-    // check input graph file format
-    /*
-    format = OPTIONS.get_option(OPT_INTYPE);  
-    if (parse_format_string(format, this->in_format) == false) {
-        printf("Error:Unknown input format:%s\n", format);
-        goto err_return;
-    }
-    else if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO)) {
-        printf("Error:input Format not supported: %s\n", format);
-        goto err_return;
-    }
-    */
-    
     /*
     if (in_format == GM_BINARY) 
     {
@@ -307,22 +298,6 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
     */
 
 
-    // dump graph or properties
-    /*
-    if (OPTIONS.get_option_bool(OPT_DUMPGRAPH))
-    {
-        format = OPTIONS.get_option(OPT_OUTTYPE);  
-        if (parse_format_string(format, this->out_format) == false) {
-            printf("Error:Unknown output format:%s\n", format);
-            goto err_return;
-        }
-        else if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO)) {
-            printf("Error:output format not supported: %s\n", format);
-            goto err_return;
-        }
-    }
-    */
-
     // check if every scalar variables are declared
     for(size_t i=0; i < scalar_schema.size(); i++)
     {
@@ -334,9 +309,6 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
             }
         }
     }
-
-    //set_path();
-
 
     return true;
 
@@ -427,6 +399,12 @@ bool gm_default_usermain::do_preprocess()
         gettimeofday(&TV1, NULL);
     }
 
+    bool use_hdfs = false;
+
+#ifdef HDFS
+    use_hdfs = OPTIONS.get_option_bool(OPT_USEHDFS) ;
+#endif
+
     if (get_input_format() == GM_ADJ_LIST) 
     {
         bool okay = GRAPH.load_adjacency_list(fullpath_name,
@@ -435,7 +413,7 @@ bool gm_default_usermain::do_preprocess()
                 vprop_in_array,
                 eprop_in_array,
                 " \t",
-                false);
+                use_hdfs);
 
         if (!okay) {
             printf("Error: cannot open file\n");
@@ -456,7 +434,7 @@ bool gm_default_usermain::do_preprocess()
                 eprop_avro_names,
                 vprop_in_array,
                 eprop_in_array,
-                false);
+                use_hdfs);
 
         if (!okay) {
             printf("Error: cannot open file\n");
