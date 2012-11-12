@@ -34,7 +34,7 @@ GM_JNI_Handler::GM_JNI_Handler() {
     gm_read_setup_file(S, true);
 
     char buffer[1024*64];
-    const char* GMTop         = getenv("GM_TOP") == NULL ? "" : getenv("HADOOP_HOME");
+    const char* GMTop         = getenv("GM_TOP") == NULL ? "" : getenv("GM_TOP");
     const char* HadoopHome    = getenv("HADOOP_HOME") == NULL ? "" : getenv("HADOOP_HOME");
     const char* HadoopCoreJar = getenv("HADOOP_CORE_JAR") == NULL ? "" : getenv("HADOOP_CORE_JAR");
     const char* LoggingJar = "commons-logging-1.0.4.jar";
@@ -45,6 +45,7 @@ GM_JNI_Handler::GM_JNI_Handler() {
             HadoopHome, LoggingJar,
             HadoopHome, GuavaJar, 
             GMTop);
+    printf("buffer = %s\n", buffer);
     // Initialize parameters for creating a JavaVM
     //opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
     opts_[0].optionString = buffer;
