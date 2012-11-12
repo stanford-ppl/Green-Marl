@@ -138,7 +138,6 @@ bool gm_read_setup_file(std::map<std::string, std::string>& setup, bool export_e
         // ptr points to the next charactor after '\0' of key
         char last_char = find_end_of_key(ptr); 
         std::string Key(key_begin);
-        printf("key found = %s\n", key_begin); fflush(stdout);
 
         // if env-val is set for this key, use env-val.
         char* env_val = getenv(key_begin);
@@ -178,7 +177,6 @@ bool gm_read_setup_file(std::map<std::string, std::string>& setup, bool export_e
             setup[Key] = Val;
             if (export_env) {
                 setenv(key_begin, buffer2, 0); // donot override existing environmetal vairable
-                printf("seting env %s = %s\n", key_begin, buffer2);
             }
         } 
 
@@ -189,7 +187,6 @@ bool gm_read_setup_file(std::map<std::string, std::string>& setup, bool export_e
             setup[Key] = Val;
             if (export_env) {
                 setenv(key_begin, "", 0); // donot override existing environmetal vairable
-                printf("seting env %s = ""\n", key_begin,"");
             }
             continue;
     }

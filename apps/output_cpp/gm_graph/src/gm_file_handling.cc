@@ -40,7 +40,7 @@ GM_JNI_Handler::GM_JNI_Handler() {
     const char* LoggingJar = "commons-logging-1.0.4.jar";
     const char* GuavaJar = "guava-r09-jarjara.jar";
 
-    sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javabin/", 
+    sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javabin/ -XX:+UseOSErrorReporting", 
             HadoopHome, HadoopCoreJar,
             HadoopHome, LoggingJar,
             HadoopHome, GuavaJar, 

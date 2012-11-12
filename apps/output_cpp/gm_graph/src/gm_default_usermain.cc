@@ -7,6 +7,7 @@
 #include "gm_util.h"
 
 #define OPT_MEASURETIME     "GMMeasureTime"
+#define OPT_ALLPROP         "GMIOAllProps"
 #define OPT_DUMMYPROP       "GMDummyProperty"
 #define OPT_DUMPGRAPH       "GMDumpOutput"
 #define OPT_OUTTYPE         "GMOutType"
@@ -21,7 +22,7 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
    OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[Never creates an output file], 1:[Always create output as graph format], 2:[Omit edges in output if edge properties are not modified.; create nothing if no properties are modified.]");
    OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
-   OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "1 -- Measure running time");
+   OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "Measure running time");
    //OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  NULL,  "Output directory ");
    OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
    //,ADJ_NP: adj-list node property only");
@@ -31,6 +32,7 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 #ifdef HDFS
    OPTIONS.add_option(OPT_USEHDFS, GMTYPE_BOOL, "0", "Use HDFS instead of local file system");
 #endif
+   OPTIONS.add_option(OPT_ALLPROP, GMTYPE_BOOL, "0", "-- 1:[Load and store every node/edge property], 0:[Load node/edge properties that are read before written, Store node/edge properties that are only modifired]");
    OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input filename");
    OPTIONS.add_argument("OutputName",  GMTYPE_END,  "Output filename");
    in_format = GM_ADJ_LIST;
@@ -113,6 +115,10 @@ void gm_default_usermain::declare_scalar(const char* name, VALUE_TYPE t, bool is
 void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool is_input, bool is_output, GM_SCHEMA_TYPE i)
 {
     assert((i==GM_NODEPROP) || (i==GM_EDGEPROP));
+
+    if (OPTIONS.get_option_bool(OPT_ALLPROP)) {
+        is_input = is_output = true;
+    }
 
     gm_schema schema; 
     schema.name = name;

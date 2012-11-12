@@ -6,6 +6,7 @@
 #include "gm_transform_helper.h"
 #include "gm_builtin.h"
 #include "gm_cpplib_words.h"
+#include "gm_argopts.h"
 
 void gm_cpp_gen::setTargetDir(const char* d) {
     assert(d != NULL);
@@ -43,6 +44,15 @@ bool gm_cpp_gen::open_output_files() {
     Body.set_output_file(f_body);
 
     get_lib()->set_code_writer(&Body);
+
+    if (OPTIONS.get_arg_bool(GMARGFLAG_CPP_CREATE_MAIN)) {
+        sprintf(temp, "%s/%s_compile.mk", dname, fname);
+        f_shell = fopen(temp,"w");
+        if (f_shell == NULL) {
+            gm_backend_error(GM_ERROR_FILEWRITE_ERROR, temp);
+            return false;
+        }
+    }
     return true;
 }
 
@@ -56,6 +66,11 @@ void gm_cpp_gen::close_output_files() {
         Body.flush();
         fclose(f_body);
         f_body = NULL;
+    }
+
+    if (f_shell != NULL) {
+        fclose(f_shell);
+        f_shell = NULL;
     }
 }
 
