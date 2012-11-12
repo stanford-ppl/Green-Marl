@@ -77,15 +77,20 @@ ifeq (${SUPPORT_HDFS},1)
 #    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/jre/lib/amd64/server
 
 # Change this path to point to the location of libhdfs.so
-CFLAGS += -L$(LIBHDFS_DIR)
+LFLAGS += "-Wl,-rpath,$(LIBHDFS_DIR)"
+LFLAGS += -L$(LIBHDFS_DIR)
+LFLAGS += -lhdfs
 # Change this path to point to the location of libjvm.so
-CFLAGS += -L$(LIBJVM_DIR)
+LFLAGS += "-Wl,-rpath,$(LIBJVM_DIR)"
+LFLAGS += -L$(LIBJVM_DIR)
+LFLAGS += -ljvm
+
 # Change this path to point to the location of jni.h and jni_md.h
 CFLAGS += -I$(INCJNI_DIR) -I$(INCJNIMD_DIR)
 # Change this path to point to the location of hdfs.h
 CFLAGS += -I$(INCHDFS_DIR)
 
-CFLAGS += -lhdfs -ljvm -DHDFS
+CFLAGS += -DHDFS
 
 #JFLAGS = -classpath $(HADOOP_HOME)/$(HADOOP_CORE_JAR)
 JFLAGS = -classpath  $(HADOOP_CORE_DIR)/$(HADOOP_CORE_JAR)

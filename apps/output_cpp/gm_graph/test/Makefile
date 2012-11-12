@@ -2,7 +2,7 @@ CC = g++
 INC=../inc/
 LIB=../lib
 
-CFLAGS = -I$(INC) -g -fopenmp
+CFLAGS = -I$(INC) -g -fopenmp 
 LFLAGS = -L$(LIB) -lgmgraph
 
 GM_TOP = ../../../..

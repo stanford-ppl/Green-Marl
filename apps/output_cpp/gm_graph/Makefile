@@ -44,7 +44,7 @@ all: $(BUILD_DIRS) $(OUT)
 endif
 
 $(BIN)/graph_gen: $(GRAPHGEN_OBJECTS)
-	$(CC) $(CFLAGS) $^ $(wildcard $(AVRO)/*.o) $(wildcard $(JANSSON)/*.o) -o $@
+	$(CC) $(CFLAGS) $(LFLAGS) $^ $(wildcard $(AVRO)/*.o) $(wildcard $(JANSSON)/*.o) -o $@
 
 $(LIB)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
 	$(AR) r $@  $^  
