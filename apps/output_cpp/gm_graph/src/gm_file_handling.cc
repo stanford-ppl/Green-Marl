@@ -1,6 +1,7 @@
 #include "gm_file_handling.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>
 #ifdef HDFS
 #include <hdfs.h>
 #endif
