@@ -65,5 +65,10 @@ endif
 clean:
 	rm -f $(OBJ)/*.o $(OUT) $(JAVACLASSES)
 
-echo:
-	echo "$(CFLAGS)"
+.PHONY: echocflags echolflags echoflags
+echocflags:
+	@echo "$(CFLAGS)"
+echolflags:
+	@echo "$(LFLAGS)"
+echoflags:
+	@echo "$(CFLAGS) $(LFLAGS)"

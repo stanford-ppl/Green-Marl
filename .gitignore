@@ -32,5 +32,5 @@ apps/output_cpp/gm_graph/src/*.o
 apps/output_cpp/bin
 apps/output_cpp/gm_graph/lib
 apps/output_cpp/gm_graph/obj
-apps/output_cpp/gm_graph/avro-c-1.7.2/src/*.o
+apps/output_cpp/gm_graph/avro-c-1.7.2/jansson/src/*.o
 apps/output_gps/generated
