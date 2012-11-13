@@ -56,21 +56,34 @@ bool gm_cpp_gen::open_output_files() {
     return true;
 }
 
-void gm_cpp_gen::close_output_files() {
+void gm_cpp_gen::close_output_files(bool remove_files) {
+    char temp[1024];
     if (f_header != NULL) {
         Header.flush();
         fclose(f_header);
+        if (remove_files) {
+            sprintf(temp,"rm %s/%s.h",dname, fname);
+            system(temp);
+        }
         f_header = NULL;
     }
     if (f_body != NULL) {
         Body.flush();
         fclose(f_body);
+        if (remove_files) {
+            sprintf(temp,"rm %s/%s.cc",dname, fname);
+            system(temp);
+        }
         f_body = NULL;
     }
 
     if (f_shell != NULL) {
         fclose(f_shell);
         f_shell = NULL;
+        if (remove_files) {
+            sprintf(temp,"rm %s/%s_compile.mk",dname, fname);
+            system(temp);
+        }
     }
 }
 

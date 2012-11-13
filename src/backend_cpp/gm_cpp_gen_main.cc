@@ -48,6 +48,9 @@ void gm_cpp_gen::do_generate_user_main()
     Body.pushln("{");
     Body.pushln("gm_default_usermain Main;");
 
+    assert(FE.get_all_procs().size() == 1);
+    ast_procdef* proc = FE.get_all_procs()[0];
+
     Body.NL();
     Body.pushln("if (!Main.process_arguments(argc, argv)) {");
     Body.pushln("return EXIT_FAILURE;");
@@ -75,19 +78,16 @@ void gm_cpp_gen::do_generate_user_main()
 
 bool gm_cpp_gen::do_generate() {
 
-    if (OPTIONS.get_arg_bool(GMARGFLAG_CPP_CREATE_MAIN)) {
-        if (FE.get_num_procs() != 1) {
-            gm_backend_error(GM_ERROR_GPS_NUM_PROCS, "");
-            return false;
-        }
-    }
-
     if (!open_output_files()) return false;
 
     do_generate_begin();
 
     bool b = gm_apply_compiler_stage(this->gen_steps);
-    assert(b == true);
+    if (b==false) {
+        close_output_files(true);
+        return false;
+    }
+
     if (OPTIONS.get_arg_bool(GMARGFLAG_CPP_CREATE_MAIN)) {
 
         do_generate_user_main();

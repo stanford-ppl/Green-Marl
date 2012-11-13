@@ -145,6 +145,9 @@ public:
 
     void init();
 
+public:
+    std::vector<ast_procdef*>& get_all_procs() {return procs;}
+
 private:
     void set_current_proc(ast_procdef *p) {
         _curr_proc = p;

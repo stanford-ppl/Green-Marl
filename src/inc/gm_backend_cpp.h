@@ -198,7 +198,8 @@ protected:
     FILE *f_body;
     FILE *f_shell;
     bool open_output_files();
-    void close_output_files();
+    void close_output_files(bool remove_files=false);
+    void remove_output_files();
     void do_generate_compile_shell(std::map<std::string,std::string>& setup);
     void do_generate_user_main();
 
