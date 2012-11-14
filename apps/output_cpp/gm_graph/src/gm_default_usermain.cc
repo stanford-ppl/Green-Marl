@@ -247,12 +247,12 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
 
     create_property_in_out_schema();
 
-    if (OPTIONS.get_option_int(OPT_DUMPGRAPH) == 2) 
+    if (OPTIONS.get_option_int(OPT_DUMPGRAPH) == 1) 
     {
         // should create a graph format
         create_output_graph = true;
     }
-    else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) == 1)
+    else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) == 2)
     {
         if (eprop_out_schema.size() > 0) 
             create_output_graph = true;

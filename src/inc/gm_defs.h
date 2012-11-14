@@ -495,7 +495,7 @@ enum GM_PROP_USAGE_T
 {
     GMUSAGE_UNUSED=0, 
     GMUSAGE_IN,              // Read only
-    GMUSAGE_OUT,             // Write all, then optionally read
+    GMUSAGE_OUT,             // Write all, optionally followed by read
     GMUSAGE_INOUT,              // Read and Write
     GMUSAGE_INVALID
 };
