@@ -15,64 +15,64 @@ public class HDFSReader {
     FileSystem fs;
     Path filePath;
     FSDataInputStream fdis;
-	
+
     // Constructor and initialization
     public HDFSReader (String s) {
-	try {
-	    fileName = s;
-	    Configuration conf = new Configuration();
-	    conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/core-site.xml"));
-	    conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/hdfs-site.xml"));
-	    fs = FileSystem.get(conf);
-	    filePath = new Path(fileName);
-	    if ( ! fs.exists(filePath)) {
-		System.out.println ("File does not exist: " + fileName);
-		return;
-	    }
-	    fdis = fs.open(filePath);
-	    in = new BufferedReader(new InputStreamReader(fdis));
-	} catch (Exception e) {
-	    System.err.println (e);
-	}
+        try {
+            fileName = s;
+            Configuration conf = new Configuration();
+            conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/core-site.xml"));
+            conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/hdfs-site.xml"));
+            fs = FileSystem.get(conf);
+            filePath = new Path(fileName);
+            if ( ! fs.exists(filePath)) {
+                System.out.println ("File does not exist: " + fileName);
+                return;
+            }
+            fdis = fs.open(filePath);
+            in = new BufferedReader(new InputStreamReader(fdis));
+        } catch (Exception e) {
+            System.err.println (e);
+        }
     }
-    
+
     // Get the next line from the file
     public String getLine() {
-	try {
-	    return in.readLine();
-	} catch (Exception e) {
-	    System.err.println (e);
-	}
-	return null;
+        try {
+            return in.readLine();
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+        return null;
     }
 
     // Get the a sequence of bytes from the file
     public byte[] getBytes(int num_bytes) {
-	try {
-	    byte[] ret = new byte[num_bytes];
-	    int bytes_read = fdis.read(ret);
-	    if (bytes_read != num_bytes && bytes_read > 0) {
-		// as far as I can tell the only way to handle EOF
-		byte[] ret_short  = new byte[bytes_read];
-		System.arraycopy(ret, 0, ret_short, 0, bytes_read);
-		ret = ret_short;
-	    }
-	    return ret;
-	} catch (Exception e) {
-	    System.err.println (e);
-	}
-	return null;
+        try {
+            byte[] ret = new byte[num_bytes];
+            int bytes_read = fdis.read(ret);
+            if (bytes_read != num_bytes && bytes_read > 0) {
+                // as far as I can tell the only way to handle EOF
+                byte[] ret_short  = new byte[bytes_read];
+                System.arraycopy(ret, 0, ret_short, 0, bytes_read);
+                ret = ret_short;
+            }
+            return ret;
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+        return null;
     }
 
     // Set postion in the file from a given position
     public int seekCurrent(long pos) {
-	try {
-	    fdis.seek(fdis.getPos()+pos);
-	    return 0;
-	} catch (Exception e) {
-	    System.err.println (e);
-	}
-	return -1;
+        try {
+            fdis.seek(fdis.getPos()+pos);
+            return 0;
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+        return -1;
     }
 
     // Reset the pointer (reader) to the start of the file
