@@ -28,7 +28,7 @@ void gm_cpp_gen::do_generate_compile_shell(std::map<std::string,std::string>& se
     fprintf(f_shell, "CC= g++\n");
     fprintf(f_shell, "CFLAGS = -g -O3 -fopenmp -I${GM_GRAPH}/inc -I. \n", gm_top);
 
-    fprintf(f_shell, "LFLAGS = -L${GM_GRAPH}/lib -lgmgraph \n", gm_graph);
+    fprintf(f_shell, "LFLAGS = -L${GM_GRAPH}/lib -lgmgraph \n");
     fprintf(f_shell, "include ${GM_TOP}/setup.mk\n");
     fprintf(f_shell, "include ${GM_TOP}/apps/output_cpp/common.mk\n");
 
