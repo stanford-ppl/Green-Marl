@@ -5,6 +5,7 @@ obj/*
 .cproject
 .project
 .settings
+nbproject
 *.aterm
 
 test.gm
