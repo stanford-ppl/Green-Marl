@@ -37,8 +37,8 @@ GM_JNI_Handler::GM_JNI_Handler() {
     const char* GMTop         = getenv("GM_TOP") == NULL ? "" : getenv("GM_TOP");
     const char* HadoopHome    = getenv("HADOOP_HOME") == NULL ? "" : getenv("HADOOP_HOME");
     const char* HadoopCoreJar = getenv("HADOOP_CORE_JAR") == NULL ? "" : getenv("HADOOP_CORE_JAR");
-    const char* LoggingJar = "commons-logging-1.0.4.jar";
-    const char* GuavaJar = "guava-r09-jarjar.jar";
+    const char* LoggingJar = getenv("HADOOP_COMMONS_LOGGING_JAR"); 
+    const char* GuavaJar = getenv("HADOOP_GUAVA_R09_JAR"); 
 
     sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javabin/", 
             HadoopHome, HadoopCoreJar,
