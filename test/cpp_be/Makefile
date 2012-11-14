@@ -1,5 +1,4 @@
 
-
 ODIR = output
 COMP = ../../bin/gm_comp
 FLAGS = -o=$(ODIR) -t=cpp_omp
@@ -12,4 +11,31 @@ $(ODIR)/%.cc: %.gm
 	$(COMP) $(FLAGS) $<
 
 clean: 
-	\rm -rf $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h
+	\rm -rf $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h $(ODIR)/*.o dummy
+
+
+CC=g++
+GM_GRAPH=../../apps/output_cpp/gm_graph
+SETUP = ../../setup.mk
+FLAGS_DEF=../../apps/output_cpp/common.mk
+
+
+LIB=$(GM_GRAPH)/lib
+INC=$(GM_GRAPH)/inc
+SRCS=$(wildcard output/*.cc)
+OBJS=$(addprefix output/, $(notdir $(SRCS:.cc=.o)))
+CFLAGS= -O3 -g -I$(INC) -c -fopenmp
+LFLAGS= -L$(LIB) -fopenmp -lgmgraph
+include $(SETUP)
+include $(FLAGS_DEF)
+
+
+dummy: $(OBJS) dummy.o
+	$(CC) $(OBJS) $(LFLAGS) dummy.o  -o dummy
+
+dummy.o : dummy.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+output/%.o: output/%.cc
+	$(CC) $(CFLAGS) -o $@ $<
+

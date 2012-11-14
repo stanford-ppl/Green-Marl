@@ -7,7 +7,19 @@
 #include "gm_builtin.h"
 #include "gm_argopts.h"
 
+void gm_giraphlib::generate_package_decl_if_required(gm_code_writer& Body)
+{
+    const char* p= OPTIONS.get_arg_string(GMARGFLAG_GIRAPH_PACKAGE);
+    if ((p != NULL) && (strlen(p) > 0)) {
+        Body.push("package ");
+        Body.push(p);
+        Body.pushln(";");
+    }
+}
+
 void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
+
+    generate_package_decl_if_required(Body);
     Body.pushln("import java.io.DataInput;");
     Body.pushln("import java.io.DataOutput;");
     Body.pushln("import java.io.IOException;");
@@ -24,6 +36,7 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
 }
 
 void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
+    generate_package_decl_if_required(Body);
     Body.pushln("import org.apache.commons.cli.CommandLine;");
     Body.pushln("import org.apache.commons.cli.CommandLineParser;");
     Body.pushln("import org.apache.commons.cli.HelpFormatter;");
@@ -42,6 +55,7 @@ void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
 }
 
 void gm_giraphlib::generate_headers_input(gm_code_writer& Body) {
+    generate_package_decl_if_required(Body);
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.util.Map;");
 
@@ -54,6 +68,7 @@ void gm_giraphlib::generate_headers_input(gm_code_writer& Body) {
 }
 
 void gm_giraphlib::generate_headers_output(gm_code_writer& Body) {
+    generate_package_decl_if_required(Body);
     Body.pushln("import java.io.IOException;");
 
     Body.pushln("import org.apache.giraph.graph.*;");
@@ -440,18 +455,18 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gi
             break;
         case GMTYPE_NODE:
             if (lib->is_node_type_int()) {
-                Body.push("getInt()");
+                Body.push("readInt()");
                 break;
             } else {
-                Body.push("getLong()");
+                Body.push("readLong()");
                 break;
             }
         case GMTYPE_EDGE:
             if (lib->is_edge_type_int()) {
-                Body.push("getInt()");
+                Body.push("readInt()");
                 break;
             } else {
-                Body.push("getLong()");
+                Body.push("readLong()");
                 break;
             }
         default:
@@ -924,7 +939,8 @@ void gm_giraphlib::generate_message_receive_begin(gm_gps_comm_unit& U, gm_code_w
         gm_symtab_entry * e = SYM.symbol;
 
         // check it once again later
-        if (e->getType()->is_property() || e->getType()->is_node_compatible() || e->getType()->is_edge_compatible() || !is_symbol_defined_in_bb(b, e)) {
+        //if (e->getType()->is_property() || e->getType()->is_node_compatible() || e->getType()->is_edge_compatible() || !is_symbol_defined_in_bb(b, e)) {
+        if (e->getType()->is_property() || e->getType()->is_node_iterator() || e->getType()->is_edge_iterator() || !is_symbol_defined_in_bb(b, e)) {
             const char* str = main->get_type_string(SYM.gm_type);
             Body.push(str);
             Body.SPC();
@@ -952,6 +968,7 @@ void gm_giraphlib::generate_message_receive_end(gm_code_writer& Body, bool is_on
 void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body, bool is_master) {
     gm_builtin_def* def = be->get_builtin_def();
     std::list<ast_expr*>& ARGS = be->get_args();
+    assert(!PREGEL_BE->get_lib()->is_node_type_int());
 
     switch (def->get_method_id()) {
         case GM_BLTIN_TOP_DRAND:         // rand function
@@ -965,9 +982,8 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
             break;
 
         case GM_BLTIN_GRAPH_RAND_NODE:         // random node function
-            Body.push("(new java.util.Random()).nextInt(");
-            Body.push("getTotalNumVertices()");
-            Body.push(")");
+            //Body.push("(new java.util.Random()).nextLong(");
+            Body.push("gmGetRandomVertex(getTotalNumVertices())");
             break;
 
         case GM_BLTIN_GRAPH_NUM_NODES:

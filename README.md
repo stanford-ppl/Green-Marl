@@ -279,7 +279,7 @@ Now, do the following steps and execute sample programs:
     %%%% Try remaining sample applications (pagerank, bc, kosaraju)
     %%%% All of them have the same following command-line arguments
     %%%%   <program name> <graph name> <# of threads>
-        
+
 
 4-7 Adding your own Green-Marl Program
 -------------------------------------

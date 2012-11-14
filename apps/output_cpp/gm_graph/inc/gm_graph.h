@@ -7,9 +7,9 @@
 #include <vector>
 #include <stdlib.h>
 #include <omp.h>
+#include <string>
 
 #include "gm_internal.h"
-#include "gm_helper_functions.h"
 
 typedef node_t node_id;
 typedef edge_t edge_id;
@@ -67,9 +67,9 @@ class gm_graph
 // Give access to gm_graph_hdfs
 friend class gm_graph_hdfs;
 
-public:
+  public:
     gm_graph();
-    virtual ~gm_graph();
+    ~gm_graph();
 
     //-----------------------------------------------------
     // Direct access (only avaiable after frozen) 
@@ -179,10 +179,74 @@ public:
     // The graph will be frozen automatically.
     //--------------------------------------------------------------
     #define MAGIC_WORD 0x03939999
-    virtual void prepare_external_creation(node_t n, edge_t m);
-    virtual bool store_binary(char* filename);          // attributes not saved
-    virtual bool load_binary(char* filename);           // call this to an empty graph object
-    virtual bool load_adjacency_list(char* filename, char separator = '\t');
+    void prepare_external_creation(node_t n, edge_t m);
+    bool store_binary(char* filename);          // attributes not saved
+    bool load_binary(char* filename);           // call this to an empty graph object
+
+    /*
+     * A specialized function to load a graph represented using the adjacency list format.
+     */
+    bool load_adjacency_list(char* filename, char separator = '\t');
+
+    void load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema,
+            std::vector<VALUE_TYPE> eprop_schema,
+            std::vector<void *>& vertex_props,
+            std::vector<void *>& edge_props,
+            std::vector<edge_t>& EDGE_CNT,
+            std::vector<node_t>& DEST,
+            std::vector<void*>& node_prop_vectors,
+            std::vector<void*>& edge_prop_vectors,
+            node_t N,
+            edge_t M
+            );
+
+
+    /*
+     * A generic function to load a graph represented using the adjacency list format.
+     * Adjacency List Format:
+     *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
+     */
+    bool load_adjacency_list(const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<void *>& vertex_props, // output parameter
+            std::vector<void *>& edge_props, // output parameter
+            const char* separators = "\t", // optional input parameter
+            bool use_hdfs = false // optional input parameter
+            );
+    /*
+     * A generic function to store a graph represented using the adjacency list format.
+     * Adjacency List Format:
+     *     vertex-id {vertex-val1 vertex-val2 ...} [nbr-vertex-id {edge-val1 edge-val2 ...}]*
+     */
+    bool store_adjacency_list (const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<void*>& vertex_props, // input parameter
+            std::vector<void*>& edge_props, // input parameter
+            const char* separators = "\t", // input parameter
+            bool use_hdfs = false // input parameter
+            );
+
+    bool load_adjacency_list_avro(const char* filename, // input parameter
+            std::vector<VALUE_TYPE>& vprop_schema, // output parameter
+            std::vector<VALUE_TYPE>& eprop_schema, // output parameter
+            std::vector<std::string>& vprop_names, // output parameter
+            std::vector<std::string>& eprop_names, // output parameter
+            std::vector<void *>& vertex_props, // output parameter
+            std::vector<void *>& edge_props, // output parameter
+            bool use_hdfs = false // input parameter
+            );
+
+    bool store_adjacency_list_avro(const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<std::string> vprop_names, // input parameter
+            std::vector<std::string> eprop_names, // input parameter
+            std::vector<void*>& vertex_props, // input parameter
+            std::vector<void*>& edge_props, // input parameter
+            bool use_hdfs = false // input parameter
+            );
 
     //--------------------------------------------------------------
     // conversion between idx and id
@@ -203,11 +267,13 @@ public:
     void clear_graph();                         // invalidate everything and make the graph empty
 
     //returns one of the outgoing neighbors of 'node' - by random choice
-    // if 'node' does not have a neighbor, 'node' is returned
+    // if 'node' does not have a neighbor, 'node' is returned -> assert(false)
     node_t pick_random_out_neighbor(node_t node) {
         edge_t outCount = get_num_edges(node);
-        if (outCount == 0)
+        if (outCount == 0) {
+            assert(false);
             return node;
+        }
         else
             return node_idx[begin[node]] + (rand() % outCount); //TODO make 64bit compatible
     }
@@ -220,7 +286,7 @@ public:
     bool load_binary_hdfs(char* filename);
 #endif  // HDFS
 
-private:
+  private:
 
     void delete_frozen_graph();
     void allocate_memory_for_frozen_graph(node_t n, edge_t m);
@@ -239,6 +305,34 @@ private:
 
     edge_t* e_id2idx;
     edge_t* e_idx2id;
+
+    //-----------------------------------------------------
+    // Use node key that is different from node idx.
+    //-----------------------------------------------------
+    bool _nodekey_defined;          // 
+    bool _reverse_nodekey_defined;  // 
+    bool _nodekey_type_is_numeric; //
+    std::map<node_t, node_t> _numeric_key;          // node_key -> node_dix
+    std::vector<node_t>      _numeric_reverse_key;  // node_idx -> node_key
+
+    void   prepare_nodekey(bool _prepare_reverse);  // should call this function before graph is create
+    void   create_reverse_nodekey();
+    void   delete_nodekey();
+    void   delete_reverse_nodekey();
+    node_t add_nodekey(node_t key);
+
+    //bool _cstr_nodekey_defined;             // 
+    //bool _cstr_reverse_nodekey_defined;     // 
+    //std::map<char*, node_t> _numeric_key;          // node_key -> node_dix
+    //std::vector<char*>      _numeric_reverse_key;  // node_idx -> node_key
+    //void prepare_cstr_nodekey(node_t estimated_size, bool use_reverse_key);
+    //void delete_cstr_nodekey(bool keep_reverse_key);
+    //
+ private:
+    inline bool find_nodekey(node_t key) {return _numeric_key.find(key) != _numeric_key.end();}
+    inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
+    inline node_t nodeid_to_nodekey(node_t nodeid) {return _numeric_reverse_key[nodeid];}
+    inline node_t get_num_nodekeys() {return (node_t) _numeric_key.size();}
 };
 
 #endif

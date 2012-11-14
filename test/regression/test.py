@@ -5,6 +5,7 @@ import sys;
 import re;
 import os;
 import multiprocessing;
+import platform;
 
 s_path = sys.path[0];
 TOP_LEVEL_PATH=s_path+"/../../";
@@ -18,6 +19,12 @@ interactive = True;
 if (len(sys.argv) == 2 and sys.argv[1] == "-nostop") or os.getenv("gm_regress_nostop") != None:
     interactive = False;
 
+PLATFORM=platform.machine();
+PROCESSOR=platform.processor();
+MAKE_FLAGS = "";
+if (PROCESSOR == "sparc"):
+    MAKE_FLAGS = " ORACLE=1 FORCE_64BIT=1";
+	
 
 # CHECK EXISTENCE AND VERSIONS OF THE REQUIRED TOOLS
 
@@ -75,22 +82,31 @@ if (interactive):
 def build_compiler():
     os.chdir(TOP_LEVEL_PATH);
     make_res = commands.getstatusoutput("make veryclean");
+    if (make_res[0] != 0):
+        print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
     assert make_res[0] == 0;
-    make_res = commands.getstatusoutput("make compiler -j" + str(NUM_THREADS));
+    make_res = commands.getstatusoutput("make compiler -j "); # str(NUM_THREADS));
     if make_res[0] != 0:
         print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
         sys.exit(-1);
     assert os.path.isfile(COMP_BINARY_PATH)
+
+if (interactive): 
+    print "Building compiler";
 
 build_compiler();
 
 # RUN UNIT TEST (CHECK IF CRASH)
 def run_unit_test_crash():
     os.chdir(s_path+"/..");
-    crash_res = commands.getstatusoutput("./check_if_crash.sh");
+    crash_res = commands.getstatusoutput("./check_if_crash.sh " + MAKE_FLAGS);
     if crash_res[0] != 0:
         print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
         sys.exit(-1);
+
+if (interactive): 
+    print "Running Unit Test compiler";
 
 run_unit_test_crash();
 
@@ -106,9 +122,16 @@ def get_apps_names(apps_out_dir):
 
 def build_and_run_apps(apps_out_dir, run_apps):
     os.chdir(APPS_PATH);
+    if (interactive): 
+        print "Building at " + apps_out_dir;
     make_res = commands.getstatusoutput("make clean_all");
+    if (make_res[0] != 0):
+        print "APPLICATION BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
     assert make_res[0] == 0;
-    make_res = commands.getstatusoutput("make all -j" + str(NUM_THREADS));
+    build_cmd = "make all -j" + MAKE_FLAGS;
+	
+    make_res = commands.getstatusoutput(build_cmd);
     if make_res[0] != 0:
         print "APPLICATION BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
         sys.exit(-1);
@@ -126,14 +149,31 @@ def build_and_run_apps(apps_out_dir, run_apps):
             app_res = commands.getstatusoutput("./bin/"+(re.split("\.", app)[0])+" data/__regressions_graph__.bin 1");
             assert app_res[0] == 0;
             print "APP "+app+" RES: "+app_res[1];
-            
+
             
 
-os.putenv("env", "gps");
-build_and_run_apps("output_gps", False);
+os.putenv("env", "giraph");
+build_and_run_apps("output_giraph", False);
+#os.putenv("env", "gps");
+#build_and_run_apps("output_gps", False);
 os.putenv("env", "cpp_seq");
 build_and_run_apps("output_cpp", True);
 os.putenv("env", "cpp_omp");
 build_and_run_apps("output_cpp", True);
 
 
+
+# RUN CPP_BE_LINK_TEST (CHECK IF CRASH)
+def run_unit_cpp_be_link():
+    os.chdir(s_path+"/..");
+    crash_res = commands.getstatusoutput("./check_cpp_be.sh " + MAKE_FLAGS);
+    if crash_res[0] != 0:
+        print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
+        sys.exit(-1);
+    os.chdir(TOP_LEVEL_PATH);
+            
+os.putenv("env", "cpp_omp");
+build_and_run_apps("output_cpp", False);
+run_unit_cpp_be_link();
+
+print ("OKAY");

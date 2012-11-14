@@ -28,6 +28,7 @@
 }
 
 
+
  /*  Reserved Words */
 %token T_PROC T_GRAPH T_NODE T_NODEPROP T_EDGE T_EDGEPROP T_LOCAL
 %token T_NSET T_NORDER T_NSEQ T_ITEMS T_COLLECTION
@@ -55,10 +56,10 @@
 %token <bval> BOOL_VAL
 
 
-%type <bval> opt_tp
+%type <bval> opt_tp foreach_dir
 %type <ptr> id lhs rhs expr bool_expr numeric_expr
 %type <ptr> sent sent_block  sent_assignment sent_variable_decl sent_foreach sent_if 
-%type <pair> foreach_header
+%type <pair> foreach_header foreach_src
 %type <pair> rhs_list2 lhs_list2
 %type <ptr> foreach_filter
 %type <ptr> sent_do_while sent_while sent_return sent_call
@@ -232,12 +233,23 @@
   sent_do_while : T_DO sent_block T_WHILE '(' bool_expr ')' { $$ = GM_dowhile($5, $2); }
 
                 
-  sent_foreach :  T_FOREACH foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, false, $2.b1, $2.p3); GM_set_lineinfo($$, @1.first_line, @1.first_column);}
-               |  T_FOR     foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, true, $2.b1, $2.p3); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
+  sent_foreach :  T_FOREACH foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, false, $2.b1, $2.p3, $2.b2); GM_set_lineinfo($$, @1.first_line, @1.first_column);}
+               |  T_FOR     foreach_header foreach_filter sent    { $$ = GM_foreach($2.p1, $2.p2, $2.i1, $4, $3, true, $2.b1, $2.p3, $2.b2); GM_set_lineinfo($$,@1.first_line, @1.first_column);}
 
+               /*
   foreach_header : '(' id ':' id     '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $6.i1; $$.p3 = $6.p1;}
                  | '(' id ':' id '+' '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = false; $$.i1 = $7.i1; $$.p3 = $7.p1;}
                  | '(' id ':' id '-' '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4; $$.b1 = true;  $$.i1 = $7.i1; $$.p3 = $7.p1;}
+                 */
+
+  foreach_header : '(' id ':' foreach_src '.' iterator1 ')'  {$$.p1 = $2; $$.p2 = $4.p1; $$.b1 = $4.b1; $$.i1 = $6.i1; $$.p3 = $6.p1; $$.b2 = $4.b2; }
+
+  foreach_src    : id     foreach_dir        { $$.p1 = $1; $$.b1 = $2; $$.b2 = false;}  /* b1 -> direction, b2 -> is_field*/
+                 | field  foreach_dir        { $$.p1 = $1; $$.b1 = $2; $$.b2 = true;} 
+
+  foreach_dir    :                           { $$ = false;}
+                 | '-'                       { $$ = true;}
+                 | '+'                       { $$ = false;}
 
   foreach_filter :                          { $$ = NULL;}
                  | '(' bool_expr ')'        { $$ = $2; }
@@ -344,16 +356,12 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
                                     {$$ = GM_expr_uop($2, GMOP_NEG, @1.first_line, @1.first_column); }
              | '!' expr    %prec NEG    {$$ = GM_expr_luop($2, GMOP_NOT, @1.first_line, @1.first_column); }
              | '(' prim_type ')' expr %prec NEG    {$$ = GM_expr_conversion($4, $2 , @1.first_line, @1.first_column); }
-             | reduce_op '(' id ':' id '.' iterator1 ')' '(' expr ')' '{' expr '}' {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $13, $10, $7.p1, @1.first_line, @1.first_column);}
-             | reduce_op '(' id ':' id '.' iterator1 ')' '{' expr '}'              {$$ = GM_expr_reduceop($1, $3, $5, $7.i1, $10, NULL, $7.p1, @1.first_line, @1.first_column);}
-             | reduce_op2 '(' id ':' id '.' iterator1 ')' '(' expr ')'   {
-                 $$ = GM_expr_reduceop($1, $3, $5, $7.i1, 
-                         GM_expr_ival(1, @1.first_line, @1.first_column),
-                         $10, $7.p1, @1.first_line, @1.first_column);}
-             | reduce_op2 '(' id ':' id '.' iterator1 ')' {
-                 $$ = GM_expr_reduceop($1, $3, $5, $7.i1, 
-                     GM_expr_ival(1, @1.first_line, @1.first_column),
-                     NULL, $7.p1, @1.first_line, @1.first_column);}
+             | reduce_op foreach_header '(' expr ')' '{' expr '}' {$$ = GM_expr_reduceop($1, $2.p1, $2.p2, $2.i1, $7, $4,   $2.p3, @1.first_line, @1.first_column, $2.b2);}
+             | reduce_op foreach_header '{' expr '}'              {$$ = GM_expr_reduceop($1, $2.p1, $2.p2, $2.i1, $4, NULL, $2.p3, @1.first_line, @1.first_column, $2.b2);}
+             | reduce_op2 foreach_header '(' expr ')'   {
+                 $$ = GM_expr_reduceop($1, $2.p1, $2.p2, $2.i1, GM_expr_ival(1, @1.first_line, @1.first_column), $4,  $2.p3, @1.first_line, @1.first_column,$2.b2);}
+             | reduce_op2 foreach_header {
+                 $$ = GM_expr_reduceop($1, $2.p1, $2.p2, $2.i1, GM_expr_ival(1, @1.first_line, @1.first_column), NULL, $2.p3, @1.first_line, @1.first_column, $2.b2);}
 
              | expr '%' expr    {$$ = GM_expr_biop($1, $3, GMOP_MOD, @2.first_line, @2.first_column);}
              | expr '*' expr    {$$ = GM_expr_biop($1, $3, GMOP_MULT, @2.first_line, @2.first_column);}

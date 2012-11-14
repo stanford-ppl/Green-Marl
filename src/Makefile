@@ -12,6 +12,9 @@ ifneq ($(UNAME),Darwin)
     LDFLAGS += -lrt
 endif
 
+include ../setup.mk
+CFLAGS += -DDEFAULT_GM_TOP="\"${GM_TOP}\""
+
 # where to find source codes
 vpath %.h  inc
 vpath %.c parse
@@ -40,7 +43,7 @@ SRCS2 =\
        gm_parse_foreign_syntax.cc \
        gm_reproduce.cc gm_dumptree.cc gm_misc.cc \
        gm_main.cc gm_argopts.cc gm_copy.cc \
-       gm_code_generator.cc\
+       gm_code_generator.cc gm_read_setup.cc \
        gm_error.cc gm_builtin.cc \
        gm_node_info.cc\
        gm_version_string.cc\
@@ -93,6 +96,7 @@ SRCS2 =\
        gm_cpp_gen_mark_parallel.cc\
        gm_cpp_gen_check_bfs.cc\
        gm_cpp_gen_regular.cc\
+	   gm_cpp_gen_check_usermain.cc\
        gm_cpplib_gen.cc \
        gm_cpplib_opt.cc\
        gm_gps_opt_remove_master_random_write.cc\
@@ -144,7 +148,7 @@ HEADS = $(addprefix $(INC)/, $(HEADERS))
 
 all: $(BIN)/gm_comp
 
-$(BIN)/gm_comp: $(OBJS) $(HEADS)
+$(BIN)/gm_comp: $(SRCS1) $(OBJS) $(HEADS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ 
 
 $(OBJ)/%.o : %.c 
@@ -154,6 +158,8 @@ $(OBJ)/%.o : %.cc
 
 clean:
 	rm $(OBJ)/*.o
+
+clean_all: veryclean
 
 veryclean:
 	-rm $(OBJ)/*.o

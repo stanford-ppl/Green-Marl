@@ -2,13 +2,20 @@ CC = g++
 INC=../inc/
 LIB=../lib
 
-CFLAGS = -I$(INC) -g -O3 -fopenmp
+CFLAGS = -I$(INC) -g -fopenmp 
 LFLAGS = -L$(LIB) -lgmgraph
 
-TARGET = a_main test_graph test_set test_seq test_order 
+GM_TOP = ../../../..
+include ../../../../setup.mk
+include ../../common.mk
+
+#TARGET = a_main test_graph test_set test_seq test_order
+TARGET = test_generic_adj_list test_usermain test_adj_list_avro
+
+
 all: $(TARGET)
 
-%:%.cc
+%:%.cc  $(LIB)/libgmgraph.a
 	$(CC) $< $(CFLAGS) $(LFLAGS) -o $@
 
 clean:

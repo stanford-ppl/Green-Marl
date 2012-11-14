@@ -1,0 +1,13 @@
+// Test of Iteration of Collection Properties
+Proc P(G: Graph, r:Node)
+{
+    N_P<Node_Set>(G) Set;
+    N_P<Int>(G) A;
+
+    G.A =0;
+    Foreach(n: G.Nodes) {
+        Foreach(t: n.Set.Items) {
+            t.A ++;
+        }
+    }
+}

@@ -1,4 +1,4 @@
-Procedure test_property_of_collection_iterate(G:Graph)
+Procedure b30_test_property_of_collection_iterate(G:Graph, A: N_P<Int>) : Int
 {
     /* This syntax has been deprecated
     N_P<N_S> prop;
@@ -10,4 +10,18 @@ Procedure test_property_of_collection_iterate(G:Graph)
     Foreach(s: prop.Items)
     	s.Add(n);
     */
+
+    N_P<N_S> mySet;
+    Node n;
+    Int z = 0;
+    
+    
+    For(s: G.Nodes)
+    	s.mySet.Add(n);
+
+    Foreach(s: G.Nodes) {
+        z += Count(x: s.mySet.Items)(s.A > 0);
+    }
+    	
+    Return z;
 }

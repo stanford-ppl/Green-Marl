@@ -1,5 +1,5 @@
 // Test of BFS
-Proc P(G:Graph, A,B: N_P<Int>(G), k:Node(G))
+Proc b2_bfs(G:Graph, A,B: N_P<Int>(G), k:Node(G))
 {
     Int z = 0;
     For(s:G.Nodes) (s.B > 0)

@@ -1,4 +1,4 @@
-Procedure test_map_set_element_multiple_graphs(G:Graph)
+Procedure b43_test_map_set_element_multiple_graphs(G:Graph)
 {
 	Graph G2;
 		

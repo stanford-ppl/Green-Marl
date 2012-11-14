@@ -1,4 +1,4 @@
-Procedure test_map_declaration(G:Graph)
+Procedure b38_test_map_declaration(G:Graph)
 {
     Map<Int, Node> map1;
     Map<Int, Edge> map2;

@@ -1,5 +1,5 @@
 //tests if loop-merge merges correctly for collections
-Proc foo(G: Graph)
+Proc b17(G: Graph)
 {
 	Node_Set(G) Set; 
 	Foreach(n : G.Nodes) {

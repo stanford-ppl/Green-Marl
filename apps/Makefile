@@ -1,6 +1,5 @@
-#----------------------------------------
-# Set target envrionment (cpp or gps)
-#----------------------------------------
+include ../setup.mk
+
 ifndef gm_args
  GM_ARGS=
 else
@@ -29,7 +28,7 @@ else
       TARGET=giraph
       tdir=output_giraph
     else
-      @echo "unknown target environment"
+      echo "unknown target environment"
       false
     endif
    endif
@@ -51,7 +50,7 @@ all: lib gen bin
 lib:
 	@cd $(tdir); make lib
 
-bin: lib
+bin: lib gen
 	@cd $(tdir); make 
 
 gen:

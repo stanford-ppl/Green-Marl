@@ -1,4 +1,4 @@
-Procedure test_map_builtin_function_multiple_graphs(G:Graph)
+Procedure b47_test_map_builtin_function_multiple_graphs(G:Graph)
 {
 	Map<Int, Int> map;
 	

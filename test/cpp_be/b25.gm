@@ -1,4 +1,4 @@
-Procedure test_property_of_collection_assign_entry(G:Graph)
+Procedure b_25_test_property_of_collection_assign_entry(G:Graph)
 {
     N_P<N_S> p;
     Node n;

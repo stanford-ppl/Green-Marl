@@ -1,5 +1,5 @@
 // This file includes the functions that are unused but were present in the earlier version of
-// gm_graph library.
+// graph_gen part of the gm_graph library.
 
 
 bool test_backedge(gm_graph* g) {

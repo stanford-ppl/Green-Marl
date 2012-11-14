@@ -1,4 +1,4 @@
-Procedure test_collection_of_collection_functions(G:Graph)
+Procedure b33_test_collection_of_collection_functions(G:Graph)
 {
     Collection<N_S> c1;
     Collection<Node_Sequence> c2;

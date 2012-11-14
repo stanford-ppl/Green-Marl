@@ -49,20 +49,32 @@ bool gm_cpplib::need_down_initializer(ast_foreach* f) {
 
 void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body) {
     int iter_type = f->get_iter_type();
-    ast_id* source = f->get_source();
     if (gm_is_simple_collection_iteration(iter_type) || gm_is_collection_of_collection_iteration(iter_type)) {
-        assert(!f->is_parallel());
         // for temp
-        const char* iter_type_str = f->is_parallel() ? "par_iter" : f->is_reverse_iteration() ? "rev_iter" : "seq_iter";
+        assert(!f->is_parallel());
 
+        const char* iter_type_str = f->is_parallel() ? "par_iter" : f->is_reverse_iteration() ? "rev_iter" : "seq_iter";
         const char* prep_str = f->is_parallel() ? "prepare_par_iteration" : f->is_reverse_iteration() ? "prepare_rev_iteration" : "prepare_seq_iteration";
+        const char* source_type_str;
+        int iter_source_type;
+        if (f->is_source_field()) {
+            source_type_str = get_type_string(f->get_source_field()->get_second()->getTargetTypeInfo());
+            iter_source_type = f->get_source_field()->get_second()->getTypeInfo()->getTargetTypeSummary();
+        } else {
+            source_type_str = get_type_string(f->get_source()->getTypeInfo());
+            iter_source_type = f->get_source()->getTypeInfo()->getTypeSummary();
+        }
+
+
 
         // get a list
         const char* typeString = NULL;
-        if (gm_is_collection_of_collection_type(source->getTypeSummary()))
+        if (gm_is_collection_of_collection_type(iter_source_type)) {
+            ast_id* source = f->get_source();
             sprintf(str_buf, "%s<%s>::%s", get_type_string(source->getTypeInfo()), get_type_string(source->getTargetTypeInfo()), iter_type_str);
-        else
-            sprintf(str_buf, "%s::%s", get_type_string(source->getTypeInfo()), iter_type_str);
+        } else {
+            sprintf(str_buf, "%s::%s", source_type_str, iter_type_str);
+        }
         Body.push(str_buf);
 
         const char* a_name = FE.voca_temp_name_and_add(f->get_iterator()->get_orgname(), "_I");
@@ -71,9 +83,17 @@ void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body) {
         Body.push(str_buf);
         delete[] a_name;
 
-        sprintf(str_buf, " = %s.%s();", source->get_genname(), prep_str);
-        Body.pushln(str_buf);
+        if (f->is_source_field()) {
+            Body.push(" = ");
+            get_main()->generate_rhs_field(f->get_source_field());
+            sprintf(str_buf, ".%s();", prep_str);
+            Body.pushln(str_buf);
+        } else {
+            sprintf(str_buf, " = %s.%s();", f->get_source()->get_genname(), prep_str);
+            Body.pushln(str_buf);
+        }
     } else if (gm_is_common_nbr_iteration(iter_type)) {
+        ast_id* source = f->get_source();
         ast_id* graph = source->getTypeInfo()->get_target_graph_id();
         ast_id* source2 = f->get_source2();
         assert(source2!=NULL);
@@ -83,29 +103,38 @@ void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body) {
         sprintf(str_buf, "gm_common_neighbor_iter %s(%s, %s, %s);", a_name, graph->get_genname(), source->get_genname(), source2->get_genname());
         Body.pushln(str_buf);
     }
+    else {
+        assert(false);
+    }
 }
 
 void gm_cpplib::generate_down_initializer(ast_foreach* f, gm_code_writer& Body) {
     int iter_type = f->get_iter_type();
     ast_id* iter = f->get_iterator();
-    ast_id* source = f->get_source();
+    ast_typedecl* source_type;
+    if (f->is_source_field()) {
+        source_type = f->get_source_field()->get_second()->getTypeInfo();
+    } else {
+        source_type = f->get_source()->getTypeInfo();
+    }
 
     if (gm_is_simple_collection_iteration(iter_type) || gm_is_collection_of_collection_iteration(iter_type)) {
         assert(f->find_info(CPPBE_INFO_COLLECTION_ITERATOR) != NULL);
         const char* lst_iter_name = f->find_info_string(CPPBE_INFO_COLLECTION_ITERATOR);
         const char* type_name;
-        if (gm_is_collection_of_collection_type(source->getTypeSummary()))
-            type_name = get_type_string(source->getTargetTypeInfo());
+        if (gm_is_collection_of_collection_type(source_type->getTypeSummary()))
+            type_name = get_type_string(f->get_source()->getTargetTypeInfo());
         else
-            type_name = source->getTypeInfo()->is_node_collection() ? NODE_T : EDGE_T;
+            type_name = source_type->is_node_collection() ? NODE_T : EDGE_T;
 
-        if(gm_is_collection_of_collection_iteration(iter_type)) {
+        if (gm_is_collection_of_collection_iteration(iter_type)) {
             sprintf(str_buf, "%s& %s = %s.get_next();", type_name, f->get_iterator()->get_genname(), lst_iter_name);
         } else {
             sprintf(str_buf, "%s %s = %s.get_next();", type_name, f->get_iterator()->get_genname(), lst_iter_name);
         }
         Body.pushln(str_buf);
     } else if (gm_is_any_neighbor_node_iteration(iter_type)) {
+        ast_id* source = f->get_source();
         const char* alias_name = f->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
         const char* type_name = get_type_string(iter->getTypeInfo());
         const char* graph_name = source->getTypeInfo()->get_target_graph_id()->get_genname();
@@ -139,11 +168,13 @@ void gm_cpplib::generate_down_initializer(ast_foreach* f, gm_code_writer& Body) 
 }
 
 void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body) {
-    ast_id* source = fe->get_source();
+    //ast_id* source = fe->get_source();
     ast_id* iter = fe->get_iterator();
     int type = fe->get_iter_type();
 
     if (gm_is_all_graph_iteration(type)) {
+        assert(!fe->is_source_field());
+        ast_id* source = fe->get_source();
         char* graph_name;
         if (gm_is_node_property_type(source->getTypeSummary()) || gm_is_edge_property_type(source->getTypeSummary())) {
             graph_name = source->getTypeInfo()->get_target_graph_id()->get_orgname();
@@ -156,7 +187,8 @@ void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body) {
 
         Body.pushln(str_buf);
     } else if (gm_is_common_nbr_iteration(type)) {
-
+        assert(!fe->is_source_field());
+        ast_id* source = fe->get_source();
         const char* iter_name = fe->find_info_string(CPPBE_INFO_COMMON_NBR_ITERATOR);
         char* graph_name = source->get_genname();
         char* it_name = iter->get_genname();
@@ -169,6 +201,8 @@ void gm_cpplib::generate_foreach_header(ast_foreach* fe, gm_code_writer& Body) {
     } else if (gm_is_any_neighbor_node_iteration(type)) {
 
         assert(gm_is_node_iteration(type));
+        assert(!fe->is_source_field());
+        ast_id* source = fe->get_source();
 
         //-----------------------------------------------
         // create additional information

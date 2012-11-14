@@ -1,9 +1,3 @@
-/*
- * gm_bitmap.cc
- *
- *  Created on: Sep 13, 2012
- *      Author: raghav
- */
 #include "gm_bitmap.h"
 
 unsigned _gm_get_bit(unsigned char* Bit, int n) {

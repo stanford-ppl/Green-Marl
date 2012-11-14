@@ -185,6 +185,11 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
             printf("Numeric type required for reduction\n");
             break;
 
+        case GM_ERROR_NEED_ITEM_ITERATION:
+            printf("Need Items iteration here\n");
+            break;
+
+
         default:
             printf("Unknown error 2\n");
             break;
@@ -277,13 +282,19 @@ void gm_backend_error(int errno, const char* str1, const char* str2) {
     if (curr_file != NULL) printf("%s:", curr_file);
     switch (errno) {
         case GM_ERROR_FILEWRITE_ERROR:
-            printf("Error: cannot open file %s for write\n", str1);
+            printf("cannot open file %s for write\n", str1);
             break;
         case GM_ERROR_GPS_NUM_PROCS:
-            printf("Error: There must be one and only one procedure\n");
+            printf("There must be one and only one procedure (for giraph or user-main generation)\n");
             break;
         case GM_ERROR_GPS_PROC_NAME:
-            printf("Error: The name of the procedure(%s) must match with the name of file (%s)\n", str1, str2);
+            printf("he name of the procedure(%s) must match with the name of file (%s)\n", str1, str2);
+            break;
+        case GM_ERROR_CPPMAIN_RETURN_TYPE:
+            printf("Unsupported return type for user-main generation\n");
+            break;
+        case GM_ERROR_CPPMAIN_NUM_GRAPHS:
+            printf("(cppmain gen) There must be only one graph input\n");
             break;
         default:
             assert(false);
@@ -368,5 +379,7 @@ void gm_backend_error(int errno, int l, int c, const char* str1) {
         case GM_ERROR_CPP_UNSUPPORTED_SYNTAX:
             printf("The compiler does not support nested %s\n", str1);
             break;
+        case GM_ERROR_CPPMAIN_UNSUPPORTED_TYPE:
+            printf("(cppmain gen) Unsupported parameter type:%s\n", str1);
     }
 }

@@ -231,6 +231,8 @@ void gm_gps_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *b) 
                 Body.push(" = ");
                 get_lib()->generate_broadcast_receive_vertex(sym->getId(), Body);
                 Body.pushln(";");
+            } else {
+                //printf("omitting  %s\n", sym->getId()->get_genname());
             }
         } else {
             // temporary scalar variables. Define it here

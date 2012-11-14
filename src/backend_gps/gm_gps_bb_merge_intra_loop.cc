@@ -94,7 +94,7 @@ struct gps_intra_merge_candidate_t
 static void find_linear_while_segments(gps_bb* entry, std::list<gps_intra_merge_candidate_t*>& L);
 static void apply_intra_merge(gps_intra_merge_candidate_t*);
 void gm_gps_opt_merge_ebb_intra_loop::process(ast_procdef* p) {
-    if (!OPTIONS.get_arg_bool(GMARGFLAG_MERGE_BB_INTRA)) return;
+    //if (!OPTIONS.get_arg_bool(GMARGFLAG_MERGE_BB_INTRA)) return;
 
     gm_gps_beinfo* info = (gm_gps_beinfo*) FE.get_backend_info(p);
     gps_bb* entry = info->get_entry_basic_block();

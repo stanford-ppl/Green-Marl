@@ -35,7 +35,7 @@ enum gm_method_id_t
     GM_BLTIN_NODE_DEGREE,       // (out-)degree of a node               
     GM_BLTIN_NODE_IN_DEGREE,    // in-degree of a node
     GM_BLTIN_NODE_TO_EDGE,      // edge to that node-iterator
-    GM_BLTIN_NODE_IS_NBR,       // check if the node should be 
+    GM_BLTIN_NODE_IS_NBR_FROM,  // check if the node is a neighbor from another node
     GM_BLTIN_NODE_HAS_EDGE_TO,  // check if a node has an outgoing edge to other node
     GM_BLTIN_NODE_RAND_NBR,     // returns a random neighbor of the node
 
@@ -92,7 +92,7 @@ const gm_builtin_desc_t GM_builtins[] = {
         { "*OutDegree", GM_BLTIN_NODE_DEGREE, "" },
         { "Node:NumInNbrs:Int:0", GM_BLTIN_NODE_IN_DEGREE, AUX_INFO(GM_BLTIN_INFO_USE_REVERSE,GM_BLTIN_FLAG_TRUE) },
         { "*InDegree", GM_BLTIN_NODE_IN_DEGREE, "" },
-        { "Node:IsNbrFrom:Bool:1:Node", GM_BLTIN_NODE_IS_NBR, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE) },
+        { "Node:IsNbrFrom:Bool:1:Node", GM_BLTIN_NODE_IS_NBR_FROM, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE) },
         { "Node:HasEdgeTo:Bool:1:Node", GM_BLTIN_NODE_HAS_EDGE_TO, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE)},
         { "Node:PickRandomNbr:Node",    GM_BLTIN_NODE_RAND_NBR, AUX_INFO(GM_BLTIN_INFO_CHECK_NBR,GM_BLTIN_FLAG_TRUE)},
 

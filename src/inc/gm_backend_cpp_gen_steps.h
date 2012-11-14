@@ -12,7 +12,8 @@ GM_COMPILE_STEP(gm_cpp_gen_regular, "Regularize code structure for code generati
 GM_COMPILE_STEP(gm_cpp_gen_prop_decl, "Check property declaration");
 GM_COMPILE_STEP(gm_cpp_gen_mark_parallel, "Mark every parallel sentence")
 GM_COMPILE_STEP(gm_cpp_gen_check_bfs, "Check BFS routines")
-GM_COMPILE_STEP(gm_cpp_gen_misc_check, "Creating source for each procedure")
+GM_COMPILE_STEP(gm_cpp_gen_misc_check, "Checking small assumptions")
+GM_COMPILE_STEP(gm_cpp_gen_check_usermain, "Checking items for user main generation")
 GM_COMPILE_STEP(gm_cpp_gen_proc, "Creating source for each procedure")
 
 //-------------------------------------------

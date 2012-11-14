@@ -1,4 +1,3 @@
-#include "gm_graph.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <fstream>
@@ -6,6 +5,13 @@
 #include <string.h>
 #include <sstream>
 #include <map>
+#include <set>
+
+#include "gm_graph.h"
+#include "gm_util.h"
+#include "gm_lock.h"
+#include "gm_file_handling.h"
+
 
 // If the following flag is on, we let the correct thread 'touches' the data strcutre
 // for the first time, so that the memory is allocated in the corresponding socket.
@@ -27,12 +33,18 @@ gm_graph::gm_graph() {
     e_idx2id = NULL;
     e_id2idx = NULL;
 
+    //n_index2id = NULL;
+
     _numNodes = 0;
     _numEdges = 0;
     _reverse_edge = false;
     _frozen = false;
     _directed = true;
     _semi_sorted = false;
+
+    _nodekey_defined = false;
+    _reverse_nodekey_defined = false;
+    _nodekey_type_is_numeric = true;
 }
 
 gm_graph::~gm_graph() {
@@ -443,6 +455,9 @@ void gm_graph::clear_graph() {
 
     _numNodes = 0;
     _numEdges = 0;
+
+    if (_nodekey_defined) {_numeric_key.clear();}
+    if (_reverse_nodekey_defined) {_numeric_reverse_key.clear();}
 }
 
 //--------------------------------------------------
@@ -563,7 +578,7 @@ bool gm_graph::load_binary(char* filename) {
         goto error_return;
     }
 
-    printf("N = %ld, M = %ld\n", N,M);
+    printf("N = %ld, M = %ld\n", (long)N,(long)M);
     allocate_memory_for_frozen_graph(N, M);
 
 #if GM_GRAPH_NUMA_OPT 
@@ -618,7 +633,6 @@ bool gm_graph::load_binary(char* filename) {
             this->node_idx[j] = temp_node_idx[j];
     }
     delete [] temp_node_idx;
-
 #endif
 
     fclose(f);
@@ -627,79 +641,6 @@ bool gm_graph::load_binary(char* filename) {
 
     error_return: fclose(f);
     error_return_noclose: clear_graph();
-    return false;
-}
-
-bool gm_graph::load_adjacency_list(char* filename, char separator) {
-    clear_graph();
-    std::string line, temp_str;
-    long temp_long, field_index;
-    node_t N = 0, processed_nodes = 0;
-    edge_t M = 0, processed_edges = 0;
-    std::map<node_t,node_t> index_convert;
-
-    // Open the file
-    std::ifstream file(filename);
-    if (file == NULL) {
-        goto error_return;
-    }
-
-    // Determine number of nodes and edges so we can allocate memory
-    while(std::getline(file, line)) {
-        if (line.at(0) < '0' || line.at(0) > '9') {
-            continue;
-        }
-        field_index = 0;
-        std::stringstream linestream(line);
-        while(std::getline(linestream, temp_str, separator)) {
-            if (field_index == 0) {
-                // Parsing node id
-                temp_long = atol(temp_str.c_str());
-                index_convert[temp_long] = N;
-                N++;
-            } else if (field_index % 2 == 0) {
-                // Parsing edge id
-                M++;
-            }
-            field_index++;
-        }
-    }
-
-    // Allocate the memory
-    prepare_external_creation(N, M);
-
-    // Reset the file
-    file.clear();
-    file.seekg(0, std::ios::beg);
-
-    // Fill the node and edges arrays
-    while(std::getline(file, line)) {
-        if (line.at(0) < '0' || line.at(0) > '9') {
-            continue;
-        }
-        field_index = 0;
-        std::stringstream linestream(line);
-        while(std::getline(linestream, temp_str, separator)) {
-            if (field_index == 0) {
-                // Parsing node id
-                this->begin[processed_nodes] = processed_edges;
-            } else if (field_index % 2 == 0) {
-                // Parsing edge id
-                temp_long = atol(temp_str.c_str());
-                this->node_idx[processed_edges] = index_convert[temp_long];
-                processed_edges++;
-            }
-            field_index++;
-        }
-        processed_nodes++;
-    }
-
-    // Close file and freeze graph
-    file.close();
-    _frozen = true;
-    return true;
-
-    error_return: clear_graph();
     return false;
 }
 
@@ -763,6 +704,76 @@ void gm_graph_check_if_size_is_correct(int node_size, int edge_size)
 }
 
 int GM_SIZE_CHECK_VAR;
+
+void gm_graph::prepare_nodekey(bool _prepare_reverse)
+{
+    assert(_numNodes == 0);
+    assert(_nodekey_defined == false);
+    assert(_reverse_nodekey_defined == false);
+    assert(_nodekey_type_is_numeric == true);
+
+    _nodekey_defined = true;
+    if (_prepare_reverse) {
+        _reverse_nodekey_defined = true;
+        _numeric_reverse_key.reserve(4*1024*1024);    // initial reservation = 4 M
+    }
+}
+
+void gm_graph::create_reverse_nodekey() 
+{
+    assert(_nodekey_defined == true);
+    assert(_reverse_nodekey_defined == false);
+    assert(_nodekey_type_is_numeric == true);
+
+    _numeric_reverse_key.reserve(_numeric_key.size());
+
+    std::map<node_t, node_t>::iterator I;
+    for(I= _numeric_key.begin(); I!=_numeric_key.end(); I++)      
+    {
+        node_t key = I->first;
+        node_t id = I->second;
+        _numeric_reverse_key[id] = key;
+    }
+}
+
+void gm_graph::delete_nodekey() {
+    _nodekey_defined = false; 
+    assert(_nodekey_type_is_numeric == true);
+    _numeric_key.clear();
+}
+void gm_graph::delete_reverse_nodekey() {
+    _reverse_nodekey_defined = false;
+    assert(_nodekey_type_is_numeric == true);
+
+    _numeric_reverse_key.clear();
+    _numeric_reverse_key.resize(4*1024*1024);    // initial reservation = 4 M
+}
+node_t gm_graph::add_nodekey(node_t key) {
+    assert(_nodekey_defined == true);
+    assert(_nodekey_type_is_numeric == true);
+
+    std::map<node_t, node_t>::iterator I = _numeric_key.find(key);
+    if (I == _numeric_key.end())  {
+        node_t nid = _numeric_key.size();
+        _numeric_key[key] = nid;
+
+        if (_reverse_nodekey_defined) 
+        {
+            if ((size_t)nid >= _numeric_reverse_key.capacity()) {
+                _numeric_reverse_key.reserve(nid*2);
+            }
+            _numeric_reverse_key[nid] = key;
+        }
+        return nid;
+    }
+    else {
+        return I->second;
+    }
+}
+
+
+
+
 
 #ifdef HDFS
 #include <hdfs.h>

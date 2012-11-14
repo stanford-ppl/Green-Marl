@@ -1,5 +1,5 @@
 // Test of Built-in #1
-Proc P (G:Graph, A: N_P<Int>(G), r:Node(G))
+Proc b4_P (G:Graph, A: N_P<Int>(G), r:Node(G))
 {
     Node_Set(G) S;
     Node_Seq(G) Q;

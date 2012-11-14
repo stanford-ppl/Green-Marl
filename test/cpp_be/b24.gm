@@ -1,4 +1,4 @@
-Procedure test_property_of_collection_loop(G:Graph)
+Procedure b24_test_property_of_collection_loop(G:Graph)
 {
     N_P<N_S> p;
     

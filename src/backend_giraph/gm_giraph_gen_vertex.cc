@@ -45,6 +45,18 @@ void gm_giraph_gen::do_generate_vertex_begin() {
 }
 
 void gm_giraph_gen::do_generate_vertex_end() {
+    Body.pushln("public static long gmGetRandomVertex(long gsize) {");
+    Body.pushln("if (gsize < 1 * 1024 * 1024 * 1024) ");
+    Body.pushln("return (long) (new Random()).nextInt((int) gsize);");
+    Body.pushln("else {");
+    Body.pushln("while(true) {");
+    Body.pushln("long l = (new Random()).nextLong(); ");
+    Body.pushln("if (l < 0) l = l * -1; ");
+    Body.pushln("if (l < gsize) return l;");
+    Body.pushln("}");
+    Body.pushln("}");
+    Body.pushln("}");
+
     Body.pushln("}");
 }
 

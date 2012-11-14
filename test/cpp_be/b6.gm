@@ -1,7 +1,7 @@
 
 // Test of temporary property declaration
 // Test of temporary property deletation
-Proc P(G: Graph, A:N_P<Int>(G), b:Int)
+Proc b6_P(G: Graph, A:N_P<Int>(G), b:Int)
 {
     N_P<Int>(G) B;
 
@@ -16,7 +16,7 @@ Proc P(G: Graph, A:N_P<Int>(G), b:Int)
     }
 }
 
-Proc Q(G: Graph, A:N_P<Int>(G), b:Int)
+Proc b6_Q(G: Graph, A:N_P<Int>(G), b:Int)
 {
     N_P<Float>(G) B;
 

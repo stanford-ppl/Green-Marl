@@ -55,6 +55,9 @@ public:
     virtual void generate_down_initializer(ast_foreach* fe, gm_code_writer& Body);
     virtual void generate_foreach_header(ast_foreach* fe, gm_code_writer& Body);
 
+protected:
+    gm_cpp_gen* get_main() {return main;}
+
 private:
     //map sizes
     static const int SMALL = 0;
@@ -124,6 +127,7 @@ class gm_cpp_gen: public gm_backend, public gm_code_generator
 public:
     gm_cpp_gen() :
             gm_code_generator(Body), fname(NULL), dname(NULL), f_header(NULL), f_body(NULL), _target_omp(false), _pblock(false) {
+        f_shell = NULL;
         glib = new gm_cpplib(this);
         init();
     }
@@ -192,8 +196,12 @@ protected:
     gm_code_writer Body;
     FILE *f_header;
     FILE *f_body;
+    FILE *f_shell;
     bool open_output_files();
-    void close_output_files();
+    void close_output_files(bool remove_files=false);
+    void remove_output_files();
+    void do_generate_compile_shell(std::map<std::string,std::string>& setup);
+    void do_generate_user_main();
 
     bool _target_omp;
     gm_cpplib* glib; // graph library

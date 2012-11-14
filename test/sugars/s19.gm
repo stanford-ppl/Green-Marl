@@ -1,0 +1,19 @@
+// Test of Iteration ofer properties
+Procedure foo()
+{
+   Graph G;
+   Node n;
+   N_P<N_S> prop;
+   N_P<Int> A;
+
+   G.A = 0;
+   Foreach(t: G.Nodes) { 
+     t.prop.Add(n);
+   }
+   Int x = 0;
+   
+   Foreach(n2: G.Nodes) { 
+       x += Sum(y:n2.prop.Items) {y.A};
+   }
+   
+}

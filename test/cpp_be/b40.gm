@@ -1,4 +1,4 @@
-Procedure test_map_get_element(G:Graph)
+Procedure b40_test_map_get_element(G:Graph)
 {
 	Map<Int, Int> map1;
 	Int x = map1[0];

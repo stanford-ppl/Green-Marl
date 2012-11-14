@@ -17,13 +17,13 @@
 class gm_common_neighbor_iter
 {
 
-public:
+  public:
     // graph, source, destination
     gm_common_neighbor_iter(gm_graph& _G, node_t s, node_t d);
     void reset();
     node_t get_next();
 
-private:
+  private:
     bool check_common(node_t t);
 
     gm_graph& G;

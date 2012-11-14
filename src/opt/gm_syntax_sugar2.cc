@@ -370,15 +370,20 @@ void ss2_reduce_op::post_process_body(ast_expr_reduce* target) {
     //-------------------------------------------------
     // 3.1 create foreach
     ast_id* foreach_it = old_iter->copy();
-    ast_id* foreach_src = target->get_source()->copy(true); // copy SymInfo as well
     ast_id* foreach_src2 = target->get_source2();
     if (foreach_src2 != NULL) foreach_src2 = foreach_src2->copy(true);
 
     int iter_type = target->get_iter_type();
 
     // see common/new_sent_after_tc.cc
-    ast_foreach* fe_new = gm_new_foreach_after_tc(foreach_it, foreach_src, foreach_body, iter_type);
-    fe_new->set_source2(foreach_src2); // xxx: what was this again?
+    ast_foreach* fe_new;
+   
+    if (target->is_source_field()) 
+        fe_new = gm_new_foreach_after_tc(foreach_it, NULL, foreach_body, iter_type, target->get_source_field()->copy(true));
+    else 
+        fe_new = gm_new_foreach_after_tc(foreach_it, target->get_source()->copy(true), foreach_body, iter_type);
+
+    fe_new->set_source2(foreach_src2); // src2: common-nbr iteration
 
     // 3.2 add foreach 
     if (!is_nested) {

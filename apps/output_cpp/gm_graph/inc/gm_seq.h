@@ -9,7 +9,7 @@
 template<typename T>
 class gm_seq
 {
-public:
+  public:
     gm_seq() {
         init(gm_rt_get_num_threads());
     }
@@ -113,7 +113,7 @@ public:
         return NULL;
     }
 
-private:
+  private:
 
     typename std::list<T> Q;
     typename std::list<T>* local_Q_front;

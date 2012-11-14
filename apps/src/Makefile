@@ -1,17 +1,18 @@
 COMP = ../../bin/gm_comp
+include ../../setup.mk
+include ../Programs.mk
 
 # TARGET, PROGS should be defined by test_apps/Makefile
 ifndef TARGET
 TARGET = cpp_omp
 endif
 
-include ../Programs.mk
 ifndef PROGS
 PROGS = pagerank
 endif
 
 ifndef GM_ARGS
-GMARGS =
+GM_ARGS =
 endif
 
 
@@ -30,6 +31,9 @@ endif
 ifeq ($(TARGET), giraph)
     ODIR = ../output_giraph/generated
     OUTS =$(addprefix $(ODIR)/, $(SRCS:.gm=.java))
+ifneq ($(strip $(OUTPUT_PACKAGE)),)
+	GM_ARGS += -GiraphPackage=$(OUTPUT_PACKAGE)
+endif
 endif
 
 FLAGS = -o=$(ODIR) -t=$(TARGET) $(GM_ARGS)
@@ -44,4 +48,4 @@ $(ODIR)/%.java: %.gm
 	$(COMP) $(FLAGS) $<
 
 clean: 
-	\rm -rf $(ODIR)/*.java $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h *.java
+	\rm -rf $(ODIR)/*.java $(ODIR)/*.cc $(ODIR)/*.h *.cc *.h *.java *.sh *.mk

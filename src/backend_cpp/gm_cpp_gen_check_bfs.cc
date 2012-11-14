@@ -20,6 +20,17 @@
 //   For every bfs
 //   - save sym entries of collections that are used inside each bfs
 //---------------------------------------------------------------
+static void add_to_list_unless_duplicated(gm_symtab_entry* e, std::list<void*>& L)
+{
+    std::list<void*>::iterator I;
+    for(I=L.begin(); I!=L.end(); I++) {
+        gm_symtab_entry* i = (gm_symtab_entry*) *I;
+        if (i == e) return ;
+    }
+    printf("adding %s\n",e->getId()->get_genname());
+    L.push_back(e);
+}
+
 class check_bfs_main_t : public gm_apply
 {
 public:
@@ -35,34 +46,23 @@ public:
         for (I = MAP.begin(); I != MAP.end(); I++) {
             gm_symtab_entry* e = I->first;
             // eliminate duplicates
-            std::list<void*>::iterator L_I;
-            for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
-              if (((gm_symtab_entry*)*L_I) == e) break;
-            }
-            if (L_I == LIST.end()) LIST.push_back(e);
+            add_to_list_unless_duplicated(e, LIST);
 
             gm_rwinfo_list* use = I->second;
             (assert(use!=NULL));
+
             gm_rwinfo_list::iterator K;
             for (K = use->begin(); K != use->end(); K++) {
                 gm_symtab_entry* driver = (*K)->driver;
                 if (driver != NULL) {
                     // eliminate duplicates
-                    for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
-                        if (((gm_symtab_entry*)*L_I) == driver) break;
-                    }
-                    if (L_I == LIST.end()) LIST.push_back(driver);
+                    add_to_list_unless_duplicated(driver, LIST);
 
-                    LIST.push_back(driver);
                     ast_id* g = driver->getType()->get_target_graph_id();
-                    //ast_id* c = driver->getType()->get_target_collection_id();
                     if (g != NULL) {
-                        // eliminate duplicates
-                        for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
-                            if (((gm_symtab_entry*)*L_I) == g->getSymInfo()) break;
-                        }
-                        if (L_I == LIST.end()) LIST.push_back(g->getSymInfo());
+                        add_to_list_unless_duplicated(g->getSymInfo(), LIST);
                     }
+
                     /* 
                     if (c != NULL) {
                         // eliminate duplicates
@@ -127,9 +127,8 @@ public:
             ast_expr_builtin* bin = (ast_expr_builtin*) e;
             ast_id * driver = bin->get_driver();
             if (driver != NULL) {
-
                 std::list<void*>& LIST = ((ast_extra_info_list*) current_bfs->find_info(CPPBE_INFO_BFS_SYMBOLS))->get_list();
-                LIST.push_back(driver->getSymInfo());
+                add_to_list_unless_duplicated(driver->getSymInfo(), LIST);
             }
         }
         return true;

@@ -8,7 +8,7 @@
 template<typename T>
 class gm_order
 {
-public:
+  public:
     gm_order(int _max_sz, int _max_thread = 16) :
             max_thread(_max_thread), max_sz(_max_sz) {
         local_Q_front = new std::list<T>[max_thread];
@@ -129,7 +129,7 @@ public:
 
     class par_iter
     {
-    public:
+      public:
         par_iter(typename std::list<T>::iterator I, typename std::list<T>::iterator E) :
                 ITER(I), END_ITER(E), is_small(true), bitmap(NULL) {
         }
@@ -156,7 +156,7 @@ public:
                 return IDX++;
             }
         }
-    private:
+      private:
         bool is_small;
         unsigned char* bitmap;
         typename std::set<T>::iterator ITER;  // for small instance use
@@ -194,7 +194,7 @@ public:
         }
     }
 
-private:
+  private:
     gm_order() : max_sz(-1), max_thread(-1), bitmap(NULL), local_Q_front(NULL), local_Q_back(NULL) {
     } // initialize without size is prohibited
 
