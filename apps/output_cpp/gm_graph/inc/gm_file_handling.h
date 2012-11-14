@@ -16,6 +16,7 @@ class GM_JNI_Handler {
     bool failed();
     JNIEnv *env_;
     JavaVM *jvm_;
+    void printAndClearException();
 
   private:
     GM_JNI_Handler();

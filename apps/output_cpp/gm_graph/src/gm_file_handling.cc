@@ -73,6 +73,13 @@ GM_JNI_Handler::~GM_JNI_Handler() {
     }
 }
 
+void GM_JNI_Handler::printAndClearException() {
+    if (env_->ExceptionOccurred()) {
+        env_->ExceptionDescribe();
+        env_->ExceptionClear();
+    }
+}
+
 #endif
 
 /***********************************************************
@@ -104,6 +111,7 @@ void GM_Reader::initialize() {
         // Find the HDFSReader class
         cls_ = env_->FindClass("HDFSReader");
         if (cls_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot find class HDFSReader\n");
             failed_ = true;
             return;
@@ -112,6 +120,7 @@ void GM_Reader::initialize() {
         // Get the methodID of the constructor of HDFSReader class that takes java.lang.String as the only input parameter
         jmethodID readerConstructor = env_->GetMethodID(cls_, "<init>", "(Ljava/lang/String;)V");
         if (readerConstructor == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get the constructor of HDFSReader class\n");
             failed_ = true;
             return;
@@ -120,6 +129,7 @@ void GM_Reader::initialize() {
         // Create a new object of HDFSReader class, and also invoke its constructor
         readerObj_ = env_->NewObject(cls_, readerConstructor, env_->NewStringUTF(filename_.c_str()));
         if (readerObj_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot create new object of HDFSReader class\n");
             failed_ = true;
             return;
@@ -128,6 +138,7 @@ void GM_Reader::initialize() {
         // Get the methodID of getLine in HDFSReader class
         getLineMethod_ = env_->GetMethodID(cls_, "getLine", "()Ljava/lang/String;");
         if (getLineMethod_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get getLine method in HDFSReader\n");
             failed_ = true;
             return;
@@ -136,6 +147,7 @@ void GM_Reader::initialize() {
         // Get the methodID of getBytes in HDFSReader class
         getBytesMethod_ = env_->GetMethodID(cls_, "getBytes", "(I)[B");
         if (getBytesMethod_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get getBytes method in HDFSReader\n");
             failed_ = true;
             return;
@@ -144,6 +156,7 @@ void GM_Reader::initialize() {
         // Get the methodID of seekCurrent in HDFSReader class
         seekCurrentMethod_ = env_->GetMethodID(cls_, "seekCurrent", "(J)I");
         if (seekCurrentMethod_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get seekCurrent method in HDFSReader\n");
             failed_ = true;
             return;
@@ -178,6 +191,7 @@ void GM_Reader::reset() {
         // Get the methodID of reset in HDFSReader class
         jmethodID resetMethod = env_->GetMethodID(cls_, "reset", "()V");
         if (resetMethod == 0) {
+            GM_JNI_Handler::getInstance()->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get reset method in HDFSReader\n");
             failed_ = true;
             return;
@@ -209,6 +223,7 @@ bool GM_Reader::getNextLine(std::string &line) {
         // Convert the return object into C string
         const char* str = env_->GetStringUTFChars((jstring) strObj, NULL);
         if (str == 0) {
+            GM_JNI_Handler::getInstance()->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot convert java.lang.String to C String\n");
             return false;
         }
@@ -270,6 +285,7 @@ void GM_Reader::terminate() {
         // Get the methodID of terminate in HDFSReader class
         jmethodID terminateMethod = env_->GetMethodID(cls_, "terminate", "()V");
         if (terminateMethod == 0) {
+            GM_JNI_Handler::getInstance()->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get terminate method in HDFSReader\n");
             failed_ = true;
             return;
@@ -305,6 +321,7 @@ void GM_Writer::initialize () {
         // Get the JNI environment from the GM_JNI_Handler
         GM_JNI_Handler *jni_handler = GM_JNI_Handler::getInstance();
         if (jni_handler->failed()) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Initialization failed\n");
             failed_ = true;
             return;
@@ -314,6 +331,7 @@ void GM_Writer::initialize () {
         // Find the HDFSWriter class
         cls_ = env_->FindClass("HDFSWriter");
         if (cls_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot find class HDFSWriter\n");
             failed_ = true;
             return;
@@ -323,6 +341,7 @@ void GM_Writer::initialize () {
         // Get the methodID of the constructor of HDFSWriter class that takes java.lang.String as the only input parameter
         jmethodID writerConstructor = env_->GetMethodID(cls_, "<init>", "(Ljava/lang/String;)V");
         if (writerConstructor == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get Constructor of HDFSWriter class with String as the only input parameter\n");
             failed_ = true;
             return;
@@ -331,6 +350,7 @@ void GM_Writer::initialize () {
         // Create a new object of HDFSWriter class, and also invoke its constructor
         writerObj_ = env_->NewObject(cls_, writerConstructor, env_->NewStringUTF(filename_.c_str()));
         if (writerObj_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot create new object of HDFSWriter class\n");
             failed_ = true;
             return;
@@ -339,6 +359,7 @@ void GM_Writer::initialize () {
         // Get the methodID of getLine in HDFSWriter class
         writeMethod_ = env_->GetMethodID(cls_, "write", "(Ljava/lang/String;)V");
         if (writeMethod_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get write method in HDFSWriter\n");
             failed_ = true;
             return;
@@ -347,6 +368,7 @@ void GM_Writer::initialize () {
         // Get the methodID of writeBytes in HDFSWriter class
         writeBytesMethod_ = env_->GetMethodID(cls_, "writeBytes", "([B)V");
         if (writeBytesMethod_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get writeBytes method in HDFSWriter\n");
             failed_ = true;
             return;
@@ -355,6 +377,7 @@ void GM_Writer::initialize () {
         // Get the methodID of flush in HDFSWriter class
         flushMethod_ = env_->GetMethodID(cls_, "flush", "()V");
         if (flushMethod_ == 0) {
+            jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get flush method in HDFSWriter\n");
             failed_ = true;
             return;
@@ -385,6 +408,7 @@ void GM_Writer::terminate() {
         // Get the methodID of terminate in HDFSWriter class
         jmethodID terminateMethod = env_->GetMethodID(cls_, "terminate", "()V");
         if (terminateMethod == 0) {
+            GM_JNI_Handler::getInstance()->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get terminate method in HDFSWriter\n");
             failed_ = true;
             return;
