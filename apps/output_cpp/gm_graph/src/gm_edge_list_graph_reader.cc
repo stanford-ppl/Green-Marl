@@ -184,7 +184,6 @@ bool gm_edge_list_graph_reader::storeEdgeList() {
     }
 
     outputFileStream.flush();
-    outputFileStream.close();
     return true;
 }
 
@@ -194,37 +193,40 @@ void gm_edge_list_graph_reader::storePropertiesForNode(node_t node) {
     for (int i = 0; i < propertyCount; i++) {
         void* property = nodeProperties[i];
         VALUE_TYPE type = nodePropertySchemata[i];
-        switch (type) {
-            case GMTYPE_BOOL:
-                // TODO 0/1 or true/false?
-                assert(false);
-                break;
-            case GMTYPE_INT:
-                appendProperty<int>(node, property);
-                break;
-            case GMTYPE_LONG:
-                appendProperty<long>(node, property);
-                break;
-            case GMTYPE_FLOAT:
-                appendProperty<float>(node, property);
-                break;
-            case GMTYPE_DOUBLE:
-                appendProperty<double>(node, property);
-                break;
-            case GMTYPE_NODE:
-                appendProperty<node_t>(node, property);
-                break;
-            case GMTYPE_EDGE:
-                appendProperty<edge_t>(node, property);
-                break;
-            default:
-                assert(false);
-                // should never happen
-                break;
-        }
+        appendProperty(node, property, type);
         if (i < propertyCount - 1) outputFileStream << " ";
     }
     outputFileStream << std::endl;
+}
+
+void gm_edge_list_graph_reader::appendProperty(node_t node, void* property, VALUE_TYPE type) {
+    switch (type) {
+        case GMTYPE_BOOL:
+            // TODO 0/1 or true/false?
+            assert(false);
+            break;
+        case GMTYPE_INT:
+            appendProperty<int>(node, property);
+            break;
+        case GMTYPE_LONG:
+            appendProperty<long>(node, property);
+            break;
+        case GMTYPE_FLOAT:
+            appendProperty<float>(node, property);
+            break;
+        case GMTYPE_DOUBLE:
+            appendProperty<double>(node, property);
+            break;
+        case GMTYPE_NODE:
+            appendProperty<node_t>(node, property);
+            break;
+        case GMTYPE_EDGE:
+            appendProperty<edge_t>(node, property);
+            break;
+        default:
+            assert(false);  // should never happen
+            break;
+    }
 }
 
 void gm_edge_list_graph_reader::storePropertiesForEdge(node_t source, edge_t edge) {

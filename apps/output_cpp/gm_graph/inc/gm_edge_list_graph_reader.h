@@ -58,6 +58,8 @@ private:
     void storePropertiesForNode(node_t node);
     void storePropertiesForEdge(node_t source, edge_t edge);
 
+    void appendProperty(node_t node, void* property, VALUE_TYPE type);
+
     template<typename T>
     const char* getModifier();
 
