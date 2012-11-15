@@ -35,8 +35,6 @@ private:
     int nodePropertyCount;
     int edgePropertyCount;
 
-    std::vector<void*> tmpNodeProperties; // node properties stored in std::map<node_t, VALUE_TYPE>
-
     gm_edge_list_graph_reader(
             char* filename,
             std::vector<VALUE_TYPE>& vprop_schema,
