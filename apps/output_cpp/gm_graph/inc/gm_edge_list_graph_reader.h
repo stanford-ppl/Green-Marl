@@ -15,34 +15,11 @@ class gm_graph;
 class gm_edge_list_graph_reader {
 
 public:
-    static bool load_edge_list(
-                    char* filename,                          // input filename
-                    std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
-                    std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
-                    std::vector<void*>& vertex_props,        // output, vector of arrays
-                    std::vector<void*>& edge_props,          // output, vector of arrays,
-                    gm_graph& target_graph,
-                    bool use_hdfs = false);
-
-    static bool store_edge_list(
-                    char* filename,                         // output filename
-                    std::vector<VALUE_TYPE>& vprop_schema,  // input: type of node properties
-                    std::vector<VALUE_TYPE>& eprop_schema,  // input: type of edge properties
-                    std::vector<void*>& vertex_props,       // input, vector of arrays
-                    std::vector<void*>& edge_props,         // intput, vector of arrays,
-                    gm_graph& target_graph,
-                    bool use_hdfs = false);
-
-    gm_edge_list_graph_reader(
-            char* filename,
-            std::vector<VALUE_TYPE>& vprop_schema,
-            std::vector<VALUE_TYPE>& eprop_schema,
-            std::vector<void*>& vertex_props,
-            std::vector<void*>& edge_props, gm_graph& Graph);
-
     ~gm_edge_list_graph_reader();
 
 private:
+    friend class gm_graph;
+
     gm_graph& G;
 
     std::ifstream inputFileStream;
@@ -58,6 +35,13 @@ private:
     int edgePropertyCount;
 
     std::vector<void*> tmpNodeProperties; // node properties stored in std::map<node_t, VALUE_TYPE>
+
+    gm_edge_list_graph_reader(
+            char* filename,
+            std::vector<VALUE_TYPE>& vprop_schema,
+            std::vector<VALUE_TYPE>& eprop_schema,
+            std::vector<void*>& vertex_props,
+            std::vector<void*>& edge_props, gm_graph& Graph);
 
     bool loadEdgeList();
     bool storeEdgeList();
@@ -119,12 +103,12 @@ const char* gm_edge_list_graph_reader::getModifier<int>() {
 
 template<>
 const char* gm_edge_list_graph_reader::getModifier<long>() {
-    return "";
+    return "%ld";
 }
 
 template<>
 const char* gm_edge_list_graph_reader::getModifier<double>() {
-    return "";
+    return "%f";
 }
 
 template<>

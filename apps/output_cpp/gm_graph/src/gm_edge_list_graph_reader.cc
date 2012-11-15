@@ -5,43 +5,35 @@
 
 #include "gm_graph.h"
 
-bool gm_edge_list_graph_reader::load_edge_list(char* filename,   // input filename
-        std::vector<VALUE_TYPE>& vprop_schema,                          // input: type of node properties
-        std::vector<VALUE_TYPE>& eprop_schema,                          // input: type of edge properties
-        std::vector<void*>& vertex_props,                               // output, vector of arrays
-        std::vector<void*>& edge_props,                                 // output, vector of arrays,
-        gm_graph& target_graph, bool use_hdfs) {
+bool gm_graph::load_edge_list(char* filename,    // input filename
+        std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
+        std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
+        std::vector<void*>& vertex_props,        // output, vector of arrays
+        std::vector<void*>& edge_props,          // output, vector of arrays,
+        bool use_hdfs) {
 
     assert(!use_hdfs);
 
-    gm_edge_list_graph_reader reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props, target_graph);
+    gm_edge_list_graph_reader reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props, *this);
     return reader.loadEdgeList();
 }
 
-bool gm_edge_list_graph_reader::store_edge_list(char* filename,  // output filename
-        std::vector<VALUE_TYPE>& vprop_schema,                          // input: type of node properties
-        std::vector<VALUE_TYPE>& eprop_schema,                          // input: type of edge properties
-        std::vector<void*>& vertex_props,                               // input, vector of arrays
-        std::vector<void*>& edge_props,                                 // intput, vector of arrays,
-        gm_graph& target_graph, bool use_hdfs) {
+bool gm_graph::store_edge_list(char* filename,  // output filename
+        std::vector<VALUE_TYPE>& vprop_schema,  // input: type of node properties
+        std::vector<VALUE_TYPE>& eprop_schema,  // input: type of edge properties
+        std::vector<void*>& vertex_props,       // input, vector of arrays
+        std::vector<void*>& edge_props,         // intput, vector of arrays,
+        bool use_hdfs) {
 
     assert(!use_hdfs);
 
-    gm_edge_list_graph_reader reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props, target_graph);
+    gm_edge_list_graph_reader reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props, *this);
     return reader.storeEdgeList();
 }
 
-gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename,
-        std::vector<VALUE_TYPE>& vprop_schema,
-        std::vector<VALUE_TYPE>& eprop_schema,
-        std::vector<void*>& vertex_props,
-        std::vector<void*>& edge_props,
-        gm_graph& Graph) :
-                nodePropertySchemata(vprop_schema),
-                edgePropertySchemata(eprop_schema),
-                nodeProperties(vertex_props),
-                edgeProperties(edge_props),
-                G(Graph) {
+gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename, std::vector<VALUE_TYPE>& vprop_schema, std::vector<VALUE_TYPE>& eprop_schema,
+        std::vector<void*>& vertex_props, std::vector<void*>& edge_props, gm_graph& Graph) :
+        nodePropertySchemata(vprop_schema), edgePropertySchemata(eprop_schema), nodeProperties(vertex_props), edgeProperties(edge_props), G(Graph) {
 
     inputFileStream.open(filename);
     outputFileStream.open(filename);
