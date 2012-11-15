@@ -66,7 +66,7 @@ bool gm_edge_list_graph_reader::loadEdgeList() {
 
     while (!inputFileStream.eof()) {
         inputFileStream.getline(lineData, maxSize);
-        if(strlen(lineData) == 0) break;
+        if(strlen(lineData) == 0 || lineData[0] == '#') continue;
 
         char* p = strtok(lineData, " ");
         node_t nodeId = readValueFromToken<node_t>(p);
