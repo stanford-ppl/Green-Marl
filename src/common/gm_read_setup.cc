@@ -24,6 +24,7 @@ static char find_end_of_key(char*& c) {
         c++;
     }
 }
+
 static bool process_variable_expansion
     (std::map<std::string, std::string>& setup, 
     const char*& var_begin, char*& buffer2, char to_find) {

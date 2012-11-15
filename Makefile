@@ -7,28 +7,20 @@ GPS=apps/output_gps
 GIRAPH=apps/output_giraph
 BUILD_DIRS=bin obj $(CPP)/bin $(LIB)/javabin $(CPP)/generated $(CPP)/data $(LIB)/lib $(LIB)/obj $(GPS)/generated $(GIRAPH)/generated $(GIRAPH)/bin $(GIRAPH)/target
 TEST_DIRS=test/cpp_be/output test/errors/output test/gps/output test/giraph/output test/opt/output test/parse/output test/rw_check/output test/sugars/output
-UNAME := $(shell uname)
-ifeq ($(UNAME), SunOS)
-TAIL=tail  
-else
-TAIL=tail -n
-endif 
+PWD := $(shell pwd)
 
 .PHONY: dirs compiler apps
 all: dirs $(CONFIG_FILE) compiler apps
 
-$(CONFIG_FILE): setup.mk.in
+$(CONFIG_FILE): setup.mk.in etc/update_setup
+	@echo "Re-creating setup.mk from updated setup.mk.in. Please check setup.mk afterwrd";
 	@if [ -f setup.mk ];   \
 	then \
-		echo "setup.mk.in changed. Please re-adjuset setup.mk. (Backing up previous setup.mk into setup.mk.bak)";\
 		cp setup.mk setup.mk.bak; \
-		rm setup.mk; \
-	fi; 
-	@echo "Initializing setup.mk from ${UNAME} $(TAIL)";
-	@head -5 setup.mk.in >> setup.mk
-	@echo -n GM_TOP= >> setup.mk
-	@pwd >> setup.mk
-	@$(TAIL) +6 setup.mk.in >> setup.mk
+	else \
+		touch setup.mk.bak; \
+	fi; \
+	etc/update_setup setup.mk.bak setup.mk.in $(CONFIG_FILE) ${PWD}
 
 compiler: dirs $(CONFIG_FILE)
 	@cd src; make
@@ -54,3 +46,6 @@ $(BUILD_DIRS):
 
 $(TEST_DIRS):
 	$(MKDIR) $@
+
+etc/update_setup :
+	g++ etc/update_setup.cc -o etc/update_setup
