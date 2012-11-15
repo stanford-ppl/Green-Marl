@@ -1,0 +1,326 @@
+diff -ru /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//avro/io.h ./src//avro/io.h
+--- /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//avro/io.h	2012-09-17 17:36:46.000000000 -0700
++++ ./src//avro/io.h	2012-11-09 16:45:14.944462339 -0800
+@@ -39,6 +39,7 @@
+  * io
+  */
+ 
++avro_reader_t avro_reader_gen_file(void *gm_file_reader);
+ avro_reader_t avro_reader_file(FILE * fp);
+ avro_reader_t avro_reader_file_fp(FILE * fp, int should_close);
+ avro_writer_t avro_writer_file(FILE * fp);
+@@ -112,6 +113,7 @@
+ int avro_file_reader(const char *path, avro_file_reader_t * reader);
+ int avro_file_reader_fp(FILE *fp, const char *path, int should_close,
+ 			avro_file_reader_t * reader);
++  int avro_gen_file_reader(const char *path, avro_file_reader_t * reader, int hdfs);
+ 
+ avro_schema_t
+ avro_file_reader_get_writer_schema(avro_file_reader_t reader);
+diff -ru /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//datafile.c ./src//datafile.c
+--- /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//datafile.c	2012-09-17 17:36:46.000000000 -0700
++++ ./src//datafile.c	2012-11-09 16:43:50.228460711 -0800
+@@ -29,6 +29,8 @@
+ #include <time.h>
+ #include <string.h>
+ 
++#include "gm_file_c.h"
++
+ struct avro_file_reader_t_ {
+ 	avro_schema_t writers_schema;
+ 	avro_reader_t reader;
+@@ -275,11 +277,7 @@
+ 	avro_schema_decref(meta_schema);
+ 
+ 	rval = avro_value_get_by_name(&meta, "avro.codec", &codec_val, NULL);
+-	if (rval) {
+-		avro_set_error("File header doesn't contain a codec");
+-		avro_value_decref(&meta);
+-		return rval;
+-	} else {
++	if (!rval) {
+ 		const void *buf;
+ 		size_t size;
+ 		char codec_name[11];
+@@ -462,6 +460,73 @@
+ 	return 0;
+ }
+ 
++int avro_gen_file_reader(const char *path, avro_file_reader_t * reader, int hdfs)
++{
++    
++	int rval;
++	avro_file_reader_t r = (avro_file_reader_t) avro_new(struct avro_file_reader_t_);
++	if (!r) {
++		avro_set_error("Cannot allocate file reader for %s", path);
++		return ENOMEM;
++	}
++
++    void* gm_file_reader = gmGenFileReaderOpen(path, hdfs);
++    if (!gm_file_reader) {
++		avro_set_error("Cannot allocate gm file reader for file %s", path);
++		avro_freet(struct avro_file_reader_t_, r);
++		return ENOMEM;
++    }
++	r->reader = avro_reader_gen_file(gm_file_reader);
++	if (!r->reader) {
++        gmGenFileReaderClose(gm_file_reader);
++		avro_set_error("Cannot allocate reader for file %s", path);
++		avro_freet(struct avro_file_reader_t_, r);
++		return ENOMEM;
++	}
++	r->block_reader = avro_reader_memory(0, 0);
++	if (!r->block_reader) {
++		avro_set_error("Cannot allocate block reader for file %s", path);
++		avro_reader_free(r->reader);
++		avro_freet(struct avro_file_reader_t_, r);
++		return ENOMEM;
++	}
++
++	r->codec = (avro_codec_t) avro_new(struct avro_codec_t_);
++	if (!r->codec) {
++		avro_set_error("Could not allocate codec for file %s", path);
++		avro_reader_free(r->reader);
++		avro_freet(struct avro_file_reader_t_, r);
++		return ENOMEM;
++	}
++	avro_codec(r->codec, NULL);
++
++	rval = file_read_header(r->reader, &r->writers_schema, r->codec,
++				r->sync, sizeof(r->sync));
++	if (rval) {
++		avro_reader_free(r->reader);
++		avro_codec_reset(r->codec);
++		avro_freet(struct avro_codec_t_, r->codec);
++		avro_freet(struct avro_file_reader_t_, r);
++		return rval;
++	}
++
++	r->current_blockdata = NULL;
++	r->current_blocklen = 0;
++
++	rval = file_read_block_count(r);
++	if (rval) {
++		avro_reader_free(r->reader);
++		avro_codec_reset(r->codec);
++		avro_freet(struct avro_codec_t_, r->codec);
++		avro_freet(struct avro_file_reader_t_, r);
++		return rval;
++	}
++
++	*reader = r;
++	return rval;
++}
++
++
+ int avro_file_reader_fp(FILE *fp, const char *path, int should_close,
+ 			avro_file_reader_t * reader)
+ {
+Only in ./src/: datafile.c.orig
+diff -ru /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//generic.c ./src//generic.c
+--- /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//generic.c	2012-09-17 17:36:46.000000000 -0700
++++ ./src//generic.c	2012-11-08 18:37:10.118401353 -0800
+@@ -2653,7 +2653,7 @@
+ 	const avro_generic_map_t  *self = (const avro_generic_map_t *) vself;
+ 	child->iface = &iface->child_giface->parent;
+ 	child->self = avro_raw_map_get(&self->map, name, index);
+-	return 0;
++	return (child->self == NULL ? EINVAL : 0);
+ }
+ 
+ static int
+Only in ./src/: generic.c.orig
+diff -ru /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//io.c ./src//io.c
+--- /home/ubuntu/work/avro-c-1.7.2/vanilla/avro-c-1.7.2/src//io.c	2012-09-17 17:36:46.000000000 -0700
++++ ./src//io.c	2012-11-09 16:35:51.304451509 -0800
+@@ -26,9 +26,12 @@
+ #include <string.h>
+ #include "dump.h"
+ 
++#include "gm_file_c.h"
++
+ enum avro_io_type_t {
+ 	AVRO_FILE_IO,
+-	AVRO_MEMORY_IO
++	AVRO_MEMORY_IO,
++    AVRO_GEN_FILE_IO
+ };
+ typedef enum avro_io_type_t avro_io_type_t;
+ 
+@@ -42,6 +45,15 @@
+ 	volatile int  refcount;
+ };
+ 
++struct _avro_reader_gen_file_t {
++	struct avro_reader_t_ reader;
++	void *gm_file_reader;
++	char *cur;
++	char *end;
++	char buffer[4096];
++};
++
++
+ struct _avro_reader_file_t {
+ 	struct avro_reader_t_ reader;
+ 	FILE *fp;
+@@ -74,11 +86,13 @@
+ #define avro_io_typeof(obj)      ((obj)->type)
+ #define is_memory_io(obj)        (obj && avro_io_typeof(obj) == AVRO_MEMORY_IO)
+ #define is_file_io(obj)          (obj && avro_io_typeof(obj) == AVRO_FILE_IO)
++#define is_gen_file_io(obj)      (obj && avro_io_typeof(obj) == AVRO_GEN_FILE_IO)
+ 
+ #define avro_reader_to_memory(reader_)  container_of(reader_, struct _avro_reader_memory_t, reader)
+ #define avro_reader_to_file(reader_)    container_of(reader_, struct _avro_reader_file_t, reader)
+ #define avro_writer_to_memory(writer_)  container_of(writer_, struct _avro_writer_memory_t, writer)
+ #define avro_writer_to_file(writer_)    container_of(writer_, struct _avro_writer_file_t, writer)
++#define avro_reader_to_gen_file(reader_)    container_of(reader_, struct _avro_reader_gen_file_t, reader)
+ 
+ static void reader_init(avro_reader_t reader, avro_io_type_t type)
+ {
+@@ -92,6 +106,22 @@
+ 	avro_refcount_set(&writer->refcount, 1);
+ }
+ 
++
++avro_reader_t avro_reader_gen_file(void *gm_file_reader)
++{
++	struct _avro_reader_gen_file_t *file_reader =
++	    (struct _avro_reader_gen_file_t *) avro_new(struct _avro_reader_gen_file_t);
++	if (!file_reader) {
++		avro_set_error("Cannot allocate new file reader");
++		return NULL;
++	}
++	memset(file_reader, 0, sizeof(struct _avro_reader_gen_file_t));
++	file_reader->gm_file_reader = gm_file_reader;
++	reader_init(&file_reader->reader, AVRO_GEN_FILE_IO);
++	return &file_reader->reader;
++}
++
++
+ avro_reader_t avro_reader_file_fp(FILE * fp, int should_close)
+ {
+ 	struct _avro_reader_file_t *file_reader =
+@@ -260,6 +290,63 @@
+ 	return -1;
+ }
+ 
++static int
++avro_read_gen_file(struct _avro_reader_gen_file_t *reader, void *buf, int64_t len)
++{
++	int64_t needed = len;
++	char *p = (char *) buf;
++	int rval;
++
++	if (len == 0) {
++		return 0;
++	}
++
++	if (needed > (int64_t) sizeof(reader->buffer)) {
++		if (bytes_available(reader) > 0) {
++			memcpy(p, reader->cur, bytes_available(reader));
++			p += bytes_available(reader);
++			needed -= bytes_available(reader);
++			buffer_reset(reader);
++		}
++		rval = gmGenFileReaderGetBytes(reader->gm_file_reader, p, needed);
++		if (rval != needed) {
++			avro_set_error("Cannot read %" PRIsz " bytes from file",
++				       (size_t) needed);
++			return -1;
++		}
++		return 0;
++	} else if (needed <= bytes_available(reader)) {
++		memcpy(p, reader->cur, needed);
++		reader->cur += needed;
++		return 0;
++	} else {
++		memcpy(p, reader->cur, bytes_available(reader));
++		p += bytes_available(reader);
++		needed -= bytes_available(reader);
++
++		rval = gmGenFileReaderGetBytes(reader->gm_file_reader, reader->buffer, sizeof(reader->buffer));
++		if (rval == 0) {
++			avro_set_error("Cannot read %" PRIsz " bytes from file",
++				       (size_t) needed);
++			return -1;
++		}
++		reader->cur = reader->buffer;
++		reader->end = reader->cur + rval;
++
++		if (bytes_available(reader) < needed) {
++			avro_set_error("Cannot read %" PRIsz " bytes from file",
++				       (size_t) needed);
++			return -1;
++		}
++		memcpy(p, reader->cur, needed);
++		reader->cur += needed;
++		return 0;
++	}
++	avro_set_error("Cannot read %" PRIsz " bytes from file",
++		       (size_t) needed);
++	return -1;
++}
++
+ int avro_read(avro_reader_t reader, void *buf, int64_t len)
+ {
+ 	if (buf && len >= 0) {
+@@ -269,6 +356,9 @@
+ 		} else if (is_file_io(reader)) {
+ 			return avro_read_file(avro_reader_to_file(reader), buf,
+ 					      len);
++		} else if (is_gen_file_io(reader)) {
++			return avro_read_gen_file(avro_reader_to_gen_file(reader), buf,
++					      len);
+ 		}
+ 	}
+ 	return EINVAL;
+@@ -310,6 +400,30 @@
+ 	return 0;
+ }
+ 
++static int avro_skip_gen_file(struct _avro_reader_gen_file_t *reader, int64_t len)
++{
++	int rval;
++	int64_t needed = len;
++
++	if (len == 0) {
++		return 0;
++	}
++	if (needed <= bytes_available(reader)) {
++		reader->cur += needed;
++	} else {
++		needed -= bytes_available(reader);
++		buffer_reset(reader);
++		rval = gmGenFileReaderSeekCurrent(reader->gm_file_reader, needed);
++		if (rval < 0) {
++			avro_set_error("Cannot skip %" PRIsz " bytes in file",
++				       (size_t) len);
++			return rval;
++		}
++	}
++	return 0;
++}
++
++
+ int avro_skip(avro_reader_t reader, int64_t len)
+ {
+ 	if (len >= 0) {
+@@ -318,6 +432,8 @@
+ 						len);
+ 		} else if (is_file_io(reader)) {
+ 			return avro_skip_file(avro_reader_to_file(reader), len);
++		} else if (is_gen_file_io(reader)) {
++			return avro_skip_gen_file(avro_reader_to_gen_file(reader), len);
+ 		}
+ 	}
+ 	return 0;
+@@ -420,6 +536,9 @@
+ 			fclose(avro_reader_to_file(reader)->fp);
+ 		}
+ 		avro_freet(struct _avro_reader_file_t, reader);
++	} else if (is_gen_file_io(reader)) {
++        gmGenFileReaderClose(avro_reader_to_gen_file(reader)->gm_file_reader);
++		avro_freet(struct _avro_reader_gen_file_t, reader);
+ 	}
+ }
+ 

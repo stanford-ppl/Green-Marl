@@ -6,6 +6,6 @@ set -e
 DIRS="cpp_be"
 for d in $DIRS
 do
-  { cd $d; make; make dummy; cd ..; }
+  { cd $d; make $@; make dummy $@; cd ..; }
 done
 

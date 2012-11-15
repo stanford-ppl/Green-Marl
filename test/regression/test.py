@@ -21,6 +21,9 @@ if (len(sys.argv) == 2 and sys.argv[1] == "-nostop") or os.getenv("gm_regress_no
 
 PLATFORM=platform.machine();
 PROCESSOR=platform.processor();
+MAKE_FLAGS = "";
+if (PROCESSOR == "sparc"):
+    MAKE_FLAGS = " ORACLE=1 FORCE_64BIT=1";
 	
 
 # CHECK EXISTENCE AND VERSIONS OF THE REQUIRED TOOLS
@@ -79,6 +82,9 @@ if (interactive):
 def build_compiler():
     os.chdir(TOP_LEVEL_PATH);
     make_res = commands.getstatusoutput("make veryclean");
+    if (make_res[0] != 0):
+        print "COMPILER BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
     assert make_res[0] == 0;
     make_res = commands.getstatusoutput("make compiler -j "); # str(NUM_THREADS));
     if make_res[0] != 0:
@@ -94,7 +100,7 @@ build_compiler();
 # RUN UNIT TEST (CHECK IF CRASH)
 def run_unit_test_crash():
     os.chdir(s_path+"/..");
-    crash_res = commands.getstatusoutput("./check_if_crash.sh");
+    crash_res = commands.getstatusoutput("./check_if_crash.sh " + MAKE_FLAGS);
     if crash_res[0] != 0:
         print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
         sys.exit(-1);
@@ -119,11 +125,11 @@ def build_and_run_apps(apps_out_dir, run_apps):
     if (interactive): 
         print "Building at " + apps_out_dir;
     make_res = commands.getstatusoutput("make clean_all");
+    if (make_res[0] != 0):
+        print "APPLICATION BUILD PROCESS FAILED IN THE FOLLOWING WAY\n\n"+make_res[1];
+        sys.exit(-1);
     assert make_res[0] == 0;
-    build_cmd = "make all -j";
-    if (PROCESSOR == "sparc"):
-	os.environ["ORACLE"] = "1";
-	os.environ["FORCE_64BIT"] = "1";
+    build_cmd = "make all -j" + MAKE_FLAGS;
 	
     make_res = commands.getstatusoutput(build_cmd);
     if make_res[0] != 0:
@@ -160,7 +166,7 @@ build_and_run_apps("output_cpp", True);
 # RUN CPP_BE_LINK_TEST (CHECK IF CRASH)
 def run_unit_cpp_be_link():
     os.chdir(s_path+"/..");
-    crash_res = commands.getstatusoutput("./check_cpp_be.sh");
+    crash_res = commands.getstatusoutput("./check_cpp_be.sh " + MAKE_FLAGS);
     if crash_res[0] != 0:
         print "UNIT TEST FAILED IN THE FOLLOWING WAY\n\n"+crash_res[1];
         sys.exit(-1);
@@ -169,3 +175,5 @@ def run_unit_cpp_be_link():
 os.putenv("env", "cpp_omp");
 build_and_run_apps("output_cpp", False);
 run_unit_cpp_be_link();
+
+print ("OKAY");

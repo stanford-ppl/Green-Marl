@@ -142,13 +142,23 @@ void do_compiler_action_at_stop() {
 // gm_argopts.cc
 extern void process_args(int argc, char** argv);
 
+//extern bool gm_read_setup_file(std::map<std::string, std::string>& setup, bool export_env);
 int main(int argc, char** argv) {
     bool ok = true;
+
+    //std::map<std::string, std::string> setup;
+    //if (!gm_read_setup_file(setup,true))
+    //{
+    //    printf("cannot read setup file\n");
+    //    return 0;
+    //}
 
     //-------------------------------------
     // parse arguments
     //-------------------------------------
     process_args(argc, argv);
+
+
 
     gm_path_parser Path;
     char* fname = GM_input_lists.front();

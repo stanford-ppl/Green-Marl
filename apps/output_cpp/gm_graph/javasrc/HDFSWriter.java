@@ -10,29 +10,29 @@ import org.apache.hadoop.fs.Path;
  * A Java class thar writes to a text file in HDFS
  */
 public class HDFSWriter {
-	String fileName;
-	BufferedWriter out;
+    String fileName;
+    BufferedWriter out;
     FileSystem fs;
     Path filePath;
     FSDataOutputStream fdos;
-	
-    // Constructor and initialization
-	public HDFSWriter (String s) {
-		try {
-			fileName = s;
-			Configuration conf = new Configuration();
-			conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/core-site.xml"));
-			conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/hdfs-site.xml"));
-			fs = FileSystem.get(conf);
-		    filePath = new Path(fileName);
-			fdos = fs.create(filePath);
-			out = new BufferedWriter(new OutputStreamWriter(fdos));
-		} catch (Exception e) {
-			System.err.println (e);
-		}
-	}
 
-	// Write the string to file
+    // Constructor and initialization
+    public HDFSWriter (String s) {
+        try {
+            fileName = s;
+            Configuration conf = new Configuration();
+            conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/core-site.xml"));
+            conf.addResource(new Path(System.getenv("HADOOP_HOME") + "/conf/hdfs-site.xml"));
+            fs = FileSystem.get(conf);
+            filePath = new Path(fileName);
+            fdos = fs.create(filePath);
+            out = new BufferedWriter(new OutputStreamWriter(fdos));
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+    }
+
+    // Write the string to file
     public void write (String str) {
         try {
             out.write (str, 0, str.length());
@@ -41,7 +41,28 @@ public class HDFSWriter {
             System.err.println (e);
         }
     }
-	
+
+    // Write the a sequence of bytes to file
+    public void writeBytes (byte[] buf) {
+        try {
+            fdos.write(buf);
+            fdos.flush();
+            fdos.sync();
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+    }
+
+    // Write the a sequence of bytes to file
+    public void flush () {
+        try {
+            fdos.flush ();
+            fdos.sync();
+        } catch (Exception e) {
+            System.err.println (e);
+        }
+    }
+
     // Close the input stream and the hdfs file system
     public void terminate() {
         try {
@@ -51,7 +72,7 @@ public class HDFSWriter {
             System.err.println (e);
         }
     }
-    
+
     // A sample usage for HDFSWriter
     //     - Only used for debugging purposes
     public static void main(String[] args) {
