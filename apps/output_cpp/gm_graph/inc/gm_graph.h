@@ -10,6 +10,8 @@
 
 #include "gm_internal.h"
 
+#include "gm_edge_list_graph_reader.h"
+
 typedef node_t node_id;
 typedef edge_t edge_id;
 
@@ -268,6 +270,28 @@ friend class gm_graph_hdfs;
         return rand() % num_nodes(); //TODO make 64bit compatible
     }
 
+    bool load_edge_list(
+                    char* filename,                          // input filename
+                    std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
+                    std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
+                    std::vector<void*>& vertex_props,        // output, vector of arrays
+                    std::vector<void*>& edge_props,          // output, vector of arrays,
+                    bool use_hdfs = false)
+    {
+        return gm_edge_list_graph_reader::load_edge_list(filename, vprop_schema, eprop_schema, vertex_props, edge_props, *this, use_hdfs);
+    }
+
+    bool store_edge_list(
+                    char* filename,                         // output filename
+                    std::vector<VALUE_TYPE>& vprop_schema,  // input: type of node properties
+                    std::vector<VALUE_TYPE>& eprop_schema,  // input: type of edge properties
+                    std::vector<void*>& vertex_props,       // input, vector of arrays
+                    std::vector<void*>& edge_props,         // intput, vector of arrays,
+                    bool use_hdfs = false)
+    {
+        return gm_edge_list_graph_reader::store_edge_list(filename, vprop_schema, eprop_schema, vertex_props, edge_props, *this, use_hdfs);
+    }
+
 #ifdef HDFS
     bool load_binary_hdfs(char* filename);
 #endif  // HDFS
@@ -313,8 +337,7 @@ friend class gm_graph_hdfs;
     //std::vector<char*>      _numeric_reverse_key;  // node_idx -> node_key
     //void prepare_cstr_nodekey(node_t estimated_size, bool use_reverse_key);
     //void delete_cstr_nodekey(bool keep_reverse_key);
-    //
- private:
+
     inline bool find_nodekey(node_t key) {return _numeric_key.find(key) != _numeric_key.end();}
     inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
     inline node_t nodeid_to_nodekey(node_t nodeid) {return _numeric_reverse_key[nodeid];}
@@ -322,288 +345,288 @@ friend class gm_graph_hdfs;
 };
 
 
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <assert.h>
-#include <vector>
-#include <map>
-
-class gm_edge_list_graph_reader {
-
-public:
-    static bool load_edge_list(
-                    char* filename,                         // input
-                    std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
-                    std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
-                    std::vector<void*>& vertex_props,        // output, vector of arrays
-                    std::vector<void*>& edge_props,          // output, vector of arrays,
-                    bool use_hdfs = false)
-    {
-        assert(!use_hdfs);
-
-        gm_edge_list_graph_reader reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props);
-        return reader.loadEdgeList();
-    }
-
-private:
-    std::ifstream inputFileStream;
-
-    std::vector<VALUE_TYPE>& nodePropertySchemata;
-    std::vector<VALUE_TYPE>& edgePropertySchemata;
-
-    std::vector<void*>& nodeProperties;
-    std::vector<void*>& edgeProperties;
-
-    int nodePropertyCount;
-    int edgePropertyCount;
-
-    std::set<node_t> discoveredNodes;
-
-    std::vector<void*> tmpNodeProperties; // node properties stored in std::map<node_t, VALUE_TYPE>
-
-//    std::map<node_t, std::vector<node_t>> tmpEdges; // map source -> list of target nodes
-//    std::vector<std::map<node_t, std::vector<void*>>*> tmpEdgeProperties; // first vector: edge properties
-    // map: source node -> vector with values for each edge
-
-    gm_edge_list_graph_reader(
-            char* filename,
-            std::vector<VALUE_TYPE>& vprop_schema,
-            std::vector<VALUE_TYPE>& eprop_schema,
-            std::vector<void*>& vertex_props,
-            std::vector<void*>& edge_props) :    nodePropertySchemata(vprop_schema),
-                                                edgePropertySchemata(eprop_schema),
-                                                nodeProperties(vertex_props),
-                                                edgeProperties(edge_props) {
-        printf("Constructor\n");
-        inputFileStream.open(filename);
-
-        nodePropertyCount = nodePropertySchemata.size();
-        for(int i = 0; i < nodePropertyCount; i++) {
-            void* nodePropertyMap;
-            VALUE_TYPE type = nodePropertySchemata[i];
-            switch(type) {
-                case GMTYPE_BOOL:
-                    nodePropertyMap = new std::map<node_t, bool>();
-                    break;
-                case GMTYPE_INT:
-                    nodePropertyMap = new std::map<node_t, int>();
-                    break;
-                case GMTYPE_LONG:
-                    nodePropertyMap = new std::map<node_t, long>();
-                    break;
-                case GMTYPE_FLOAT:
-                    nodePropertyMap = new std::map<node_t, float>();
-                    break;
-                case GMTYPE_DOUBLE:
-                    nodePropertyMap = new std::map<node_t, double>();
-                    break;
-                case GMTYPE_NODE:
-                    nodePropertyMap = new std::map<node_t, node_t>();
-                    break;
-                case GMTYPE_EDGE:
-                    nodePropertyMap = new std::map<node_t, edge_t>();
-                    break;
-                default:
-                    assert(false);
-                    break;
-            }
-            printf("Number: %d\tType: %d\n", i, type);
-            tmpNodeProperties.push_back(nodePropertyMap);
-        }
-
-        edgePropertyCount = 1; //TODO
-
-        printf("Constructor - end\n");
-    }
-
-    ~gm_edge_list_graph_reader() {
-        printf("Destroy\n");
-        inputFileStream.close();
-        printf("Destroy - end\n");
-    }
-
-    bool loadEdgeList() {
-
-        char lineData[2048]; // should be enough right?
-
-        while(!inputFileStream.eof()) {
-            inputFileStream.getline(lineData, 2048);
-            printf("%s\n", lineData);
-            char* p = strtok(lineData, " ");
-            node_t nodeId = readValueFromToken<node_t>(p);
-            p = strtok(NULL, " ");
-            if(*p == '*') {
-                if(!handleNode(nodeId, p)) return false;
-            } else {
-                if(!handleEdge(nodeId, p)) return false;;
-            }
-        }
-        std::map<node_t, int>* intMap = (std::map<node_t, int>*)tmpNodeProperties[0];
-        std::map<node_t, float>* floatMap = (std::map<node_t, float>*)tmpNodeProperties[1];
-
-        createNodeProperties();
-
-        return true;
-    }
-
-    bool handleNode(node_t nodeId, char* p) {
-        checkAndAddNode(nodeId);
-        p = strtok(NULL, " ");
-        for(int i = 0; i < nodePropertyCount; i++) {
-            addNodeProperty(nodeId, i, p);
-            p = strtok(NULL, " ");
-        }
-        return true;
-    }
-
-    bool handleEdge(node_t sourceNodeId, char* p) {
-        checkAndAddNode(sourceNodeId);
-        node_t targetNodeId = readValueFromToken<node_t>(p);
-        checkAndAddNode(targetNodeId);
-        printf("Edge\n");
-        p = strtok(NULL, " ");
-        for(int i = 0; i < edgePropertyCount; i++) {
-            addEgeProperty(i, p);
-            p = strtok(NULL, " ");
-        }
-        return true;
-    }
-
-    void addNodeProperty(node_t nodeId, int propertyId, char* p) {
-        assert(p != NULL);
-        VALUE_TYPE type = nodePropertySchemata[propertyId];
-        switch(type) {
-            case GMTYPE_BOOL:
-                // TODO 0/1 or true/false?
-                assert(false);
-                break;
-            case GMTYPE_INT:
-                addToTempNodeProperty<int>(nodeId, propertyId, p);
-                break;
-            case GMTYPE_LONG:
-                addToTempNodeProperty<long>(nodeId, propertyId, p);
-                break;
-            case GMTYPE_FLOAT:
-                addToTempNodeProperty<float>(nodeId, propertyId, p);
-                break;
-            case GMTYPE_DOUBLE:
-                addToTempNodeProperty<double>(nodeId, propertyId, p);
-                break;
-            case GMTYPE_NODE:
-                addToTempNodeProperty<node_t>(nodeId, propertyId, p);
-                break;
-            case GMTYPE_EDGE:
-                addToTempNodeProperty<edge_t>(nodeId, propertyId, p);
-                break;
-            default:
-                assert(false); // should never happen
-                break;
-        }
-    }
-
-    void addEgeProperty(int propertyId, char* p) {
-        assert(p != NULL);
-    }
-
-    void checkAndAddNode(node_t nodeId) {
-        discoveredNodes.insert(nodeId);
-    }
-
-    template<typename T>
-    void addToTempNodeProperty(node_t nodeId, int propertyId, const char* token) {
-        T value = readValueFromToken<T>(token);
-        std::map<node_t, T>* map = (std::map<node_t, T>*)tmpNodeProperties[propertyId];
-        (*map)[nodeId] = value;
-    }
-
-    template<typename T>
-    T readValueFromToken(const char* p) {
-        T x;
-        sscanf(p, getModifier<T>(), &x);
-        return x;
-    }
-
-    template<typename T>
-    const char* getModifier();
-
-    void createNodeProperties() {
-        node_t size = -1;
-        std::set<node_t>::iterator iterator = discoveredNodes.begin();
-        for(; iterator != discoveredNodes.end(); iterator++) {
-            size = std::max(size, *iterator);
-        }
-        size++;
-
-        for(int i = 0; i < nodePropertyCount; i++) {
-            void* property;
-            VALUE_TYPE type = nodePropertySchemata[i];
-            switch(type) {
-                case GMTYPE_BOOL:
-                    // TODO 0/1 or true/false?
-                    assert(false);
-                    break;
-                case GMTYPE_INT:
-                    property = createNodeProperty<int>(size, i);
-                    break;
-                case GMTYPE_LONG:
-                    property = createNodeProperty<long>(size, i);
-                    break;
-                case GMTYPE_FLOAT:
-                    property = createNodeProperty<float>(size, i);
-                    break;
-                case GMTYPE_DOUBLE:
-                    property = createNodeProperty<double>(size, i);
-                    break;
-                case GMTYPE_NODE:
-                    property = createNodeProperty<node_t>(size, i);
-                    break;
-                case GMTYPE_EDGE:
-                    property = createNodeProperty<edge_t>(size, i);
-                    break;
-                default:
-                    assert(false); // should never happen
-                    break;
-            }
-            nodeProperties.push_back(property);
-        }
-    }
-
-    template<typename T>
-    void* createNodeProperty(node_t size, int position) {
-        T* property = new T[size];
-
-        std::map<node_t, T>* tmpProperty = (std::map<node_t, T>*)tmpNodeProperties[position];
-
-        for(node_t i = 0; i < size; i++) {
-            if(tmpProperty->find(i) != tmpProperty->end()) {
-                property[i] = (*tmpProperty)[i];
-            }
-        }
-
-        return property;
-    }
-
-};
-
-template<>
-const char* gm_edge_list_graph_reader::getModifier<int>() {
-    return "%d";
-}
-
-template<>
-const char* gm_edge_list_graph_reader::getModifier<long>() {
-    return "";
-}
-
-template<>
-const char* gm_edge_list_graph_reader::getModifier<double>() {
-    return "";
-}
-
-template<>
-const char* gm_edge_list_graph_reader::getModifier<float>() {
-    return "%f";
-}
+//#include <fstream>
+//#include <iostream>
+//#include <string>
+//#include <assert.h>
+//#include <vector>
+//#include <map>
+//
+//class gm_edge_list_graph_reader {
+//
+//public:
+//    static bool load_edge_list(
+//                    char* filename,                         // input
+//                    std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
+//                    std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
+//                    std::vector<void*>& vertex_props,        // output, vector of arrays
+//                    std::vector<void*>& edge_props,          // output, vector of arrays,
+//                    bool use_hdfs = false)
+//    {
+//        assert(!use_hdfs);
+//
+//        gm_edge_list_graph_reader reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props);
+//        return reader.loadEdgeList();
+//    }
+//
+//private:
+//    std::ifstream inputFileStream;
+//
+//    std::vector<VALUE_TYPE>& nodePropertySchemata;
+//    std::vector<VALUE_TYPE>& edgePropertySchemata;
+//
+//    std::vector<void*>& nodeProperties;
+//    std::vector<void*>& edgeProperties;
+//
+//    int nodePropertyCount;
+//    int edgePropertyCount;
+//
+//    std::set<node_t> discoveredNodes;
+//
+//    std::vector<void*> tmpNodeProperties; // node properties stored in std::map<node_t, VALUE_TYPE>
+//
+////    std::map<node_t, std::vector<node_t>> tmpEdges; // map source -> list of target nodes
+////    std::vector<std::map<node_t, std::vector<void*>>*> tmpEdgeProperties; // first vector: edge properties
+//    // map: source node -> vector with values for each edge
+//
+//    gm_edge_list_graph_reader(
+//            char* filename,
+//            std::vector<VALUE_TYPE>& vprop_schema,
+//            std::vector<VALUE_TYPE>& eprop_schema,
+//            std::vector<void*>& vertex_props,
+//            std::vector<void*>& edge_props) :    nodePropertySchemata(vprop_schema),
+//                                                edgePropertySchemata(eprop_schema),
+//                                                nodeProperties(vertex_props),
+//                                                edgeProperties(edge_props) {
+//        printf("Constructor\n");
+//        inputFileStream.open(filename);
+//
+//        nodePropertyCount = nodePropertySchemata.size();
+//        for(int i = 0; i < nodePropertyCount; i++) {
+//            void* nodePropertyMap;
+//            VALUE_TYPE type = nodePropertySchemata[i];
+//            switch(type) {
+//                case GMTYPE_BOOL:
+//                    nodePropertyMap = new std::map<node_t, bool>();
+//                    break;
+//                case GMTYPE_INT:
+//                    nodePropertyMap = new std::map<node_t, int>();
+//                    break;
+//                case GMTYPE_LONG:
+//                    nodePropertyMap = new std::map<node_t, long>();
+//                    break;
+//                case GMTYPE_FLOAT:
+//                    nodePropertyMap = new std::map<node_t, float>();
+//                    break;
+//                case GMTYPE_DOUBLE:
+//                    nodePropertyMap = new std::map<node_t, double>();
+//                    break;
+//                case GMTYPE_NODE:
+//                    nodePropertyMap = new std::map<node_t, node_t>();
+//                    break;
+//                case GMTYPE_EDGE:
+//                    nodePropertyMap = new std::map<node_t, edge_t>();
+//                    break;
+//                default:
+//                    assert(false);
+//                    break;
+//            }
+//            printf("Number: %d\tType: %d\n", i, type);
+//            tmpNodeProperties.push_back(nodePropertyMap);
+//        }
+//
+//        edgePropertyCount = 1; //TODO
+//
+//        printf("Constructor - end\n");
+//    }
+//
+//    ~gm_edge_list_graph_reader() {
+//        printf("Destroy\n");
+//        inputFileStream.close();
+//        printf("Destroy - end\n");
+//    }
+//
+//    bool loadEdgeList() {
+//
+//        char lineData[2048]; // should be enough right?
+//
+//        while(!inputFileStream.eof()) {
+//            inputFileStream.getline(lineData, 2048);
+//            printf("%s\n", lineData);
+//            char* p = strtok(lineData, " ");
+//            node_t nodeId = readValueFromToken<node_t>(p);
+//            p = strtok(NULL, " ");
+//            if(*p == '*') {
+//                if(!handleNode(nodeId, p)) return false;
+//            } else {
+//                if(!handleEdge(nodeId, p)) return false;;
+//            }
+//        }
+//        std::map<node_t, int>* intMap = (std::map<node_t, int>*)tmpNodeProperties[0];
+//        std::map<node_t, float>* floatMap = (std::map<node_t, float>*)tmpNodeProperties[1];
+//
+//        createNodeProperties();
+//
+//        return true;
+//    }
+//
+//    bool handleNode(node_t nodeId, char* p) {
+//        checkAndAddNode(nodeId);
+//        p = strtok(NULL, " ");
+//        for(int i = 0; i < nodePropertyCount; i++) {
+//            addNodeProperty(nodeId, i, p);
+//            p = strtok(NULL, " ");
+//        }
+//        return true;
+//    }
+//
+//    bool handleEdge(node_t sourceNodeId, char* p) {
+//        checkAndAddNode(sourceNodeId);
+//        node_t targetNodeId = readValueFromToken<node_t>(p);
+//        checkAndAddNode(targetNodeId);
+//        printf("Edge\n");
+//        p = strtok(NULL, " ");
+//        for(int i = 0; i < edgePropertyCount; i++) {
+//            addEgeProperty(i, p);
+//            p = strtok(NULL, " ");
+//        }
+//        return true;
+//    }
+//
+//    void addNodeProperty(node_t nodeId, int propertyId, char* p) {
+//        assert(p != NULL);
+//        VALUE_TYPE type = nodePropertySchemata[propertyId];
+//        switch(type) {
+//            case GMTYPE_BOOL:
+//                // TODO 0/1 or true/false?
+//                assert(false);
+//                break;
+//            case GMTYPE_INT:
+//                addToTempNodeProperty<int>(nodeId, propertyId, p);
+//                break;
+//            case GMTYPE_LONG:
+//                addToTempNodeProperty<long>(nodeId, propertyId, p);
+//                break;
+//            case GMTYPE_FLOAT:
+//                addToTempNodeProperty<float>(nodeId, propertyId, p);
+//                break;
+//            case GMTYPE_DOUBLE:
+//                addToTempNodeProperty<double>(nodeId, propertyId, p);
+//                break;
+//            case GMTYPE_NODE:
+//                addToTempNodeProperty<node_t>(nodeId, propertyId, p);
+//                break;
+//            case GMTYPE_EDGE:
+//                addToTempNodeProperty<edge_t>(nodeId, propertyId, p);
+//                break;
+//            default:
+//                assert(false); // should never happen
+//                break;
+//        }
+//    }
+//
+//    void addEgeProperty(int propertyId, char* p) {
+//        assert(p != NULL);
+//    }
+//
+//    void checkAndAddNode(node_t nodeId) {
+//        discoveredNodes.insert(nodeId);
+//    }
+//
+//    template<typename T>
+//    void addToTempNodeProperty(node_t nodeId, int propertyId, const char* token) {
+//        T value = readValueFromToken<T>(token);
+//        std::map<node_t, T>* map = (std::map<node_t, T>*)tmpNodeProperties[propertyId];
+//        (*map)[nodeId] = value;
+//    }
+//
+//    template<typename T>
+//    T readValueFromToken(const char* p) {
+//        T x;
+//        sscanf(p, getModifier<T>(), &x);
+//        return x;
+//    }
+//
+//    template<typename T>
+//    const char* getModifier();
+//
+//    void createNodeProperties() {
+//        node_t size = -1;
+//        std::set<node_t>::iterator iterator = discoveredNodes.begin();
+//        for(; iterator != discoveredNodes.end(); iterator++) {
+//            size = std::max(size, *iterator);
+//        }
+//        size++;
+//
+//        for(int i = 0; i < nodePropertyCount; i++) {
+//            void* property;
+//            VALUE_TYPE type = nodePropertySchemata[i];
+//            switch(type) {
+//                case GMTYPE_BOOL:
+//                    // TODO 0/1 or true/false?
+//                    assert(false);
+//                    break;
+//                case GMTYPE_INT:
+//                    property = createNodeProperty<int>(size, i);
+//                    break;
+//                case GMTYPE_LONG:
+//                    property = createNodeProperty<long>(size, i);
+//                    break;
+//                case GMTYPE_FLOAT:
+//                    property = createNodeProperty<float>(size, i);
+//                    break;
+//                case GMTYPE_DOUBLE:
+//                    property = createNodeProperty<double>(size, i);
+//                    break;
+//                case GMTYPE_NODE:
+//                    property = createNodeProperty<node_t>(size, i);
+//                    break;
+//                case GMTYPE_EDGE:
+//                    property = createNodeProperty<edge_t>(size, i);
+//                    break;
+//                default:
+//                    assert(false); // should never happen
+//                    break;
+//            }
+//            nodeProperties.push_back(property);
+//        }
+//    }
+//
+//    template<typename T>
+//    void* createNodeProperty(node_t size, int position) {
+//        T* property = new T[size];
+//
+//        std::map<node_t, T>* tmpProperty = (std::map<node_t, T>*)tmpNodeProperties[position];
+//
+//        for(node_t i = 0; i < size; i++) {
+//            if(tmpProperty->find(i) != tmpProperty->end()) {
+//                property[i] = (*tmpProperty)[i];
+//            }
+//        }
+//
+//        return property;
+//    }
+//
+//};
+//
+//template<>
+//const char* gm_edge_list_graph_reader::getModifier<int>() {
+//    return "%d";
+//}
+//
+//template<>
+//const char* gm_edge_list_graph_reader::getModifier<long>() {
+//    return "%ld";
+//}
+//
+//template<>
+//const char* gm_edge_list_graph_reader::getModifier<double>() {
+//    return "%d";
+//}
+//
+//template<>
+//const char* gm_edge_list_graph_reader::getModifier<float>() {
+//    return "%f";
+//}
 
 #endif
