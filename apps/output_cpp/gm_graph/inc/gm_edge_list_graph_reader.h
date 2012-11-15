@@ -22,6 +22,7 @@ private:
 
     gm_graph& G;
 
+    const char* fileName;
     std::ifstream inputFileStream;
     std::ofstream outputFileStream;
 

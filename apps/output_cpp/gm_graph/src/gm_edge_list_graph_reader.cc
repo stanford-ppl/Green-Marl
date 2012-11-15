@@ -31,12 +31,17 @@ bool gm_graph::store_edge_list(char* filename,  // output filename
     return reader.storeEdgeList();
 }
 
-gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename, std::vector<VALUE_TYPE>& vprop_schema, std::vector<VALUE_TYPE>& eprop_schema,
-        std::vector<void*>& vertex_props, std::vector<void*>& edge_props, gm_graph& Graph) :
-        nodePropertySchemata(vprop_schema), edgePropertySchemata(eprop_schema), nodeProperties(vertex_props), edgeProperties(edge_props), G(Graph) {
-
-    inputFileStream.open(filename);
-    outputFileStream.open(filename);
+gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename,
+        std::vector<VALUE_TYPE>& vprop_schema,
+        std::vector<VALUE_TYPE>& eprop_schema,
+        std::vector<void*>& vertex_props,
+        std::vector<void*>& edge_props, gm_graph& Graph) :
+                fileName(filename),
+                nodePropertySchemata(vprop_schema),
+                edgePropertySchemata(eprop_schema),
+                nodeProperties(vertex_props),
+                edgeProperties(edge_props),
+                G(Graph) {
 
     nodePropertyCount = nodePropertySchemata.size();
 
@@ -76,15 +81,18 @@ gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename, std::vector
 }
 
 gm_edge_list_graph_reader::~gm_edge_list_graph_reader() {
-    inputFileStream.close();
+    if(inputFileStream.is_open()) inputFileStream.close();
+    if(outputFileStream.is_open()) outputFileStream.close();
 }
 
 bool gm_edge_list_graph_reader::loadEdgeList() {
 
+    inputFileStream.open(fileName);
+
     char lineData[1024]; // should be enough right?
 
     while (!inputFileStream.eof()) {
-        inputFileStream.getline(lineData, 2048);
+        inputFileStream.getline(lineData, 1024);
         char* p = strtok(lineData, " ");
         node_t nodeId = readValueFromToken<node_t>(p);
         p = strtok(NULL, " ");
@@ -197,6 +205,9 @@ void gm_edge_list_graph_reader::createNodeProperties() {
 }
 
 bool gm_edge_list_graph_reader::storeEdgeList() {
+
+    outputFileStream.open(fileName);
+
     // store nodes and node properties
     for (node_t node = 0; node < G.num_nodes(); node++) {
         storePropertiesForNode(node);
