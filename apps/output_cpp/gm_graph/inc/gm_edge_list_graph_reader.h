@@ -134,7 +134,7 @@ const char* gm_edge_list_graph_reader::getModifier<long>() {
 
 template<>
 const char* gm_edge_list_graph_reader::getModifier<double>() {
-    return "%f";
+    return "%lf";
 }
 
 template<>
