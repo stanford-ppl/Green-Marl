@@ -43,40 +43,9 @@ gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename,
                 edgeProperties(edge_props),
                 G(Graph) {
 
+    assert(G.is_frozen());
+
     nodePropertyCount = nodePropertySchemata.size();
-
-    for (int i = 0; i < nodePropertyCount; i++) {
-        void* nodePropertyMap;
-        VALUE_TYPE type = nodePropertySchemata[i];
-        switch (type) {
-            case GMTYPE_BOOL:
-                nodePropertyMap = new std::map<node_t, bool>();
-                break;
-            case GMTYPE_INT:
-                nodePropertyMap = new std::map<node_t, int>();
-                break;
-            case GMTYPE_LONG:
-                nodePropertyMap = new std::map<node_t, long>();
-                break;
-            case GMTYPE_FLOAT:
-                nodePropertyMap = new std::map<node_t, float>();
-                break;
-            case GMTYPE_DOUBLE:
-                nodePropertyMap = new std::map<node_t, double>();
-                break;
-            case GMTYPE_NODE:
-                nodePropertyMap = new std::map<node_t, node_t>();
-                break;
-            case GMTYPE_EDGE:
-                nodePropertyMap = new std::map<node_t, edge_t>();
-                break;
-            default:
-                assert(false);
-                break;
-        }
-        tmpNodeProperties.push_back(nodePropertyMap);
-    }
-
     edgePropertyCount = edgePropertySchemata.size();
 }
 
@@ -89,23 +58,25 @@ bool gm_edge_list_graph_reader::loadEdgeList() {
 
     inputFileStream.open(fileName);
 
-    char lineData[1024]; // should be enough right?
+    int maxSize = 1024;
+    char lineData[maxSize]; // should be enough right?
+
+    createNodeProperties();
+    createEdgeProperties();
 
     while (!inputFileStream.eof()) {
-        inputFileStream.getline(lineData, 1024);
+        inputFileStream.getline(lineData, maxSize);
+        if(strlen(lineData) == 0) break;
+
         char* p = strtok(lineData, " ");
         node_t nodeId = readValueFromToken<node_t>(p);
         p = strtok(NULL, " ");
         if (*p == '*') {
             if (!handleNode(nodeId, p)) return false;
         } else {
-            if (!handleEdge(nodeId, p)) return false;;
+            if (!handleEdge(nodeId, p)) return false;
         }
     }
-    std::map<node_t, int>* intMap = (std::map<node_t, int>*) tmpNodeProperties[0];
-    std::map<node_t, float>* floatMap = (std::map<node_t, float>*) tmpNodeProperties[1];
-
-    createNodeProperties();
 
     return true;
 }
@@ -113,94 +84,86 @@ bool gm_edge_list_graph_reader::loadEdgeList() {
 bool gm_edge_list_graph_reader::handleNode(node_t nodeId, char* p) {
     p = strtok(NULL, " ");
     for (int i = 0; i < nodePropertyCount; i++) {
-        addNodeProperty(nodeId, i, p);
+        addNodePropertyValue(nodeId, i, p);
         p = strtok(NULL, " ");
     }
     return true;
 }
 
-bool gm_edge_list_graph_reader::handleEdge(node_t sourceNodeId, char* p) {
-    node_t targetNodeId = readValueFromToken<node_t>(p);
+bool gm_edge_list_graph_reader::handleEdge(node_t sourceNode, char* p) {
+    node_t targetNode = readValueFromToken<node_t>(p);
+
+    edge_t edgeId;
+    for (edge_t edge = G.begin[sourceNode]; edge < G.begin[sourceNode + 1]; edge++) {
+        node_t currentTarget = G.node_idx[edge];
+        if(currentTarget == targetNode) {
+            edgeId = edge;
+            break;
+        }
+    }
+    assert(G.node_idx[edgeId] == targetNode);
+
     p = strtok(NULL, " ");
     for (int i = 0; i < edgePropertyCount; i++) {
-        addEgeProperty(i, p);
+        addEdgePropertyValue(edgeId, i, p);
         p = strtok(NULL, " ");
     }
     return true;
 }
 
-void gm_edge_list_graph_reader::addNodeProperty(node_t nodeId, int propertyId, char* p) {
+void gm_edge_list_graph_reader::addNodePropertyValue(node_t nodeId, int propertyId, const char* p) {
     assert(p != NULL);
     VALUE_TYPE type = nodePropertySchemata[propertyId];
-    switch (type) {
-        case GMTYPE_BOOL:
-            // TODO 0/1 or true/false?
-            assert(false);
-            break;
-        case GMTYPE_INT:
-            addToTempNodeProperty<int>(nodeId, propertyId, p);
-            break;
-        case GMTYPE_LONG:
-            addToTempNodeProperty<long>(nodeId, propertyId, p);
-            break;
-        case GMTYPE_FLOAT:
-            addToTempNodeProperty<float>(nodeId, propertyId, p);
-            break;
-        case GMTYPE_DOUBLE:
-            addToTempNodeProperty<double>(nodeId, propertyId, p);
-            break;
-        case GMTYPE_NODE:
-            addToTempNodeProperty<node_t>(nodeId, propertyId, p);
-            break;
-        case GMTYPE_EDGE:
-            addToTempNodeProperty<edge_t>(nodeId, propertyId, p);
-            break;
-        default:
-            assert(false);
-            // should never happen
-            break;
-    }
+    void* property = nodeProperties[propertyId];
+    addPropertyValue<node_t>(property, nodeId, type, p);
 }
 
-void gm_edge_list_graph_reader::addEgeProperty(int propertyId, char* p) {
+void gm_edge_list_graph_reader::addEdgePropertyValue(edge_t edgeId, int propertyId, const char* p) {
     assert(p != NULL);
+    VALUE_TYPE type = edgePropertySchemata[propertyId];
+    void* property = edgeProperties[propertyId];
+    addPropertyValue<edge_t>(property, edgeId, type, p);
 }
 
 void gm_edge_list_graph_reader::createNodeProperties() {
     node_t size = G.num_nodes();
 
     for (int i = 0; i < nodePropertyCount; i++) {
-        void* property;
         VALUE_TYPE type = nodePropertySchemata[i];
-        switch (type) {
-            case GMTYPE_BOOL:
-                // TODO 0/1 or true/false?
-                assert(false);
-                break;
-            case GMTYPE_INT:
-                property = createNodeProperty<int>(size, i);
-                break;
-            case GMTYPE_LONG:
-                property = createNodeProperty<long>(size, i);
-                break;
-            case GMTYPE_FLOAT:
-                property = createNodeProperty<float>(size, i);
-                break;
-            case GMTYPE_DOUBLE:
-                property = createNodeProperty<double>(size, i);
-                break;
-            case GMTYPE_NODE:
-                property = createNodeProperty<node_t>(size, i);
-                break;
-            case GMTYPE_EDGE:
-                property = createNodeProperty<edge_t>(size, i);
-                break;
-            default:
-                assert(false);
-                // should never happen
-                break;
-        }
+        void* property = createProperty(size, i, type);
         nodeProperties.push_back(property);
+    }
+}
+
+void gm_edge_list_graph_reader::createEdgeProperties() {
+    edge_t size = G.num_edges();
+
+    for (int i = 0; i < edgePropertyCount; i++) {
+        VALUE_TYPE type = edgePropertySchemata[i];
+        void* property = createProperty(size, i, type);
+        edgeProperties.push_back(property);
+    }
+}
+
+void* gm_edge_list_graph_reader::createProperty(int size, int position, VALUE_TYPE type) {
+    switch (type) {
+        case GMTYPE_BOOL:
+            return allocateProperty<bool>(size, position);
+        case GMTYPE_INT:
+            return allocateProperty<int>(size, position);
+        case GMTYPE_LONG:
+            return allocateProperty<long>(size, position);
+        case GMTYPE_FLOAT:
+            return allocateProperty<float>(size, position);
+        case GMTYPE_DOUBLE:
+            return allocateProperty<double>(size, position);
+        case GMTYPE_NODE:
+            return allocateProperty<node_t>(size, position);
+        case GMTYPE_EDGE:
+            return allocateProperty<edge_t>(size, position);
+        default:
+            assert(false); // should never happen
+            return NULL;
     }
 }
 
