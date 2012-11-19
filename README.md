@@ -128,6 +128,20 @@ through the following steps:
     cp $(top)/etc/vim/ftdetect/greenmarl.vim ~/.vim/ftdetect/
 
 
+3-4 Enable code coverage
+-------------------------------------
+
+To enable code coverage information collection set the CODE_COVERAGE variable in 
+the 'setup.mk.in' to 1. This will tell the compiler to add code coverage 
+information into the compiled code (only works with 'original' GCC and specifically 
+NOT with the LLVM version found on newer OSX systems). Code coverage information
+can be queried through the 'gcov' tool or an html can be generated through the 
+make 'coverage' target (needs lcov to be installed
+ http://ltp.sourceforge.net/coverage/lcov.php). The 'lcov' tool will generate a 
+html report in the coverage directory. Coverage information will 
+be accumulated across multiple runs and be reseted upon a change of the binary files.  
+
+
 4 Compiling and Executing Sample Applications
 ====================================
 
