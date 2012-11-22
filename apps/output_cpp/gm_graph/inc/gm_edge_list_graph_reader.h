@@ -123,7 +123,7 @@ private:
 
 template<>
 bool gm_edge_list_graph_reader::readValueFromToken(const char* p) {
-    if(p[0] == '0' || p[0] == '1') {
+    if(strlen(p) == 1 && (p[0] == '0' || p[0] == '1')) {
         return p[0] == '1';
     } else {
         if(strcasecmp(p, "true") == 0) return true;

@@ -35,12 +35,12 @@ gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename,
         std::vector<VALUE_TYPE>& eprop_schema,
         std::vector<void*>& vertex_props,
         std::vector<void*>& edge_props, gm_graph& Graph) :
+                G(Graph),
                 fileName(filename),
                 nodePropertySchemata(vprop_schema),
                 edgePropertySchemata(eprop_schema),
                 nodeProperties(vertex_props),
-                edgeProperties(edge_props),
-                G(Graph) {
+                edgeProperties(edge_props) {
 
     assert(G.is_frozen());
 
@@ -92,7 +92,7 @@ bool gm_edge_list_graph_reader::handleNode(node_t nodeId, char* p) {
 bool gm_edge_list_graph_reader::handleEdge(node_t sourceNode, char* p) {
     node_t targetNode = readValueFromToken<node_t>(p);
 
-    edge_t edgeId;
+    edge_t edgeId = -1;
     for (edge_t edge = G.begin[sourceNode]; edge < G.begin[sourceNode + 1]; edge++) {
         node_t currentTarget = G.node_idx[edge];
         if(currentTarget == targetNode) {
@@ -100,7 +100,7 @@ bool gm_edge_list_graph_reader::handleEdge(node_t sourceNode, char* p) {
             break;
         }
     }
-    assert(G.node_idx[edgeId] == targetNode);
+    assert(edgeId >= 0 && G.node_idx[edgeId] == targetNode);
 
     p = strtok(NULL, " ");
     for (int i = 0; i < edgePropertyCount; i++) {
