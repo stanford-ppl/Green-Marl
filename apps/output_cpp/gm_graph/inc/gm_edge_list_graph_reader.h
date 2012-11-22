@@ -4,9 +4,10 @@
 #include <fstream>
 #include <iostream>
 #include <string.h>
-#include <map>
 #include <vector>
 #include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 #include "gm_graph_typedef.h"
 
@@ -35,6 +36,8 @@ private:
 
     int nodePropertyCount;
     int edgePropertyCount;
+
+    int currentLine;
 
     gm_edge_list_graph_reader(
             char* filename,
@@ -101,9 +104,21 @@ private:
         }
     }
 
+    bool isNumeric(const char* token){
+        if (token == NULL || *token == '\0' || isspace(*token))
+          return false;
+        char* p;
+        strtod (token, &p);
+        return *p == '\0';
+    }
+
     template<typename T>
     T readValueFromToken(const char* p) {
         T x;
+        if(!isNumeric(p)) {
+            printf("Error: Expected numeric value but found '%s'\n", p);
+            assert(false);
+        }
         sscanf(p, getModifier<T>(), &x);
         return x;
     }
@@ -129,7 +144,7 @@ bool gm_edge_list_graph_reader::readValueFromToken(const char* p) {
         if(strcasecmp(p, "true") == 0) return true;
         if(strcasecmp(p, "false") == 0) return false;
 
-        printf("Error: Expected boolean value but found '%s'\n", p);
+        printf("Error: Expected boolean value but found '%s'.\n", p);
         assert(false);
     }
 }

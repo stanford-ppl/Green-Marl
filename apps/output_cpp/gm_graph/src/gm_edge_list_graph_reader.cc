@@ -40,7 +40,8 @@ gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename,
                 nodePropertySchemata(vprop_schema),
                 edgePropertySchemata(eprop_schema),
                 nodeProperties(vertex_props),
-                edgeProperties(edge_props) {
+                edgeProperties(edge_props),
+                currentLine(0) {
 
     assert(G.is_frozen());
 
@@ -56,6 +57,10 @@ gm_edge_list_graph_reader::~gm_edge_list_graph_reader() {
 bool gm_edge_list_graph_reader::loadEdgeList() {
 
     inputFileStream.open(fileName);
+    if(!inputFileStream.is_open()) {
+        printf("Error: Error while opening file.\n");
+        return false;
+    }
 
     int maxSize = 1024;
     char lineData[maxSize]; // should be enough right?
@@ -64,6 +69,7 @@ bool gm_edge_list_graph_reader::loadEdgeList() {
     createEdgeProperties();
 
     while (!inputFileStream.eof()) {
+        currentLine++;
         inputFileStream.getline(lineData, maxSize);
         if(strlen(lineData) == 0 || lineData[0] == '#') continue;
 
@@ -83,6 +89,14 @@ bool gm_edge_list_graph_reader::loadEdgeList() {
 bool gm_edge_list_graph_reader::handleNode(node_t nodeId, char* p) {
     p = strtok(NULL, " ");
     for (int i = 0; i < nodePropertyCount; i++) {
+        if(p == NULL || strlen(p) == 0) {
+            printf("Error: Missing node property.\n");
+            assert(false);
+        }
+        if(nodeId < 0 || nodeId >= G.num_nodes()) {
+            printf("Error: Node '%d' does not exist in the graph.\n", nodeId);
+            assert(false);
+        }
         addNodePropertyValue(nodeId, i, p);
         p = strtok(NULL, " ");
     }
@@ -100,10 +114,17 @@ bool gm_edge_list_graph_reader::handleEdge(node_t sourceNode, char* p) {
             break;
         }
     }
-    assert(edgeId >= 0 && G.node_idx[edgeId] == targetNode);
+    if(edgeId < 0 || G.node_idx[edgeId] != targetNode) {
+        printf("Error: Edge '%d -> %d' does not exist in the graph.\n", sourceNode, targetNode);
+        assert(false);
+    }
 
     p = strtok(NULL, " ");
     for (int i = 0; i < edgePropertyCount; i++) {
+        if(p == NULL || strlen(p) == 0) {
+            printf("Error: Missing edge property.\n");
+            assert(false);
+        }
         addEdgePropertyValue(edgeId, i, p);
         p = strtok(NULL, " ");
     }
