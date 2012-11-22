@@ -90,12 +90,10 @@ bool gm_edge_list_graph_reader::handleNode(node_t nodeId, char* p) {
     p = strtok(NULL, " ");
     for (int i = 0; i < nodePropertyCount; i++) {
         if(p == NULL || strlen(p) == 0) {
-            printf("Error: Missing node property.\n");
-            assert(false);
+            raiseNodePropertyMissing(nodePropertySchemata[i]);
         }
         if(nodeId < 0 || nodeId >= G.num_nodes()) {
-            printf("Error: Node '%d' does not exist in the graph.\n", nodeId);
-            assert(false);
+            raiseNodeDoesNotExist(nodeId);
         }
         addNodePropertyValue(nodeId, i, p);
         p = strtok(NULL, " ");
@@ -115,15 +113,13 @@ bool gm_edge_list_graph_reader::handleEdge(node_t sourceNode, char* p) {
         }
     }
     if(edgeId < 0 || G.node_idx[edgeId] != targetNode) {
-        printf("Error: Edge '%d -> %d' does not exist in the graph.\n", sourceNode, targetNode);
-        assert(false);
+        raiseEdgeDoesNotExist(sourceNode, targetNode);
     }
 
     p = strtok(NULL, " ");
     for (int i = 0; i < edgePropertyCount; i++) {
         if(p == NULL || strlen(p) == 0) {
-            printf("Error: Missing edge property.\n");
-            assert(false);
+            raiseEdgePropertyMissing(edgePropertySchemata[i]);
         }
         addEdgePropertyValue(edgeId, i, p);
         p = strtok(NULL, " ");

@@ -64,6 +64,61 @@ private:
 
     void appendProperty(node_t node, void* property, VALUE_TYPE type);
 
+    void printErrorHeader() {
+        printf("Error in line %d\n", currentLine);
+    }
+
+    void raiseNodePropertyMissing(VALUE_TYPE expectedType) {
+        printErrorHeader();
+        printf("Node property missing. Expected property of type %s\n", typeToString(expectedType));
+        assert(false);
+    }
+
+    void raiseEdgePropertyMissing(VALUE_TYPE expectedType) {
+        printErrorHeader();
+        printf("Edge property missing. Expected property of type %s\n", typeToString(expectedType));
+        assert(false);
+    }
+
+    void raiseTokenNotNumeric(const char* token) {
+        printErrorHeader();
+        printf("Expected numeric value but found '%s'\n", token);
+        assert(false);
+    }
+
+    void raiseTokenNotBoolean(const char* token) {
+        printErrorHeader();
+        printf("Expected boolean value but found '%s'\n", token);
+        assert(false);
+    }
+
+    void raiseNodeDoesNotExist(node_t node) {
+        printErrorHeader();
+        printf("Node '%d' does not exist in graph.\n", node);
+        assert(false);
+    }
+
+    void raiseEdgeDoesNotExist(node_t source, node_t destination) {
+        printErrorHeader();
+        printf("Edge '%d -> %d' does not exist in graph.\n", source, destination);
+        assert(false);
+    }
+
+    const char* typeToString(VALUE_TYPE type) {
+        switch(type) {
+            case GMTYPE_BOOL:   return "boolean";
+            case GMTYPE_INT:    return "int";
+            case GMTYPE_LONG:   return "long";
+            case GMTYPE_FLOAT:  return "float";
+            case GMTYPE_DOUBLE: return "double";
+            case GMTYPE_NODE:   return "node";
+            case GMTYPE_EDGE:   return "edge";
+            default:
+                assert(false);
+                return "";
+        }
+    }
+
     template<typename T>
     const char* getModifier();
 
@@ -116,8 +171,7 @@ private:
     T readValueFromToken(const char* p) {
         T x;
         if(!isNumeric(p)) {
-            printf("Error: Expected numeric value but found '%s'\n", p);
-            assert(false);
+            raiseTokenNotNumeric(p);
         }
         sscanf(p, getModifier<T>(), &x);
         return x;
@@ -142,10 +196,8 @@ bool gm_edge_list_graph_reader::readValueFromToken(const char* p) {
         return p[0] == '1';
     } else {
         if(strcasecmp(p, "true") == 0) return true;
-        if(strcasecmp(p, "false") == 0) return false;
-
-        printf("Error: Expected boolean value but found '%s'.\n", p);
-        assert(false);
+        else if(strcasecmp(p, "false") == 0) return false;
+        else raiseTokenNotBoolean(p);
     }
 }
 
