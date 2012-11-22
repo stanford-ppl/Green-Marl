@@ -6,6 +6,7 @@
 #include <string.h>
 #include <map>
 #include <vector>
+#include <assert.h>
 
 #include "gm_graph_typedef.h"
 
@@ -94,6 +95,9 @@ private:
             case GMTYPE_EDGE:
                 writeValueToProperty<edge_t, node_t>(property, position, token);
                 break;
+            default:
+                assert(false);
+                break;
         }
     }
 
@@ -118,8 +122,16 @@ private:
 };
 
 template<>
-const char* gm_edge_list_graph_reader::getModifier<bool>() {
-    return NULL; //TODO
+bool gm_edge_list_graph_reader::readValueFromToken(const char* p) {
+    if(p[0] == '0' || p[0] == '1') {
+        return p[0] == '1';
+    } else {
+        if(strcasecmp(p, "true") == 0) return true;
+        if(strcasecmp(p, "false") == 0) return false;
+
+        printf("Error: Expected boolean value but found '%s'\n", p);
+        assert(false);
+    }
 }
 
 template<>

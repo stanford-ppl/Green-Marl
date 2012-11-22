@@ -1,7 +1,6 @@
 #include "gm_edge_list_graph_reader.h"
 
 #include <string>
-#include <assert.h>
 
 #include "gm_graph.h"
 
@@ -202,8 +201,7 @@ void gm_edge_list_graph_reader::storePropertiesForNode(node_t node) {
 void gm_edge_list_graph_reader::appendProperty(node_t node, void* property, VALUE_TYPE type) {
     switch (type) {
         case GMTYPE_BOOL:
-            // TODO 0/1 or true/false?
-            assert(false);
+            appendProperty<bool>(node, property);
             break;
         case GMTYPE_INT:
             appendProperty<int>(node, property);
@@ -240,9 +238,7 @@ void gm_edge_list_graph_reader::storePropertiesForEdge(node_t source, edge_t edg
         void* property = edgeProperties[i];
         VALUE_TYPE type = edgePropertySchemata[i];
         switch (type) {
-            case GMTYPE_BOOL:
-                // TODO 0/1 or true/false?
-                assert(false);
+                appendProperty<bool>(edge, property);
                 break;
             case GMTYPE_INT:
                 appendProperty<int>(edge, property);
