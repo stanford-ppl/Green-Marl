@@ -1,16 +1,13 @@
 #include "common_main.h"
-#include "sssp.h"
-#include "gm_rand.h"
+#include "sssp_nolength.h"
 
 class my_main: public main_t
 {
 public:
-    int32_t* len; // length of each edge
     int32_t* dist;  // distance of each node
     node_t root;
 
     virtual ~my_main() {
-        delete[] len;
         delete[] dist;
     }
 
@@ -18,24 +15,13 @@ public:
     // create 4 groups randomly
     //--------------------------------------------------------
     virtual bool prepare() {
-	    gm_rand32 xorshift_rng;
         root = 0;
         dist = new int[G.num_nodes()];
-        len = new int[G.num_edges()];
-
-        // for NUMA, let each thread touch it first
-        #pragma omp parallel for
-        for (node_t i = 0; i < G.num_nodes(); i++)
-            for (edge_t j = G.begin[i]; j < G.begin[i+1]; j++)
-                len[j] = 0;
-
-        for (edge_t i = 0; i < G.num_edges(); i++)
-            len[i] = (xorshift_rng.rand() % 100) + 1;  // length: 1 ~ 100
         return true;
     }
 
     virtual bool run() {
-        sssp(G, dist, len, root);
+        sssp_nolength(G, dist, root);
         return true;
     }
 
