@@ -15,6 +15,13 @@ endif
 include ../setup.mk
 CFLAGS += -DDEFAULT_GM_TOP="\"${GM_TOP}\""
 
+# enable code coverage flags 
+ifeq ($(CODE_COVERAGE),1)
+	CFLAGS  += --coverage
+	LDFLAGS += --coverage
+endif
+
+
 # where to find source codes
 vpath %.h  inc
 vpath %.c parse

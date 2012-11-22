@@ -40,12 +40,12 @@ GM_JNI_Handler::GM_JNI_Handler() {
     const char* LoggingJar = getenv("HADOOP_COMMONS_LOGGING_JAR"); 
     const char* GuavaJar = getenv("HADOOP_GUAVA_R09_JAR"); 
 
-    sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javabin/", 
+    sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javabin/",  // there should be no space at the end!
             HadoopHome, HadoopCoreJar,
             HadoopHome, LoggingJar,
             HadoopHome, GuavaJar, 
             GMTop);
-    printf("buffer = %s\n", buffer);
+    //printf("buffer = %s\n", buffer);
     // Initialize parameters for creating a JavaVM
     //opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
     opts_[0].optionString = buffer;
