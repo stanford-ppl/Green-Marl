@@ -248,6 +248,24 @@ friend class gm_graph_hdfs;
             bool use_hdfs = false // input parameter
             );
 
+    bool load_edge_list(
+            char* filename,                          // input: filename
+            std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
+            std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
+            std::vector<void*>& vertex_props,        // output: vector of arrays
+            std::vector<void*>& edge_props,          // output: vector of arrays,
+            bool use_hdfs = false
+            );
+
+    bool store_edge_list(
+            char* filename,                         // input: filename
+            std::vector<VALUE_TYPE>& vprop_schema,  // input: type of node properties
+            std::vector<VALUE_TYPE>& eprop_schema,  // input: type of edge properties
+            std::vector<void*>& vertex_props,       // input: vector of arrays
+            std::vector<void*>& edge_props,         // input: vector of arrays,
+            bool use_hdfs = false
+            );
+
     //--------------------------------------------------------------
     // conversion between idx and id
     //--------------------------------------------------------------
@@ -281,22 +299,6 @@ friend class gm_graph_hdfs;
     node_t pick_random_node() {
         return rand() % num_nodes(); //TODO make 64bit compatible
     }
-
-    bool load_edge_list(
-                    char* filename,                          // input filename
-                    std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
-                    std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
-                    std::vector<void*>& vertex_props,        // output, vector of arrays
-                    std::vector<void*>& edge_props,          // output, vector of arrays,
-                    bool use_hdfs = false);
-
-    bool store_edge_list(
-                    char* filename,                         // output filename
-                    std::vector<VALUE_TYPE>& vprop_schema,  // input: type of node properties
-                    std::vector<VALUE_TYPE>& eprop_schema,  // input: type of edge properties
-                    std::vector<void*>& vertex_props,       // input, vector of arrays
-                    std::vector<void*>& edge_props,         // intput, vector of arrays,
-                    bool use_hdfs = false);
 
 #ifdef HDFS
     bool load_binary_hdfs(char* filename);
