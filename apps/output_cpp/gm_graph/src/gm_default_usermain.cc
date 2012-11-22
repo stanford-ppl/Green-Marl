@@ -617,6 +617,12 @@ bool gm_default_usermain::do_postprocess()
     char fullpath_name[1024*64];
     sprintf(fullpath_name,"%s%s",output_path, OPTIONS.get_arg(1));
 
+    bool use_hdfs = false;
+
+#ifdef HDFS
+    use_hdfs = OPTIONS.get_option_bool(OPT_USEHDFS) ;
+#endif
+
     if (create_output_graph) {
         if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
             gettimeofday(&TV1, NULL);
@@ -632,7 +638,7 @@ bool gm_default_usermain::do_postprocess()
                 vprop_out_array,
                 eprop_out_array,
                 "\t",
-                false);
+                use_hdfs);
         }
         else if (get_output_format() == GM_ADJ_LIST_AVRO) 
         {
@@ -643,7 +649,7 @@ bool gm_default_usermain::do_postprocess()
                 eprop_out_names,
                 vprop_out_array,
                 eprop_out_array,
-                false);
+                use_hdfs);
         }
         else {
             printf("Unknown graph format\n");

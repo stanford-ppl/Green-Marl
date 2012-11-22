@@ -226,10 +226,10 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
     }
     assert(_reverse_nodekey_defined == true);
 
-    for(size_t i=0;i< vprop_schema.size();i++) 
-    {
-        printf("output virtex property is %s\n", gmutil_getTypeString(vprop_schema[i]));
-    }
+    //for(size_t i=0;i< vprop_schema.size();i++) 
+    //{
+    //    printf("output virtex property is %s\n", gmutil_getTypeString(vprop_schema[i]));
+    //}
 
     for (node_t i = 0; i < _numNodes; ++i) {
         // Write the vertex id corresponding to this index
