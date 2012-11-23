@@ -180,6 +180,9 @@ private:
     template<typename T>
     void* allocateProperty(node_t size, int position) {
         T* property = new T[size];
+        for(int i = 0; i < size; i++) {
+            property[i] = 0;
+        }
         return property;
     }
 
