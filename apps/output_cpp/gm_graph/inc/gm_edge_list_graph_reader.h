@@ -49,6 +49,8 @@ private:
     bool loadEdgeList();
     bool storeEdgeList();
 
+    void builtGraph();
+
     bool handleNode(node_t nodeId, char* p);
     bool handleEdge(node_t sourceNodeId, char* p);
 
