@@ -10,11 +10,12 @@
 #include <stdlib.h>
 
 #include "gm_graph_typedef.h"
+#include "gm_file_handling.h"
 
 class gm_graph;
 
-
-class gm_edge_list_graph_reader {
+class gm_edge_list_graph_reader
+{
 
 public:
     ~gm_edge_list_graph_reader();
@@ -26,7 +27,7 @@ private:
 
     const char* fileName;
     std::ifstream inputFileStream;
-    std::ofstream outputFileStream;
+    bool useHDFS;
 
     std::vector<VALUE_TYPE>& nodePropertySchemata;
     std::vector<VALUE_TYPE>& edgePropertySchemata;
@@ -39,15 +40,15 @@ private:
 
     int currentLine;
 
-    gm_edge_list_graph_reader(
-            char* filename,
-            std::vector<VALUE_TYPE>& vprop_schema,
-            std::vector<VALUE_TYPE>& eprop_schema,
+    gm_edge_list_graph_reader(char* filename, //
+            std::vector<VALUE_TYPE>& vprop_schema, //
+            std::vector<VALUE_TYPE>& eprop_schema, //
             std::vector<void*>& vertex_props,
-            std::vector<void*>& edge_props, gm_graph& Graph);
+            std::vector<void*>& edge_props, //
+            gm_graph& Graph, //
+            bool hdfs = false);
 
     bool loadEdgeList();
-    bool storeEdgeList();
 
     void builtGraph();
 
@@ -61,48 +62,50 @@ private:
     void createEdgeProperties();
     void* createProperty(int size, int position, VALUE_TYPE type);
 
-    void storePropertiesForNode(node_t node);
-    void storePropertiesForEdge(node_t source, edge_t edge);
-
-    void appendProperty(node_t node, void* property, VALUE_TYPE type);
-
     void printErrorHeader() {
         printf("Error in line %d\n", currentLine);
     }
 
     void raiseNodePropertyMissing(VALUE_TYPE expectedType) {
         printErrorHeader();
-        printf("Node property missing. Expected property of type %s\n", typeToString(expectedType));
+        fprintf(stderr, "Node property missing. Expected property of type %s\n", typeToString(expectedType));
         assert(false);
     }
 
     void raiseEdgePropertyMissing(VALUE_TYPE expectedType) {
         printErrorHeader();
-        printf("Edge property missing. Expected property of type %s\n", typeToString(expectedType));
+        fprintf(stderr, "Edge property missing. Expected property of type %s\n", typeToString(expectedType));
         assert(false);
     }
 
     void raiseTokenNotNumeric(const char* token) {
         printErrorHeader();
-        printf("Expected numeric value but found '%s'\n", token);
+        fprintf(stderr, "Expected numeric value but found '%s'\n", token);
         assert(false);
     }
 
     void raiseTokenNotBoolean(const char* token) {
         printErrorHeader();
-        printf("Expected boolean value but found '%s'\n", token);
+        fprintf(stderr, "Expected boolean value but found '%s'\n", token);
         assert(false);
     }
 
     const char* typeToString(VALUE_TYPE type) {
-        switch(type) {
-            case GMTYPE_BOOL:   return "boolean";
-            case GMTYPE_INT:    return "int";
-            case GMTYPE_LONG:   return "long";
-            case GMTYPE_FLOAT:  return "float";
-            case GMTYPE_DOUBLE: return "double";
-            case GMTYPE_NODE:   return "node";
-            case GMTYPE_EDGE:   return "edge";
+        switch (type) {
+            case GMTYPE_BOOL:
+                return "boolean";
+            case GMTYPE_INT:
+                return "int";
+            case GMTYPE_LONG:
+                return "long";
+            case GMTYPE_FLOAT:
+                return "float";
+            case GMTYPE_DOUBLE:
+                return "double";
+            case GMTYPE_NODE:
+                return "node";
+            case GMTYPE_EDGE:
+                return "edge";
             default:
                 assert(false);
                 return "";
@@ -115,13 +118,13 @@ private:
     template<typename ValueType, typename PositionType>
     void writeValueToProperty(void* property, PositionType position, const char* token) {
         ValueType value = readValueFromToken<ValueType>(token);
-        ValueType* typedProperty = (ValueType*)property;
+        ValueType* typedProperty = (ValueType*) property;
         typedProperty[position] = value;
     }
 
     template<typename PositionType>
     void addPropertyValue(void* property, PositionType position, VALUE_TYPE type, const char* token) {
-        switch(type) {
+        switch (type) {
             case GMTYPE_BOOL:
                 writeValueToProperty<bool, node_t>(property, position, token);
                 break;
@@ -149,18 +152,17 @@ private:
         }
     }
 
-    bool isNumeric(const char* token){
-        if (token == NULL || *token == '\0' || isspace(*token))
-          return false;
+    bool isNumeric(const char* token) {
+        if (token == NULL || *token == '\0' || isspace(*token)) return false;
         char* p;
-        strtod (token, &p);
+        strtod(token, &p);
         return *p == '\0';
     }
 
     template<typename T>
     T readValueFromToken(const char* p) {
         T x;
-        if(!isNumeric(p)) {
+        if (!isNumeric(p)) {
             raiseTokenNotNumeric(p);
         }
         sscanf(p, getModifier<T>(), &x);
@@ -170,29 +172,12 @@ private:
     template<typename T>
     void* allocateProperty(node_t size, int position) {
         T* property = new T[size];
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             property[i] = 0;
         }
         return property;
     }
-
-    template<typename T>
-    void appendProperty(node_t node, void* propertyValues) {
-        T* property = (T*)propertyValues;
-        outputFileStream << property[node];
-    }
 };
-
-template<>
-bool gm_edge_list_graph_reader::readValueFromToken(const char* p) {
-    if(strlen(p) == 1 && (p[0] == '0' || p[0] == '1')) {
-        return p[0] == '1';
-    } else {
-        if(strcasecmp(p, "true") == 0) return true;
-        else if(strcasecmp(p, "false") == 0) return false;
-        else raiseTokenNotBoolean(p);
-    }
-}
 
 template<>
 const char* gm_edge_list_graph_reader::getModifier<int>() {
@@ -212,6 +197,60 @@ const char* gm_edge_list_graph_reader::getModifier<double>() {
 template<>
 const char* gm_edge_list_graph_reader::getModifier<float>() {
     return "%f";
+}
+
+class gm_edge_list_graph_writer
+{
+private:
+    friend class gm_graph;
+
+    gm_edge_list_graph_writer(char* filename, //
+            std::vector<VALUE_TYPE>& vprop_schema, //
+            std::vector<VALUE_TYPE>& eprop_schema, //
+            std::vector<void*>& vertex_props, //
+            std::vector<void*>& edge_props, //
+            gm_graph& Graph, //
+            bool hdfs = false);
+
+    gm_graph& G;
+
+    GM_Writer writer;
+
+    std::vector<VALUE_TYPE>& nodePropertySchemata;
+    std::vector<VALUE_TYPE>& edgePropertySchemata;
+
+    std::vector<void*>& nodeProperties;
+    std::vector<void*>& edgeProperties;
+
+    int nodePropertyCount;
+    int edgePropertyCount;
+
+    bool storeEdgeList();
+
+    void storePropertiesForNode(node_t node);
+    void storePropertiesForEdge(node_t source, edge_t edge);
+
+    void appendProperty(node_t node, void* property, VALUE_TYPE type);
+
+    template<typename T>
+    void appendProperty(node_t node, void* propertyValues) {
+        T* property = (T*) propertyValues;
+        writer.write(property[node]);
+    }
+};
+
+template<>
+bool gm_edge_list_graph_reader::readValueFromToken(const char* p) {
+    if (strlen(p) == 1 && (p[0] == '0' || p[0] == '1')) {
+        return p[0] == '1';
+    } else {
+        if (strcasecmp(p, "true") == 0)
+            return true;
+        else if (strcasecmp(p, "false") == 0)
+            return false;
+        else
+            raiseTokenNotBoolean(p);
+    }
 }
 
 #endif /* GMEDGELISTGRAPHREADER_H_ */

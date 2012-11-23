@@ -26,13 +26,13 @@ bool gm_graph::store_edge_list(char* filename,  // output filename
 
     assert(!use_hdfs);
 
-    gm_edge_list_graph_reader reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props, *this);
+    gm_edge_list_graph_writer reader(filename, vprop_schema, eprop_schema, vertex_props, edge_props, *this);
     return reader.storeEdgeList();
 }
 
 gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename, std::vector<VALUE_TYPE>& vprop_schema, std::vector<VALUE_TYPE>& eprop_schema,
-        std::vector<void*>& vertex_props, std::vector<void*>& edge_props, gm_graph& Graph) :
-        G(Graph), fileName(filename), nodePropertySchemata(vprop_schema), edgePropertySchemata(eprop_schema), nodeProperties(vertex_props), edgeProperties(
+        std::vector<void*>& vertex_props, std::vector<void*>& edge_props, gm_graph& Graph, bool hdfs) :
+        G(Graph), fileName(filename), useHDFS(hdfs), nodePropertySchemata(vprop_schema), edgePropertySchemata(eprop_schema), nodeProperties(vertex_props), edgeProperties(
                 edge_props), currentLine(0) {
 
     nodePropertyCount = nodePropertySchemata.size();
@@ -41,7 +41,6 @@ gm_edge_list_graph_reader::gm_edge_list_graph_reader(char* filename, std::vector
 
 gm_edge_list_graph_reader::~gm_edge_list_graph_reader() {
     if (inputFileStream.is_open()) inputFileStream.close();
-    if (outputFileStream.is_open()) outputFileStream.close();
 }
 
 void gm_edge_list_graph_reader::builtGraph() {
@@ -211,9 +210,30 @@ void* gm_edge_list_graph_reader::createProperty(int size, int position, VALUE_TY
     }
 }
 
-bool gm_edge_list_graph_reader::storeEdgeList() {
+gm_edge_list_graph_writer::gm_edge_list_graph_writer(char* filename, //
+        std::vector<VALUE_TYPE>& vprop_schema, //
+        std::vector<VALUE_TYPE>& eprop_schema, //
+        std::vector<void*>& vertex_props, //
+        std::vector<void*>& edge_props, //
+        gm_graph& Graph, //
+        bool hdfs) :
+        G(Graph), //
+        writer(filename, hdfs), //
+        nodePropertySchemata(vprop_schema), //
+        edgePropertySchemata(eprop_schema), //
+        nodeProperties(vertex_props), //
+        edgeProperties(edge_props) {
 
-    outputFileStream.open(fileName);
+    if (writer.failed()) {
+        fprintf(stderr, "Could not open %s for writing\n", filename);
+        assert(false);
+    }
+
+    nodePropertyCount = nodePropertySchemata.size();
+    edgePropertyCount = edgePropertySchemata.size();
+}
+
+bool gm_edge_list_graph_writer::storeEdgeList() {
 
     // store nodes and node properties
     for (node_t node = 0; node < G.num_nodes(); node++) {
@@ -227,23 +247,24 @@ bool gm_edge_list_graph_reader::storeEdgeList() {
         }
     }
 
-    outputFileStream.flush();
     return true;
 }
 
-void gm_edge_list_graph_reader::storePropertiesForNode(node_t node) {
-    outputFileStream << node << " * ";
+void gm_edge_list_graph_writer::storePropertiesForNode(node_t node) {
+    writer.write(node);
+    writer.write(" * ");
+
     int propertyCount = nodePropertySchemata.size();
     for (int i = 0; i < propertyCount; i++) {
         void* property = nodeProperties[i];
         VALUE_TYPE type = nodePropertySchemata[i];
         appendProperty(node, property, type);
-        if (i < propertyCount - 1) outputFileStream << " ";
+        if (i < propertyCount - 1) writer.write(" ");
     }
-    outputFileStream << std::endl;
+    writer.write("\n");
 }
 
-void gm_edge_list_graph_reader::appendProperty(node_t node, void* property, VALUE_TYPE type) {
+void gm_edge_list_graph_writer::appendProperty(node_t node, void* property, VALUE_TYPE type) {
     switch (type) {
         case GMTYPE_BOOL:
             appendProperty<bool>(node, property);
@@ -273,11 +294,14 @@ void gm_edge_list_graph_reader::appendProperty(node_t node, void* property, VALU
     }
 }
 
-void gm_edge_list_graph_reader::storePropertiesForEdge(node_t source, edge_t edge) {
+void gm_edge_list_graph_writer::storePropertiesForEdge(node_t source, edge_t edge) {
 
     node_t target = G.node_idx[edge];
 
-    outputFileStream << source << " " << target << " ";
+    writer.write(source);
+    writer.write(" ");
+    writer.write(target);
+    writer.write(" ");
 
     int propertyCount = edgePropertySchemata.size();
     for (int i = 0; i < propertyCount; i++) {
@@ -309,7 +333,7 @@ void gm_edge_list_graph_reader::storePropertiesForEdge(node_t source, edge_t edg
             // should never happen
             break;
         }
-        if (i < propertyCount - 1) outputFileStream << " ";
+        if (i < propertyCount - 1) writer.write(" ");
     }
-    outputFileStream << std::endl;
+    writer.write("\n");
 }
