@@ -94,18 +94,6 @@ private:
         assert(false);
     }
 
-    void raiseNodeDoesNotExist(node_t node) {
-        printErrorHeader();
-        printf("Node '%d' does not exist in graph.\n", node);
-        assert(false);
-    }
-
-    void raiseEdgeDoesNotExist(node_t source, node_t destination) {
-        printErrorHeader();
-        printf("Edge '%d -> %d' does not exist in graph.\n", source, destination);
-        assert(false);
-    }
-
     const char* typeToString(VALUE_TYPE type) {
         switch(type) {
             case GMTYPE_BOOL:   return "boolean";

@@ -125,9 +125,6 @@ bool gm_edge_list_graph_reader::handleNode(node_t nodeId, char* p) {
         if (p == NULL || strlen(p) == 0) {
             raiseNodePropertyMissing(nodePropertySchemata[i]);
         }
-        if (nodeId < 0 || nodeId >= G.num_nodes()) {
-            raiseNodeDoesNotExist(nodeId);
-        }
         addNodePropertyValue(nodeId, i, p);
         p = strtok(NULL, " ");
     }
@@ -144,9 +141,6 @@ bool gm_edge_list_graph_reader::handleEdge(node_t sourceNode, char* p) {
             edgeId = edge;
             break;
         }
-    }
-    if (edgeId < 0 || G.node_idx[edgeId] != targetNode) {
-        raiseEdgeDoesNotExist(sourceNode, targetNode);
     }
 
     p = strtok(NULL, " ");
