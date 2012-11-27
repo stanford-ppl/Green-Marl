@@ -1,9 +1,11 @@
 CC= gcc
+AR= ar
 AVRO = src
 JANSSON = jansson/src
 GM_INC = ../inc
 OBJ = obj
 CFLAGS = -O3 -g -I$(AVRO) -I$(JANSSON) -I$(GM_INC) -Wall 
+OUT = ./libgmavro.a
 
 AVRO_SOURCES := $(wildcard $(AVRO)/*.c)
 JANSSON_SOURCES := $(wildcard $(JANSSON)/*.c) 
@@ -15,8 +17,10 @@ include ../../../../setup.mk
 include ../../common.mk
 
 
-all: $(AVRO_OBJECTS) $(JANSSON_OBJECTS)
-#	$(CC) $(CFLAGS) $^ $(LINK_AVRO_LIB) -o $@
+all: $(OUT)
+
+./libgmavro.a: $(AVRO_OBJECTS) $(JANSSON_OBJECTS)
+	$(AR) r $@  $^  
 
 $(JANSSON)/%_json.o: $(JANSSON)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@

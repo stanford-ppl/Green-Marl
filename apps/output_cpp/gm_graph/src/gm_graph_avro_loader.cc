@@ -12,7 +12,6 @@
 #include "gm_lock.h"
 #include "gm_file_handling.h"
 
-#ifdef AVRO
 #include "avro.h"
 
 VALUE_TYPE avroGetTypeValue(const char* type_name) {
@@ -577,7 +576,3 @@ bool gm_graph::store_adjacency_list_avro(const char* filename, // input paramete
 
     return true;
 }
-
-
-
-#endif // AVRO
