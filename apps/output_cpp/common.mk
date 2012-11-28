@@ -96,3 +96,11 @@ CFLAGS += -DHDFS
 JFLAGS = -classpath  $(HADOOP_CORE_DIR)/$(HADOOP_CORE_JAR)
 endif
 
+#-----------------------------------------------
+# Set up for Avro
+#-----------------------------------------------
+ifeq (${SUPPORT_AVRO},1)
+
+CFLAGS += -DAVRO
+
+endif
