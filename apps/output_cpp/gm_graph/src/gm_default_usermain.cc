@@ -23,11 +23,13 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
    OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[Never creates an output file], 1:[Always create output as graph format], 2:[Omit edges in output if edge properties are not modified.; create nothing if no properties are modified.]");
    OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
    OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "Measure running time");
-   //OPTIONS.add_option(OPT_OUTDIR,     GMTYPE_END,  NULL,  "Output directory ");
+#ifdef AVRO
    OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
-   //,ADJ_NP: adj-list node property only");
-   //OPTIONS.add_option(OPT_INDIR,      GMTYPE_END,  NULL,  "Input directory ");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
+#else
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list");
+   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list");
+#endif
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
 #ifdef HDFS
    OPTIONS.add_option(OPT_USEHDFS, GMTYPE_BOOL, "0", "Use HDFS instead of local file system");
@@ -160,10 +162,12 @@ static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
         format = GM_ADJ_LIST;
         return true;
     }
+#ifdef AVRO
     if (!strcmp(str, "ADJ_AVRO") || !strcmp(str,"adj_avro")) {
         format = GM_ADJ_LIST_AVRO;
         return true;
     }
+#endif
     if (!strcmp(str, "AVRO") || !strcmp(str,"avro")) {
         format = GM_ADJ_LIST_AVRO;
         return true;
@@ -426,6 +430,7 @@ bool gm_default_usermain::do_preprocess()
             return false;
         }
     }
+#ifdef AVRO
     else if (get_input_format() == GM_ADJ_LIST_AVRO)
     {
         std::vector<VALUE_TYPE> vprop_avro_schema;
@@ -462,6 +467,7 @@ bool gm_default_usermain::do_preprocess()
 
 
     }
+#endif
     else 
     {
         printf("format not supported yet\n");
@@ -640,6 +646,7 @@ bool gm_default_usermain::do_postprocess()
                 "\t",
                 use_hdfs);
         }
+#ifdef AVRO
         else if (get_output_format() == GM_ADJ_LIST_AVRO) 
         {
            okay = GRAPH.store_adjacency_list_avro(fullpath_name,
@@ -651,6 +658,7 @@ bool gm_default_usermain::do_postprocess()
                 eprop_out_array,
                 use_hdfs);
         }
+#endif
         else {
             printf("Unknown graph format\n");
             return false;
