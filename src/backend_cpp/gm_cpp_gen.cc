@@ -47,7 +47,7 @@ bool gm_cpp_gen::open_output_files() {
 
     if (OPTIONS.get_arg_bool(GMARGFLAG_CPP_CREATE_MAIN)) {
         sprintf(temp, "%s/%s_compile.mk", dname, fname);
-        f_shell = fopen(temp,"w");
+        f_shell = fopen(temp, "w");
         if (f_shell == NULL) {
             gm_backend_error(GM_ERROR_FILEWRITE_ERROR, temp);
             return false;
@@ -62,7 +62,7 @@ void gm_cpp_gen::close_output_files(bool remove_files) {
         Header.flush();
         fclose(f_header);
         if (remove_files) {
-            sprintf(temp,"rm %s/%s.h",dname, fname);
+            sprintf(temp, "rm %s/%s.h", dname, fname);
             system(temp);
         }
         f_header = NULL;
@@ -71,7 +71,7 @@ void gm_cpp_gen::close_output_files(bool remove_files) {
         Body.flush();
         fclose(f_body);
         if (remove_files) {
-            sprintf(temp,"rm %s/%s.cc",dname, fname);
+            sprintf(temp, "rm %s/%s.cc", dname, fname);
             system(temp);
         }
         f_body = NULL;
@@ -81,7 +81,7 @@ void gm_cpp_gen::close_output_files(bool remove_files) {
         fclose(f_shell);
         f_shell = NULL;
         if (remove_files) {
-            sprintf(temp,"rm %s/%s_compile.mk",dname, fname);
+            sprintf(temp, "rm %s/%s_compile.mk", dname, fname);
             system(temp);
         }
     }
@@ -380,7 +380,7 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
         }
     } else if (t->is_map()) {
         char temp[256];
-        ast_maptypedecl* mapType = (ast_maptypedecl*)t;
+        ast_maptypedecl* mapType = (ast_maptypedecl*) t;
         const char* keyType = get_type_string(mapType->get_key_type());
         const char* valueType = get_type_string(mapType->get_value_type());
         sprintf(temp, "gm_map<%s, %s>", keyType, valueType);
@@ -588,7 +588,7 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
         ast_id* leftHandSide = a->get_lhs_scala();
         if (leftHandSide->is_instantly_assigned()) { //we have to add the variable declaration here
             Body.push(get_lib()->get_type_string(leftHandSide->getTypeSummary()));
-            if(a->is_reference()) {
+            if (a->is_reference()) {
                 Body.push("& ");
             } else {
                 Body.push(" ");
@@ -758,14 +758,30 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a) {
     const char* method_name = get_lib()->get_reduction_function_name(r_type);
     bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
 
+    ast_typedecl* lhs_target_type;
+    if(a->get_lhs_type() == GMASSIGN_LHS_SCALA) {
+        lhs_target_type = a->get_lhs_scala()->getTypeInfo();
+    } else {
+        lhs_target_type = a->get_lhs_field()->getTypeInfo()->get_target_type();
+    }
+
+    char templateParameter[32];
+    if (r_type != GMREDUCE_OR && r_type != GMREDUCE_AND) {
+        sprintf(templateParameter, "<%s>",  get_type_string(lhs_target_type));
+    } else {
+        sprintf(templateParameter, "");
+    }
+
     Body.push(method_name);
+    Body.push(templateParameter);
     Body.push("(&");
     if (is_scalar)
         generate_rhs_id(a->get_lhs_scala());
     else
         generate_rhs_field(a->get_lhs_field());
     Body.push(", ");
-    generate_expr(a->get_rhs());;
+    generate_expr(a->get_rhs());
+    ;
     Body.push(");\n");
 }
 
