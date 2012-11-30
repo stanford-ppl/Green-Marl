@@ -190,7 +190,7 @@ void gm_cpp_gen::do_generate_user_main()
             case GMTYPE_FLOAT: Body.pushln("set_return_f("); break;
             case GMTYPE_NODE: Body.pushln("set_return_n("); break;
             case GMTYPE_EDGE: Body.pushln("set_return_e("); break;
-            default: assert(false);
+            default: assert(false); break;
         }
     }
     Body.push(proc->get_procname()->get_genname());
