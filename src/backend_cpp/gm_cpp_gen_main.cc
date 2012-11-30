@@ -31,7 +31,7 @@ void gm_cpp_gen::do_generate_compile_shell(std::map<std::string,std::string>& se
 
     fprintf(f_shell, "LFLAGS = -L${GM_GRAPH}/lib -lgmgraph \n");
     if ((avro!= NULL) && (atoi(avro) != 0)) {
-        fprintf(f_shell, "LFLAGS += -lgmavro \n");
+        //fprintf(f_shell, "LFLAGS += -lgmavro \n");
     }
     fprintf(f_shell, "include ${GM_TOP}/setup.mk\n");
     fprintf(f_shell, "include ${GM_TOP}/apps/output_cpp/common.mk\n");
