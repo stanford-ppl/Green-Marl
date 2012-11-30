@@ -55,6 +55,8 @@ public:
     virtual void generate_down_initializer(ast_foreach* fe, gm_code_writer& Body);
     virtual void generate_foreach_header(ast_foreach* fe, gm_code_writer& Body);
 
+    const char* get_reduction_function_name(GM_REDUCE_T type);
+
 protected:
     gm_cpp_gen* get_main() {return main;}
 
@@ -258,7 +260,6 @@ protected:
 
     virtual void declare_prop_def(ast_typedecl* t, ast_id* i);
     virtual void generate_sent_reduce_argmin_assign(ast_assign *a);
-    virtual void generate_sent_reduce_assign_boolean(ast_assign *a);
 
     bool _pblock;
 

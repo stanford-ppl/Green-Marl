@@ -13,6 +13,7 @@
 #include "gm_graph.h"
 #include "gm_runtime.h"
 #include "gm_atomic_wrapper.h"
+#include "gm_atomic_operations.h"
 #include "gm_lock.h"
 #include "gm_bitmap.h"
 #include "gm_mem_helper.h"

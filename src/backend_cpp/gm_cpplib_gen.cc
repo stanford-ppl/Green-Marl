@@ -507,3 +507,23 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
     Body.push(str_buf);
     add_arguments_and_thread(Body, e, add_thread_id);
 }
+
+const char* gm_cpplib::get_reduction_function_name(GM_REDUCE_T type) {
+    switch(type) {
+        case GMREDUCE_PLUS:
+            return "ATOMIC_ADD";
+        case GMREDUCE_MULT:
+            return "ATOMIC_MULT";
+        case GMREDUCE_AND:
+            return "ATOMIC_AND";
+        case GMREDUCE_OR:
+            return "ATOMIC_OR";
+        case GMREDUCE_MIN:
+            return"ATOMIC_MIN";
+        case GMREDUCE_MAX:
+            return "ATOMIC_MAX";
+        default:
+            assert(false);
+            return "ERROR";
+    }
+}

@@ -748,168 +748,25 @@ void gm_cpp_gen::generate_sent_block_exit(ast_sentblock* sb) {
 
 }
 
-void gm_cpp_gen::generate_sent_reduce_assign_boolean(ast_assign *a) {
-    // implement reduction using compare and swap
-    //---------------------------------------
-    //  bool NEW
-    //  NEW = RHS;
-    //  // for or-reduction
-    //  if (NEW) LHS = TRUE
-    //  // for and-reduciton
-    //  if (!NEW) LHS = FALSE
-    //---------------------------------------
-    const char* temp_var_base = (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? a->get_lhs_scala()->get_orgname() : a->get_lhs_field()->get_second()->get_orgname();
-
-    const char* temp_var_new;
-    temp_var_new = FE.voca_temp_name_and_add(temp_var_base, "_new");
-    bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
-
-    Body.pushln("// boolean reduction (no need CAS)");
-    Body.pushln("{ ");
-
-    sprintf(temp, "bool %s;", temp_var_new);
-    Body.pushln(temp);
-    sprintf(temp, "%s = ", temp_var_new);
-    Body.push(temp);
-    generate_expr(a->get_rhs());
-    Body.pushln(";");
-
-    if (a->get_reduce_type() == GMREDUCE_AND) {
-        Body.pushln("// and-reduction");
-        sprintf(temp, "if ((!%s) ", temp_var_new);
-        Body.push(temp); // new value is false
-        sprintf(temp, "&& ( ");
-        Body.push(temp);                     // old value is true
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln("))");
-        Body.push_indent();
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln(" = false;");
-        Body.pop_indent();
-    } else if (a->get_reduce_type() == GMREDUCE_OR) {
-        Body.pushln("// or-reduction");
-        sprintf(temp, "if ((%s) ", temp_var_new);
-        Body.push(temp);  // new value is true
-        sprintf(temp, "&& (! ");
-        Body.push(temp);                    // old value is false
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln("))");
-        Body.push_indent();
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln(" = true;");
-        Body.pop_indent();
-    } else {
-        assert(false);
-    }
-    Body.pushln("}");
-    delete[] temp_var_new;
-}
-
 void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a) {
     if (a->is_argminmax_assign()) {
         generate_sent_reduce_argmin_assign(a);
         return;
     }
 
-    else if ((a->get_reduce_type() == GMREDUCE_AND) || (a->get_reduce_type() == GMREDUCE_OR)) {
-        generate_sent_reduce_assign_boolean(a);
-        return;
-    }
-
-    // implement reduction using compare and swap
-    //---------------------------------------
-    //  {
-    //    <type> OLD, NEW
-    //    do {
-    //      OLD = LHS;
-    //      NEW = LHS <op> RHS;
-    //      <optional break> (for min/max)
-    //    } while (!__bool_comp_swap(&LHS, OLD, NEW))
-    //  }
-    //---------------------------------------
-    ast_typedecl* lhs_target_type =
-            (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? a->get_lhs_scala()->getTypeInfo() : a->get_lhs_field()->getTypeInfo()->get_target_type();
-
-    const char* temp_var_base = (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? a->get_lhs_scala()->get_orgname() : a->get_lhs_field()->get_second()->get_orgname();
-
-    int r_type = a->get_reduce_type();
-
-    const char* temp_var_old;
-    const char* temp_var_new;
+    GM_REDUCE_T r_type = (GM_REDUCE_T) a->get_reduce_type();
+    const char* method_name = get_lib()->get_reduction_function_name(r_type);
     bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
 
-    temp_var_old = FE.voca_temp_name_and_add(temp_var_base, "_old");
-    temp_var_new = FE.voca_temp_name_and_add(temp_var_base, "_new");
-
-    Body.pushln("// reduction");
-    Body.pushln("{ ");
-
-    sprintf(temp, "%s %s, %s;", get_type_string(lhs_target_type), temp_var_old, temp_var_new);
-    Body.pushln(temp);
-
-    Body.pushln("do {");
-    sprintf(temp, "%s = ", temp_var_old);
-    Body.push(temp);
+    Body.push(method_name);
+    Body.push("(&");
     if (is_scalar)
         generate_rhs_id(a->get_lhs_scala());
     else
         generate_rhs_field(a->get_lhs_field());
-
-    Body.pushln(";");
-    if (r_type == GMREDUCE_PLUS) {
-        sprintf(temp, "%s = %s + (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_MULT) {
-        sprintf(temp, "%s = %s * (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_MAX) {
-        sprintf(temp, "%s = std::max (%s, ", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_OR) {
-        sprintf(temp, "%s = %s || (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_AND) {
-        sprintf(temp, "%s = %s && (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_MIN) {
-        sprintf(temp, "%s = std::min (%s, ", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else {
-        assert(false);
-    }
-
-    generate_expr(a->get_rhs());
-    Body.pushln(");");
-    if ((r_type == GMREDUCE_MAX) || (r_type == GMREDUCE_MIN)) {
-        sprintf(temp, "if (%s == %s) break;", temp_var_old, temp_var_new);
-        Body.pushln(temp);
-    }
-    Body.push("} while (_gm_atomic_compare_and_swap(&(");
-    if (is_scalar)
-        generate_rhs_id(a->get_lhs_scala());
-    else
-        generate_rhs_field(a->get_lhs_field());
-
-    sprintf(temp, "), %s, %s)==false); ", temp_var_old, temp_var_new);
-    Body.pushln(temp);
-    Body.pushln("}");
-
-    delete[] temp_var_new;
-    delete[] temp_var_old;
-
-    return;
+    Body.push(", ");
+    generate_expr(a->get_rhs());;
+    Body.push(");\n");
 }
 
 void gm_cpp_gen::generate_sent_reduce_argmin_assign(ast_assign *a) {
