@@ -22,7 +22,9 @@ GRAPHGEN_OBJECTS = $(OBJ)/gm_graph.o $(OBJ)/gm_rand.o $(OBJ)/graph_gen.o $(OBJ)/
 JAVASOURCES := $(wildcard $(JSRC)/*.java)
 JAVACLASSES := $(subst $(JSRC),$(JBIN),$(JAVASOURCES:.java=.class))
 
-AVRO = ./avro-c-1.7.2/src
+AVRO_TOP = ./avro-c-1.7.2
+AVRO = $(AVRO_TOP)/src
+JANSSON = $(AVRO_TOP)/jansson/src
 AVRO_SOURCES := $(wildcard $(AVRO)/*.c)
 JANSSON_SOURCES := $(wildcard $(JANSSON)/*.c) 
 AVRO_OBJECTS := $(subst ,,$(AVRO_SOURCES:.c=_avro.o)) 
