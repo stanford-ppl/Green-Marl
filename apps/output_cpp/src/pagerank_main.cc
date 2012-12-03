@@ -35,7 +35,7 @@ public:
     }
 
     virtual void print_arg_info() {
-        printf("[max_iteration=100] [eplision=0.001] [dela=0.85]");
+        printf("[max_iteration=100] [eplision=0.001] [delta=0.85]");
     }
 
     virtual bool check_args(int argc, char** argv) {

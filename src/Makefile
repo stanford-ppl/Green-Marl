@@ -91,7 +91,7 @@ SRCS2 =\
        gm_cpp_opt_reduce_scalar.cc \
        gm_cpp_opt_check_feasible.cc \
        gm_cpp_opt_save_bfs.cc\
-	   gm_cpp_opt_common_nbr.cc\
+       gm_cpp_opt_common_nbr.cc\
        gm_cpp_gen.cc \
        gm_cpp_gen_bfs.cc \
        gm_cpp_gen_foreach.cc\
@@ -103,7 +103,7 @@ SRCS2 =\
        gm_cpp_gen_mark_parallel.cc\
        gm_cpp_gen_check_bfs.cc\
        gm_cpp_gen_regular.cc\
-	   gm_cpp_gen_check_usermain.cc\
+       gm_cpp_gen_check_usermain.cc\
        gm_cpplib_gen.cc \
        gm_cpplib_opt.cc\
        gm_gps_opt_remove_master_random_write.cc\
@@ -113,7 +113,7 @@ SRCS2 =\
        gm_gps_opt_simplify_expr1.cc\
        gm_gps_opt_split_loops_for_flipping.cc\
        gm_gps_opt_transform_bfs.cc\
-	   gm_gps_opt_edge_iteration.cc\
+       gm_gps_opt_edge_iteration.cc\
        gm_gps_create_stages.cc \
        gm_gps_check_synthesizable.cc\
        gm_gps_bb_split.cc\
