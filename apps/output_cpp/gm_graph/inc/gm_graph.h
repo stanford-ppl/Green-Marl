@@ -248,6 +248,24 @@ friend class gm_graph_hdfs;
             bool use_hdfs = false // input parameter
             );
 
+    bool load_edge_list(
+            char* filename,                          // input: filename
+            std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
+            std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
+            std::vector<void*>& vertex_props,        // output: vector of arrays
+            std::vector<void*>& edge_props,          // output: vector of arrays,
+            bool use_hdfs = false
+            );
+
+    bool store_edge_list(
+            char* filename,                         // input: filename
+            std::vector<VALUE_TYPE>& vprop_schema,  // input: type of node properties
+            std::vector<VALUE_TYPE>& eprop_schema,  // input: type of edge properties
+            std::vector<void*>& vertex_props,       // input: vector of arrays
+            std::vector<void*>& edge_props,         // input: vector of arrays,
+            bool use_hdfs = false
+            );
+
     //--------------------------------------------------------------
     // conversion between idx and id
     //--------------------------------------------------------------
@@ -327,8 +345,7 @@ friend class gm_graph_hdfs;
     //std::vector<char*>      _numeric_reverse_key;  // node_idx -> node_key
     //void prepare_cstr_nodekey(node_t estimated_size, bool use_reverse_key);
     //void delete_cstr_nodekey(bool keep_reverse_key);
-    //
- private:
+
     inline bool find_nodekey(node_t key) {return _numeric_key.find(key) != _numeric_key.end();}
     inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
     inline node_t nodeid_to_nodekey(node_t nodeid) {return _numeric_reverse_key[nodeid];}

@@ -1,5 +1,6 @@
 #ifndef GM_ATOMIC_WRAP_H_
 #define GM_ATOMIC_WRAP_H_
+
 #include <stdlib.h>
 #include <stdint.h>
 

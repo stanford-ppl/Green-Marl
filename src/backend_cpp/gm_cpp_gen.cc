@@ -47,7 +47,7 @@ bool gm_cpp_gen::open_output_files() {
 
     if (OPTIONS.get_arg_bool(GMARGFLAG_CPP_CREATE_MAIN)) {
         sprintf(temp, "%s/%s_compile.mk", dname, fname);
-        f_shell = fopen(temp,"w");
+        f_shell = fopen(temp, "w");
         if (f_shell == NULL) {
             gm_backend_error(GM_ERROR_FILEWRITE_ERROR, temp);
             return false;
@@ -62,7 +62,7 @@ void gm_cpp_gen::close_output_files(bool remove_files) {
         Header.flush();
         fclose(f_header);
         if (remove_files) {
-            sprintf(temp,"rm %s/%s.h",dname, fname);
+            sprintf(temp, "rm %s/%s.h", dname, fname);
             system(temp);
         }
         f_header = NULL;
@@ -71,7 +71,7 @@ void gm_cpp_gen::close_output_files(bool remove_files) {
         Body.flush();
         fclose(f_body);
         if (remove_files) {
-            sprintf(temp,"rm %s/%s.cc",dname, fname);
+            sprintf(temp, "rm %s/%s.cc", dname, fname);
             system(temp);
         }
         f_body = NULL;
@@ -81,7 +81,7 @@ void gm_cpp_gen::close_output_files(bool remove_files) {
         fclose(f_shell);
         f_shell = NULL;
         if (remove_files) {
-            sprintf(temp,"rm %s/%s_compile.mk",dname, fname);
+            sprintf(temp, "rm %s/%s_compile.mk", dname, fname);
             system(temp);
         }
     }
@@ -380,7 +380,7 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
         }
     } else if (t->is_map()) {
         char temp[256];
-        ast_maptypedecl* mapType = (ast_maptypedecl*)t;
+        ast_maptypedecl* mapType = (ast_maptypedecl*) t;
         const char* keyType = get_type_string(mapType->get_key_type());
         const char* valueType = get_type_string(mapType->get_value_type());
         sprintf(temp, "gm_map<%s, %s>", keyType, valueType);
@@ -588,7 +588,7 @@ void gm_cpp_gen::generate_sent_assign(ast_assign* a) {
         ast_id* leftHandSide = a->get_lhs_scala();
         if (leftHandSide->is_instantly_assigned()) { //we have to add the variable declaration here
             Body.push(get_lib()->get_type_string(leftHandSide->getTypeSummary()));
-            if(a->is_reference()) {
+            if (a->is_reference()) {
                 Body.push("& ");
             } else {
                 Body.push(" ");
@@ -748,168 +748,41 @@ void gm_cpp_gen::generate_sent_block_exit(ast_sentblock* sb) {
 
 }
 
-void gm_cpp_gen::generate_sent_reduce_assign_boolean(ast_assign *a) {
-    // implement reduction using compare and swap
-    //---------------------------------------
-    //  bool NEW
-    //  NEW = RHS;
-    //  // for or-reduction
-    //  if (NEW) LHS = TRUE
-    //  // for and-reduciton
-    //  if (!NEW) LHS = FALSE
-    //---------------------------------------
-    const char* temp_var_base = (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? a->get_lhs_scala()->get_orgname() : a->get_lhs_field()->get_second()->get_orgname();
-
-    const char* temp_var_new;
-    temp_var_new = FE.voca_temp_name_and_add(temp_var_base, "_new");
-    bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
-
-    Body.pushln("// boolean reduction (no need CAS)");
-    Body.pushln("{ ");
-
-    sprintf(temp, "bool %s;", temp_var_new);
-    Body.pushln(temp);
-    sprintf(temp, "%s = ", temp_var_new);
-    Body.push(temp);
-    generate_expr(a->get_rhs());
-    Body.pushln(";");
-
-    if (a->get_reduce_type() == GMREDUCE_AND) {
-        Body.pushln("// and-reduction");
-        sprintf(temp, "if ((!%s) ", temp_var_new);
-        Body.push(temp); // new value is false
-        sprintf(temp, "&& ( ");
-        Body.push(temp);                     // old value is true
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln("))");
-        Body.push_indent();
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln(" = false;");
-        Body.pop_indent();
-    } else if (a->get_reduce_type() == GMREDUCE_OR) {
-        Body.pushln("// or-reduction");
-        sprintf(temp, "if ((%s) ", temp_var_new);
-        Body.push(temp);  // new value is true
-        sprintf(temp, "&& (! ");
-        Body.push(temp);                    // old value is false
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln("))");
-        Body.push_indent();
-        if (is_scalar)
-            generate_rhs_id(a->get_lhs_scala());
-        else
-            generate_rhs_field(a->get_lhs_field());
-        Body.pushln(" = true;");
-        Body.pop_indent();
-    } else {
-        assert(false);
-    }
-    Body.pushln("}");
-    delete[] temp_var_new;
-}
-
 void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a) {
     if (a->is_argminmax_assign()) {
         generate_sent_reduce_argmin_assign(a);
         return;
     }
 
-    else if ((a->get_reduce_type() == GMREDUCE_AND) || (a->get_reduce_type() == GMREDUCE_OR)) {
-        generate_sent_reduce_assign_boolean(a);
-        return;
-    }
-
-    // implement reduction using compare and swap
-    //---------------------------------------
-    //  {
-    //    <type> OLD, NEW
-    //    do {
-    //      OLD = LHS;
-    //      NEW = LHS <op> RHS;
-    //      <optional break> (for min/max)
-    //    } while (!__bool_comp_swap(&LHS, OLD, NEW))
-    //  }
-    //---------------------------------------
-    ast_typedecl* lhs_target_type =
-            (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? a->get_lhs_scala()->getTypeInfo() : a->get_lhs_field()->getTypeInfo()->get_target_type();
-
-    const char* temp_var_base = (a->get_lhs_type() == GMASSIGN_LHS_SCALA) ? a->get_lhs_scala()->get_orgname() : a->get_lhs_field()->get_second()->get_orgname();
-
-    int r_type = a->get_reduce_type();
-
-    const char* temp_var_old;
-    const char* temp_var_new;
+    GM_REDUCE_T r_type = (GM_REDUCE_T) a->get_reduce_type();
+    const char* method_name = get_lib()->get_reduction_function_name(r_type);
     bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
 
-    temp_var_old = FE.voca_temp_name_and_add(temp_var_base, "_old");
-    temp_var_new = FE.voca_temp_name_and_add(temp_var_base, "_new");
-
-    Body.pushln("// reduction");
-    Body.pushln("{ ");
-
-    sprintf(temp, "%s %s, %s;", get_type_string(lhs_target_type), temp_var_old, temp_var_new);
-    Body.pushln(temp);
-
-    Body.pushln("do {");
-    sprintf(temp, "%s = ", temp_var_old);
-    Body.push(temp);
-    if (is_scalar)
-        generate_rhs_id(a->get_lhs_scala());
-    else
-        generate_rhs_field(a->get_lhs_field());
-
-    Body.pushln(";");
-    if (r_type == GMREDUCE_PLUS) {
-        sprintf(temp, "%s = %s + (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_MULT) {
-        sprintf(temp, "%s = %s * (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_MAX) {
-        sprintf(temp, "%s = std::max (%s, ", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_OR) {
-        sprintf(temp, "%s = %s || (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_AND) {
-        sprintf(temp, "%s = %s && (", temp_var_new, temp_var_old);
-        Body.push(temp);
-    } else if (r_type == GMREDUCE_MIN) {
-        sprintf(temp, "%s = std::min (%s, ", temp_var_new, temp_var_old);
-        Body.push(temp);
+    ast_typedecl* lhs_target_type;
+    if(a->get_lhs_type() == GMASSIGN_LHS_SCALA) {
+        lhs_target_type = a->get_lhs_scala()->getTypeInfo();
     } else {
-        assert(false);
+        lhs_target_type = a->get_lhs_field()->getTypeInfo()->get_target_type();
     }
 
-    generate_expr(a->get_rhs());
-    Body.pushln(");");
-    if ((r_type == GMREDUCE_MAX) || (r_type == GMREDUCE_MIN)) {
-        sprintf(temp, "if (%s == %s) break;", temp_var_old, temp_var_new);
-        Body.pushln(temp);
+    char templateParameter[32];
+    if (r_type != GMREDUCE_OR && r_type != GMREDUCE_AND) {
+        sprintf(templateParameter, "<%s>",  get_type_string(lhs_target_type));
+    } else {
+        sprintf(templateParameter, "");
     }
-    Body.push("} while (_gm_atomic_compare_and_swap(&(");
+
+    Body.push(method_name);
+    Body.push(templateParameter);
+    Body.push("(&");
     if (is_scalar)
         generate_rhs_id(a->get_lhs_scala());
     else
         generate_rhs_field(a->get_lhs_field());
-
-    sprintf(temp, "), %s, %s)==false); ", temp_var_old, temp_var_new);
-    Body.pushln(temp);
-    Body.pushln("}");
-
-    delete[] temp_var_new;
-    delete[] temp_var_old;
-
-    return;
+    Body.push(", ");
+    generate_expr(a->get_rhs());
+    ;
+    Body.push(");\n");
 }
 
 void gm_cpp_gen::generate_sent_reduce_argmin_assign(ast_assign *a) {
