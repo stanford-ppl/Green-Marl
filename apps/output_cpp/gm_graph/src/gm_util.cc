@@ -93,7 +93,7 @@ void gmutil_deleteVectorType(void* vector, VALUE_TYPE vt)
         case GMTYPE_NODE: delete ((GM_NVECT*) vector); break;
         case GMTYPE_EDGE: delete ((GM_EVECT*) vector); break;
         case GMTYPE_END: 
-        default: assert(false); // Control should never reach this case.
+        default: assert(false); break;// Control should never reach this case.
     }
     return;
 }
