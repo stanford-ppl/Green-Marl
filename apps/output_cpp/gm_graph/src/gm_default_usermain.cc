@@ -20,14 +20,14 @@
 
 gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
-   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[Never creates an output file], 1:[Always create output as graph format], 2:[Omit edges in output if edge properties are not modified.; create nothing if no properties are modified.]");
+   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[do not create an output file], 1:[create an output file]");
    OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
    OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "Measure running time");
 #ifdef AVRO
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, NODE_PROP: dump of node properties only");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
 #else
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, NODE_PROP: dump of node properties only");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list");
 #endif
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
@@ -176,6 +176,11 @@ static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
         format = GM_BINARY;
         return true;
     }
+    if ((!strcmp(str,"NODE_PROP")) || (!strcmp(str,"node_prop"))) {
+        format = GM_NODE_PROP_LIST;
+        return true;
+    }
+
 
     return false;
 }
@@ -193,6 +198,7 @@ static bool guess_file_format_from_extension(const char* fname, GM_FILE_FORMAT& 
         if (ext == ".adj") {fmt = GM_ADJ_LIST; return true;}
         else if (ext == ".avro") {fmt = GM_ADJ_LIST_AVRO; return true;}
         else if (ext == ".bin")  {fmt = GM_BINARY; return true;}
+        else if (ext == ".prop") {fmt = GM_NODE_PROP_LIST; return true;}
     }
 
     return false; // donno
@@ -210,7 +216,7 @@ bool gm_default_usermain::determine_formats()
             return false;
         }
     }
-    if (guess_file_format_from_extension(
+    else if (guess_file_format_from_extension(
             OPTIONS.get_arg(0), this->in_format) == false) {
         printf("Warning: assuming input is ADJ list\n");
     }
@@ -227,11 +233,12 @@ bool gm_default_usermain::determine_formats()
                 return false;
             }
         }
-        if (guess_file_format_from_extension(
+        else if (guess_file_format_from_extension(
                 OPTIONS.get_arg(1), this->out_format) == false) {
             printf("Warning: assuming output is ADJ list\n");
         }
-        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO)) {
+
+        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) && (out_format != GM_NODE_PROP_LIST)) {
             printf("Error:output format not supported.\n");
             return false;
         }
@@ -255,7 +262,8 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
     {
         // should create a graph format
         create_output_graph = true;
-    }
+    } 
+    /*
     else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) == 2)
     {
         if (eprop_out_schema.size() > 0) 
@@ -266,9 +274,10 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
             create_output_text = true;
         }
     }
+    */
     else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) != 0)
     {
-        printf("Undfined option for %s\n", OPT_DUMPGRAPH);
+        printf("Undefined option value for %s\n", OPT_DUMPGRAPH);
     }
 
     if (!create_output_graph && !create_output_text)
@@ -659,6 +668,14 @@ bool gm_default_usermain::do_postprocess()
                 use_hdfs);
         }
 #endif
+        else if (get_output_format() == GM_NODE_PROP_LIST)
+        {
+           okay = GRAPH.store_node_properties_list(fullpath_name,
+                vprop_out_schema,
+                vprop_out_array,
+                "\t",
+                use_hdfs);
+        }
         else {
             printf("Unknown graph format\n");
             return false;
@@ -672,9 +689,6 @@ bool gm_default_usermain::do_postprocess()
             gettimeofday(&TV2, NULL);
             printf("storing time:%8.3lf (ms)\n", (TV2.tv_sec - TV1.tv_sec)*1000 + (TV2.tv_usec - TV1.tv_usec)*0.001);
         }
-    }
-    else if (create_output_text) {
-        assert(false);
     }
 
     return true;
