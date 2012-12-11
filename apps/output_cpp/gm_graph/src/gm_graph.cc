@@ -393,8 +393,13 @@ void gm_graph::do_semi_sort() {
     _semi_sorted = true;
 }
 
+
 void gm_graph::prepare_external_creation(node_t n, edge_t m) {
-    clear_graph();
+  prepare_external_creation(n, m, true);
+}
+
+void gm_graph::prepare_external_creation(node_t n, edge_t m, bool clean_key_id_map) {
+    clear_graph(clean_key_id_map);
     allocate_memory_for_frozen_graph(n, m);
     _frozen = true;
 }
@@ -449,15 +454,19 @@ edge_t gm_graph::add_edge(node_t n, node_t m) {
     return _numEdges++;
 }
 
-void gm_graph::clear_graph() {
+void gm_graph::clear_graph(bool clean_key_id_map) {
     flexible_graph.clear();
     delete_frozen_graph();
 
     _numNodes = 0;
     _numEdges = 0;
 
-    if (_nodekey_defined) {_numeric_key.clear();}
+    if (_nodekey_defined && clean_key_id_map) {_numeric_key.clear();}
     if (_reverse_nodekey_defined) {_numeric_reverse_key.clear();}
+}
+
+void gm_graph::clear_graph() {
+  clear_graph(true);
 }
 
 //--------------------------------------------------
