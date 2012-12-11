@@ -222,8 +222,10 @@ void gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_body_file) {
             arg_curr++;
 
             Out.push(get_type_string((*i)->get_type()));
-            Out.push_spc("&");
+            ast_typedecl* T = (*i)->get_type();
             Out.push((*i)->get_idlist()->get_item(0)->get_genname());
+            if (!T->is_property()) 
+                Out.push_spc("&");
             if (remain_args > 0) {
                 Out.push(", ");
             }

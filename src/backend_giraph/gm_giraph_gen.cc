@@ -436,6 +436,34 @@ void gm_giraph_gen::do_generate_input_output_formats() {
     }
 }
 
+static void generate_format_cmd_argument(
+        gm_code_writer& body,
+        bool is_input, 
+        std::vector<const char*>& names, std::vector<const char*>& args)
+{
+    const char* varname = is_input ? "intype" : "outtype";
+    const char* optname = is_input ? "GMInputFormat" : "GMOutputFormat";
+    const char* errname = is_input ? "Input Format" : "Output Format";
+
+    body.push("if (cmd.hasOption(\""); body.push(optname); body.pushln("\")){");
+    body.push("String s= cmd.getOptionValue(\""); body.push(optname); body.pushln("\");");
+    int sz = names.size(); assert(names.size() == args.size());
+    assert(sz > 0);
+    for(int i = 0; i < sz; i++) {
+       if (i==0) body.push("if "); 
+       else body.push("else if "); 
+       body.push("(s.equals(\""); body.push(args[i]); body.push("\")) ");
+       body.push(varname); body.push(" = "); body.push(names[i]); body.pushln(";");
+    }
+    body.pushln("else {");
+    body.push("LOG.info(\"Invalid "); body.push(errname); body.pushln(":\"+s);");
+    body.pushln("formatter.printHelp(getClass().getName(), options, true);");
+    body.pushln("return -1;");
+    body.pushln("}");
+    body.pushln("}");
+
+}
+
 void gm_giraph_gen::do_generate_job_configuration() {
     char temp[1024];
     ast_procdef* proc = FE.get_current_proc();
@@ -459,6 +487,10 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.pushln("// Configuration");
     Body_main.pushln("private Configuration conf;");
     Body_main.NL();
+    Body_main.pushln("// I/O File Format");
+    Body_main.pushln("final static int GM_FORMAT_ADJ=0;");
+    Body_main.pushln("final static int GM_FORMAT_NODE_PROP=1;");
+    Body_main.NL();
     Body_main.pushln("//----------------------------------------------");
     Body_main.pushln("// Job Configuration");
     Body_main.pushln("//----------------------------------------------");
@@ -470,6 +502,8 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.pushln("options.addOption(\"w\", \"workers\", true, \"Number of workers\");");
     Body_main.pushln("options.addOption(\"i\", \"input\", true, \"Input filename\");");
     Body_main.pushln("options.addOption(\"o\", \"output\", true, \"Output filename\");");
+    Body_main.pushln("options.addOption(\"_GMInputFormat\", \"GMInputFormat\", true, \"Input filetype (ADJ: adjacency list)\");");
+    Body_main.pushln("options.addOption(\"_GMOutputFormat\", \"GMOutputFormat\", true, \"Output filename (ADJ:adjacency list, NODE_PROP:node property)\");");
     for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;
@@ -509,6 +543,18 @@ void gm_giraph_gen::do_generate_job_configuration() {
             Body_main.pushln("}");
         }
     }
+    Body_main.pushln("int intype = GM_FORMAT_ADJ; // default in format");
+    Body_main.pushln("int outtype = GM_FORMAT_ADJ; // default out format");
+    std::vector<const char*> in_format_name;
+    std::vector<const char*> in_format_arg;
+    std::vector<const char*> out_format_name;
+    std::vector<const char*> out_format_arg;
+    in_format_name.push_back("GM_FORMAT_ADJ"); in_format_arg.push_back("ADJ");
+    out_format_name.push_back("GM_FORMAT_ADJ"); out_format_arg.push_back("ADJ");
+    out_format_name.push_back("GM_FORMAT_NODE_PROP"); out_format_arg.push_back("NODE_PROP");
+    generate_format_cmd_argument(Body_main, true, in_format_name, in_format_arg);
+    generate_format_cmd_argument(Body_main, false, out_format_name, out_format_arg);
+
     Body_main.NL();
     Body_main.pushln("GiraphJob job = new GiraphJob(getConf(), getClass().getName());");
     Body_main.pushln("job.getConfiguration().setInt(GiraphConfiguration.CHECKPOINT_FREQUENCY, 0);");
@@ -529,6 +575,8 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.pushln("}");
     Body_main.pushln("int workers = Integer.parseInt(cmd.getOptionValue('w'));");
     Body_main.pushln("job.getConfiguration().setWorkerConfiguration(workers, workers, 100.0f);");
+    Body_main.pushln("job.getConfiguration().setInt(\"GMInputFormat\", new Integer(intype));");
+    Body_main.pushln("job.getConfiguration().setInt(\"GMOutputFormat\", new Integer(outtype));");
     for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;

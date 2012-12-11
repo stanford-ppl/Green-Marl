@@ -10,8 +10,8 @@
 #define OPT_ALLPROP         "GMIOAllProps"
 #define OPT_DUMMYPROP       "GMDummyProperty"
 #define OPT_DUMPGRAPH       "GMDumpOutput"
-#define OPT_OUTTYPE         "GMOutType"
-#define OPT_INTYPE          "GMInType"
+#define OPT_OUTTYPE         "GMOutputFormat"
+#define OPT_INTYPE          "GMInputFormat"
 #define OPT_NUMTHREAD       "GMNumThreads"
 #define OPT_USEHDFS         "GMHDFS"
 
