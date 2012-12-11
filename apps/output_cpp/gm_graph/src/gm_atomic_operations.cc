@@ -5,5 +5,5 @@ void ATOMIC_AND(bool* target, bool value) {
 }
 
 void ATOMIC_OR(bool* target, bool value) {
-    if ((value) && (*target)) *target = true;
+    if ((value) && !(*target)) *target = true;
 }

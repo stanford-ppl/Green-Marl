@@ -180,6 +180,7 @@ friend class gm_graph_hdfs;
     //--------------------------------------------------------------
     #define MAGIC_WORD 0x03939999
     void prepare_external_creation(node_t n, edge_t m);
+    void prepare_external_creation(node_t n, edge_t m, bool clean_key_id_map);
     bool store_binary(char* filename);          // attributes not saved
     bool load_binary(char* filename);           // call this to an empty graph object
 
@@ -289,7 +290,8 @@ friend class gm_graph_hdfs;
         return n;
     }
 
-    void clear_graph();                         // invalidate everything and make the graph empty
+    void clear_graph(bool clean_key_id_map);    // invalidate everything and make the graph empty
+    void clear_graph();                         
 
     //returns one of the outgoing neighbors of 'node' - by random choice
     // if 'node' does not have a neighbor, 'node' is returned -> assert(false)
@@ -311,6 +313,8 @@ friend class gm_graph_hdfs;
     bool load_binary_hdfs(char* filename);
 #endif  // HDFS
 
+    inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
+    inline node_t nodeid_to_nodekey(node_t nodeid) {return _numeric_reverse_key[nodeid];}
   private:
 
     void delete_frozen_graph();
@@ -354,8 +358,6 @@ friend class gm_graph_hdfs;
     //void delete_cstr_nodekey(bool keep_reverse_key);
 
     inline bool find_nodekey(node_t key) {return _numeric_key.find(key) != _numeric_key.end();}
-    inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
-    inline node_t nodeid_to_nodekey(node_t nodeid) {return _numeric_reverse_key[nodeid];}
     inline node_t get_num_nodekeys() {return (node_t) _numeric_key.size();}
 };
 
