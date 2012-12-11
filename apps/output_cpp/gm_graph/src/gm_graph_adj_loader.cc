@@ -70,7 +70,7 @@ void gm_graph::load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema
     }
 
     // Copy 
-    prepare_external_creation(N, M); 
+    prepare_external_creation(N, M, false); 
     #pragma omp parallel for 
     for(size_t i = 0; i < (size_t) N; i++) {
         begin[i] = EDGE_CNT[i];
