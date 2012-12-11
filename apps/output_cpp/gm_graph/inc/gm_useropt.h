@@ -30,7 +30,7 @@ public:
 
     bool    is_option_declared(const char* option) {return option_type.find(option)!=option_type.end(); }
     bool    is_option_defined(const char* option)  {return option_values.find(option)!=option_values.end(); }
-    const char*   get_option(const char* option)   {assert(is_option_defined(option)); return option_values[option];}
+    const char*   get_option(const char* option)   {if(!is_option_defined(option)) {printf("not defined:%s\n", option);} assert(is_option_defined(option)); return option_values[option];}
     int32_t   get_option_int(const char* option)    {return atoi(get_option(option));}
     int64_t   get_option_long(const char* option)    {return atol(get_option(option));}
     bool    get_option_bool(const char* option)   {return parse_bool_string(get_option(option));}

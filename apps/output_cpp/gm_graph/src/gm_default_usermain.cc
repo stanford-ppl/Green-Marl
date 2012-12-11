@@ -111,8 +111,9 @@ void gm_default_usermain::declare_scalar(const char* name, VALUE_TYPE t, bool is
 
     // create scalar variable
     scalar_schema.push_back(schema);
-    if (is_input) 
+    if (is_input) {
         OPTIONS.add_option(name, t, NULL, "input argument");
+    }
 }
 
 void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool is_input, bool is_output, GM_SCHEMA_TYPE i)
@@ -324,6 +325,7 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
     {
         gm_schema S = scalar_schema[i];
         if (S.is_input) {
+            //printf("checking %s\n",S.name);
             if (!OPTIONS.is_option_defined(S.name)) {
                 printf("Error: option not defined: %s\n", S.name);
                 goto err_return;
@@ -400,7 +402,7 @@ bool gm_default_usermain::do_preprocess()
     char fullpath_name[1024*64];
 
     // check output directory is open for writing
-    if (OPTIONS.get_option_bool(OPT_DUMPGRAPH)) 
+    //if (OPTIONS.get_option_bool(OPT_DUMPGRAPH)) 
     {
         if (strlen(output_path) >= 1) {
             sprintf(fullpath_name, "%s%s",output_path, "__temp_test");
