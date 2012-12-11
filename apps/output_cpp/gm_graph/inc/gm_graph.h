@@ -227,6 +227,13 @@ friend class gm_graph_hdfs;
             const char* separators = "\t", // input parameter
             bool use_hdfs = false // input parameter
             );
+    bool store_node_properties_list (const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<void*>& vertex_props, // input parameter
+            const char* separators = "\t", // input parameter
+            bool use_hdfs = false // input parameter
+            );
+
 
     bool load_adjacency_list_avro(const char* filename, // input parameter
             std::vector<VALUE_TYPE>& vprop_schema, // output parameter

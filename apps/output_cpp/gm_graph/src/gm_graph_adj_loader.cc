@@ -258,3 +258,37 @@ bool gm_graph::store_adjacency_list (const char* filename, // input parameter
     return true;
 }
 
+bool gm_graph::store_node_properties_list (const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<void*>& vertex_props, // input parameter
+            const char* separators, // input parameter
+            bool use_hdfs  // input parameter
+            )
+{
+    size_t num_vertex_values = vprop_schema.size();
+
+    // Open the file for writing
+    GM_Writer writer(filename, use_hdfs);
+    if (writer.failed()) {
+        fprintf (stderr, "cannot open %s for writing\n", filename);
+        return false;
+    }
+    assert(_reverse_nodekey_defined == true);
+
+    for (node_t i = 0; i < _numNodes; ++i) {
+        // Write the vertex id corresponding to this index
+        writer.write(nodeid_to_nodekey(i));
+        // Write the values corresponding to this vertex
+        for (size_t j = 0; j < num_vertex_values; ++j) {
+            writer.write(separators);
+            storeValueBasedOnType (vertex_props[j], i, writer, vprop_schema[j]);
+        }
+
+        writer.write("\n");
+        writer.flush();
+    }
+
+    writer.terminate();
+    return true;
+}
+

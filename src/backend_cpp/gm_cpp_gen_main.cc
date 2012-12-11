@@ -22,6 +22,7 @@ void gm_cpp_gen::do_generate_compile_shell(std::map<std::string,std::string>& se
 {
     // get further flags (mostly for HDFS)
     const char* gm_top = setup["GM_TOP"].c_str();
+    const char* avro = setup["SUPPORT_AVRO"].c_str();
 
     fprintf(f_shell, "GM_TOP= %s\n",gm_top);
     fprintf(f_shell, "GM_GRAPH= ${GM_TOP}/apps/output_cpp/gm_graph\n",gm_top);
@@ -29,6 +30,9 @@ void gm_cpp_gen::do_generate_compile_shell(std::map<std::string,std::string>& se
     fprintf(f_shell, "CFLAGS = -g -O3 -fopenmp -I${GM_GRAPH}/inc -I. \n", gm_top);
 
     fprintf(f_shell, "LFLAGS = -L${GM_GRAPH}/lib -lgmgraph \n");
+    if ((avro!= NULL) && (atoi(avro) != 0)) {
+        //fprintf(f_shell, "LFLAGS += -lgmavro \n");
+    }
     fprintf(f_shell, "include ${GM_TOP}/setup.mk\n");
     fprintf(f_shell, "include ${GM_TOP}/apps/output_cpp/common.mk\n");
 

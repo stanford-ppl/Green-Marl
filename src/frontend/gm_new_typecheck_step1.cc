@@ -15,7 +15,7 @@
 //     (4) Check rules related to ID
 //           - procedure:
 //                 * return should be primitive or node/edge
-//                 * output args should be primitive or node/edge
+//                 * output args should be primitive or node/edge [not anymore]
 //           - declarations: target graph should be well defined.
 //             (property, node, edge, collection)
 //
@@ -634,7 +634,7 @@ bool gm_typechecker_stage_1::apply(ast_procdef* p) {
                 ast_id* id = idlist->get_item(i);
                 is_okay = gm_declare_symbol(S, id, type, GM_READ_AVAILABLE, GM_WRITE_NOT_AVAILABLE) && is_okay;
                 if (is_okay) {
-                    id->getSymInfo()->setArgument(true);
+                    id->getSymInfo()->setArgument(true, true);
                     id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_TOTAL, arg_number++);
                     id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_IN, arg_number_in++);
                 }
@@ -651,16 +651,18 @@ bool gm_typechecker_stage_1::apply(ast_procdef* p) {
         if (b) {
             ast_idlist* idlist = a->get_idlist();
             // only primitives or nodes or edges can be an output
-            if (!type->is_primitive() && !type->is_nodeedge()) {
-                gm_type_error(GM_ERROR_INVALID_OUTPUT_TYPE, type->get_line(), type->get_col());
-                is_okay = false;
-            } else {
+            //if (!type->is_primitive() && !type->is_nodeedge()) {
+            //    gm_type_error(GM_ERROR_INVALID_OUTPUT_TYPE, type->get_line(), type->get_col());
+            //    is_okay = false;
+            //} else {
+            {
                 ast_idlist* idlist = a->get_idlist();
+                gm_symtab* S = type->is_property() ? curr_field : curr_sym;
                 for (int i = 0; i < idlist->get_length(); i++) {
                     ast_id* id = idlist->get_item(i);
-                    is_okay = gm_declare_symbol(curr_sym, id, type, GM_READ_NOT_AVAILABLE, GM_WRITE_AVAILABLE) && is_okay;
+                    is_okay = gm_declare_symbol(S, id, type, GM_READ_AVAILABLE, GM_WRITE_AVAILABLE) && is_okay;
                     if (is_okay) {
-                        id->getSymInfo()->setArgument(true);
+                        id->getSymInfo()->setArgument(true, false);
                         id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_TOTAL, arg_number++);
                         id->getSymInfo()->add_info_int(FE_INFO_ARG_POS_IN, arg_number_out++);
                     }

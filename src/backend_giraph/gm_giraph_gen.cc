@@ -228,8 +228,8 @@ void gm_giraph_gen::do_generate_input_output_formats() {
 
         Body_input.pushln("@Override");
         Body_input.pushln("protected String[] preprocessLine(Text line) throws IOException {");
-        Body_input.pushln("// Split current line with \t");
-        Body_input.pushln("return line.toString().split(\"\\t\");");
+        Body_input.pushln("// Split current line with any space");
+        Body_input.pushln("return line.toString().split(\"\\\\s+\");");
         Body_input.pushln("}");
         Body_input.NL();
 

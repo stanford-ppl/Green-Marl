@@ -22,6 +22,9 @@ all: $(OUT)
 ./libgmavro.a: $(AVRO_OBJECTS) $(JANSSON_OBJECTS)
 	$(AR) r $@  $^  
 
+#../lib/libgmavro.a: ./libgmavro.a
+#	cp $< $@
+
 $(JANSSON)/%_json.o: $(JANSSON)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
