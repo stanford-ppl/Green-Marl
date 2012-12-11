@@ -1,4 +1,4 @@
-Procedure pagerank(G: Graph, e: Double, d: Double, max: Int,
+Procedure pagerank(G: Graph, e: Double, d: Double, max: Int;
                    pg_rank: N_P<Double>)
 {
     Double diff;

@@ -56,6 +56,9 @@ public:
     bool isArgument() {
         return isArg;
     }
+    bool isInputArgument() {
+        return isInputArg;
+    }
 
     // defined in gm_node_info.cc
     bool has_info(const char* id);
@@ -75,8 +78,9 @@ public:
     void remove_info(const char* id);
     void remove_all_info();
 
-    void setArgument(bool b) {
+    void setArgument(bool b, bool is_input=true) {
         isArg = b;
+        isInputArg = is_input;
     }
 
 private:
@@ -85,6 +89,7 @@ private:
     bool isRA;
     bool isWA;
     bool isArg;
+    bool isInputArg;
     std::map<std::string, ast_extra_info*> extra;
 };
 

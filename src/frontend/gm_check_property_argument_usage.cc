@@ -148,21 +148,30 @@ void gm_fe_check_property_argument_usage::process(ast_procdef* proc) {
     std::set<gm_symtab_entry*>& SET = props->get_entries();
     std::set<gm_symtab_entry*>::iterator I;
     std::set<gm_symtab_entry*> write_or_read_write;
-    gm_rwinfo_map &R = get_rwinfo_sets(proc->get_body())->read_set;
+    //gm_rwinfo_map &R = get_rwinfo_sets(proc->get_body())->read_set;
     gm_rwinfo_map &W = get_rwinfo_sets(proc->get_body())->write_set;
     for (I = SET.begin(); I != SET.end(); I++) {
-        gm_symtab_entry* e = *I;
-        if ((R.find(e) == R.end()) && (W.find(e) == W.end()))
-            e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_UNUSED);
-        else if ((R.find(e) != R.end()) && (W.find(e) != W.end()))
-            e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_INOUT);
-        else if ((R.find(e) == R.end()) && (W.find(e) != W.end()))
-            e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_OUT);
-        else if ((W.find(e) == W.end()) && (R.find(e) != R.end()))
-            e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_IN);
-        else {
-            e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_INVALID); // temporary marking
+        gm_symtab_entry* e = *I; assert(e->isArgument() == true);
+        if (e->isInputArgument()) {
+            if (W.find(e) != W.end())
+                 e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_INOUT);
+            else
+                e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_IN);
         }
+        else {
+            e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_OUT);
+        }
+        //if ((R.find(e) == R.end()) && (W.find(e) == W.end()))
+        //    e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_UNUSED);
+        //else if ((R.find(e) != R.end()) && (W.find(e) != W.end()))
+        //    e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_INOUT);
+        //else if ((R.find(e) == R.end()) && (W.find(e) != W.end()))
+        //    e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_OUT);
+        //else if ((W.find(e) == W.end()) && (R.find(e) != R.end()))
+        //    e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_IN);
+        //else {
+        //    e->add_info_int(GMUSAGE_PROPERTY, GMUSAGE_INVALID); // temporary marking
+        //}
     }
 
     // now traverse the source and see if write after read
