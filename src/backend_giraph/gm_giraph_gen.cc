@@ -199,9 +199,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         else
             Body_input.push("long> ");
 
-        if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_input.push("<dummy value> ");
-        } else if (L.size() > 0) {
+        //if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_input.push("<dummy value> ");
+        //} else 
+        if (L.size() > 0) {
             for(I=L.begin(); I!=L.end(); I++) {
                 gm_symtab_entry* e = *I;
                 sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));
@@ -214,9 +215,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             Body_input.push("(int)> ");
         else
             Body_input.push("(long)> ");
-        if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_input.push("<dummy value> ");
-        } else if (L2.size() > 0) {
+        //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_input.push("<dummy value> ");
+        //} else 
+        if (L2.size() > 0) {
             for(I=L2.begin(); I!=L2.end(); I++) {
                 gm_symtab_entry* e = *I;
                 sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));

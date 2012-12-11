@@ -20,21 +20,22 @@
 
 gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
-   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[do not create an output file], 1:[create an output file]");
-   OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
+   //OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[do not create an output file], 1:[create an output file]");
+   //OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
+
    OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "Measure running time");
 #ifdef AVRO
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, NODE_PROP: dump of node properties only");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, NODE_PROP: dump of node properties only, NULL: dump no properties");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
 #else
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, NODE_PROP: dump of node properties only");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, NODE_PROP: dump of node properties only, NULL: dump no properties");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list");
 #endif
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
 #ifdef HDFS
    OPTIONS.add_option(OPT_USEHDFS, GMTYPE_BOOL, "0", "Use HDFS instead of local file system");
 #endif
-   OPTIONS.add_option(OPT_ALLPROP, GMTYPE_BOOL, "0", "-- 1:[Load and store every node/edge property], 0:[Load node/edge properties that are read before written, Store node/edge properties that are only modifired]");
+   //OPTIONS.add_option(OPT_ALLPROP, GMTYPE_BOOL, "0", "-- 1:[Load and store every node/edge property], 0:[Load node/edge properties that are read before written, Store node/edge properties that are only modifired]");
    OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input filename");
    OPTIONS.add_argument("OutputName",  GMTYPE_END,  "Output filename");
    in_format = GM_ADJ_LIST;
@@ -118,9 +119,9 @@ void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool 
 {
     assert((i==GM_NODEPROP) || (i==GM_EDGEPROP));
 
-    if (OPTIONS.get_option_bool(OPT_ALLPROP)) {
-        is_input = is_output = true;
-    }
+    //if (OPTIONS.get_option_bool(OPT_ALLPROP)) {
+    //    is_input = is_output = true;
+   // }
 
     gm_schema schema; 
     schema.name = name;
@@ -238,7 +239,7 @@ bool gm_default_usermain::determine_formats()
             printf("Warning: assuming output is ADJ list\n");
         }
 
-        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) && (out_format != GM_NODE_PROP_LIST)) {
+        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) && (out_format != GM_NODE_PROP_LIST) && (out_format != GM_NULL_FORMAT)) {
             printf("Error:output format not supported.\n");
             return false;
         }
@@ -258,12 +259,12 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
 
     create_property_in_out_schema();
 
+    /*
     if (OPTIONS.get_option_int(OPT_DUMPGRAPH) == 1) 
     {
         // should create a graph format
         create_output_graph = true;
     } 
-    /*
     else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) == 2)
     {
         if (eprop_out_schema.size() > 0) 
@@ -274,11 +275,12 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
             create_output_text = true;
         }
     }
-    */
     else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) != 0)
     {
         printf("Undefined option value for %s\n", OPT_DUMPGRAPH);
     }
+    */
+    create_output_graph = true;
 
     if (!create_output_graph && !create_output_text)
     {
@@ -519,7 +521,8 @@ void gm_default_usermain::create_property_in_out_schema()
     }
 
     // adding dummy schema
-    if (OPTIONS.get_option_bool(OPT_DUMMYPROP))
+    //if (OPTIONS.get_option_bool(OPT_DUMMYPROP))
+    if (false)
     {
         if ((vprop_in_schema.size() == 0) || (vprop_out_schema.size() == 0))
         {
