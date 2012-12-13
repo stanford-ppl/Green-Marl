@@ -24,6 +24,7 @@ enum GM_FILE_FORMAT {
     GM_ADJ_LIST_AVRO,
     GM_EDGE_LIST,
     GM_NODE_PROP_LIST,  // dump node properties only
+    GM_NULL_FORMAT,    // dump nothing
 };
 
 struct gm_schema {
