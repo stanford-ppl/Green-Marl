@@ -973,11 +973,12 @@ void gm_cpp_gen::generate_sent_return(ast_return *r) {
 
 void gm_cpp_gen::generate_sent_nop(ast_nop* n) {
     switch (n->get_subtype()) {
-        case NOP_REDUCE_SCALAR: {
+        case NOP_REDUCE_SCALAR:
             ((nop_reduce_scalar*) n)->generate(this);
             break;
-        }
-
+        case NOP_REDUCE_FIELD:
+            ((nop_reduce_field*) n)->generate(this);
+            break;
             /* otherwise ask library to hande it */
         default: {
             get_lib()->generate_sent_nop(n);

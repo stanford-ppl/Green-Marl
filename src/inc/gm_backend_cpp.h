@@ -287,6 +287,7 @@ extern gm_cpp_gen CPP_BE;
 enum nop_enum_cpp
 {
     NOP_REDUCE_SCALAR = 1000,
+    NOP_REDUCE_FIELD,
 };
 
 class nop_reduce_scalar: public ast_nop
@@ -307,6 +308,27 @@ public:
     std::list<int> reduce_op;
     std::list<std::list<gm_symtab_entry*> > old_supple; // supplimental lhs for argmin/argmax
     std::list<std::list<gm_symtab_entry*> > new_supple;
+};
+
+class nop_reduce_field: public ast_nop
+{
+public:
+    nop_reduce_field() :
+            ast_nop(NOP_REDUCE_FIELD), iterator_id(NULL) {
+    }
+    void set_symbols(std::list<gm_symtab_entry*>& O, std::list<gm_symtab_entry*>& N, std::list<int>& R, std::list<std::list<gm_symtab_entry*> >& O_S,
+            std::list<std::list<gm_symtab_entry*> >& N_S, ast_id* iterator);
+
+    virtual bool do_rw_analysis();
+    void generate(gm_cpp_gen* gen);
+
+public:
+    std::list<gm_symtab_entry*> old_s;
+    std::list<gm_symtab_entry*> new_s;
+    std::list<int> reduce_op;
+    std::list<std::list<gm_symtab_entry*> > old_supple; // supplimental lhs for argmin/argmax
+    std::list<std::list<gm_symtab_entry*> > new_supple;
+    ast_id* iterator_id;
 };
 
 //-----------------------------------
