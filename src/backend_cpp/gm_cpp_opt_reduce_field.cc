@@ -70,7 +70,7 @@ public:
         if (!a->is_reduce_assign()) return true;
         if (!a->is_target_field()) return true;
 
-        ast_id* lhs = a->get_lhs_field()->get_first();
+        ast_id* lhs = a->get_lhs_field()->get_second();
 
         std::map<gm_symtab_entry*, gm_symtab_entry*>::iterator I;
         I = symbol_map->find(lhs->getSymInfo());
@@ -79,7 +79,15 @@ public:
         gm_symtab_entry* new_target = I->second;
 
         // change lhs symbol
+        a->dump_tree(0);
+        printf("\ngna\n");
         lhs->setSymInfo(new_target);
+
+        printf("Gername: %s\n", a->get_lhs_field()->get_second()->get_genname());
+        //ast_id* new_lhs = ast_assign::new_assign_scala(a->get_lhs_field()->get_first(), a->get_rhs(), a->get_assign_type(), NULL, a->get_reduce_type());
+        ast_id* new_lhs = a->get_lhs_field()->get_second()->copy(true);
+        a->set_lhs_scala(new_lhs);
+
         if (a->is_argminmax_assign()) {
             std::list<ast_node*>& L_old = a->get_lhs_list();
             std::list<ast_node*>::iterator I;
@@ -96,6 +104,8 @@ public:
 
         // change to normal write
         to_normals.push_back(a);
+        a->dump_tree(0);
+        printf("\n-------------------------------------------------------\n\n");
 
         return true;
     }
@@ -152,11 +162,12 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
         const char* new_name = FE.voca_temp_name_and_add(e->getId()->get_genname(), "_prv");
 
         // add local variable at scope
+        assert(fe->get_body()->get_nodetype() == AST_SENTBLOCK);
         gm_symtab_entry* _thread_local;
         if (gm_is_prim_type(e_type)) {
-            _thread_local = gm_add_new_symbol_primtype(se, e_type, (char*) new_name);
+            _thread_local = gm_add_new_symbol_primtype((ast_sentblock*)fe->get_body(), e_type, (char*) new_name);
         } else if (gm_is_node_compatible_type(e_type)) {
-            _thread_local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_NODE, e->getType()->get_target_graph_sym(), (char*) new_name);
+            _thread_local = gm_add_new_symbol_nodeedge_type((ast_sentblock*)fe->get_body(), GMTYPE_NODE, e->getType()->get_target_graph_sym(), (char*) new_name);
         } else if (gm_is_edge_compatible_type(e_type)) {
             _thread_local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_EDGE, e->getType()->get_target_graph_sym(), (char*) new_name);
         } else {
@@ -193,7 +204,8 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
             }
             ast_assign* init_a = ast_assign::new_assign_scala(_thread_local->getId()->copy(true), init_val, GMASSIGN_NORMAL);
 
-            gm_add_sent_before(fe, init_a);
+            ast_sentblock* body = (ast_sentblock*)fe->get_body();
+            gm_add_sent_before(*body->get_sents().begin(), init_a);
         }
 
         delete[] new_name;
@@ -229,7 +241,6 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
     //-------------------------------------------------
     nop_reduce_field* N = new nop_reduce_field();
     N->set_symbols(old_s, new_s, reduce_op, old_supple, new_supple, fe->get_iterator());
-    //gm_insert_sent_end_of_sb(se, N, false);
     gm_insert_sent_body_end(fe, N, false);
 
 }
@@ -311,6 +322,7 @@ void nop_reduce_field::generate(gm_cpp_gen* gen) {
 
         ast_field* lhs_field = ast_field::new_field(iterator_id, lhs, false);
         ast_assign* new_assign = ast_assign::new_assign_field(lhs_field, rhs, GMASSIGN_REDUCE, NULL, r_type);
+        printf("Hier vlt?: %p\n", new_assign);
 
         if (OLD_LIST.size() > 0) {
             assert(OLD_LIST.size() == NEW_LIST.size());

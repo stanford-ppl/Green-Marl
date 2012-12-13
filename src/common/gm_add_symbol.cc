@@ -43,7 +43,7 @@ gm_symtab_entry* gm_add_new_symbol_primtype(ast_sentblock* sb, int primtype, cha
     // return symbol
     gm_symtab_entry *e = NULL;
     e = new_id->getSymInfo();
-    assert(e!=NULL);
+    assert(e != NULL);
 
     // these are temporary
     delete type;
