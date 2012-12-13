@@ -302,7 +302,6 @@ void gm_cpp_gen::generate_lhs_field(ast_field* f) {
     } else if (f->getTypeInfo()->is_edge_property())
         Body.push(get_lib()->edge_index(f->get_first()));
     else {
-        printf("Pointer: %p\n", f);
         assert(false);
     }
     Body.push(']');

@@ -9,6 +9,37 @@
 #include "gm_ind_opt.h"
 #include "gm_rw_analysis.h"
 
+bool contains_argminmax_assign(ast_sent* sent) {
+
+    int nodeType = sent->get_nodetype();
+    if (nodeType == AST_ASSIGN) {
+        ast_assign* a = (ast_assign*) sent;
+        return a->is_argminmax_assign();
+    }
+
+    if (nodeType == AST_SENTBLOCK) {
+        ast_sentblock* block = (ast_sentblock*) sent;
+        std::list<ast_sent*> statements = block->get_sents();
+        std::list<ast_sent*>::iterator I;
+        for (I = statements.begin(); I != statements.end(); I++) {
+            if (contains_argminmax_assign(*I)) return true;
+        }
+        return false;
+    }
+
+    switch (nodeType) {
+        case AST_IF:
+            if (contains_argminmax_assign(((ast_if*) sent)->get_then())) return true;
+            return contains_argminmax_assign(((ast_if*) sent)->get_then());
+        case AST_FOREACH:
+            return contains_argminmax_assign(((ast_foreach*) sent)->get_body());
+        case AST_WHILE:
+            return contains_argminmax_assign(((ast_while*) sent)->get_body());
+        default:
+            return false;
+    }
+}
+
 class opt_field_reduction_t: public gm_apply
 {
 private:
@@ -27,6 +58,8 @@ public:
         if (B.size() == 0) return true;
 
         assert(fe->is_parallel());
+
+        if(contains_argminmax_assign(sent)) return true;
 
         gm_rwinfo_map::iterator I;
         for (I = B.begin(); I != B.end(); I++) {
@@ -79,33 +112,15 @@ public:
         gm_symtab_entry* new_target = I->second;
 
         // change lhs symbol
-        a->dump_tree(0);
-        printf("\ngna\n");
         lhs->setSymInfo(new_target);
 
-        printf("Gername: %s\n", a->get_lhs_field()->get_second()->get_genname());
-        //ast_id* new_lhs = ast_assign::new_assign_scala(a->get_lhs_field()->get_first(), a->get_rhs(), a->get_assign_type(), NULL, a->get_reduce_type());
         ast_id* new_lhs = a->get_lhs_field()->get_second()->copy(true);
         a->set_lhs_scala(new_lhs);
 
-        if (a->is_argminmax_assign()) {
-            std::list<ast_node*>& L_old = a->get_lhs_list();
-            std::list<ast_node*>::iterator I;
-            for (I = L_old.begin(); I != L_old.end(); I++) {
-                ast_node* n = *I;
-                assert(n->get_nodetype() == AST_ID);
-                ast_id* id = (ast_id*) n;
-                gm_symtab_entry* old_e = id->getSymInfo();
-                gm_symtab_entry* new_e = (*symbol_map)[old_e];
-                assert(new_e != NULL);
-                id->setSymInfo(new_e);
-            }
-        }
+        assert(!a->is_argminmax_assign());
 
         // change to normal write
         to_normals.push_back(a);
-        a->dump_tree(0);
-        printf("\n-------------------------------------------------------\n\n");
 
         return true;
     }
@@ -134,15 +149,15 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
     std::list<std::list<gm_symtab_entry*> > old_supple;
     std::list<std::list<gm_symtab_entry*> > new_supple;
 
-    // make scope
+// make scope
     gm_make_it_belong_to_sentblock_nested(fe);
     assert(fe->get_parent()->get_nodetype() == AST_SENTBLOCK);
     ast_sentblock* se = (ast_sentblock*) fe->get_parent();
 
-    // set scope parallel
+// set scope parallel
     se->add_info(LABEL_PAR_SCOPE, new ast_extra_info(true));
 
-    // foreach scalar boundsymbol
+// foreach scalar boundsymbol
     gm_rwinfo_map& B = gm_get_bound_set_info(fe)->bound_set;
     gm_rwinfo_map::iterator I;
     for (I = B.begin(); I != B.end(); I++) {
@@ -165,9 +180,10 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
         assert(fe->get_body()->get_nodetype() == AST_SENTBLOCK);
         gm_symtab_entry* _thread_local;
         if (gm_is_prim_type(e_type)) {
-            _thread_local = gm_add_new_symbol_primtype((ast_sentblock*)fe->get_body(), e_type, (char*) new_name);
+            _thread_local = gm_add_new_symbol_primtype((ast_sentblock*) fe->get_body(), e_type, (char*) new_name);
         } else if (gm_is_node_compatible_type(e_type)) {
-            _thread_local = gm_add_new_symbol_nodeedge_type((ast_sentblock*)fe->get_body(), GMTYPE_NODE, e->getType()->get_target_graph_sym(), (char*) new_name);
+            _thread_local = gm_add_new_symbol_nodeedge_type((ast_sentblock*) fe->get_body(), GMTYPE_NODE, e->getType()->get_target_graph_sym(),
+                    (char*) new_name);
         } else if (gm_is_edge_compatible_type(e_type)) {
             _thread_local = gm_add_new_symbol_nodeedge_type(se, GMTYPE_EDGE, e->getType()->get_target_graph_sym(), (char*) new_name);
         } else {
@@ -204,7 +220,7 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
             }
             ast_assign* init_a = ast_assign::new_assign_scala(_thread_local->getId()->copy(true), init_val, GMASSIGN_NORMAL);
 
-            ast_sentblock* body = (ast_sentblock*)fe->get_body();
+            ast_sentblock* body = (ast_sentblock*) fe->get_body();
             gm_add_sent_before(*body->get_sents().begin(), init_a);
         }
 
@@ -225,20 +241,20 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
         }
     }
 
-    // create supplement list
+// create supplement list
 
-    //-------------------------------------------------
-    // find all reductions in the body.
-    //   - replace to normal assignment(s) to local lhs
-    //-------------------------------------------------
+//-------------------------------------------------
+// find all reductions in the body.
+//   - replace to normal assignment(s) to local lhs
+//-------------------------------------------------
     change_reduction_field_t T;
     T.set_map(&symbol_map);
     gm_traverse_sents(fe->get_body(), &T);
     T.post_process();
 
-    //-------------------------------------------------
-    // add reduction nop
-    //-------------------------------------------------
+//-------------------------------------------------
+// add reduction nop
+//-------------------------------------------------
     nop_reduce_field* N = new nop_reduce_field();
     N->set_symbols(old_s, new_s, reduce_op, old_supple, new_supple, fe->get_iterator());
     gm_insert_sent_body_end(fe, N, false);
@@ -247,10 +263,9 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
 
 void nop_reduce_field::set_symbols(std::list<gm_symtab_entry*>& O,  // old symbols
         std::list<gm_symtab_entry*>& N,  // new symbols
-        std::list<int>& R, std::list<std::list<gm_symtab_entry*> >& O_S, // supplimental lhs for argmin/argmax
-        std::list<std::list<gm_symtab_entry*> >& N_S,
-        ast_id* iterator) {
-    // shallow copy the whole list
+        std::list<int>& R, std::list<std::list<gm_symtab_entry*> >& O_S,  // supplimental lhs for argmin/argmax
+        std::list<std::list<gm_symtab_entry*> >& N_S, ast_id* iterator) {
+// shallow copy the whole list
     old_s = O;
     new_s = N;
     reduce_op = R;
@@ -265,20 +280,20 @@ bool nop_reduce_field::do_rw_analysis() {
     gm_rwinfo_map& R = sets->read_set;
     gm_rwinfo_map& W = sets->write_set;
 
-    // read all old symbols
+// read all old symbols
     std::list<gm_symtab_entry*>::iterator I;
     for (I = old_s.begin(); I != old_s.end(); I++) {
         gm_rwinfo* r = gm_rwinfo::new_scala_inst((*I)->getId());
         gm_add_rwinfo_to_set(R, *I, r);
     }
 
-    // write all new symbols
+// write all new symbols
     for (I = new_s.begin(); I != new_s.end(); I++) {
         gm_rwinfo* w = gm_rwinfo::new_scala_inst((*I)->getId());
         gm_add_rwinfo_to_set(W, *I, w);
     }
 
-    // read all old supple lhs symbols
+// read all old supple lhs symbols
     std::list<std::list<gm_symtab_entry*> >::iterator II;
     for (II = old_supple.begin(); II != old_supple.end(); II++) {
         std::list<gm_symtab_entry*>& L = *II;
@@ -322,7 +337,6 @@ void nop_reduce_field::generate(gm_cpp_gen* gen) {
 
         ast_field* lhs_field = ast_field::new_field(iterator_id, lhs, false);
         ast_assign* new_assign = ast_assign::new_assign_field(lhs_field, rhs, GMASSIGN_REDUCE, NULL, r_type);
-        printf("Hier vlt?: %p\n", new_assign);
 
         if (OLD_LIST.size() > 0) {
             assert(OLD_LIST.size() == NEW_LIST.size());
