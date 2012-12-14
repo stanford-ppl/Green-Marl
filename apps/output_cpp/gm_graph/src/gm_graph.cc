@@ -784,11 +784,12 @@ node_t gm_graph::add_nodekey(node_t key) {
 
 
 
-
+#ifdef HDFS
 bool gm_graph::load_binary_hdfs(char* filename) 
 {
     // deprecated
     assert(false);
 }
+#endif
 
 
