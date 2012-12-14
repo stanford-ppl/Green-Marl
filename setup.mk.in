@@ -60,7 +60,7 @@ SUPPORT_HDFS=0
 
 # Directories for SUPPORT_HDFS
 #location of libhdfs.so
-LIBHDFS_DIR =${HADOOP_HOME}/c++/lib
+LIBHDFS_DIR =${HADOOP_HOME}/c++/Linux-amd64-64/lib
 #location of hdfs.h
 INCHDFS_DIR = ${HADOOP_HOME}/src/c++/libhdfs 
 #location of libhdfs.so
