@@ -15,10 +15,9 @@ HADOOP_HOME=/cm/shared/apps/hadoop/current
 #jdk (for HDFS support and Giraph backend)
 JAVA_HOME=/usr/java/default
 # Name of hadoop core jar (For HDFS support and Giraph backend)
-HADOOP_CORE_JAR=hadoop-core-0.20.2-cdh3u4.jar
-#HADOOP_CORE_JAR=hadoop-core-1.0.3.jar
-HADOOP_COMMONS_LOGGING_JAR=commons-logging-1.0.4.jar
-HADOOP_GUAVA_R09_JAR=guava-r09-jarjar.jar
+HADOOP_CORE_JAR=hadoop-core-1.0.4.jar
+# Colon separated list of jar files, required for HDFS reader
+HADOOP_JAR_COLON_LIST=commons-configuration-1.6.jar:commons-logging-1.1.1.jar:commons-lang-2.4.jar
 
 
 #-------------------------------------------------------------
@@ -80,3 +79,5 @@ SUPPORT_AVRO=1
 #--------------------------------------------------------
 # 4. Building Giraph bakcend 
 #--------------------------------------------------------
+# Create jar for exmple giraph apps: Need HADOOP_HOME, HADOOP_CORE_JAR >= 1.0.3
+CREATE_JAR_FOR_EXAMPLE_GIRAPH_APPS=0

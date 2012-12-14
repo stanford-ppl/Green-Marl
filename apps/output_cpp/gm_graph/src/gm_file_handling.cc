@@ -37,15 +37,40 @@ GM_JNI_Handler::GM_JNI_Handler() {
     const char* GMTop         = getenv("GM_TOP") == NULL ? "" : getenv("GM_TOP");
     const char* HadoopHome    = getenv("HADOOP_HOME") == NULL ? "" : getenv("HADOOP_HOME");
     const char* HadoopCoreJar = getenv("HADOOP_CORE_JAR") == NULL ? "" : getenv("HADOOP_CORE_JAR");
-    const char* LoggingJar = getenv("HADOOP_COMMONS_LOGGING_JAR"); 
-    const char* GuavaJar = getenv("HADOOP_GUAVA_R09_JAR"); 
+    //const char* LoggingJar = getenv("HADOOP_COMMONS_LOGGING_JAR"); 
+    //const char* GuavaJar = getenv("HADOOP_GUAVA_R09_JAR"); 
+    //const char* ConfJar = getenv("HADOOP_COMMONS_CONFIGURATION_JAR"); 
+    const char* HadoopJarList = getenv("HADOOP_JAR_COLON_LIST");
+    char temp_buffer[1024];
+    if (HadoopJarList != NULL)
+        strcpy(temp_buffer, HadoopJarList);
+    else
+        strcpy(temp_buffer, "");
 
-    sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javabin/",  // there should be no space at the end!
-            HadoopHome, HadoopCoreJar,
-            HadoopHome, LoggingJar,
-            HadoopHome, GuavaJar, 
-            GMTop);
-    //printf("buffer = %s\n", buffer);
+    //------------------------------------------------
+    // create class path
+    //------------------------------------------------
+    int idx = 0;
+    idx += sprintf(buffer, "-Djava.class.path=%s/%s", HadoopHome, HadoopCoreJar);
+    char* p=strtok(temp_buffer, ":");
+    while (p!= NULL) {
+        idx += sprintf(&buffer[idx], ":%s/lib/%s", HadoopHome,p);
+        p=strtok(NULL, ":");
+    }
+    idx += sprintf(&buffer[idx], ":%s/apps/output_cpp/gm_graph/javabin/", GMTop);
+
+    //sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javalib/%s:%s/apps/output_cpp/gm_graph/javabin/",  // there should be no space at the end!
+    //        HadoopHome, HadoopCoreJar,
+    //        HadoopHome, LoggingJar,
+    //       GMTop, GuavaJar, 
+    //        GMTop);
+    //sprintf(buffer, "-Djava.class.path=%s/%s;%s/lib/:%s/apps/output_cpp/gm_graph/javabin/",  // there should be no space at the end!
+    //        HadoopHome, HadoopCoreJar,
+            //HadoopHome, LoggingJar,
+    //        HadoopHome, 
+            //GMTop, GuavaJar, 
+    //        GMTop);
+    //printf("classpath = %s\n", buffer);
     // Initialize parameters for creating a JavaVM
     //opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
     opts_[0].optionString = buffer;
