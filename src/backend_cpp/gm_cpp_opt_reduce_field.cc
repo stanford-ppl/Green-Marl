@@ -9,42 +9,37 @@
 #include "gm_ind_opt.h"
 #include "gm_rw_analysis.h"
 
-bool contains_argminmax_assign(ast_sent* sent) {
-
-    int nodeType = sent->get_nodetype();
-    if (nodeType == AST_ASSIGN) {
-        ast_assign* a = (ast_assign*) sent;
-        return a->is_argminmax_assign();
-    }
-
-    if (nodeType == AST_SENTBLOCK) {
-        ast_sentblock* block = (ast_sentblock*) sent;
-        std::list<ast_sent*> statements = block->get_sents();
-        std::list<ast_sent*>::iterator I;
-        for (I = statements.begin(); I != statements.end(); I++) {
-            if (contains_argminmax_assign(*I)) return true;
-        }
-        return false;
-    }
-
-    switch (nodeType) {
-        case AST_IF:
-            if (contains_argminmax_assign(((ast_if*) sent)->get_then())) return true;
-            return contains_argminmax_assign(((ast_if*) sent)->get_then());
-        case AST_FOREACH:
-            return contains_argminmax_assign(((ast_foreach*) sent)->get_body());
-        case AST_WHILE:
-            return contains_argminmax_assign(((ast_while*) sent)->get_body());
-        default:
-            return false;
-    }
-}
-
 class opt_field_reduction_t: public gm_apply
 {
 private:
     std::list<ast_sent*> targets;
     void apply_transform(ast_foreach* fe);
+
+    bool contains_argminmax_assign(ast_sent* sent) {
+
+        switch (sent->get_nodetype()) {
+            case AST_IF:
+                if (contains_argminmax_assign(((ast_if*) sent)->get_then())) return true;
+                return contains_argminmax_assign(((ast_if*) sent)->get_then());
+            case AST_FOREACH:
+                return contains_argminmax_assign(((ast_foreach*) sent)->get_body());
+            case AST_WHILE:
+                return contains_argminmax_assign(((ast_while*) sent)->get_body());
+            case AST_ASSIGN:
+                return ((ast_assign*) sent)->is_argminmax_assign();
+            case AST_SENTBLOCK: {
+                ast_sentblock* block = (ast_sentblock*) sent;
+                std::list<ast_sent*> statements = block->get_sents();
+                std::list<ast_sent*>::iterator I;
+                for (I = statements.begin(); I != statements.end(); I++) {
+                    if (contains_argminmax_assign(*I)) return true;
+                }
+                return false;
+            }
+            default:
+                return false;
+        }
+    }
 
 public:
     // choose targets
@@ -52,14 +47,13 @@ public:
 
         // find foreach-loops
         if (sent->get_nodetype() != AST_FOREACH) return true;
+        if (contains_argminmax_assign(sent)) return true;
 
         ast_foreach* fe = (ast_foreach*) sent;
         gm_rwinfo_map& B = gm_get_bound_set_info(fe)->bound_set;
         if (B.size() == 0) return true;
 
         assert(fe->is_parallel());
-
-        if(contains_argminmax_assign(sent)) return true;
 
         gm_rwinfo_map::iterator I;
         for (I = B.begin(); I != B.end(); I++) {
@@ -337,26 +331,6 @@ void nop_reduce_field::generate(gm_cpp_gen* gen) {
 
         ast_field* lhs_field = ast_field::new_field(iterator_id, lhs, false);
         ast_assign* new_assign = ast_assign::new_assign_field(lhs_field, rhs, GMASSIGN_REDUCE, NULL, r_type);
-
-        if (OLD_LIST.size() > 0) {
-            assert(OLD_LIST.size() == NEW_LIST.size());
-            new_assign->set_argminmax_assign(true);
-            std::list<gm_symtab_entry*>::iterator J1 = OLD_LIST.begin();
-            std::list<gm_symtab_entry*>::iterator J2 = NEW_LIST.begin();
-            for (; J1 != OLD_LIST.end(); J1++, J2++) {
-                gm_symtab_entry* lhs_sym = *J1;
-                gm_symtab_entry* rhs_sym = *J2;
-                assert(lhs_sym!=NULL);
-                assert(rhs_sym!=NULL);
-                ast_id* lhs = lhs_sym->getId()->copy(true);
-                (assert(lhs!=NULL));
-                assert(lhs->getSymInfo() != NULL);
-                ast_id* rhs_s = rhs_sym->getId()->copy(true);
-                ast_expr* rhs = ast_expr::new_id_expr(rhs_s);
-                new_assign->get_lhs_list().push_back(lhs);
-                new_assign->get_rhs_list().push_back(rhs);
-            }
-        }
 
         gen->generate_sent_reduce_assign(new_assign);
 
