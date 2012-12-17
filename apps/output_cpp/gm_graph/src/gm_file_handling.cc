@@ -178,7 +178,7 @@ void GM_Reader::initialize() {
         failed_ = false;
 
         // getMethodId of isDirectory
-        isDirectoryMethod_ = env_->GetMethodID(cls_, "isDirectory", "()B");
+        isDirectoryMethod_ = env_->GetMethodID(cls_, "isDirectory", "()Z");
         if (isDirectoryMethod_ == 0) {
             jni_handler->printAndClearException();
             fprintf (stderr, "JNI Error: Cannot get isDirectory method in HDFSReader\n");
@@ -186,14 +186,13 @@ void GM_Reader::initialize() {
             return;
         }
         failed_ = false;
-        is_reading_directory_ = env_->CallBooleanMethod(cls_,isDirectoryMethod_) == 0 ? 0 : 1;
-
+        is_reading_directory_ = env_->CallBooleanMethod(readerObj_,isDirectoryMethod_) == 0 ? 0 : 1;
+        return;
 #else
         failed_ = true;
         return;
 #endif  // HDFS
     }
-    //#else
     else {
         // Initialize for reading a file from NFS
         failed_ = false;
@@ -215,6 +214,7 @@ void GM_Reader::initialize() {
             return;
         }
 
+        // fall through into fail
         nfs_read_error:
             fprintf (stderr, "Cannot open %s for nfs reading\n", filename_.c_str());
             failed_ = true;

@@ -147,7 +147,7 @@ public class HDFSReader {
         }
     }
 
-    public boolean isDiresctory() {
+    public boolean isDirectory() {
         return isDir;
     }
 
