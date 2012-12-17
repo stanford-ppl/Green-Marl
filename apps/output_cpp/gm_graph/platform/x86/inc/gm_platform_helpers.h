@@ -126,7 +126,8 @@ _gm_i386_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
 #define _gm_atomic_fetch_and_add_edge(ptr, val) __sync_fetch_and_add(ptr, val)
 #define _gm_atomic_fetch_and_add_node(ptr, val) __sync_fetch_and_add(ptr, val)
 
-#ifdef GM_NODE64
+
+#ifdef 
 #define htonedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
 #define ntohedge(n) ((edge_t)__builtin_bswap64((edge_t)n))
 #define htonnode(n) ((node_t)__builtin_bswap64((node_t)n))

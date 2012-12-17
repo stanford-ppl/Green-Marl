@@ -17,6 +17,8 @@ int gmGenFileReaderReadBytes(void* reader, char* buf, size_t num_bytes);
 
 int gmGenFileReaderSeekCurrent(void* reader, long int pos);
 
+int gmGenFileReaderIsDirectory(void* reader); // 1 if reading all the files in the directory. 0 if reading single file
+
 void* gmGenFileWriterOpen(const char* filename, int hdfs);
 
 void gmGenFileWriterClose(void* writer);

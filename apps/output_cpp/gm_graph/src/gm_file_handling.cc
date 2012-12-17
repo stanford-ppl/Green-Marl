@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <map>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #ifdef HDFS
 #include <hdfs.h>
 #endif
@@ -58,21 +61,6 @@ GM_JNI_Handler::GM_JNI_Handler() {
         p=strtok(NULL, ":");
     }
     idx += sprintf(&buffer[idx], ":%s/apps/output_cpp/gm_graph/javabin/", GMTop);
-
-    //sprintf(buffer, "-Djava.class.path=%s/%s:%s/lib/%s:%s/apps/output_cpp/gm_graph/javalib/%s:%s/apps/output_cpp/gm_graph/javabin/",  // there should be no space at the end!
-    //        HadoopHome, HadoopCoreJar,
-    //        HadoopHome, LoggingJar,
-    //       GMTop, GuavaJar, 
-    //        GMTop);
-    //sprintf(buffer, "-Djava.class.path=%s/%s;%s/lib/:%s/apps/output_cpp/gm_graph/javabin/",  // there should be no space at the end!
-    //        HadoopHome, HadoopCoreJar,
-            //HadoopHome, LoggingJar,
-    //        HadoopHome, 
-            //GMTop, GuavaJar, 
-    //        GMTop);
-    //printf("classpath = %s\n", buffer);
-    // Initialize parameters for creating a JavaVM
-    //opts_[0].optionString = (char *)"-Djava.class.path=/cm/shared/apps/hadoop/current/hadoop-core-0.20.2-cdh3u4.jar:/cm/shared/apps/hadoop/current/lib/commons-logging-1.0.4.jar:/cm/shared/apps/hadoop/current/lib/guava-r09-jarjar.jar:../javabin/";
     opts_[0].optionString = buffer;
     memset(&vmargs_, 0, sizeof(vmargs_));
     vmargs_.version = JNI_VERSION_1_6;
@@ -114,6 +102,7 @@ void GM_JNI_Handler::printAndClearException() {
 GM_Reader::GM_Reader (const char *filename, bool hdfs) {
     filename_ = filename;
     hdfs_ = hdfs;
+    is_reading_directory_ = 0;
     initialize();
 #ifndef HDFS
     assert (hdfs == false);
@@ -187,6 +176,18 @@ void GM_Reader::initialize() {
             return;
         }
         failed_ = false;
+
+        // getMethodId of isDirectory
+        isDirectoryMethod_ = env_->GetMethodID(cls_, "isDirectory", "()B");
+        if (isDirectoryMethod_ == 0) {
+            jni_handler->printAndClearException();
+            fprintf (stderr, "JNI Error: Cannot get isDirectory method in HDFSReader\n");
+            failed_ = true;
+            return;
+        }
+        failed_ = false;
+        is_reading_directory_ = env_->CallBooleanMethod(cls_,isDirectoryMethod_) == 0 ? 0 : 1;
+
 #else
         failed_ = true;
         return;
@@ -195,12 +196,28 @@ void GM_Reader::initialize() {
     //#else
     else {
         // Initialize for reading a file from NFS
-        fs_.open(filename_.c_str());
         failed_ = false;
-        if (fs_.fail()) {
-            fprintf (stderr, "Cannot open %s for reading\n", filename_.c_str());
-            failed_ = true;
+        
+        // check exist and not a directory
+        struct stat sbuf;
+        int st = stat(filename_.c_str(),&sbuf); 
+        if (st != 0) {// cannot open
+            goto nfs_read_error;
         }
+        if (!S_ISREG(sbuf.st_mode)) { // check if regular file
+            fprintf (stderr, "Not a file:");
+            goto nfs_read_error;
+        } 
+
+        // open file
+        fs_.open(filename_.c_str());
+        if (!fs_.fail()) {
+            return;
+        }
+
+        nfs_read_error:
+            fprintf (stderr, "Cannot open %s for nfs reading\n", filename_.c_str());
+            failed_ = true;
     }
     //#endif  // HDFS
 }
@@ -292,6 +309,7 @@ int GM_Reader::readBytes(char* buf, size_t num_bytes) {
 int GM_Reader::seekCurrent(long int pos) {
     if (hdfs_) {
 #ifdef HDFS
+        assert(!is_reading_directory_);
         // Call seekCurrent method in HDFSReader class
         return env_->CallIntMethod(readerObj_, seekCurrentMethod_, (jlong)pos);
 #else

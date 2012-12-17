@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 
 /*
@@ -13,11 +14,18 @@ public class HDFSReader {
     String fileName;
     BufferedReader in;
     FileSystem fs;
+    FileStatus fstat;
+    FileStatus[] flist;
     Path filePath;
     FSDataInputStream fdis;
+    boolean isDir;
+    int flist_idx;
 
     // Constructor and initialization
     public HDFSReader (String s) {
+        isDir = false;
+        flist_idx = 0;
+        fdis = null;
         try {
             fileName = s;
             Configuration conf = new Configuration();
@@ -29,8 +37,16 @@ public class HDFSReader {
                 System.out.println ("File does not exist: " + fileName);
                 return;
             }
-            fdis = fs.open(filePath);
-            in = new BufferedReader(new InputStreamReader(fdis));
+            // check path is a Directory
+            fstat = fs.getFileStatus(filePath);
+            isDir = fstat.isDir();
+            if (!isDir) {
+                fdis = fs.open(filePath);
+                in = new BufferedReader(new InputStreamReader(fdis));
+            } else {
+                flist = fs.listStatus(filePath);
+                openNextFile();
+            }
         } catch (Exception e) {
             System.err.println (e);
         }
@@ -38,12 +54,55 @@ public class HDFSReader {
 
     // Get the next line from the file
     public String getLine() {
+        String s = null;
         try {
-            return in.readLine();
+            s = in.readLine();
         } catch (Exception e) {
             System.err.println (e);
         }
-        return null;
+        if (s == null) {
+            if (isFinished()) return s;
+            else {
+                openNextFile();
+                return getLine();
+            }
+        }
+        return s;
+    }
+
+    //
+    private boolean isFinished() {
+        if (isDir && (flist_idx < flist.length)) return false;
+        return true;
+    }
+
+    // when reading directory: open next file
+    private void openNextFile() {
+        if (fdis !=null) {
+            try {
+                fdis.close();
+            } catch (Exception e) {
+                System.err.println (e);
+            }
+            fdis = null;
+        }
+
+        if (flist_idx < flist.length) {
+            filePath = flist[flist_idx].getPath();
+            flist_idx++;
+            try {
+                fdis = fs.open(filePath);
+                in = new BufferedReader(new InputStreamReader(fdis));
+            } catch (Exception e) {
+                System.err.println (e);
+                fdis = null;
+                // skip to next file
+                openNextFile();
+            }
+        }
+        else {
+            // finished;
+        } 
     }
 
     // Get the a sequence of bytes from the file
@@ -77,6 +136,10 @@ public class HDFSReader {
 
     // Reset the pointer (reader) to the start of the file
     public void reset() {
+        if (isDir) { // go back to the first file
+            flist_idx = 0;
+            openNextFile();
+        }
         try {
             fdis.seek(0);
         } catch (Exception e) {
@@ -84,10 +147,14 @@ public class HDFSReader {
         }
     }
 
+    public boolean isDiresctory() {
+        return isDir;
+    }
+
     // Close the input stream and the hdfs file system
     public void terminate() {
         try {
-            fdis.close();
+            if (fdis!=null) fdis.close();
             fs.close();
         } catch (Exception e) {
             System.err.println (e);
