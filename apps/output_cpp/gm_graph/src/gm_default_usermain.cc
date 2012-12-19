@@ -395,7 +395,9 @@ bool gm_default_usermain::do_preprocess()
         gm_schema S = scalar_schema[i];
         void* scalar_var = create_scalar_variable(S.type);
         scalars[S.name] = scalar_var;
-        load_scalar_variable_from_option(OPTIONS, S.name, S.type, scalar_var);
+        if (S.is_input) {
+            load_scalar_variable_from_option(OPTIONS, S.name, S.type, scalar_var);
+        }
     }
 
 
@@ -627,6 +629,7 @@ bool gm_default_usermain::do_postprocess()
     for(size_t i=0; i < scalar_schema.size(); i++)
     {
         gm_schema S = scalar_schema[i];
+        if (!S.is_output) continue;
         void* scalar_var = scalars[S.name];
         printf("%s = ", S.name);
         print_value(S.type, scalar_var);

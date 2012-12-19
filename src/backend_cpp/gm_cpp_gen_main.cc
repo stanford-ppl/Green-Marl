@@ -186,14 +186,15 @@ void gm_cpp_gen::do_generate_user_main()
     Body.NL();
     Body.pushln("Main.begin_usermain();");
     if (!ret_type->is_void()) {
+        Body.push("Main.");
         switch(ret_type->getTypeSummary()) {
-            case GMTYPE_INT: Body.pushln("set_return_i("); break;
-            case GMTYPE_LONG: Body.pushln("set_return_l("); break;
-            case GMTYPE_BOOL: Body.pushln("set_return_b("); break;
-            case GMTYPE_DOUBLE: Body.pushln("set_return_d("); break;
-            case GMTYPE_FLOAT: Body.pushln("set_return_f("); break;
-            case GMTYPE_NODE: Body.pushln("set_return_n("); break;
-            case GMTYPE_EDGE: Body.pushln("set_return_e("); break;
+            case GMTYPE_INT: Body.push("set_return_i("); break;
+            case GMTYPE_LONG: Body.push("set_return_l("); break;
+            case GMTYPE_BOOL: Body.push("set_return_b("); break;
+            case GMTYPE_DOUBLE: Body.push("set_return_d("); break;
+            case GMTYPE_FLOAT: Body.push("set_return_f("); break;
+            case GMTYPE_NODE: Body.push("set_return_n("); break;
+            case GMTYPE_EDGE: Body.push("set_return_e("); break;
             default: assert(false); break;
         }
     }
@@ -208,10 +209,15 @@ void gm_cpp_gen::do_generate_user_main()
         print_argument_loader(Body, *I, (total-1==cnt));
     }
 
-    Body.pushln(");");
 
-    if (!ret_type->is_void()) 
+    if (!ret_type->is_void())  {
+        Body.NL();
         Body.pushln(")");
+        Body.pushln(");");
+    } else {
+        Body.pushln(");");
+    }
+
 
     Body.pushln("Main.end_usermain();");
 
