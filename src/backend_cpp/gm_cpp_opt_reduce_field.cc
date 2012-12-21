@@ -61,7 +61,8 @@ public:
                     break;
                 case AST_IF: {
                     ast_if* x = (ast_if*) (*I);
-                    check = checkBody(x->get_then(), iterator) || checkBody(x->get_else(), iterator);
+                    check = checkBody(x->get_then(), iterator);
+                    if(x->get_else() != NULL) check |= checkBody(x->get_else(), iterator);
                     break;
                 }
                 case AST_SENTBLOCK:
@@ -256,6 +257,9 @@ public:
         std::list<ast_assign*>::iterator I;
         for (I = to_normals.begin(); I != to_normals.end(); I++) {
             ast_assign* a = *I;
+            if(std::find(ignore->begin(), ignore->end(), a) != ignore->end()) {
+                continue;
+            }
             gm_make_normal_assign(a);
             gm_make_it_belong_to_sentblock(a);
         }
