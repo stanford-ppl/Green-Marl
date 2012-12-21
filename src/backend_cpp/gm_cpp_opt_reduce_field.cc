@@ -22,9 +22,15 @@ private:
     bool contains_argminmax_assign(ast_sent* sent) {
 
         switch (sent->get_nodetype()) {
-            case AST_IF:
-                if (contains_argminmax_assign(((ast_if*) sent)->get_then())) return true;
-                return contains_argminmax_assign(((ast_if*) sent)->get_then());
+            case AST_IF: {
+                ast_if* x = (ast_if*) sent;
+                if (contains_argminmax_assign(x->get_then()))
+                    return true;
+                else if (x->get_else() != NULL)
+                    return contains_argminmax_assign(x->get_else());
+                else
+                    return false;
+            }
             case AST_FOREACH:
                 return contains_argminmax_assign(((ast_foreach*) sent)->get_body());
             case AST_WHILE:
@@ -133,7 +139,6 @@ public:
     }
 
 };
-
 
 class change_reduction_field: public gm_apply
 {
@@ -263,7 +268,7 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
 
     std::list<ast_assign*> targets;
     findAssignsToReplace(fe->get_body(), targets, iteratorName);
-    if(targets.size() == 0) return; // nothing to do
+    if (targets.size() == 0) return; // nothing to do
 
     std::list<ast_assign*> ignore;
 
@@ -321,7 +326,6 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
     T.post_process();
 
 }
-
 
 #include "gm_backend_cpp_opt_steps.h"
 void gm_cpp_opt_reduce_field::process(ast_procdef *p) {
