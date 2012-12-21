@@ -680,7 +680,7 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br) {
     if (is_target_omp()) {
         bool is_par_scope = sb->find_info_bool(LABEL_PAR_SCOPE);
         if (is_par_scope) {
-            assert(is_under_parallel_sentblock() == false);
+         //   assert(is_under_parallel_sentblock() == false);
             set_under_parallel_sentblock(true);
             need_br = true;
             Body.pushln("#pragma omp parallel");
