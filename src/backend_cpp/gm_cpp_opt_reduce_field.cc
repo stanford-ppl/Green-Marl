@@ -108,34 +108,12 @@ public:
         ast_foreach* fe = (ast_foreach*) sent;
 
         // check if optimization can be applied here
-        printf("Iterator Name: %s\n", fe->get_iterator()->get_genname());
-
         ast_id* iterator = fe->get_iterator();
         if (iterator->getTypeSummary() != GMTYPE_NODE_ITERATOR) return true;
-        printf("Iterator Type: %s\n", gm_get_type_string(iterator->getTypeSummary()));
-
-        bool isTarget = checkBody(fe->get_body(), iterator);
-        printf("IsTarget: %s\n", isTarget ? "yes" : "no");
-
-        if (isTarget) {
+        if (checkBody(fe->get_body(), iterator)) {
             targets.push_back(fe);
         }
 
-//        gm_rwinfo_map& B = gm_get_bound_set_info(fe)->bound_set;
-//        printf("size: %d\n", B.size());
-//        if (B.size() == 0) return true;
-//
-//        assert(fe->is_parallel());
-//
-//        gm_rwinfo_map::iterator I;
-//        for (I = B.begin(); I != B.end(); I++) {
-//            gm_symtab_entry* e = I->first;
-//            if (e->getType()->is_property()) {
-//                printf("muh\n");
-//                targets.push_back(fe);
-//                break;
-//            }
-//        }
         return true;
     }
 
@@ -327,9 +305,6 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
     std::list<std::list<gm_symtab_entry*> > old_supple;
     std::list<std::list<gm_symtab_entry*> > new_supple;
 
-    printf("Ich werde aufgerufen - beachte mich\n");
-    // TODO: rewrite this stuff!!!! -.-
-
 // make scope
     gm_make_it_belong_to_sentblock_nested(fe);
     assert(fe->get_parent()->get_nodetype() == AST_SENTBLOCK);
@@ -359,7 +334,6 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
             char tmp[128];
             sprintf(tmp, "%s_%s", fieldName.c_str(), iteratorName);
             const char* newName = FE.voca_temp_name_and_add(tmp, "_prv");
-            printf("Neuer Name: %s\n", newName);
 
             gm_symtab_entry* _thread_local;
             ast_field* field = (*II)->get_lhs_field();
@@ -390,9 +364,6 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
             gm_insert_sent_body_end(fe, backAssign, true);
 
             ignore.push_back(backAssign);
-
-            fe->dump_tree(1);
-
         }
     }
     //-------------------------------------------------
@@ -400,18 +371,9 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
     //   - replace to normal assignment(s) to local lhs
     //-------------------------------------------------
     change_reduction_field T(&fieldToNewVar, iteratorName, &ignore);
-
-    fe->dump_tree(1);
-
     gm_traverse_sents(fe->get_body(), &T);
-
-    fe->dump_tree(1);
-
     T.post_process();
 
-    fe->dump_tree(1);
-
-    printf("Ende\n");
     return;
 
 // foreach scalar boundsymbol
