@@ -42,11 +42,19 @@ void printBasedOnType (void *mem, VALUE_TYPE type, int num) {
 int main(int argc, char** argv) {
 
     if (argc < 3) {
-        printf ("Usage: ./test_generic_adj_list <input_file> <output_file>\n");
+        printf ("Usage: ./test_generic_adj_list <input_file> <output_file> [USE_HDFS=0/1]\n");
         exit(1);
     }
     char *inputFile = argv[1];
     char *outputFile = argv[2];
+
+    bool use_hdfs = false;
+    if  (argc >= 4) {
+        use_hdfs = atoi(argv[3]) != 0;
+    }
+#ifndef HDFS
+    if (use_hdfs) {printf("HDFS not enabled. please recompile after updating $(GM_TOP)/setup.mk\n");}
+#endif
 
     //------------------------------
     // Empty graph creation
@@ -74,7 +82,7 @@ int main(int argc, char** argv) {
     // Read adjacency list graph
     //------------------------------
     printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
-    G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t");
+    G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", use_hdfs);
 
     //------------------------------
     // Print graph details for manual verification 
@@ -105,5 +113,5 @@ int main(int argc, char** argv) {
     // Write adjacency list graph
     //------------------------------
     printf ("Storing graph into file \'%s\' in adjacency list format...\n", outputFile);
-    G.store_adjacency_list(outputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " ");
+    G.store_adjacency_list(outputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " ", use_hdfs);
 }

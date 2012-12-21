@@ -23,6 +23,11 @@ int gmGenFileReaderSeekCurrent(void* reader, long int pos) {
 }
 
 extern "C"
+int gmGenFileReaderIsDirectory(void* reader) { // 1 if reading all the files in the directory. 0 if reading single file
+  return ((GM_Reader*)reader)->isDirectory();
+}
+
+extern "C"
 void* gmGenFileWriterOpen(const char* filename, int hdfs) {
   return new GM_Writer(filename, (bool)hdfs);
 
@@ -44,3 +49,4 @@ extern "C"
 void gmGenFileWriterFlush(void* writer) {
   ((GM_Writer*)writer)->flush();
 }
+

@@ -310,7 +310,7 @@ friend class gm_graph_hdfs;
     }
 
 #ifdef HDFS
-    bool load_binary_hdfs(char* filename);
+    bool load_binary_hdfs(char* filename); // deprecated
 #endif  // HDFS
 
     inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
