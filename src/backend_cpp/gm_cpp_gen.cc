@@ -976,9 +976,6 @@ void gm_cpp_gen::generate_sent_nop(ast_nop* n) {
         case NOP_REDUCE_SCALAR:
             ((nop_reduce_scalar*) n)->generate(this);
             break;
-        case NOP_REDUCE_FIELD:
-            ((nop_reduce_field*) n)->generate(this);
-            break;
             /* otherwise ask library to hande it */
         default: {
             get_lib()->generate_sent_nop(n);
