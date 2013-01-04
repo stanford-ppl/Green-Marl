@@ -287,7 +287,6 @@ extern gm_cpp_gen CPP_BE;
 enum nop_enum_cpp
 {
     NOP_REDUCE_SCALAR = 1000,
-    NOP_REDUCE_FIELD,
 };
 
 class nop_reduce_scalar: public ast_nop
