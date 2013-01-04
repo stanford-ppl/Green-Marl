@@ -43,7 +43,7 @@ static const char* GMARGFLAG_CPP_CREATE_MAIN = "CppMain";
 
 //static const char* GMARGFLAG_MERGE_BB = "GPSMerge";
 //static const char* GMARGFLAG_MERGE_BB_INTRA = "GPSMergeIntra";
-static const char* GMARGFLAG_GIRAPH_DUMMY_VALUE = "GiraphDummyValue";
+//static const char* GMARGFLAG_GIRAPH_DUMMY_VALUE = "GiraphDummyValue";
 static const char* GMARGFLAG_GIRAPH_PACKAGE = "GiraphPackage";
 //static const char* GMARGFLAG_DUMPIR = "Dd";
 //static const char* GMARGFLAG_NOMERGE = "NoMerge";
@@ -64,7 +64,7 @@ static struct GM_comp_args GM_compiler_options[] = {
         { GMARGFLAG_CPP_CREATE_MAIN, GMARG_BOOL, "Generate Main for C++ backend", "0" },
         //{ GMARGFLAG_MERGE_BB, GMARG_BOOL, "(For gps) Enable bb merge optimization", "1" },
         //{ GMARGFLAG_MERGE_BB_INTRA, GMARG_BOOL, "(For gps) Enable intra-loop bb merge optimization", "1" },
-        { GMARGFLAG_GIRAPH_DUMMY_VALUE, GMARG_BOOL, "(For giraph) InputFormat assumes that there are at least one (dummy) value for node and edge in the input adj-list", "1" },
+        //{ GMARGFLAG_GIRAPH_DUMMY_VALUE, GMARG_BOOL, "(For giraph) InputFormat assumes that there are at least one (dummy) value for node and edge in the input adj-list", "1" },
         { GMARGFLAG_GIRAPH_PACKAGE, GMARG_STRING, "(For giraph) Package Name for Generated Giraph Files", "" },
 
         { GMARGFLAG_STOP_STRING, GMARG_STRING, "(For debug) Stop the compiler after certain stage. <string>=(step)[.(step)]", "0" },

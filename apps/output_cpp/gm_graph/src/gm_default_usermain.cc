@@ -10,8 +10,8 @@
 #define OPT_ALLPROP         "GMIOAllProps"
 #define OPT_DUMMYPROP       "GMDummyProperty"
 #define OPT_DUMPGRAPH       "GMDumpOutput"
-#define OPT_OUTTYPE         "GMOutType"
-#define OPT_INTYPE          "GMInType"
+#define OPT_OUTTYPE         "GMOutputFormat"
+#define OPT_INTYPE          "GMInputFormat"
 #define OPT_NUMTHREAD       "GMNumThreads"
 #define OPT_USEHDFS         "GMHDFS"
 
@@ -20,21 +20,22 @@
 
 gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 {
-   OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[do not create an output file], 1:[create an output file]");
-   OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
+   //OPTIONS.add_option(OPT_DUMPGRAPH,  GMTYPE_INT, "1",  "0:[do not create an output file], 1:[create an output file]");
+   //OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
+
    OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "Measure running time");
 #ifdef AVRO
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, NODE_PROP: dump of node properties only");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, NODE_PROP: dump of node properties only, NULL: dump no properties");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
 #else
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, NODE_PROP: dump of node properties only");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, NODE_PROP: dump of node properties only, NULL: dump no properties");
    OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list");
 #endif
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
 #ifdef HDFS
    OPTIONS.add_option(OPT_USEHDFS, GMTYPE_BOOL, "0", "Use HDFS instead of local file system");
 #endif
-   OPTIONS.add_option(OPT_ALLPROP, GMTYPE_BOOL, "0", "-- 1:[Load and store every node/edge property], 0:[Load node/edge properties that are read before written, Store node/edge properties that are only modifired]");
+   //OPTIONS.add_option(OPT_ALLPROP, GMTYPE_BOOL, "0", "-- 1:[Load and store every node/edge property], 0:[Load node/edge properties that are read before written, Store node/edge properties that are only modifired]");
    OPTIONS.add_argument("InputName",  GMTYPE_END,  "Input filename");
    OPTIONS.add_argument("OutputName",  GMTYPE_END,  "Output filename");
    in_format = GM_ADJ_LIST;
@@ -110,17 +111,18 @@ void gm_default_usermain::declare_scalar(const char* name, VALUE_TYPE t, bool is
 
     // create scalar variable
     scalar_schema.push_back(schema);
-    if (is_input) 
+    if (is_input) {
         OPTIONS.add_option(name, t, NULL, "input argument");
+    }
 }
 
 void gm_default_usermain::declare_property(const char* name, VALUE_TYPE t, bool is_input, bool is_output, GM_SCHEMA_TYPE i)
 {
     assert((i==GM_NODEPROP) || (i==GM_EDGEPROP));
 
-    if (OPTIONS.get_option_bool(OPT_ALLPROP)) {
-        is_input = is_output = true;
-    }
+    //if (OPTIONS.get_option_bool(OPT_ALLPROP)) {
+    //    is_input = is_output = true;
+   // }
 
     gm_schema schema; 
     schema.name = name;
@@ -238,7 +240,7 @@ bool gm_default_usermain::determine_formats()
             printf("Warning: assuming output is ADJ list\n");
         }
 
-        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) && (out_format != GM_NODE_PROP_LIST)) {
+        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) && (out_format != GM_NODE_PROP_LIST) && (out_format != GM_NULL_FORMAT)) {
             printf("Error:output format not supported.\n");
             return false;
         }
@@ -258,12 +260,12 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
 
     create_property_in_out_schema();
 
+    /*
     if (OPTIONS.get_option_int(OPT_DUMPGRAPH) == 1) 
     {
         // should create a graph format
         create_output_graph = true;
     } 
-    /*
     else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) == 2)
     {
         if (eprop_out_schema.size() > 0) 
@@ -274,11 +276,12 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
             create_output_text = true;
         }
     }
-    */
     else if ((OPTIONS.get_option_int(OPT_DUMPGRAPH)) != 0)
     {
         printf("Undefined option value for %s\n", OPT_DUMPGRAPH);
     }
+    */
+    create_output_graph = true;
 
     if (!create_output_graph && !create_output_text)
     {
@@ -322,6 +325,7 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
     {
         gm_schema S = scalar_schema[i];
         if (S.is_input) {
+            //printf("checking %s\n",S.name);
             if (!OPTIONS.is_option_defined(S.name)) {
                 printf("Error: option not defined: %s\n", S.name);
                 goto err_return;
@@ -391,14 +395,16 @@ bool gm_default_usermain::do_preprocess()
         gm_schema S = scalar_schema[i];
         void* scalar_var = create_scalar_variable(S.type);
         scalars[S.name] = scalar_var;
-        load_scalar_variable_from_option(OPTIONS, S.name, S.type, scalar_var);
+        if (S.is_input) {
+            load_scalar_variable_from_option(OPTIONS, S.name, S.type, scalar_var);
+        }
     }
 
 
     char fullpath_name[1024*64];
 
     // check output directory is open for writing
-    if (OPTIONS.get_option_bool(OPT_DUMPGRAPH)) 
+    //if (OPTIONS.get_option_bool(OPT_DUMPGRAPH)) 
     {
         if (strlen(output_path) >= 1) {
             sprintf(fullpath_name, "%s%s",output_path, "__temp_test");
@@ -519,7 +525,8 @@ void gm_default_usermain::create_property_in_out_schema()
     }
 
     // adding dummy schema
-    if (OPTIONS.get_option_bool(OPT_DUMMYPROP))
+    //if (OPTIONS.get_option_bool(OPT_DUMMYPROP))
+    if (false)
     {
         if ((vprop_in_schema.size() == 0) || (vprop_out_schema.size() == 0))
         {
@@ -622,6 +629,7 @@ bool gm_default_usermain::do_postprocess()
     for(size_t i=0; i < scalar_schema.size(); i++)
     {
         gm_schema S = scalar_schema[i];
+        if (!S.is_output) continue;
         void* scalar_var = scalars[S.name];
         printf("%s = ", S.name);
         print_value(S.type, scalar_var);

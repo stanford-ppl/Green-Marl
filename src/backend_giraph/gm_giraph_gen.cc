@@ -177,9 +177,12 @@ void gm_giraph_gen::do_generate_input_output_formats() {
 
         sprintf(temp, "public class %sVertexInputFormat extends TextVertexInputFormat<%s, %s, %s, %s> {", proc_name, vertex_id, vertex_data, edge_data, message_data);
         Body_input.pushln(temp);
+        Body_input.pushln("int intype;");
         Body_input.pushln("@Override");
         Body_input.pushln("public TextVertexReader");
         Body_input.pushln("createVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {");
+        sprintf(temp, "intype = context.getConfiguration().getInt(\"GMInputFormat\",%s.GM_FORMAT_ADJ);",proc_name);
+        Body_input.pushln(temp);
         sprintf(temp, "return new %sVertexReader();", proc_name);
         Body_input.pushln(temp);
         Body_input.pushln("}");
@@ -196,9 +199,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         else
             Body_input.push("long> ");
 
-        if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_input.push("<dummy value> ");
-        } else if (L.size() > 0) {
+        //if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_input.push("<dummy value> ");
+        //} else 
+        if (L.size() > 0) {
             for(I=L.begin(); I!=L.end(); I++) {
                 gm_symtab_entry* e = *I;
                 sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));
@@ -211,9 +215,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             Body_input.push("(int)> ");
         else
             Body_input.push("(long)> ");
-        if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_input.push("<dummy value> ");
-        } else if (L2.size() > 0) {
+        //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_input.push("<dummy value> ");
+        //} else 
+        if (L2.size() > 0) {
             for(I=L2.begin(); I!=L2.end(); I++) {
                 gm_symtab_entry* e = *I;
                 sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));
@@ -266,10 +271,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             }
         }
         Body_input.pushln(");");
-        if ((val == 1) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_input.pushln("// Ignoring dummy node value");
-            val ++;
-        }
+        //if ((val == 1) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_input.pushln("// Ignoring dummy node value");
+        //    val ++;
+        //}
         Body_input.pushln("}");
 
         //------------------------------------------------------------
@@ -281,9 +286,9 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         sprintf(temp, "Map<%s, %s> edges = Maps.newHashMap();", vertex_id, edge_data);
         Body_input.pushln(temp);
         int step ;
-        if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) 
-            step = 2;
-        else
+        //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) 
+        //    step = 2;
+        //else
             step = 1 + L2.size();
 
         sprintf(temp, "for (int i = %d; i < values.length; i += %d) {", val, step);
@@ -310,9 +315,9 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             }
             Body_input.pushln("));");
         } else {
-            if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE)))
-                Body_input.pushln("// Ignoring dummy edge value");
-            Body_input.pushln("edges.put(edgeId, NullWritable.get());");
+            //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) 
+            //    Body_input.pushln("// Ignoring dummy edge value");
+               Body_input.pushln("edges.put(edgeId, NullWritable.get());");
         }
         Body_input.pushln("}");
         Body_input.pushln("return edges;");
@@ -334,10 +339,13 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         Body_output.pushln(temp);
         sprintf(temp, "extends TextVertexOutputFormat<%s, %s, %s> {", vertex_id, vertex_data, edge_data);
         Body_output.pushln(temp);
+        Body_output.pushln("int outtype;");
         Body_output.pushln("@SuppressWarnings(\"unchecked\")");
         Body_output.pushln("@Override");
         Body_output.pushln("public TextVertexWriter createVertexWriter(");
         Body_output.pushln("TaskAttemptContext context) throws IOException, InterruptedException {");
+        sprintf(temp, "outtype = context.getConfiguration().getInt(\"GMOutputFormat\",%s.GM_FORMAT_ADJ);",proc_name);
+        Body_output.pushln(temp);
         sprintf(temp, "return new %sVertexWriter();", proc_name);
         Body_output.pushln(temp);
         Body_output.pushln("}");
@@ -366,9 +374,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         else
             Body_output.push("long> ");
 
-        if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_output.push("<dummy value> ");
-        } else if (L.size() > 0) {
+        //if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_output.push("<dummy value> ");
+        //} else
+        if (L.size() > 0) {
             for(I=L.begin(); I!=L.end(); I++) {
                 gm_symtab_entry* e = *I;
                 sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));
@@ -381,9 +390,10 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             Body_output.push("(int)> ");
         else
             Body_output.push("(long)> ");
-        if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_output.push("<dummy value> ");
-        } else if (L2.size() > 0) {
+        //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_output.push("<dummy value> ");
+        //} else 
+        if (L2.size() > 0) {
             for(I=L2.begin(); I!=L2.end(); I++) {
                 gm_symtab_entry* e = *I;
                 sprintf(temp,"<%s(%s)> ", e->getId()->get_genname(), get_type_string(e->getType()->getTargetTypeSummary()));
@@ -391,14 +401,15 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             }
         }
         Body_output.pushln("}*");
-        Body_output.pushln("// (Entries are separated with \\t)");
+        Body_output.pushln("// (Entries are separated with \\t). Edges and Edge values are NOT dumped if outtype is GM_FORMAT_NODE_PROP.");
         Body_output.pushln("//--------------------------------------");
 
         // dump Vertex values
-        if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_output.pushln("sb.append('\\t');");
-            Body_output.pushln("sb.append(\"1.0\"); // dummy value");
-        } else if (L.size() > 0) {
+        //if ((L.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_output.pushln("sb.append('\\t');");
+        //    Body_output.pushln("sb.append(\"1.0\"); // dummy value");
+        //} else 
+        if (L.size() > 0) {
             sprintf(temp,"%sVertex.VertexData v = vertex.getValue();", proc_name);
             Body_output.pushln(temp);
             for(I=L.begin(); I!=L.end(); I++) {
@@ -409,14 +420,18 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             }
         }
         Body_output.NL();
+        
+        sprintf(temp, "if (outtype == %s.GM_FORMAT_ADJ) {", proc_name);
+        Body_output.pushln(temp);
 
         sprintf(temp, "for (Edge<%s, %s> edge : vertex.getEdges()) {", vertex_id, edge_data);
         Body_output.pushln(temp);
 
         Body_output.pushln("sb.append('\\t').append(edge.getTargetVertexId());");
-        if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
-            Body_output.pushln("sb.append('\\t').append(\"1.0\"); // dummy value");
-        } else if (L2.size() > 0) {
+        //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) {
+        //    Body_output.pushln("sb.append('\\t').append(\"1.0\"); // dummy value");
+        //} else 
+        if (L2.size() > 0) {
             sprintf(temp,"%sVertex.EdgeData e = edge.getValue();", proc_name);
             Body_output.pushln(temp);
             for(I=L2.begin(); I!=L2.end(); I++) {
@@ -427,6 +442,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
             }
         }
         Body_output.pushln("}");
+        Body_output.pushln("}");
         Body_output.NL();
 
         Body_output.pushln("return new Text(sb.toString());");
@@ -434,6 +450,34 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         Body_output.pushln("}");
         Body_output.pushln("}");
     }
+}
+
+static void generate_format_cmd_argument(
+        gm_code_writer& body,
+        bool is_input, 
+        std::vector<const char*>& names, std::vector<const char*>& args)
+{
+    const char* varname = is_input ? "intype" : "outtype";
+    const char* optname = is_input ? "GMInputFormat" : "GMOutputFormat";
+    const char* errname = is_input ? "Input Format" : "Output Format";
+
+    body.push("if (cmd.hasOption(\""); body.push(optname); body.pushln("\")){");
+    body.push("String s= cmd.getOptionValue(\""); body.push(optname); body.pushln("\");");
+    int sz = names.size(); assert(names.size() == args.size());
+    assert(sz > 0);
+    for(int i = 0; i < sz; i++) {
+       if (i==0) body.push("if "); 
+       else body.push("else if "); 
+       body.push("(s.equals(\""); body.push(args[i]); body.push("\")) ");
+       body.push(varname); body.push(" = "); body.push(names[i]); body.pushln(";");
+    }
+    body.pushln("else {");
+    body.push("LOG.info(\"Invalid "); body.push(errname); body.pushln(":\"+s);");
+    body.pushln("formatter.printHelp(getClass().getName(), options, true);");
+    body.pushln("return -1;");
+    body.pushln("}");
+    body.pushln("}");
+
 }
 
 void gm_giraph_gen::do_generate_job_configuration() {
@@ -459,6 +503,10 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.pushln("// Configuration");
     Body_main.pushln("private Configuration conf;");
     Body_main.NL();
+    Body_main.pushln("// I/O File Format");
+    Body_main.pushln("final static int GM_FORMAT_ADJ=0;");
+    Body_main.pushln("final static int GM_FORMAT_NODE_PROP=1;");
+    Body_main.NL();
     Body_main.pushln("//----------------------------------------------");
     Body_main.pushln("// Job Configuration");
     Body_main.pushln("//----------------------------------------------");
@@ -470,6 +518,8 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.pushln("options.addOption(\"w\", \"workers\", true, \"Number of workers\");");
     Body_main.pushln("options.addOption(\"i\", \"input\", true, \"Input filename\");");
     Body_main.pushln("options.addOption(\"o\", \"output\", true, \"Output filename\");");
+    Body_main.pushln("options.addOption(\"_GMInputFormat\", \"GMInputFormat\", true, \"Input filetype (ADJ: adjacency list)\");");
+    Body_main.pushln("options.addOption(\"_GMOutputFormat\", \"GMOutputFormat\", true, \"Output filename (ADJ:adjacency list, NODE_PROP:node property)\");");
     for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;
@@ -509,6 +559,18 @@ void gm_giraph_gen::do_generate_job_configuration() {
             Body_main.pushln("}");
         }
     }
+    Body_main.pushln("int intype = GM_FORMAT_ADJ; // default in format");
+    Body_main.pushln("int outtype = GM_FORMAT_ADJ; // default out format");
+    std::vector<const char*> in_format_name;
+    std::vector<const char*> in_format_arg;
+    std::vector<const char*> out_format_name;
+    std::vector<const char*> out_format_arg;
+    in_format_name.push_back("GM_FORMAT_ADJ"); in_format_arg.push_back("ADJ");
+    out_format_name.push_back("GM_FORMAT_ADJ"); out_format_arg.push_back("ADJ");
+    out_format_name.push_back("GM_FORMAT_NODE_PROP"); out_format_arg.push_back("NODE_PROP");
+    generate_format_cmd_argument(Body_main, true, in_format_name, in_format_arg);
+    generate_format_cmd_argument(Body_main, false, out_format_name, out_format_arg);
+
     Body_main.NL();
     Body_main.pushln("GiraphJob job = new GiraphJob(getConf(), getClass().getName());");
     Body_main.pushln("job.getConfiguration().setInt(GiraphConfiguration.CHECKPOINT_FREQUENCY, 0);");
@@ -529,6 +591,8 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.pushln("}");
     Body_main.pushln("int workers = Integer.parseInt(cmd.getOptionValue('w'));");
     Body_main.pushln("job.getConfiguration().setWorkerConfiguration(workers, workers, 100.0f);");
+    Body_main.pushln("job.getConfiguration().setInt(\"GMInputFormat\", new Integer(intype));");
+    Body_main.pushln("job.getConfiguration().setInt(\"GMOutputFormat\", new Integer(outtype));");
     for (I = syms.begin(); I != syms.end(); I++) {
         gm_symtab_entry* s = *I;
         if (!s->getType()->is_primitive() && (!s->getType()->is_node())) continue;

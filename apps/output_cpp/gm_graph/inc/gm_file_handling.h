@@ -45,12 +45,15 @@ class GM_Reader {
     int readBytes(char* buf, size_t num_bytes);
     int seekCurrent(long int pos);
     void terminate();
+    int isDirectory() { return is_reading_directory_;}
 
   private:
     //const char *filename_;
     std::string filename_;
     bool hdfs_;
     bool failed_;
+    int  is_reading_directory_; // 1- is direcoty, 0 - is not a direcotry
+
 #ifdef HDFS
     JNIEnv *env_;
     jclass cls_;
@@ -58,6 +61,7 @@ class GM_Reader {
     jmethodID getLineMethod_;
     jmethodID getBytesMethod_;
     jmethodID seekCurrentMethod_;
+    jmethodID isDirectoryMethod_;
 #endif
     std::ifstream fs_;  // file system is enabled even when HDFS is enabled
 };

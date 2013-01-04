@@ -57,7 +57,7 @@ all: $(BUILD_DIRS) $(OUT)
 endif
 
 $(BIN)/graph_gen: $(GRAPHGEN_OBJECTS) 
-	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ $(LFLAGS) -o $@
 
 $(LIB)/libgmgraph.a: $(GRAPHLIB_OBJECTS)
 	$(AR) r $@  $^  

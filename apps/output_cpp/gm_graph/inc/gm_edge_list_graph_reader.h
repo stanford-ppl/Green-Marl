@@ -248,8 +248,10 @@ bool gm_edge_list_graph_reader::readValueFromToken(const char* p) {
             return true;
         else if (strcasecmp(p, "false") == 0)
             return false;
-        else
+        else {
             raiseTokenNotBoolean(p);
+            return false; // make compiler happy
+        }
     }
 }
 
