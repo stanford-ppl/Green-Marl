@@ -223,8 +223,7 @@ void gm_cpp_gen::generate_proc_decl(ast_procdef* proc, bool is_body_file) {
 
             Out.push(get_type_string((*i)->get_type()));
             ast_typedecl* T = (*i)->get_type();
-            if (!T->is_property()) 
-                Out.push_spc("& ");
+            if (!T->is_property()) Out.push_spc("& ");
 
             Out.push((*i)->get_idlist()->get_item(0)->get_genname());
 
@@ -682,7 +681,7 @@ void gm_cpp_gen::generate_sent_block(ast_sentblock* sb, bool need_br) {
     if (is_target_omp()) {
         bool is_par_scope = sb->find_info_bool(LABEL_PAR_SCOPE);
         if (is_par_scope) {
-         //   assert(is_under_parallel_sentblock() == false);
+            assert(is_under_parallel_sentblock() == false);
             set_under_parallel_sentblock(true);
             need_br = true;
             Body.pushln("#pragma omp parallel");
@@ -763,7 +762,7 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a) {
     bool is_scalar = (a->get_lhs_type() == GMASSIGN_LHS_SCALA);
 
     ast_typedecl* lhs_target_type;
-    if(a->get_lhs_type() == GMASSIGN_LHS_SCALA) {
+    if (a->get_lhs_type() == GMASSIGN_LHS_SCALA) {
         lhs_target_type = a->get_lhs_scala()->getTypeInfo();
     } else {
         lhs_target_type = a->get_lhs_field()->getTypeInfo()->get_target_type();
@@ -771,7 +770,7 @@ void gm_cpp_gen::generate_sent_reduce_assign(ast_assign *a) {
 
     char templateParameter[32];
     if (r_type != GMREDUCE_OR && r_type != GMREDUCE_AND) {
-        sprintf(templateParameter, "<%s>",  get_type_string(lhs_target_type));
+        sprintf(templateParameter, "<%s>", get_type_string(lhs_target_type));
     } else {
         sprintf(templateParameter, "");
     }
