@@ -117,7 +117,6 @@ public:
         // find foreach-loops
         if (sent->get_nodetype() != AST_FOREACH) return true;
         if (contains_argminmax_assign(sent)) {
-            printf("Contains\n");
             return true;
         }
 
