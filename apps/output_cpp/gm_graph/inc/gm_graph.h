@@ -180,7 +180,7 @@ friend class gm_graph_hdfs;
     //--------------------------------------------------------------
     #define MAGIC_WORD 0x03939999
     void prepare_external_creation(node_t n, edge_t m);
-    void prepare_external_creation(node_t n, edge_t m, bool clean_key_id_map);
+    void prepare_external_creation(node_t n, edge_t m, bool clean_key_id_mappings);
     bool store_binary(char* filename);          // attributes not saved
     bool load_binary(char* filename);           // call this to an empty graph object
 
@@ -290,7 +290,7 @@ friend class gm_graph_hdfs;
         return n;
     }
 
-    void clear_graph(bool clean_key_id_map);    // invalidate everything and make the graph empty
+    void clear_graph(bool clean_key_id_mappings);    // invalidate everything and make the graph empty
     void clear_graph();                         
 
     //returns one of the outgoing neighbors of 'node' - by random choice
@@ -313,8 +313,14 @@ friend class gm_graph_hdfs;
     bool load_binary_hdfs(char* filename);
 #endif  // HDFS
 
-    inline node_t nodekey_to_nodeid(node_t key) {return _numeric_key[key];}
-    inline node_t nodeid_to_nodekey(node_t nodeid) {return _numeric_reverse_key[nodeid];}
+    inline node_t nodekey_to_nodeid(node_t key) {
+      // not all graphs have this mapping defined (only those loaded from adjacency list format)
+      return (_nodekey_defined ? _numeric_key[key] : key);
+    }
+    inline node_t nodeid_to_nodekey(node_t nodeid) {
+      // not all graphs have this mapping defined (only those loaded from adjacency list format)
+      return (_reverse_nodekey_defined ? _numeric_reverse_key[nodeid] : nodeid);
+    }
   private:
 
     void delete_frozen_graph();
