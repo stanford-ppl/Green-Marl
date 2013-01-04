@@ -398,8 +398,8 @@ void gm_graph::prepare_external_creation(node_t n, edge_t m) {
   prepare_external_creation(n, m, true);
 }
 
-void gm_graph::prepare_external_creation(node_t n, edge_t m, bool clean_key_id_map) {
-    clear_graph(clean_key_id_map);
+void gm_graph::prepare_external_creation(node_t n, edge_t m, bool clean_key_id_mappings) {
+    clear_graph(clean_key_id_mappings);
     allocate_memory_for_frozen_graph(n, m);
     _frozen = true;
 }
@@ -454,15 +454,15 @@ edge_t gm_graph::add_edge(node_t n, node_t m) {
     return _numEdges++;
 }
 
-void gm_graph::clear_graph(bool clean_key_id_map) {
+void gm_graph::clear_graph(bool clean_key_id_mappings) {
     flexible_graph.clear();
     delete_frozen_graph();
 
     _numNodes = 0;
     _numEdges = 0;
 
-    if (_nodekey_defined && clean_key_id_map) {_numeric_key.clear();}
-    if (_reverse_nodekey_defined) {_numeric_reverse_key.clear();}
+    if (_nodekey_defined && clean_key_id_mappings) {_numeric_key.clear();}
+    if (_reverse_nodekey_defined && clean_key_id_mappings) {_numeric_reverse_key.clear();}
 }
 
 void gm_graph::clear_graph() {
@@ -771,7 +771,7 @@ node_t gm_graph::add_nodekey(node_t key) {
             if ((size_t)nid >= _numeric_reverse_key.capacity()) {
                 _numeric_reverse_key.reserve(nid*2);
             }
-            _numeric_reverse_key[nid] = key;
+            _numeric_reverse_key.insert(_numeric_reverse_key.begin()+nid, key);
         }
         return nid;
     }
