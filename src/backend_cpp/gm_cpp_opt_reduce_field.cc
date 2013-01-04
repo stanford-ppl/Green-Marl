@@ -53,6 +53,7 @@ private:
 
 public:
     bool checkBody(ast_sent* body, ast_id* iterator) {
+
         if (body->get_nodetype() != AST_SENTBLOCK) return checkAssign(body, iterator);
 
         ast_sentblock* sentblock = (ast_sentblock*) body;
@@ -94,13 +95,19 @@ public:
     }
 
     bool checkAssign(ast_sent* statement, ast_id* iterator) {
+
         if (statement->get_nodetype() != AST_ASSIGN) return false;
+
         ast_assign* assign = (ast_assign*) statement;
         if (assign->is_argminmax_assign()) return false;
+
         if (!assign->is_target_field()) return false;
+
         if (!assign->is_reduce_assign()) return false;
+
         ast_field* field = assign->get_lhs_field();
         ast_id* first = field->get_first();
+
         return !strcmp(first->get_genname(), iterator->get_genname());
     }
 
@@ -109,17 +116,22 @@ public:
 
         // find foreach-loops
         if (sent->get_nodetype() != AST_FOREACH) return true;
-        if (contains_argminmax_assign(sent)) return true;
+        if (contains_argminmax_assign(sent)) {
+            printf("Contains\n");
+            return true;
+        }
 
         ast_foreach* fe = (ast_foreach*) sent;
 
         // check if optimization can be applied here
         ast_id* iterator = fe->get_iterator();
         if (iterator->getTypeSummary() != GMTYPE_NODE_ITERATOR) return true;
+
         if (checkBody(fe->get_body(), iterator)) {
             targets.push_back(fe);
+        } else {
+            return true;
         }
-
         return true;
     }
 
@@ -214,7 +226,6 @@ void findAssignsToReplace(ast_sent* sent, std::list<ast_assign*>& assigns, const
             }
             return;
         }
-
         case AST_ASSIGN: {
             ast_assign* assign = (ast_assign*) sent;
             if (assign->is_argminmax_assign()) return;
@@ -227,20 +238,17 @@ void findAssignsToReplace(ast_sent* sent, std::list<ast_assign*>& assigns, const
             }
             return;
         }
-
         case AST_IF: {
             ast_if* x = (ast_if*) sent;
             findAssignsToReplace(x->get_then(), assigns, iterName);
             if (x->get_else() != NULL) findAssignsToReplace(x->get_else(), assigns, iterName);
             return;
         }
-
         case AST_WHILE: {
             ast_while* x = (ast_while*) sent;
             findAssignsToReplace(x->get_body(), assigns, iterName);
             return;
         }
-
         case AST_FOREACH: {
             ast_foreach* x = (ast_foreach*) sent;
             findAssignsToReplace(x->get_body(), assigns, iterName);
@@ -276,16 +284,17 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
     std::map<std::string, ast_id*> fieldToNewVar;
     std::list<ast_assign*>::iterator II;
     for (II = targets.begin(); II != targets.end(); II++) {
+        ast_assign* assign = *II;
 
-        std::string fieldName((*II)->get_lhs_field()->get_second()->get_genname());
+        std::string fieldName(assign->get_lhs_field()->get_second()->get_genname());
         if (fieldToNewVar.find(fieldName) == fieldToNewVar.end()) {
             char tmp[128];
             sprintf(tmp, "%s_%s", fieldName.c_str(), iteratorName);
             const char* newName = FE.voca_temp_name_and_add(tmp, "_prv");
 
             gm_symtab_entry* _thread_local;
-            ast_field* field = (*II)->get_lhs_field();
-
+            ast_field* field = assign->get_lhs_field();
+            ;
             ast_sentblock* body = (ast_sentblock*) fe->get_body();
             int e_type = field->getTargetTypeSummary();
             if (gm_is_prim_type(e_type)) {
@@ -302,21 +311,35 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
                 }
             }
 
-            int reduce_type = GMREDUCE_PLUS;
-            ast_expr* init_val = gm_new_bottom_symbol(reduce_type, GMTYPE_INT);
+            int reduce_type = assign->get_reduce_type();
+            int type = field->getTargetTypeSummary();
+            ast_expr* init_val;
+
+            if ((reduce_type == GMREDUCE_MIN) || (reduce_type == GMREDUCE_MAX)) {
+                ast_expr* expr = assign->get_rhs();
+                if (expr->is_id()) {
+                    init_val = ast_expr::new_id_expr(expr->get_id());
+                } else {
+                    init_val = gm_new_bottom_symbol(reduce_type, type);
+                }
+            } else {
+                init_val = gm_new_bottom_symbol(reduce_type, type);
+            }
+
             ast_assign* init_a = ast_assign::new_assign_scala(_thread_local->getId()->copy(true), init_val, GMASSIGN_NORMAL);
+            gm_insert_sent_body_begin(fe, init_a, false);
+
             fieldToNewVar[fieldName] = init_a->get_lhs_scala();
 
             // add write back to field value
             ast_expr* expr = ast_expr::new_id_expr(_thread_local->getId()->copy(true));
-            ast_assign* backAssign = ast_assign::new_assign_field((*II)->get_lhs_field()->copy(true), expr, GMASSIGN_REDUCE, fe->get_iterator()->copy(true),
-                    GMREDUCE_PLUS);
+            ast_assign* backAssign = ast_assign::new_assign_field(field->copy(true), expr, GMASSIGN_REDUCE, iterator->copy(true), reduce_type);
             backAssign->set_under_parallel_execution(true);
             gm_insert_sent_body_end(fe, backAssign, true);
 
             ignore.push_back(backAssign);
         }
-    }
+    };
     //-------------------------------------------------
     // find all reductions in the body.
     //   - replace to normal assignment(s) to local lhs
@@ -324,7 +347,6 @@ void opt_field_reduction_t::apply_transform(ast_foreach* fe) {
     change_reduction_field T(&fieldToNewVar, iteratorName, &ignore);
     gm_traverse_sents(fe->get_body(), &T);
     T.post_process();
-
 }
 
 #include "gm_backend_cpp_opt_steps.h"
