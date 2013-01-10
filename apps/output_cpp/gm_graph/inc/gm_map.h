@@ -33,6 +33,17 @@ class gm_map
     virtual void setValue_seq(const Key key, Value value) = 0;
 
     /**
+     * Sets the value mapped to the given key to the default value
+     */
+    virtual void removeKey_par(const Key key) {
+        setValue_par(key, getDefaultValue());
+    }
+
+    virtual void removeKey_seq(const Key key) {
+        setValue_seq(key, getDefaultValue());
+    }
+
+    /**
      * Returns true if the key corresponds to the highest value in the map.
      * If there has no value been set in the map, false is returned
      */
@@ -112,6 +123,8 @@ class gm_map
 
   protected:
 
+    virtual Value getDefaultValue() = 0;
+
     static bool compare_smaller(Value a, Value b) {
         return a < b;
     }
@@ -178,6 +191,11 @@ class gm_map_small : public gm_map<Key, Value>
         return result;
     }
 
+  protected:
+    Value getDefaultValue() {
+        return defaultValue;
+    }
+
   public:
     gm_map_small(Value defaultValue) : lock(0), defaultValue(defaultValue) {
     }
@@ -206,6 +224,8 @@ class gm_map_small : public gm_map<Key, Value>
     void setValue_seq(const Key key, Value value) {
         data[key] = value;
     }
+
+    void removeKey_seq(const Key key) = 0;
 
     bool hasMaxValue(const Key key) {
         return hasValue_generic(&gm_map<Key, Value>::compare_greater, key);
@@ -360,6 +380,11 @@ class gm_map_large : public gm_map<Key, Value>
         Value value = data[key];
         for (int i = 0; i < size_; i++)
             if (valid[i] && compare(data[i], value)) return false;
+    }
+
+  protected:
+    Value getDefaultValue() {
+        return defaultValue;
     }
 
   public:
@@ -686,6 +711,11 @@ class gm_map_medium : public gm_map<Key, Value>
         // we will use only up to 4B for positioninig
         assert(tmpSize <= 1024*1024*1024);
         return tmpSize;
+    }
+
+  protected:
+    Value getDefaultValue() {
+        return defaultValue;
     }
 
 

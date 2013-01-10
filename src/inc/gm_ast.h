@@ -2218,6 +2218,10 @@ public:
         return get_lhs_type() == GMASSIGN_LHS_SCALA;
     }
 
+    virtual bool is_target_field() {
+        return get_lhs_type() == GMASSIGN_LHS_FIELD;
+    }
+
     virtual bool is_target_map_entry() {
         return false;
     }

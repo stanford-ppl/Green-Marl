@@ -167,14 +167,14 @@ void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
     int mapType = MEDIUM; //TODO: implement compiler optimization to figure out what is best here
     int keyType = map->getKeyTypeSummary();
     int valueType = map->getValueTypeSummary();
-    if(valueType == GMTYPE_BOOL) {
+    if (valueType == GMTYPE_BOOL) {
         valueType = GMTYPE_INT;
     }
 
     // Output: MapType<KeyType, ValueType> VariableName(AdditionalParameters DefaultValue);
 
     char typeBuffer[128];
-    sprintf(typeBuffer, "%s<%s, %s>", getMapTypeString(mapType), getTypeString(keyType),  getTypeString(valueType));
+    sprintf(typeBuffer, "%s<%s, %s>", getMapTypeString(mapType), getTypeString(keyType), getTypeString(valueType));
 
     char parameterBuffer[64];
     sprintf(parameterBuffer, "(%s %s)", getAdditionalMapParameters(mapType), getMapDefaultValueForType(valueType));
@@ -286,6 +286,12 @@ const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
             else
                 return get_function_name_map_par(methodId);
         }
+        case GM_BLTIN_MAP_REMOVE:
+            if (in_parallel) {
+                return "removeKey_par";
+            } else {
+                return "removeKey_seq";
+            }
         default:
             assert(false);
             return "ERROR";
@@ -509,7 +515,7 @@ void gm_cpplib::generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body)
 }
 
 const char* gm_cpplib::get_reduction_function_name(GM_REDUCE_T type) {
-    switch(type) {
+    switch (type) {
         case GMREDUCE_PLUS:
             return "ATOMIC_ADD";
         case GMREDUCE_MULT:
@@ -519,7 +525,7 @@ const char* gm_cpplib::get_reduction_function_name(GM_REDUCE_T type) {
         case GMREDUCE_OR:
             return "ATOMIC_OR";
         case GMREDUCE_MIN:
-            return"ATOMIC_MIN";
+            return "ATOMIC_MIN";
         case GMREDUCE_MAX:
             return "ATOMIC_MAX";
         default:
