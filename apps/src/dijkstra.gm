@@ -26,9 +26,9 @@ Procedure dijkstra(G:Graph, Len:E_P<Int>, root, dest: Node; Parent: N_P<Node>) :
         }
         Else {
             next.Reached = True;
+            Int dist = Reachable[next];
             Reachable.Remove(next);
 
-            Int dist = Reachable[next];
             For(v: next.Nbrs)(!v.Reached) {
                 Edge e = v.ToEdge();
                 If (!Reachable.HasKey(v)) {
