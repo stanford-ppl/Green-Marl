@@ -358,7 +358,6 @@ void nop_reduce_scalar::generate(gm_cpp_gen* gen) {
     }
 }
 
-//bool gm_cpp_gen::optimize_reduction(ast_procdef *p)
 #include "gm_backend_cpp_opt_steps.h"
 void gm_cpp_opt_reduce_scalar::process(ast_procdef *p) {
     opt_scalar_reduction_t T;
