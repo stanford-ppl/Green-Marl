@@ -310,7 +310,7 @@ const char* gm_cpplib::get_function_name_map_seq(int methodId) {
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue";
         case GM_BLTIN_MAP_REMOVE:
-            return "todo";
+            return "removeKey_seq";
         default:
             return "?";
     }
@@ -333,7 +333,7 @@ const char* gm_cpplib::get_function_name_map_par(int methodId) {
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue_par";
         case GM_BLTIN_MAP_REMOVE:
-            return "todo";
+            return "removeKey_par";
         default:
             return "?";
     }
