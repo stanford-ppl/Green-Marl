@@ -278,8 +278,7 @@ const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
         case GM_BLTIN_MAP_GET_MAX_KEY:
         case GM_BLTIN_MAP_GET_MIN_KEY:
         case GM_BLTIN_MAP_GET_MAX_VALUE:
-        case GM_BLTIN_MAP_GET_MIN_VALUE:
-        case GM_BLTIN_MAP_REMOVE: {
+        case GM_BLTIN_MAP_GET_MIN_VALUE: {
             if (in_parallel)
                 // if it is in parallel we do not have to use the inherent
                 // parallelism of the map so this is not a bug!!!
@@ -287,6 +286,12 @@ const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
             else
                 return get_function_name_map_par(methodId);
         }
+        case GM_BLTIN_MAP_REMOVE:
+            if (in_parallel) {
+                return "removeKey_par";
+            } else {
+                return "removeKey_seq";
+            }
         default:
             assert(false);
             return "ERROR";
@@ -309,8 +314,6 @@ const char* gm_cpplib::get_function_name_map_seq(int methodId) {
             return "getMaxValue";
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue";
-        case GM_BLTIN_MAP_REMOVE:
-            return "removeKey_seq";
         default:
             return "?";
     }
@@ -332,8 +335,6 @@ const char* gm_cpplib::get_function_name_map_par(int methodId) {
             return "getMaxValue_par";
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue_par";
-        case GM_BLTIN_MAP_REMOVE:
-            return "removeKey_par";
         default:
             return "?";
     }
