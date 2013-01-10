@@ -70,6 +70,7 @@ enum gm_method_id_t
     GM_BLTIN_MAP_GET_MAX_VALUE, // returns the biggest value in the map
     GM_BLTIN_MAP_GET_MIN_VALUE, // returns the smallest value in the map
     GM_BLTIN_MAP_CLEAR,         // clears the whole map
+    GM_BLTIN_MAP_REMOVE,        // sets the value for the given key to the default value
 
     GM_BLTIN_END
 };
@@ -152,6 +153,7 @@ const gm_builtin_desc_t GM_builtins[] = {
         { "Map:GetMinKey:Generic:0:",       GM_BLTIN_MAP_GET_MIN_KEY,   "" },
         { "Map:GetMaxValue:Generic:0:",     GM_BLTIN_MAP_GET_MAX_VALUE, "" },
         { "Map:GetMinValue:Generic:0:",     GM_BLTIN_MAP_GET_MIN_VALUE, "" },
+        { "Map:Remove:Void:1:Generic",      GM_BLTIN_MAP_REMOVE,        "" },
 
         };
 
@@ -186,6 +188,7 @@ public:
             case GM_BLTIN_MAP_HAS_MAX_VALUE:
             case GM_BLTIN_MAP_HAS_MIN_VALUE:
             case GM_BLTIN_MAP_HAS_KEY:
+            case GM_BLTIN_MAP_REMOVE:
                 return true;
             default:
                 assert(false); //if you called it with the wrong method_id, then your code must be wrong...
