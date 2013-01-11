@@ -17,10 +17,10 @@ class gm_map
     }
     ;
 
-    virtual bool hasKey(const Key key) = 0;
+    virtual bool hasKey_seq(const Key key) = 0;
 
     virtual bool hasKey_par(const Key key) {
-        return hasKey(key);
+        return hasKey_seq(key);
     }
 
     /**
@@ -43,60 +43,60 @@ class gm_map
      * Returns true if the key corresponds to the highest value in the map.
      * If there has no value been set in the map, false is returned
      */
-    virtual bool hasMaxValue(const Key key) = 0;
+    virtual bool hasMaxValue_seq(const Key key) = 0;
 
     virtual bool hasMaxValue_par(const Key key) {
-        return hasMaxValue(key);
+        return hasMaxValue_seq(key);
     }
 
     /**
      * Returns true if the key corresponds to the lowest value in the map.
      * If there has no value been set in the map, false is returned
      */
-    virtual bool hasMinValue(const Key key) = 0;
+    virtual bool hasMinValue_seq(const Key key) = 0;
 
     virtual bool hasMinValue_par(const Key key) {
-        return hasMinValue(key);
+        return hasMinValue_seq(key);
     }
 
     /**
      * Returns the key that corresponds to the highest value in the map.
      * If there has no value been set in the map, the behavior is unspecified.
      */
-    virtual Key getMaxKey() = 0;
+    virtual Key getMaxKey_seq() = 0;
 
     virtual Key getMaxKey_par() {
-        return getMaxKey();
+        return getMaxKey_seq();
     }
 
     /**
      * Returns the key that corresponds to the lowest value in the map.
      * If there has no value been set in the map, the behavior is unspecified.
      */
-    virtual Key getMinKey() = 0;
+    virtual Key getMinKey_seq() = 0;
 
     virtual Key getMinKey_par() {
-        return getMinKey();
+        return getMinKey_seq();
     }
 
     /**
      * Returns the highest value in the map.
      * If there has no value been set in the map, the behavior is unspecified.
      */
-    virtual Value getMaxValue() = 0;
+    virtual Value getMaxValue_seq() = 0;
 
     virtual Value getMaxValue_par() {
-        return getMaxValue();
+        return getMaxValue_seq();
     }
 
     /**
      * Returns the lowest value in the map.
      * If there has no value been set in the map, the behavior is unspecified.
      */
-    virtual Value getMinValue() = 0;
+    virtual Value getMinValue_seq() = 0;
 
     virtual Value getMinValue_par() {
-        return getMinValue();
+        return getMinValue_seq();
     }
 
     /**
@@ -178,7 +178,7 @@ class gm_map_small : public gm_map<Key, Value>
 
     template<class Function>
     bool hasValue_generic(Function compare, const Key key) {
-        if (size() == 0 || !hasKey(key)) return false;
+        if (size() == 0 || !hasKey_seq(key)) return false;
         Value value = data[key];
         bool result = true;
         for (Iterator iter = data.begin(); iter != data.end(); iter++) {
@@ -199,12 +199,12 @@ class gm_map_small : public gm_map<Key, Value>
     ~gm_map_small() {
     }
 
-    bool hasKey(const Key key) {
+    bool hasKey_seq(const Key key) {
         return data.find(key) != data.end();
     }
 
     Value getValue(const Key key) {
-        if (hasKey(key)) {
+        if (hasKey_seq(key)) {
             return data[key];
         } else {
             return defaultValue;
@@ -231,34 +231,34 @@ class gm_map_small : public gm_map<Key, Value>
         data.erase(key);
     }
 
-    bool hasMaxValue(const Key key) {
+    bool hasMaxValue_seq(const Key key) {
         return hasValue_generic(&gm_map<Key, Value>::compare_greater, key);
     }
 
-    bool hasMinValue(const Key key) {
+    bool hasMinValue_seq(const Key key) {
         return hasValue_generic(&gm_map<Key, Value>::compare_smaller, key);
     }
 
-    Key getMaxKey() {
+    Key getMaxKey_seq() {
         return getKey_generic(&gm_map<Key, Value>::compare_greater);
     }
 
-    Key getMinKey() {
+    Key getMinKey_seq() {
         return getKey_generic(&gm_map<Key, Value>::compare_smaller);
     }
 
-    Value getMaxValue() {
+    Value getMaxValue_seq() {
         return getValue_generic(&gm_map<Key, Value>::compare_greater);
     }
 
-    Value getMinValue() {
+    Value getMinValue_seq() {
         return getValue_generic(&gm_map<Key, Value>::compare_smaller);
     }
 
     Value changeValueAtomicAdd(const Key key, const Value summand) {
         Value newValue = summand;
         gm_spinlock_acquire(&lock);
-        if(hasKey(key)) newValue += data[key];
+        if(hasKey_seq(key)) newValue += data[key];
         data[key] = summand;
         gm_spinlock_release(&lock);
         return newValue;
@@ -369,7 +369,7 @@ class gm_map_large : public gm_map<Key, Value>
 
     template<class Function>
     bool hasValue_generic_seq(Function compare, const Key key) {
-        if (size() == 0 || !hasKey(key)) return false;
+        if (size() == 0 || !hasKey_seq(key)) return false;
         Value value = data[key];
         bool result = true;
         #pragma omp parallel for
@@ -380,7 +380,7 @@ class gm_map_large : public gm_map<Key, Value>
 
     template<class Function>
     bool hasValue_generic_par(Function compare, const Key key) {
-        if (size() == 0 || !hasKey(key)) return false;
+        if (size() == 0 || !hasKey_seq(key)) return false;
         Value value = data[key];
         for (int i = 0; i < size_; i++)
             if (valid[i] && compare(data[i], value)) return false;
@@ -405,12 +405,12 @@ class gm_map_large : public gm_map<Key, Value>
         delete[] valid;
     }
 
-    bool hasKey(const Key key) {
+    bool hasKey_seq(const Key key) {
         return key < size_ && valid[key];
     }
 
     Value getValue(const Key key) {
-        if (hasKey(key))
+        if (hasKey_seq(key))
             return data[key];
         else
             return defaultValue;
@@ -433,7 +433,7 @@ class gm_map_large : public gm_map<Key, Value>
         valid[key] = false;
     }
 
-    bool hasMaxValue(const Key key) {
+    bool hasMaxValue_seq(const Key key) {
         return hasValue_generic_seq(&gm_map<Key, Value>::compare_greater, key);
     }
 
@@ -441,7 +441,7 @@ class gm_map_large : public gm_map<Key, Value>
         return hasValue_generic_par(&gm_map<Key, Value>::compare_greater, key);
     }
 
-    bool hasMinValue(const Key key) {
+    bool hasMinValue_seq(const Key key) {
         return hasValue_generic_seq(&gm_map<Key, Value>::compare_smaller, key);
     }
 
@@ -449,7 +449,7 @@ class gm_map_large : public gm_map<Key, Value>
         return hasValue_generic_par(&gm_map<Key, Value>::compare_smaller, key);
     }
 
-    Key getMaxKey() {
+    Key getMaxKey_seq() {
         return getKey_generic_seq(&gm_map<Key, Value>::compare_greater, gm_get_min<Value>());
     }
 
@@ -457,7 +457,7 @@ class gm_map_large : public gm_map<Key, Value>
         return getKey_generic_par(&gm_map<Key, Value>::compare_greater, gm_get_min<Value>());
     }
 
-    Key getMinKey() {
+    Key getMinKey_seq() {
         return getKey_generic_seq(&gm_map<Key, Value>::compare_smaller, gm_get_max<Value>());
     }
 
@@ -465,7 +465,7 @@ class gm_map_large : public gm_map<Key, Value>
         return getKey_generic_par(&gm_map<Key, Value>::compare_smaller, gm_get_max<Value>());
     }
 
-    Value getMaxValue() {
+    Value getMaxValue_seq() {
         return getValue_generic_seq(&gm_map<Key, Value>::max, gm_get_min<Value>());
     }
 
@@ -473,7 +473,7 @@ class gm_map_large : public gm_map<Key, Value>
         return getValue_generic_par(&gm_map<Key, Value>::max, gm_get_min<Value>());
     }
 
-    Value getMinValue() {
+    Value getMinValue_seq() {
         return getValue_generic_seq(&gm_map<Key, Value>::min, gm_get_max<Value>());
     }
 
@@ -750,7 +750,7 @@ class gm_map_medium : public gm_map<Key, Value>
         delete[] locks;
     }
 
-    bool hasKey(const Key key) {
+    bool hasKey_seq(const Key key) {
         uint32_t position = getPositionFromKey(key);
         return positionHasKey(position, key);
     }
@@ -784,15 +784,15 @@ class gm_map_medium : public gm_map<Key, Value>
         removeKeyAtPosition(position, key);
     }
 
-    bool hasMaxValue(const Key key) {
+    bool hasMaxValue_seq(const Key key) {
         return hasValue_generic_par(&gm_map<Key, Value>::compare_greater, key);
     }
 
-    bool hasMinValue(const Key key) {
+    bool hasMinValue_seq(const Key key) {
         return hasValue_generic_par(&gm_map<Key, Value>::compare_smaller, key);
     }
 
-    Key getMaxKey() {
+    Key getMaxKey_seq() {
         return getKey_generic_seq(&gm_map<Key, Value>::compare_greater, gm_get_min<Value>());
     }
 
@@ -800,7 +800,7 @@ class gm_map_medium : public gm_map<Key, Value>
         return getKey_generic_par(&gm_map<Key, Value>::compare_greater, gm_get_min<Value>());
     }
 
-    Key getMinKey() {
+    Key getMinKey_seq() {
         return getKey_generic_seq(&gm_map<Key, Value>::compare_smaller, gm_get_max<Value>());
     }
 
@@ -808,7 +808,7 @@ class gm_map_medium : public gm_map<Key, Value>
         return getKey_generic_par(&gm_map<Key, Value>::compare_smaller, gm_get_max<Value>());
     }
 
-    Value getMaxValue() {
+    Value getMaxValue_seq() {
         return getValue_generic_seq(&gm_map<Key, Value>::compare_greater, &gm_map<Key, Value>::max, gm_get_min<Value>());
     }
 
@@ -816,7 +816,7 @@ class gm_map_medium : public gm_map<Key, Value>
         return getValue_generic_par(&gm_map<Key, Value>::compare_greater, &gm_map<Key, Value>::max, gm_get_min<Value>());
     }
 
-    Value getMinValue() {
+    Value getMinValue_seq() {
         return getValue_generic_seq(&gm_map<Key, Value>::compare_smaller, &gm_map<Key, Value>::min, gm_get_max<Value>());
     }
 
