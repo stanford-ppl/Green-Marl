@@ -35,13 +35,9 @@ class gm_map
     /**
      * Sets the value mapped to the given key to the default value
      */
-    virtual void removeKey_par(const Key key) {
-        setValue_par(key, getDefaultValue());
-    }
+    virtual void removeKey_par(const Key key) = 0;
 
-    virtual void removeKey_seq(const Key key) {
-        setValue_seq(key, getDefaultValue());
-    }
+    virtual void removeKey_seq(const Key key) = 0;
 
     /**
      * Returns true if the key corresponds to the highest value in the map.
