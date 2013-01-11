@@ -1,0 +1,49 @@
+Procedure dijkstra(G:Graph, Len:E_P<Int>, root, dest: Node; Parent: N_P<Node>) : Bool
+{
+    N_P<Bool> Reached;
+    G.Parent = NIL;
+    G.Reached = False;
+
+    //-------------------------------
+    // look up the node
+    //-------------------------------
+    Map<Node, Int> Reachable;
+    Reachable[root] = 0;            // Add root to reachable set
+
+    //-------------------------------
+    // look up the node
+    //-------------------------------
+    Bool found = False;
+    Bool failed = False;
+    While (!found && !failed)
+    {
+        Node(G) next = Reachable.GetMinKey();
+        If (next == dest)  {
+            found = True;
+        }
+        Else If (next == NIL) {
+            failed = True;
+        }
+        Else {
+            next.Reached = True;
+            Int dist = Reachable[next];
+            Reachable.Remove(next);
+
+            For(v: next.Nbrs)(!v.Reached) {
+                Edge e = v.ToEdge();
+                If (!Reachable.HasKey(v)) {
+                    Reachable[v] = dist + e.Len;
+                    v.Parent = next;
+                }
+                Else If (Reachable[v] > dist + e.Len) {
+                    Reachable[v] = dist + e.Len;
+                    v.Parent = next;
+                }
+            }
+        }
+    }
+
+
+    // Return False if not reachable
+    Return !failed;
+}
