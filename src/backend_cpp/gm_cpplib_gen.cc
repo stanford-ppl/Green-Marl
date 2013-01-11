@@ -298,28 +298,28 @@ const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
     }
 }
 
-const char* gm_cpplib::get_function_name_map_seq(int methodId) {
+const char* gm_cpplib::get_function_name_map_par(int methodId) {
     switch (methodId) {
         case GM_BLTIN_MAP_HAS_MAX_VALUE:
-            return "hasMaxValue";
+            return "hasMaxValue_seq";
         case GM_BLTIN_MAP_HAS_MIN_VALUE:
-            return "hasMinValue";
+            return "hasMinValue_seq";
         case GM_BLTIN_MAP_HAS_KEY:
-            return "hasKey";
+            return "hasKey_seq";
         case GM_BLTIN_MAP_GET_MAX_KEY:
-            return "getMaxKey";
+            return "getMaxKey_seq";
         case GM_BLTIN_MAP_GET_MIN_KEY:
-            return "getMinKey";
+            return "getMinKey_seq";
         case GM_BLTIN_MAP_GET_MAX_VALUE:
-            return "getMaxValue";
+            return "getMaxValue_seq";
         case GM_BLTIN_MAP_GET_MIN_VALUE:
-            return "getMinValue";
+            return "getMinValue_seq";
         default:
             return "?";
     }
 }
 
-const char* gm_cpplib::get_function_name_map_par(int methodId) {
+const char* gm_cpplib::get_function_name_map_seq(int methodId) {
     switch (methodId) {
         case GM_BLTIN_MAP_HAS_MAX_VALUE:
             return "hasMaxValue_par";
