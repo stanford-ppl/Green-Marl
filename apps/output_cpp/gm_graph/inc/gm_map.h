@@ -225,7 +225,15 @@ class gm_map_small : public gm_map<Key, Value>
         data[key] = value;
     }
 
-    void removeKey_seq(const Key key) = 0;
+    void removeKey_par(const Key key) {
+        gm_spinlock_acquire(&lock);
+        removeKey_seq(key);
+        gm_spinlock_release(&lock);
+    }
+
+    void removeKey_seq(const Key key) {
+        data.erase(key);
+    }
 
     bool hasMaxValue(const Key key) {
         return hasValue_generic(&gm_map<Key, Value>::compare_greater, key);
@@ -254,7 +262,7 @@ class gm_map_small : public gm_map<Key, Value>
     Value changeValueAtomicAdd(const Key key, const Value summand) {
         Value newValue = summand;
         gm_spinlock_acquire(&lock);
-        if(hasValue(key)) newValue += data[key];
+        if(hasKey(key)) newValue += data[key];
         data[key] = summand;
         gm_spinlock_release(&lock);
         return newValue;
@@ -419,6 +427,14 @@ class gm_map_large : public gm_map<Key, Value>
     void setValue_seq(const Key key, Value value) {
         data[key] = value;
         valid[key] = true;
+    }
+
+    void removeKey_par(const Key key) {
+        removeKey_seq(key);
+    }
+
+    void removeKey_seq(const Key key) {
+        valid[key] = false;
     }
 
     bool hasMaxValue(const Key key) {
@@ -698,6 +714,10 @@ class gm_map_medium : public gm_map<Key, Value>
         innerMaps[position][key] = value;
     }
 
+    void removeKeyAtPosition(int position, const Key key) {
+        innerMaps[position].erase(key);
+    }
+
     static unsigned getBitMask(int innerSize) {
         unsigned tmpMask = innerSize - 1;
         return tmpMask;
@@ -754,6 +774,18 @@ class gm_map_medium : public gm_map<Key, Value>
     void setValue_seq(const Key key, Value value) {
         uint32_t position = getPositionFromKey(key);
         setValueAtPosition(position, key, value);
+    }
+
+    void removeKey_par(const Key key) {
+        uint32_t position = getPositionFromKey(key);
+        gm_spinlock_acquire(locks + position);
+        removeKeyAtPosition(position, key);
+        gm_spinlock_release(locks + position);
+    }
+
+    void removeKey_seq(const Key key) {
+        uint32_t position = getPositionFromKey(key);
+        removeKeyAtPosition(position, key);
     }
 
     bool hasMaxValue(const Key key) {
