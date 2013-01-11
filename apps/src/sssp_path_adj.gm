@@ -1,0 +1,48 @@
+Procedure sssp_path(G:Graph, dist: N_P<Double>, edge_cost: E_P<Double>, root: Node, end: Node, prev_node: N_P<Node>, prev_edge: N_P<Edge>)
+{
+    N_P<Bool> updated;
+    N_P<Bool> updated_nxt;
+    N_P<Double>  dist_nxt;
+    Bool fin = False;
+
+    G.dist = (G == root) ? 0 : +INF;
+    G.updated = (G == root) ? True: False;
+    G.dist_nxt = G.dist;
+    G.updated_nxt = G.updated;
+    G.prev_node = NIL;
+
+    While(!fin) {
+        fin = True;
+
+        Foreach(n: G.Nodes)(n.updated) {
+            Foreach(s: n.Nbrs) {
+                Edge(G) e = s.ToEdge(); // the edge to s
+                If (n.dist + e.edge_cost < end.dist) {
+                    // updated_nxt becomes true only if dist_nxt is actually updated
+                    <s.dist_nxt; s.updated_nxt, s.prev_node, s.prev_edge> min= <n.dist + e.edge_cost; True, n, e>;
+                }
+            }
+        }
+
+        G.dist = G.dist_nxt;
+        G.updated = G.updated_nxt;
+        G.updated_nxt = False;
+        fin = ! Exist(n: G.Nodes){n.updated};
+    }
+}
+
+// get the specific path instance
+Procedure get_path(G: Graph, begin,end: Node, prev_node: N_P<Node>, prev_edge: N_P<Edge>(G), edge_cost: E_P<Double>(G), Q: Node_Seq): Double
+{
+   Double total_cost = 0.0;
+   Node(G) n = end;
+   If (end.prev_node != NIL) {
+       While(n != begin) {
+           Q.PushFront(n);
+           Edge(G) e = n.prev_edge;
+           total_cost += e.edge_cost;
+           n = n.prev_node;
+       }
+   }
+   Return total_cost;
+}
