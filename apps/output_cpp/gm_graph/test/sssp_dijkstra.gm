@@ -1,0 +1,70 @@
+Procedure dijkstra(G:Graph, Len:E_P<Double>, root, dest: Node; Parent: N_P<Node>, ParentEdge: N_P<Edge>) : Bool
+{
+    N_P<Bool> Reached;
+    G.Parent = NIL;
+    G.Reached = False;
+
+    //-------------------------------
+    // look up the node
+    //-------------------------------
+    Map<Node, Double> Reachable;
+    Reachable[root] = 0.0;            // Add root to reachable set
+
+    //-------------------------------
+    // look up the node
+    //-------------------------------
+    Bool found = False;
+    Bool failed = False;
+    While (!found && !failed)
+    {
+        If (Reachable.Size() == 0) 
+        {
+            failed = True;
+        }
+        Else {
+
+            Node(G) next = Reachable.GetMinKey();
+            If (next == dest)  {
+                found = True;
+            }
+            Else {
+                next.Reached = True;
+                Double dist = Reachable[next];
+                Reachable.Remove(next);
+
+                For(v: next.Nbrs)(!v.Reached) {
+                    Edge e = v.ToEdge();
+                    If (!Reachable.HasKey(v)) {
+                        Reachable[v] = dist + e.Len;
+                        v.Parent = next;
+                        v.ParentEdge = e;
+                    }
+                    Else If (Reachable[v] > dist + e.Len) {
+                        Reachable[v] = dist + e.Len;
+                        v.Parent = next;
+                        v.ParentEdge = e;
+                    }
+                }
+            }
+        }
+    }
+
+    // Return False if not reachable
+    Return !failed;
+}
+
+// get the specific path instance
+Procedure get_path(G: Graph, begin,end: Node, prev_node: N_P<Node>, prev_edge: N_P<Edge>(G), edge_cost: E_P<Double>(G), Q: Node_Seq): Double
+{
+   Double total_cost = 0.0;
+   Node(G) n = end;
+   If (end.prev_node != NIL) {
+       While(n != begin) {
+           Q.PushFront(n);
+           Edge(G) e = n.prev_edge;
+           total_cost += e.edge_cost;
+           n = n.prev_node;
+       }
+   }
+   Return total_cost;
+}

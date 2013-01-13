@@ -17,8 +17,6 @@ bool dijkstra(gm_graph& G, double* G_Len,
     Reachable.setValue_seq(root, (float)(0.000000));
     found = false ;
     failed = false ;
-    //Reachable.dump();
-    //printf("root = %d\n", root);
 
     #pragma omp parallel for
     for (node_t t0 = 0; t0 < G.num_nodes(); t0 ++) 
@@ -48,7 +46,6 @@ bool dijkstra(gm_graph& G, double* G_Len,
                 G_Reached[next] = true ;
                 dist = Reachable.getMinValue_seq() ;
                 Reachable.removeMinKey_seq();
-                //printf("next = %d, size = %d, dist = %f\n", next, Reachable.size(), dist);
                 for (edge_t v_idx = G.begin[next];v_idx < G.begin[next+1] ; v_idx ++) 
                 {
                     node_t v = G.node_idx [v_idx];
