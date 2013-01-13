@@ -10,9 +10,9 @@ int main(int argc, char** argv) {
     }
     char *inputFile = argv[1];
 
-    int num = atoi(argv[5]);
+    //    int num = atoi(argv[5]);
     //    printf("running with %d threads\n", num);
-    gm_rt_set_num_threads(num); // gm_runtime.h
+    gm_rt_set_num_threads(16); // gm_runtime.h
 
     //------------------------------
     // Empty graph creation
@@ -35,14 +35,28 @@ int main(int argc, char** argv) {
     //------------------------------
     // Read adjacency list graph
     //------------------------------
+    // File format (each line):
+    // 
+    // src_node src_node_cost dst_node1_id edge1_cost edge1_key ... dst_nodeN_id edgeN_cost edge_N_id
+    //
+    //
     //    printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
+    //    struct timeval T3, T4;    
+    //    gettimeofday(&T3, NULL);
     G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
+    //    gettimeofday(&T4, NULL);
+    //    printf("GM - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
 
     //------------------------------
     // Print graph details for manual verification 
     //------------------------------
     //    printf ("Number of nodes = %d\n", G.num_nodes());
     //    printf ("Number of edges = %d\n", G.num_edges());
+
+
+    int num = atoi(argv[5]);
+    //    printf("running with %d threads\n", num);
+    gm_rt_set_num_threads(num); // gm_runtime.h
 
 
     double* edge_costs = (double*)edge_props[0];
