@@ -545,6 +545,7 @@ int main(int argc, char** argv) {
     //   CALLGRIND_STOP_INSTRUMENTATION;
     gettimeofday(&T2, NULL);
     printf("MY DIJKSTRA CSR C - COMPUTATION RUNNING TIME (ms): %lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
+    printf("cost = %lf\n", totalCost);
         
     if (dbg != 0)
       printPath(startNodeKey, endNodeKey, pathEdges, pathNodes, totalCost, G, 21, network_edge_keys);

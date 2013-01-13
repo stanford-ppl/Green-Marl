@@ -17,27 +17,29 @@ Procedure dijkstra(G:Graph, Len:E_P<Int>, root, dest: Node; Parent: N_P<Node>) :
     Bool failed = False;
     While (!found && !failed)
     {
-        Node(G) next = Reachable.GetMinKey();
-        If (next == dest)  {
-            found = True;
-        }
-        Else If (next == NIL) {
+        If (Reachable.Size() == 0) {
             failed = True;
         }
         Else {
-            next.Reached = True;
-            Int dist = Reachable[next];
-            Reachable.Remove(next);
+            Node(G) next = Reachable.GetMinKey();
+            If (next == dest)  {
+                found = True;
+            }
+            Else {
+                next.Reached = True;
+                Int dist = Reachable[next];
+                Reachable.Remove(next);
 
-            For(v: next.Nbrs)(!v.Reached) {
-                Edge e = v.ToEdge();
-                If (!Reachable.HasKey(v)) {
-                    Reachable[v] = dist + e.Len;
-                    v.Parent = next;
-                }
-                Else If (Reachable[v] > dist + e.Len) {
-                    Reachable[v] = dist + e.Len;
-                    v.Parent = next;
+                For(v: next.Nbrs)(!v.Reached) {
+                    Edge e = v.ToEdge();
+                    If (!Reachable.HasKey(v)) {
+                        Reachable[v] = dist + e.Len;
+                        v.Parent = next;
+                    }
+                    Else If (Reachable[v] > dist + e.Len) {
+                        Reachable[v] = dist + e.Len;
+                        v.Parent = next;
+                    }
                 }
             }
         }

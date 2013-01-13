@@ -55,6 +55,7 @@ float* gm_rt_allocate_float(size_t sz, int thread_id = 0);
 bool* gm_rt_allocate_bool(size_t sz, int thread_id = 0);
 double* gm_rt_allocate_double(size_t sz, int thread_id = 0);
 node_t* gm_rt_allocate_node_t(size_t sz, int thread_id = 0);
+edge_t* gm_rt_allocate_edge_t(size_t sz, int thread_id = 0);
 
 template<class collectionType, bool lazy>
 gm_property_of_collection<collectionType>& gm_rt_allocate_collection(size_t size, int thread_id = 0) {
