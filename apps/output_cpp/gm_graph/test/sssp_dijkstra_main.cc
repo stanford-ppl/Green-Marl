@@ -3,35 +3,6 @@
 #include "gm.h"
 #include "sssp_dijkstra.h"
 
-/*
-  void printPath(node_t startNodeKey,
-                 node_t endNodeKey,
-                 std::stack<edge_t>& pathEdges,
-                 std::stack<node_t>& pathNodes,
-                 double totalCost,
-                 gm_graph& G,
-                 int cutoff,
-                 long* network_edge_keys) {
-    node_t startNodeId = G.nodekey_to_nodeid(startNodeKey);
-    node_t endNodeId = G.nodekey_to_nodeid(endNodeKey);
-    printf("%d -> %d\n", startNodeKey, endNodeKey);
-    printf("    Costs are %lf\n", totalCost);
-    printf("    Number of links is %d\n", pathEdges.size());
-    node_t prev_n = startNodeId;
-    while (true) {
-      if (pathEdges.size() == 0 || --cutoff == 0) break;
-      edge_t e = pathEdges.top();
-      pathEdges.pop();
-      node_t n = pathNodes.top();
-      pathNodes.pop();
-      assert(getDstNode(G, e) == n);
-      printf("        %d: %d - %d\n", network_edge_keys[e], G.nodeid_to_nodekey(prev_n), G.nodeid_to_nodekey(n));
-      prev_n = n;
-    }
-  }
-  */
-
-
 int main(int argc, char** argv) {
 
     if (argc < 5) {
@@ -70,11 +41,11 @@ int main(int argc, char** argv) {
     //
     //    printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
 
-    struct timeval T3, T4;    
-    gettimeofday(&T3, NULL);
+    //    struct timeval T3, T4;    
+    //    gettimeofday(&T3, NULL);
     G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
-    gettimeofday(&T4, NULL);
-    printf("MY DIJKSTRA CSR C - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
+    //    gettimeofday(&T4, NULL);
+    //    printf("G-M DIJKSTRA - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
 
     //------------------------------
     // Print graph details for manual verification 
@@ -92,7 +63,7 @@ int main(int argc, char** argv) {
     //    node_t startNodeKey = 199535084;
     //    node_t endNodeKey = 199926436;
     
-    printf("num_nodes = %d\n", G.num_nodes());
+    //    printf("num_nodes = %d\n", G.num_nodes());
     node_t* G_Parent = new node_t[G.num_nodes()];
     edge_t* G_ParentEdge = new edge_t[G.num_nodes()];
 
@@ -113,15 +84,34 @@ int main(int argc, char** argv) {
     dijkstra(G, edge_costs, startNodeId, endNodeId, G_Parent, G_ParentEdge);
     // get specific instance from root to end
 
-    fflush(stdout);
+    //    fflush(stdout);
     double totalCost = get_path(G, startNodeId, endNodeId, G_Parent, G_ParentEdge, edge_costs, Q);
     //   CALLGRIND_STOP_INSTRUMENTATION;
     gettimeofday(&T2, NULL);
-    printf("MY DIJKSTRA CSR C - COMPUTATION RUNNING TIME (ms): %lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
-    printf("cost = %lf\n", totalCost);
-        
-    //if (dbg != 0)
-      //printPath(startNodeKey, endNodeKey, pathEdges, pathNodes, totalCost, G, 21, network_edge_keys);
+    printf("GM DIJKSTRA - COMPUTATION RUNNING TIME (ms): %lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
+    //    printf("cost = %lf\n", totalCost);
+    if (dbg != 0) {
+      printf("%d -> %d\n", startNodeKey, endNodeKey);
+      printf("    Costs are %lf\n", totalCost);
+      printf("    Number of links is %d\n", Q.get_size());
+      //      printf("shortest path from %d to %d (Q size: %d)\n", src_node_id, dst_node_id, Q.get_size());
+      gm_node_seq::seq_iter n_I = Q.prepare_seq_iteration();
+      int printCutoff = 20;
+      node_t prev_n = startNodeId;
+      while (true)
+        {
+          if(n_I.has_next()) {
+            node_t n = n_I.get_next();
+            edge_t e = G_ParentEdge[n];
+            assert(n == G.node_idx[e]);
+            printf("        %d: %d - %d\n", network_edge_keys[e], G.nodeid_to_nodekey(prev_n), G.nodeid_to_nodekey(n));
+            prev_n = n;
+            if (--printCutoff == 0) break;
+          }
+          else
+            break;
+        }
+    }
 
 
 }
