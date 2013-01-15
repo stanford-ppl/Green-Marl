@@ -183,7 +183,6 @@ static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
         return true;
     }
 
-
     return false;
 }
 
@@ -227,6 +226,10 @@ bool gm_default_usermain::determine_formats()
         return false;
     }
 
+    printf("in_format : %s\n", (in_format == GM_ADJ_LIST)  ? "ADJ" :
+                               (in_format == GM_ADJ_LIST_AVRO) ? "ADJ_AVRO" :
+                               "Unknown");
+
     if (create_output_graph) {
         if (OPTIONS.is_option_defined(OPT_OUTTYPE)) {
             format = OPTIONS.get_option(OPT_OUTTYPE);  
@@ -244,6 +247,11 @@ bool gm_default_usermain::determine_formats()
             printf("Error:output format not supported.\n");
             return false;
         }
+
+        printf("out_format : %s\n", (out_format == GM_ADJ_LIST)  ? "ADJ" :
+                                 (out_format == GM_ADJ_LIST_AVRO) ? "ADJ_AVRO" :
+                                 (out_format == GM_NODE_PROP_LIST) ? "PROP_LIST" :
+                                 (out_format == GM_NULL_FORMAT)? "NULL_FORMAT" : "Unknown");
     }
 
     return true;

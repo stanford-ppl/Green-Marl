@@ -298,7 +298,7 @@ private:
 #define MOVE_TO_RIGHT(source)    COPY_FROM_LEFT((source)+1)
 #define MOVE_TO_LEFT(source)     COPY_FROM_RIGHT((source)-1)
 
-    int  insertToArray(MapIterator& mi, Value v) 
+    void  insertToArray(MapIterator& mi, Value v) 
     {
         if (curr_array_size == K) {
             // demote the largest element & shift all
