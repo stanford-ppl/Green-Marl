@@ -3,7 +3,6 @@
 #include "gm.h"
 #include "sssp_dijkstra.h"
 
-<<<<<<< HEAD
 /*
   void printPath(node_t startNodeKey,
                  node_t endNodeKey,
@@ -47,8 +46,6 @@ int str_ends_with(const char * str, const char * suffix) {
   return 0 == strncmp( str + str_len - suffix_len, suffix, suffix_len );
 }
 
-=======
->>>>>>> ecf3483e6254f279db6dcc2047e6ffee23075c1a
 int main(int argc, char** argv) {
 
     if (argc < 5) {
