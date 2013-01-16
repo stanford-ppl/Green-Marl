@@ -35,6 +35,11 @@ int main(int argc, char** argv) {
     //------------------------------
     // Read adjacency list graph
     //------------------------------
+    // File format:
+    // 
+    // src_node src_node_cost dst_node1_id edge1_cost edge1_key ... dst_nodeN_id edgeN_cost edge_N_id
+    //
+    //
     //    printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
     G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
 
