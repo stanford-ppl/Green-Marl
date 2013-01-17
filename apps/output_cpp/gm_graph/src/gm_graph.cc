@@ -529,6 +529,8 @@ bool gm_graph::load_binary(char* filename) {
     edge_t* temp_begin; 
     node_t* temp_node_idx;
 #endif
+    bool old_flipped_format= false; 
+    int32_t key2 = key;
 
     FILE *f = fopen(filename, "rb");
     if (f == NULL) {
@@ -538,23 +540,31 @@ bool gm_graph::load_binary(char* filename) {
 
     // write it 4B wise?
     i = fread(&key, 4, 1, f);
+    key2 = key;
     key = ntohl(key);
-    if ((i != 1) || (key != MAGIC_WORD)) {
-        fprintf(stderr, "wrong file format, KEY mismatch: %d, %x\n", i, key);
+    if (i !=1) {
+        fprintf(stderr, "wrong file format\n");
         goto error_return;
+    } else if (key != MAGIC_WORD) {
+        if (key2 == MAGIC_WORD) {
+            old_flipped_format = true;
+        }
+        else {
+            fprintf(stderr, "wrong file format, KEY mismatch: %d, %08x, expected:%08x\n", i, key, MAGIC_WORD);
+        }
     }
 
     uint32_t saved_node_t_size;
     uint32_t saved_edge_t_size;
     i = fread(&key, 4, 1, f); // index size (4B)
-    saved_node_t_size = ntohl(key);
+    saved_node_t_size = (old_flipped_format) ? key : ntohl(key);
     if (saved_node_t_size > sizeof(node_t)) {
         fprintf(stderr, "node_t size mismatch:%d (expect %ld), please re-generate the graph\n", key, sizeof(node_t));
         goto error_return;
     }
 
     i = fread(&key, 4, 1, f); // index size (4B)
-    saved_edge_t_size = ntohl(key);
+    saved_edge_t_size = (old_flipped_format) ? key : ntohl(key);
     if (saved_edge_t_size > sizeof(edge_t)) {
         fprintf(stderr, "edge_t size mismatch:%d (expect %ld), please re-generate the graph\n", key, sizeof(edge_t));
         goto error_return;
@@ -572,8 +582,8 @@ bool gm_graph::load_binary(char* filename) {
     node_t N;
     edge_t M;
     i = fread(&N, saved_node_t_size, 1, f);
-#define BITS_TO_NODE(X) ((saved_node_t_size == 4) ? n32tohnode(X) : n64tohnode(X))
-#define BITS_TO_EDGE(X) ((saved_edge_t_size == 4) ? n32tohedge(X) : n64tohedge(X))
+#define BITS_TO_NODE(X) ((old_flipped_format)? (X) : (saved_node_t_size == 4) ? n32tohnode(X) : n64tohnode(X))
+#define BITS_TO_EDGE(X) ((old_flipped_format)? (X) : (saved_edge_t_size == 4) ? n32tohedge(X) : n64tohedge(X))
 
     N = BITS_TO_NODE(N);
     if (i != 1) {
