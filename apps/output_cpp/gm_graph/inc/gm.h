@@ -27,6 +27,7 @@
 #include "gm_order.h"
 #include "gm_collection.h"
 #include "gm_map.h"
+#include "gm_mutatable_priority_map.h"
 
 #include "gm_useropt.h"
 #include "gm_default_usermain.h"
