@@ -113,7 +113,7 @@ run_unit_test_crash();
 
 # BUILD AND RUN THE APPS
 
-APP_EXCLUSIONS=[ "b2_main.cc", "Makefile", "common_main.cc", "common_main.h", "randomnodesampling_main.cc", "random_bipartite_matching_main.cc", "sssp_path_main.cc", "sssp_path_adj_main.cc", "dijkstra_adj_main.cc"];
+APP_EXCLUSIONS=[ "b2_main.cc", "Makefile", "common_main.cc", "common_main.h", "randomnodesampling_main.cc", "random_bipartite_matching_main.cc", "sssp_path_main.cc", "sssp_path_adj_main.cc", "dijkstra_adj_main.cc", "bc_adj_main.cc" ];
 
 def get_apps_names(apps_out_dir):
     main_names = os.listdir(APPS_PATH+apps_out_dir+"/src/");

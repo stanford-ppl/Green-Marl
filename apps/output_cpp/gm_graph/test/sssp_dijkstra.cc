@@ -15,7 +15,7 @@ bool dijkstra(gm_graph& G, double* G_Len,
     bool failed = false ;
     bool* G_Reached = gm_rt_allocate_bool(G.num_nodes(),gm_rt_thread_id());
 
-    Reachable.setValue_seq(root, (float)(0.000000));
+    Reachable.setValue_seq(root, (double)(0.000000));
     found = false ;
     failed = false ;
     //Reachable.dump();

@@ -2,6 +2,21 @@
 #include "sssp_path_adj.h"
 #include "gm_rand.h"
 
+// 1: true, 0: false
+int str_ends_with(const char * str, const char * suffix) {
+
+  if( str == NULL || suffix == NULL )
+    return 0;
+
+  size_t str_len = strlen(str);
+  size_t suffix_len = strlen(suffix);
+
+  if(suffix_len > str_len)
+    return 0;
+
+  return 0 == strncmp( str + str_len - suffix_len, suffix, suffix_len );
+}
+
 int main(int argc, char** argv) {
 
     if (argc < 6) {
@@ -43,7 +58,16 @@ int main(int argc, char** argv) {
     //    printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
     //    struct timeval T3, T4;    
     //    gettimeofday(&T3, NULL);
-    G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
+    if (str_ends_with(inputFile,".avro"))
+    {
+        vprop_schema.clear();
+        eprop_schema.clear();
+        std::vector<std::string> vprop_name;
+        std::vector<std::string> eprop_name;
+        G.load_adjacency_list_avro(inputFile, vprop_schema, eprop_schema, vprop_name, eprop_name, vertex_props, edge_props, false);
+    }
+    else
+      G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
     //    gettimeofday(&T4, NULL);
     //    printf("GM - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
 

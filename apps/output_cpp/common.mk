@@ -5,7 +5,7 @@
 #
 # Include ../../../setup.mk before this file
 #----------------------------------------------------------------------------
-CFLAGS += -DDEFAULT_GM_TOP="\"${GM_TOP}\""
+CFLAGS += -DDEFAULT_GM_TOP="\"${GM_TOP}\"" -std=gnu++0x
 
 #-----------------------------------------
 # Flags for ORACLE SPARC compiler

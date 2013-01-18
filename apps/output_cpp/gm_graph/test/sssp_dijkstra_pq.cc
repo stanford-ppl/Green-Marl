@@ -501,11 +501,11 @@ int main(int argc, char** argv) {
     //
     //    printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
 
-    struct timeval T3, T4;    
-    gettimeofday(&T3, NULL);
+    //    struct timeval T3, T4;    
+    //    gettimeofday(&T3, NULL);
     G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
-    gettimeofday(&T4, NULL);
-    printf("MY DIJKSTRA CSR C - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
+    //    gettimeofday(&T4, NULL);
+    //    printf("MY DIJKSTRA CSR C - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
 
     //------------------------------
     // Print graph details for manual verification 
@@ -545,7 +545,7 @@ int main(int argc, char** argv) {
     //   CALLGRIND_STOP_INSTRUMENTATION;
     gettimeofday(&T2, NULL);
     printf("MY DIJKSTRA CSR C - COMPUTATION RUNNING TIME (ms): %lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
-    printf("cost = %lf\n", totalCost);
+    //    printf("cost = %lf\n", totalCost);
         
     if (dbg != 0)
       printPath(startNodeKey, endNodeKey, pathEdges, pathNodes, totalCost, G, 21, network_edge_keys);
