@@ -84,8 +84,8 @@ int main(int argc, char** argv) {
     //
     //    printf ("Loading graph from file \'%s\' in adjacency list format...\n", inputFile);
 
-    struct timeval T3, T4;    
-    gettimeofday(&T3, NULL);
+    //    struct timeval T3, T4;    
+    //    gettimeofday(&T3, NULL);
     if (str_ends_with(inputFile,".avro"))
     {
         vprop_schema.clear();
@@ -96,8 +96,8 @@ int main(int argc, char** argv) {
     }
     else
         G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
-    gettimeofday(&T4, NULL);
-    printf("G-M DIJKSTRA CSR C - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
+    //    gettimeofday(&T4, NULL);
+    //    printf("G-M DIJKSTRA CSR C - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
 
     //------------------------------
     // Print graph details for manual verification 
@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
     gettimeofday(&T1, NULL);
     // compute all shortest paths from root
     //    CALLGRIND_START_INSTRUMENTATION;
-    dijkstra(G, edge_costs, startNodeId, endNodeId, G_Parent, G_ParentEdge);
+    bool found = dijkstra(G, edge_costs, startNodeId, endNodeId, G_Parent, G_ParentEdge);
     // get specific instance from root to end
 
     //    fflush(stdout);
@@ -145,6 +145,10 @@ int main(int argc, char** argv) {
 
     //    printf("cost = %lf\n", totalCost);
     if (dbg != 0) {
+      if (!found) {
+        printf("PATH NOT FOUND\n");
+        return 0;
+      }
       printf("%d -> %d\n", startNodeKey, endNodeKey);
       printf("    Costs are %lf\n", totalCost);
       printf("    Number of links is %d\n", Q.get_size());

@@ -112,6 +112,10 @@ int main(int argc, char** argv) {
         
 
     if (dbg != 0) {
+      if (Q.get_size() == 0) {
+        printf("PATH NOT FOUND\n");
+        return 0;
+      }
       printf("%d -> %d\n", src_node_key, dst_node_key);
       printf("    Costs are %lf\n", total_cost);
       printf("    Number of links is %d\n", Q.get_size());

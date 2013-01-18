@@ -90,7 +90,6 @@ bool dijkstra(gm_graph& G, double* G_Len,
         }
     }
     gm_rt_cleanup();
-    assert(failed == false);
     return  !failed; 
 }
 
