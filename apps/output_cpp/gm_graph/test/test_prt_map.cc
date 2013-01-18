@@ -7,7 +7,8 @@ int MAX_VAL = 100;
 int gen_key() {return rand() % MAX_KEY;}
 int gen_val() {return rand() % MAX_VAL;}
 
-int TRACE_KEY=-1;
+//int TRACE_KEY=-1;
+int TRACE_KEY=35;
 
 
     /*
@@ -51,7 +52,9 @@ void test_main(gm_mutatable_priority_map<short, int>& Map)
             int Key = gen_key();
             int Val = gen_val();
             shadow[Key] = Val;
-            //printf("[%d] <- %d, last:%d\n", Key, Val, last);
+            if (Key == TRACE_KEY) {printf("Before\n"); Map.dump();}
+            printf("[%d] <- %d, last:%d\n", Key, Val, last);
+            if (Key == TRACE_KEY) {printf("After\n"); Map.dump();printf("\n");}
             Map.setValue_seq(Key, Val);
             Map.check_integrity();
         }
@@ -65,8 +68,11 @@ void test_main(gm_mutatable_priority_map<short, int>& Map)
         for(int i=0;i<count;i++) {
            int  key = Map.getMinKey_seq();
            int  val = Map.getMinValue_seq();
-           //printf("key:%d, val:%d\n", key, val);
+           if (key == TRACE_KEY) {printf("Before\n"); Map.dump();}
+           printf("key:%d, val:%d\n", key, val);
            Map.removeMinKey_seq();
+           if (key == TRACE_KEY) {printf("After\n"); Map.dump();printf("\n");}
+           Map.check_integrity();
            assert(shadow[key] == val);
            assert(val >= last);
            last = val;
@@ -89,7 +95,7 @@ void test_main(gm_mutatable_priority_map<short, int>& Map)
                 shadow[Key] = Val;
                 if (Key == TRACE_KEY) {printf("Before\n"); Map.dump();}
                 Map.setValue_seq(Key, Val);
-                //printf("[%d] <- %d, last:%d\n", Key, Val, last);
+                printf("[%d] <- %d, last:%d\n", Key, Val, last);
                 if (Key == TRACE_KEY) {printf("After\n"); Map.dump();printf("\n");}
                 //Map.dump();
                 if (Val < last) last = Val;
@@ -102,7 +108,7 @@ void test_main(gm_mutatable_priority_map<short, int>& Map)
             for(int i=0;i<count;i++) {
                 int  key = Map.getMinKey_seq();
                 int  val = Map.getMinValue_seq();
-                //printf("key:%d, val:%d\n", key, val);
+                printf("key:%d, val:%d\n", key, val);
                 assert(shadow[key] == val);
                 if (val < last) {
                     printf("last = %d, val = %d\n", last, val);
@@ -111,6 +117,7 @@ void test_main(gm_mutatable_priority_map<short, int>& Map)
                 last = val;
                 shadow.erase(key);
                 Map.removeMinKey_seq();
+                Map.check_integrity();
             }
         }
 
@@ -120,12 +127,15 @@ void test_main(gm_mutatable_priority_map<short, int>& Map)
         for(int i=0;i<count;i++) {
            int  key = Map.getMinKey_seq();
            int  val = Map.getMinValue_seq();
-           //printf("key:%d, val:%d\n", key, val);
+           if (key == TRACE_KEY) {printf("Before\n"); Map.dump();}
+           printf("key:%d, val:%d\n", key, val);
            assert(shadow[key] == val);
            assert(val >= last);
            last = val;
            shadow.erase(key);
            Map.removeMinKey_seq();
+           if (key == TRACE_KEY) {printf("After\n"); Map.dump();printf("\n");}
+           Map.check_integrity();
         }
     }
 }
@@ -133,6 +143,7 @@ void test_main(gm_mutatable_priority_map<short, int>& Map)
 int main()
 {
     //gm_mutatable_priority_map_default_min<short, int> Map(0, 5); // default value, K
-    gm_mutatable_priority_map_simple_min<short, int> Map(0); // default value, K
+    //gm_mutatable_priority_map_simple_min<short, int> Map(0); // default value, K
+    gm_mutatable_priority_map_unordered_min<short, int> Map(0); // default value, K
     test_main(Map);
 }

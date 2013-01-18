@@ -9,7 +9,8 @@ bool dijkstra(gm_graph& G, double* G_Len,
     gm_rt_initialize();
     G.freeze();
 
-    gm_mutatable_priority_map_simple_min<node_t, int> Reachable(0.0); // default value, K
+    //gm_mutatable_priority_map_simple_min<node_t, int> Reachable(0.0); // default value, K
+    gm_mutatable_priority_map_unordered_min<node_t, int> Reachable(0.0); // default value, K
     bool found = false ;
     bool failed = false ;
     bool* G_Reached = gm_rt_allocate_bool(G.num_nodes(),gm_rt_thread_id());
@@ -17,6 +18,8 @@ bool dijkstra(gm_graph& G, double* G_Len,
     Reachable.setValue_seq(root, (float)(0.000000));
     found = false ;
     failed = false ;
+    //Reachable.dump();
+    //printf("root = %d\n", root);
 
     #pragma omp parallel for
     for (node_t t0 = 0; t0 < G.num_nodes(); t0 ++) 
@@ -26,6 +29,9 @@ bool dijkstra(gm_graph& G, double* G_Len,
     }
     while ( !found &&  !failed)
     {
+        //int num_lookup = 0;
+        //int num_insert = 0;
+        int num_update = 0;
         if (Reachable.size() == 0)
         {
             failed = true ;
@@ -35,6 +41,7 @@ bool dijkstra(gm_graph& G, double* G_Len,
             node_t next;
 
             next = Reachable.getMinKey_seq() ;
+            //printf("size = %d\n", Reachable.size());
             if (next == dest)
             {
                 found = true ;
@@ -46,6 +53,7 @@ bool dijkstra(gm_graph& G, double* G_Len,
                 G_Reached[next] = true ;
                 dist = Reachable.getMinValue_seq() ;
                 Reachable.removeMinKey_seq();
+                //printf("next = %d, size = %d, dist = %f\n", next, Reachable.size(), dist);
                 for (edge_t v_idx = G.begin[next];v_idx < G.begin[next+1] ; v_idx ++) 
                 {
                     node_t v = G.node_idx [v_idx];
@@ -60,16 +68,24 @@ bool dijkstra(gm_graph& G, double* G_Len,
                             Reachable.setValue_seq(v, dist + G_Len[e]);
                             G_Parent[v] = next ;
                             G_ParentEdge[v] = e ;
+                            //num_insert++;
                         }
                         else
+                        {
+                            //num_lookup++;
                             if (Reachable.getValue(v) > dist + G_Len[e])
                             {
                                 Reachable.setValue_seq(v, dist + G_Len[e]);
                                 G_Parent[v] = next ;
                                 G_ParentEdge[v] = e ;
+                //                num_update++;
                             }
+                        }
                     }
                 }
+                //printf("num_insert = %d\n", num_insert);
+                //printf("num_lookup = %d\n", num_lookup);
+                //if (num_update > 0) printf("size =%d, num_update = %d\n", Reachable.size(), num_update);
             }
         }
     }

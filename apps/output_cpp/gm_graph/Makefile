@@ -5,7 +5,7 @@ BIN = ../bin
 INC = inc
 SRC = src
 OBJ = obj
-CFLAGS = -O3 -g -I$(INC) -fopenmp -Wall 
+CFLAGS = -O3 -g -I$(INC) -fopenmp -Wall  -std=gnu++0x
 OUT = $(BIN)/graph_gen $(LIB)/libgmgraph.a
 JC = javac
 JSRC = javasrc

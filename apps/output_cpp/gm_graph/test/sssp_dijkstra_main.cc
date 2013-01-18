@@ -141,6 +141,8 @@ int main(int argc, char** argv) {
     //   CALLGRIND_STOP_INSTRUMENTATION;
     gettimeofday(&T2, NULL);
     printf("GM DIJKSTRA - COMPUTATION RUNNING TIME (ms): %lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
+    printf("total cost = %lf\n", totalCost);
+
     //    printf("cost = %lf\n", totalCost);
     if (dbg != 0) {
       printf("%d -> %d\n", startNodeKey, endNodeKey);

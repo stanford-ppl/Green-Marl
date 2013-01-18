@@ -1,5 +1,5 @@
-Procedure pagerank(G: Graph, e: Double, d: Double, max: Int;
-                   pg_rank: N_P<Double>)
+Procedure pagerank(G: Graph, e,d: Double, max: Int;
+                   pg_rank: Node_Prop<Double>)
 {
     Double diff;
     Int cnt = 0;
@@ -9,7 +9,8 @@ Procedure pagerank(G: Graph, e: Double, d: Double, max: Int;
         diff = 0.0;
         Foreach (t: G.Nodes) {
             Double val = (1-d) / N + d* 
-                Sum(w: t.InNbrs) {w.pg_rank / w.OutDegree()} ;
+                Sum(w: t.InNbrs) {
+                   w.pg_rank / w.OutDegree()} ;
 
             diff += | val - t.pg_rank |;
             t.pg_rank <= val @ t;
@@ -17,3 +18,4 @@ Procedure pagerank(G: Graph, e: Double, d: Double, max: Int;
         cnt++;
     } While ((diff > e) && (cnt < max));
 }
+
