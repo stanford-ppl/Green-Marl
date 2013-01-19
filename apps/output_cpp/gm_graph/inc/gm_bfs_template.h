@@ -34,7 +34,7 @@ class gm_bfs_template
     virtual ~gm_bfs_template() {
         delete visited_bitmap;
         delete visited_level;
-        delete global_queue;
+        delete [] global_queue;
         delete[] thread_local_next_level;
         delete down_edge_set;
         delete down_edge_array;
@@ -85,71 +85,110 @@ class gm_bfs_template
                     for (node_t i = 0; i < curr_count; i++) {
                         node_t t = global_curr_level[i];
                         iterate_neighbor_small(t);
-                        visit_fw(t);            // visit after iteration. in that way, one can check
-                        // down-neighbors quite easily
+                        visit_fw(t);            // visit after iteration. in that way, one can check  down-neighbors quite easily
                     }
                     break;
                 }
                 case ST_QUE: {
-#pragma omp parallel
-                    if (use_multithread)
+                    if (use_multithread)  // do it in parallel
                     {
-                        int tid = omp_get_thread_num();
-#pragma omp for nowait
-                        for (node_t i = 0; i < curr_count; i++) {
-                            node_t t = global_curr_level[i];
-                            iterate_neighbor_que(t, tid);
-                            visit_fw(t);
+                        #pragma omp parallel
+                        {
+                            int tid = omp_get_thread_num();
+                            #pragma omp for nowait
+                            for (node_t i = 0; i < curr_count; i++) {
+                                node_t t = global_curr_level[i];
+                                iterate_neighbor_que(t, tid);
+                                visit_fw(t);
+                            }
+                            finish_thread_que(tid);
                         }
-                        finish_thread_que(tid);
+                    }
+                    else { // do it in sequential
+                            int tid = 0;
+                            for (node_t i = 0; i < curr_count; i++) {
+                                node_t t = global_curr_level[i];
+                                iterate_neighbor_que(t, tid);
+                                visit_fw(t);
+                            }
+                            finish_thread_que(tid);
                     }
                     break;
                 }
                 case ST_Q2R: {
-#pragma omp parallel
-                    if (use_multithread)
-                    {
-                        node_t local_cnt = 0;
-#pragma omp for nowait
-                        for (node_t i = 0; i < curr_count; i++) {
-                            node_t t = global_curr_level[i];
-                            iterate_neighbor_rd(t, local_cnt);
-                            visit_fw(t);
+                    if (use_multithread) {  // do it in parallel
+                        #pragma omp parallel
+                        {
+                            node_t local_cnt = 0;
+                            #pragma omp for nowait
+                            for (node_t i = 0; i < curr_count; i++) {
+                                node_t t = global_curr_level[i];
+                                iterate_neighbor_rd(t, local_cnt);
+                                visit_fw(t);
+                            }
+                            finish_thread_rd(local_cnt);
                         }
-                        finish_thread_rd(local_cnt);
+                    } else { // do it sequentially
+                            node_t local_cnt = 0;
+                            for (node_t i = 0; i < curr_count; i++) {
+                                node_t t = global_curr_level[i];
+                                iterate_neighbor_rd(t, local_cnt);
+                                visit_fw(t);
+                            }
+                            finish_thread_rd(local_cnt);
                     }
                     break;
                 }
 
                 case ST_RD: {
-#pragma omp parallel
-                    if (use_multithread)
-                    {
-                        node_t local_cnt = 0;
-#pragma omp for nowait
-                        for (node_t t = 0; t < G.num_nodes(); t++) {
-                            if (visited_level[t] == curr_level) {
-                                iterate_neighbor_rd(t, local_cnt);
-                                visit_fw(t);
+                    if (use_multithread) { // do it in parallel
+                        #pragma omp parallel
+                        {
+                            node_t local_cnt = 0;
+                            #pragma omp for nowait
+                            for (node_t t = 0; t < G.num_nodes(); t++) {
+                                if (visited_level[t] == curr_level) {
+                                    iterate_neighbor_rd(t, local_cnt);
+                                    visit_fw(t);
+                                }
                             }
+                            finish_thread_rd(local_cnt);
                         }
-                        finish_thread_rd(local_cnt);
+                    } else { // do it in sequential
+                            node_t local_cnt = 0;
+                            for (node_t t = 0; t < G.num_nodes(); t++) {
+                                if (visited_level[t] == curr_level) {
+                                    iterate_neighbor_rd(t, local_cnt);
+                                    visit_fw(t);
+                                }
+                            }
+                            finish_thread_rd(local_cnt);
                     }
                     break;
                 }
                 case ST_R2Q: {
-#pragma omp parallel
-                    if (use_multithread)
-                    {
-                        int tid = omp_get_thread_num();
-#pragma omp for nowait
-                        for (node_t t = 0; t < G.num_nodes(); t++) {
-                            if (visited_level[t] == curr_level) {
-                                iterate_neighbor_que(t, tid);
-                                visit_fw(t);
+                    if (use_multithread) { // do it in parallel
+                        #pragma omp parallel
+                        {
+                            int tid = omp_get_thread_num();
+                            #pragma omp for nowait
+                            for (node_t t = 0; t < G.num_nodes(); t++) {
+                                if (visited_level[t] == curr_level) {
+                                    iterate_neighbor_que(t, tid);
+                                    visit_fw(t);
+                                }
                             }
+                            finish_thread_que(tid);
                         }
-                        finish_thread_que(tid);
+                    } else {
+                            int tid = 0;
+                            for (node_t t = 0; t < G.num_nodes(); t++) {
+                                if (visited_level[t] == curr_level) {
+                                    iterate_neighbor_que(t, tid);
+                                    visit_fw(t);
+                                }
+                            }
+                            finish_thread_que(tid);
                     }
                     break;
                 }
@@ -234,8 +273,7 @@ class gm_bfs_template
 
   private:
     bool get_next_state() {
-        //const char* state_name[5] = {"SMALL","QUEUE","Q2R","RD","R2Q"};
-        //printf("level = %d, state=%s, next = %d\n", curr_level, state_name[state], next_count);
+        const char* state_name[5] = {"SMALL","QUEUE","Q2R","RD","R2Q"};
 
         if (next_count == 0) return true;  // BFS is finished
 
