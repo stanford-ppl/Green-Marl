@@ -7,7 +7,6 @@ Procedure comp_BC(G: Graph, BC: N_P<Float>)
   G.BC = 0; // Initialize
 
   For (s: G.Nodes) { 
-
     // temporary values per Node
     Node_Property<Float> sigma;
     Node_Property<Float> delta;
@@ -15,11 +14,11 @@ Procedure comp_BC(G: Graph, BC: N_P<Float>)
     s.sigma = 1;
 
     // BFS order iteration from s
-    InBFS(v: G.Nodes From s) {
+    InBFS(v: G.Nodes From s)(v != s) {
        // Summing over BFS parents
        v.sigma = Sum(w:v.UpNbrs) { w.sigma };
     }
-    InReverse { // Reverse-BFS order iteration to s
+    InReverse(v != s) { // Reverse-BFS order iteration to s
       v.delta =  // Summing over BFS children
          Sum (w:v.DownNbrs) {
             v.sigma / w.sigma * (1+ w.delta) };
