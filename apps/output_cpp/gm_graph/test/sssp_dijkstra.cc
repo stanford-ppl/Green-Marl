@@ -10,7 +10,7 @@ bool dijkstra(gm_graph& G, double* G_Len,
     G.freeze();
 
     //gm_mutatable_priority_map_simple_min<node_t, int> Reachable(0.0); // default value, K
-    gm_mutatable_priority_map_unordered_min<node_t, int> Reachable(0.0); // default value, K
+    gm_mutatable_priority_map_unordered_min<node_t, double> Reachable(0.0); // default value, K
     bool found = false ;
     bool failed = false ;
     bool* G_Reached = gm_rt_allocate_bool(G.num_nodes(),gm_rt_thread_id());
