@@ -370,6 +370,15 @@ class gm_bfs_template
                 small_visited[u] = curr_level + 1;
                 global_next_level[next_count++] = u;
             }
+            else if (save_child) {
+                if (has_navigator) {
+                    if (check_navigator(u, nx) == false) continue;
+                }
+
+                if (small_visited[u] == (curr_level+1)){
+                    save_down_edge_small(nx);
+                }
+            }
         }
     }
 
@@ -466,6 +475,14 @@ class gm_bfs_template
                     visited_level[u] = (curr_level + 1);
                 }
             }
+            else if (save_child) {
+                if (has_navigator) {
+                    if (check_navigator(u, nx) == false) continue;
+                }
+                if (visited_level[u] == (curr_level +1)) {
+                    save_down_edge_large(nx);
+                }
+            }
         }
     }
 
@@ -513,6 +530,14 @@ class gm_bfs_template
                     // add to local q
                     visited_level[u] = curr_level + 1;
                     local_cnt++;
+                }
+            }
+            else if (save_child) {
+                if (has_navigator) {
+                    if (check_navigator(u, nx) == false) continue;
+                }
+                if (visited_level[u] == (curr_level +1)) {
+                    save_down_edge_large(nx);
                 }
             }
         }
