@@ -60,13 +60,13 @@ void gm_edge_list_graph_reader::builtGraph() {
         inputFileStream.getline(lineData, maxSize);
         if (strlen(lineData) == 0 || lineData[0] == '#') continue;
 
-        char* p = strtok(lineData, " ");
+        char* p = strtok(lineData, " \t");
         node_t nodeId = readValueFromToken<node_t>(p);
         while (nodeId > maxNodeId) {
             G.add_node();
             maxNodeId++;
         }
-        p = strtok(NULL, " ");
+        p = strtok(NULL, " \t");
         if (*p != '*') {
             node_t destination = readValueFromToken<node_t>(p);
             while (destination > maxNodeId) {
@@ -85,6 +85,9 @@ bool gm_edge_list_graph_reader::loadEdgeList() {
 
     G.clear_graph();
     builtGraph();
+    if ((nodePropertyCount == 0) && (edgePropertyCount == 0))
+        return true;
+    
 
     inputFileStream.open(fileName);
     if (!inputFileStream.is_open()) {
@@ -105,9 +108,9 @@ bool gm_edge_list_graph_reader::loadEdgeList() {
         inputFileStream.getline(lineData, maxSize);
         if (strlen(lineData) == 0 || lineData[0] == '#') continue;
 
-        char* p = strtok(lineData, " ");
+        char* p = strtok(lineData, " \t");
         node_t nodeId = readValueFromToken<node_t>(p);
-        p = strtok(NULL, " ");
+        p = strtok(NULL, " \t");
         if (*p == '*') {
             if (!handleNode(nodeId, p)) return false;
         } else {

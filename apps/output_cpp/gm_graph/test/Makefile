@@ -17,7 +17,7 @@ include ../../../../setup.mk
 include ../../common.mk
 
 #TARGET = a_main test_graph test_set test_seq test_order
-TARGET = test_generic_adj_list test_usermain test_prt_map sssp_dijkstra_pq
+TARGET = test_generic_adj_list test_usermain test_prt_map #sssp_dijkstra_pq
 
 ifeq ($(SUPPORT_AVRO),1)
 # enable Avro

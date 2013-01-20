@@ -25,11 +25,11 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
 
    OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "Measure running time");
 #ifdef AVRO
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, NODE_PROP: dump of node properties only, NULL: dump no properties");
-   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, EDGE: edge list, NODE_PROP: dump of node properties only, NULL: dump no properties, BIN: Binary (graph only)");
+   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, EDGE: edge list, BIN: Binary(graph only)");
 #else
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, NODE_PROP: dump of node properties only, NULL: dump no properties");
-   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list");
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, EDGE: edge list, NODE_PROP: dump of node properties only, NULL: dump no properties, BIN: Binary(graph only)");
+   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, EDGE: edge list, BIN: Binary (graph only)");
 #endif
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
 #ifdef HDFS
@@ -182,6 +182,10 @@ static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
         format = GM_NODE_PROP_LIST;
         return true;
     }
+    if ((!strcmp(str,"EDGE")) || (!strcmp(str,"edge"))) {
+        format = GM_EDGE_LIST;
+        return true;
+    }
 
     return false;
 }
@@ -197,6 +201,7 @@ static bool guess_file_format_from_extension(const char* fname, GM_FILE_FORMAT& 
         std::string ext  = path.substr(dot, path.size() - dot);
 
         if (ext == ".adj") {fmt = GM_ADJ_LIST; return true;}
+        else if (ext == ".edge") {fmt = GM_EDGE_LIST; return true;}
         else if (ext == ".avro") {fmt = GM_ADJ_LIST_AVRO; return true;}
         else if (ext == ".bin")  {fmt = GM_BINARY; return true;}
         else if (ext == ".prop") {fmt = GM_NODE_PROP_LIST; return true;}
@@ -221,13 +226,15 @@ bool gm_default_usermain::determine_formats()
             OPTIONS.get_arg(0), this->in_format) == false) {
         printf("Warning: assuming input is ADJ list\n");
     }
-    if ((in_format != GM_ADJ_LIST) && (in_format != GM_ADJ_LIST_AVRO)) {
+    if ((in_format != GM_ADJ_LIST) && (in_format != GM_ADJ_LIST_AVRO) && (in_format != GM_EDGE_LIST) && (in_format != GM_BINARY)) {
         printf("Error:output format not supported.\n");
         return false;
     }
 
     printf("in_format : %s\n", (in_format == GM_ADJ_LIST)  ? "ADJ" :
                                (in_format == GM_ADJ_LIST_AVRO) ? "ADJ_AVRO" :
+                               (in_format == GM_EDGE_LIST) ? "EDGE_LIST" :
+                               (in_format == GM_BINARY) ? "BINARY" :
                                "Unknown");
 
     if (create_output_graph) {
@@ -243,7 +250,9 @@ bool gm_default_usermain::determine_formats()
             printf("Warning: assuming output is ADJ list\n");
         }
 
-        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) && (out_format != GM_NODE_PROP_LIST) && (out_format != GM_NULL_FORMAT)) {
+        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) 
+            && (out_format != GM_NODE_PROP_LIST) && (out_format != GM_NULL_FORMAT)
+            && (out_format != GM_EDGE_LIST) && (out_format != GM_BINARY)) {
             printf("Error:output format not supported.\n");
             return false;
         }
@@ -251,7 +260,10 @@ bool gm_default_usermain::determine_formats()
         printf("out_format : %s\n", (out_format == GM_ADJ_LIST)  ? "ADJ" :
                                  (out_format == GM_ADJ_LIST_AVRO) ? "ADJ_AVRO" :
                                  (out_format == GM_NODE_PROP_LIST) ? "PROP_LIST" :
-                                 (out_format == GM_NULL_FORMAT)? "NULL_FORMAT" : "Unknown");
+                                 (out_format == GM_NULL_FORMAT)? "NULL_FORMAT" : 
+                                 (out_format == GM_EDGE_LIST)? "EDGE_LIST" : 
+                                 (out_format == GM_BINARY)? "BINARY" : 
+                                 "Unknown");
     }
 
     return true;
@@ -446,6 +458,33 @@ bool gm_default_usermain::do_preprocess()
                 vprop_in_array,
                 eprop_in_array,
                 " \t",
+                use_hdfs);
+
+        if (!okay) {
+            printf("Error: cannot open file\n");
+            return false;
+        }
+    }
+    else if (get_input_format() == GM_BINARY)
+    {
+        assert (vprop_in_schema.size() == 0);
+        assert (eprop_in_schema.size() == 0);
+        assert(!use_hdfs);
+        bool okay = GRAPH.load_binary(fullpath_name);
+
+        if (!okay) {
+            printf("Error: cannot open file\n");
+            return false;
+        }
+
+    }
+    else if (get_input_format() == GM_EDGE_LIST) 
+    {
+        bool okay = GRAPH.load_edge_list(fullpath_name,
+                vprop_in_schema,
+                eprop_in_schema,
+                vprop_in_array,
+                eprop_in_array,
                 use_hdfs);
 
         if (!okay) {
@@ -669,6 +708,23 @@ bool gm_default_usermain::do_postprocess()
                 vprop_out_array,
                 eprop_out_array,
                 "\t",
+                use_hdfs);
+        }
+        else if (get_output_format() == GM_BINARY)
+        {
+            assert (vprop_out_schema.size() == 0);
+            assert (eprop_out_schema.size() == 0);
+            assert(!use_hdfs);
+            okay = GRAPH.store_binary(fullpath_name);
+
+        }
+        else if (get_output_format() == GM_EDGE_LIST) 
+        {
+           okay = GRAPH.store_edge_list(fullpath_name,
+                vprop_out_schema,
+                eprop_out_schema,
+                vprop_out_array,
+                eprop_out_array,
                 use_hdfs);
         }
 #ifdef AVRO
