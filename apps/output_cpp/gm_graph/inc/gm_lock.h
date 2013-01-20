@@ -15,7 +15,7 @@ void gm_spinlock_release(gm_spinlock_t* ptr);
 //  - there will not be too many # of threads
 //  - It is better to keep lock table in cache. 
 #define GM_CACHELINE            16          // 16 * 4 byte
-#define GM_SPINLOCK_TAB_ENTRY   128         // small # of entries only
+#define GM_SPINLOCK_TAB_ENTRY   512         // small # of entries only
 #define GM_SPINLOCK_TAB_SZ      (GM_CACHELINE*GM_SPINLOCK_TAB_ENTRY)
 
 extern uint32_t gm_spinlock_tab_sz;

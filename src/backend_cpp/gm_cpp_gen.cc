@@ -394,6 +394,8 @@ const char* gm_cpp_gen::get_type_string(ast_typedecl* t) {
     return "ERROR";
 }
 
+extern bool gm_cpp_should_be_dynamic_scheduling(ast_foreach* f);
+
 void gm_cpp_gen::generate_sent_foreach(ast_foreach* f) {
 
     int ptr;
@@ -406,7 +408,7 @@ void gm_cpp_gen::generate_sent_foreach(ast_foreach* f) {
 
     if (f->is_parallel()) {
         Body.NL();
-        prepare_parallel_for();
+        prepare_parallel_for(gm_cpp_should_be_dynamic_scheduling(f));
     }
 
     get_lib()->generate_foreach_header(f, Body);
@@ -1087,10 +1089,17 @@ void gm_cpp_gen::generate_expr_builtin(ast_expr* ee) {
     }
 }
 
-void gm_cpp_gen::prepare_parallel_for() {
-    if (is_under_parallel_sentblock())
-        Body.pushln("#pragma omp for nowait"); // already under parallel region.
+void gm_cpp_gen::prepare_parallel_for(bool need_dynamic) {
+    if (is_under_parallel_sentblock()) 
+        Body.push("#pragma omp for nowait"); // already under parallel region.
     else
-        Body.pushln("#pragma omp parallel for");
+        Body.push("#pragma omp parallel for");
+
+    if (need_dynamic) {
+        Body.push(" schedule(dynamic,128)");
+
+    }
+
+    Body.NL();
 }
 

@@ -171,7 +171,7 @@ protected:
     virtual void init_opt_steps();
     virtual void init_gen_steps();
 
-    virtual void prepare_parallel_for();
+    virtual void prepare_parallel_for(bool b);
     int _ptr, _indent;
 
 public:

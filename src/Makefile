@@ -92,6 +92,7 @@ SRCS2 =\
        gm_cpp_opt_check_feasible.cc \
        gm_cpp_opt_save_bfs.cc\
        gm_cpp_opt_common_nbr.cc\
+	   gm_cpp_decide_schedule.cc\
        gm_cpp_gen.cc \
        gm_cpp_gen_bfs.cc \
        gm_cpp_gen_foreach.cc\
