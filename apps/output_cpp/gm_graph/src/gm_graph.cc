@@ -209,7 +209,7 @@ void gm_graph::make_reverse_edges() {
         r_begin[i] = 0;
     }
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < n_nodes; i++) {
         for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
             node_t dest = node_idx[e];
@@ -239,7 +239,7 @@ void gm_graph::make_reverse_edges() {
 #endif
 
     // now update destination
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < n_nodes; i++) {
         for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
             node_t dest = node_idx[e];
@@ -252,7 +252,7 @@ void gm_graph::make_reverse_edges() {
         }
     }
 #if GM_GRAPH_NUMA_OPT
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < n_nodes; i++) {
         for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
             r_node_idx[e] = temp_r_node_idx[e];
@@ -330,7 +330,7 @@ void gm_graph::prepare_edge_source() {
     assert(node_idx_src == NULL);
     node_idx_src = new node_t[num_edges()];
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < num_nodes(); i++) {
         for (edge_t j = begin[i]; j < begin[i + 1]; j++) {
             node_idx_src[j] = i;
@@ -344,7 +344,7 @@ void gm_graph::prepare_edge_source_reverse() {
     assert(r_node_idx_src == NULL);
     r_node_idx_src = new node_t[num_edges()];
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < num_nodes(); i++) {
         for (edge_t j = r_begin[i]; j < r_begin[i + 1]; j++) {
             r_node_idx_src[j] = i;
@@ -355,7 +355,7 @@ void gm_graph::prepare_edge_source_reverse() {
 void gm_graph::do_semi_sort_reverse() {
     assert(r_begin != NULL);
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < num_nodes(); i++) {
         sort(r_begin[i], r_begin[i + 1], r_node_idx, NULL);
     }
@@ -367,13 +367,13 @@ void gm_graph::do_semi_sort() {
         e_id2idx = new edge_t[num_edges()];
         e_idx2id = new edge_id[num_edges()];
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,128)
         for (edge_t j = 0; j < num_edges(); j++) {
             e_id2idx[j] = e_idx2id[j] = j;
         }
     }
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < num_nodes(); i++) {
         sort(begin[i], begin[i + 1], node_idx, e_idx2id);
 
@@ -746,7 +746,7 @@ void gm_graph::create_reverse_nodekey()
 
     _numeric_reverse_key.reserve(_numeric_key.size());
 
-    std::map<node_t, node_t>::iterator I;
+    std::unordered_map<node_t, node_t>::iterator I;
     for(I= _numeric_key.begin(); I!=_numeric_key.end(); I++)      
     {
         node_t key = I->first;
@@ -771,7 +771,7 @@ node_t gm_graph::add_nodekey(node_t key) {
     assert(_nodekey_defined == true);
     assert(_nodekey_type_is_numeric == true);
 
-    std::map<node_t, node_t>::iterator I = _numeric_key.find(key);
+    std::unordered_map<node_t, node_t>::iterator I = _numeric_key.find(key);
     if (I == _numeric_key.end())  {
         node_t nid = _numeric_key.size();
         _numeric_key[key] = nid;

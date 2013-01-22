@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <string>
+#include <unordered_map>
 
 #include "gm_internal.h"
 
@@ -336,7 +337,8 @@ friend class gm_graph_hdfs;
     void do_semi_sort_reverse();
     void prepare_edge_source_reverse();
 
-    std::map<node_t, std::vector<edge_dest_t> > flexible_graph;
+    //std::map<node_t, std::vector<edge_dest_t> > flexible_graph;
+    std::unordered_map<node_t, std::vector<edge_dest_t> > flexible_graph;
 
     edge_t* e_id2idx;
     edge_t* e_idx2id;
@@ -347,7 +349,8 @@ friend class gm_graph_hdfs;
     bool _nodekey_defined;          // 
     bool _reverse_nodekey_defined;  // 
     bool _nodekey_type_is_numeric; //
-    std::map<node_t, node_t> _numeric_key;          // node_key -> node_dix
+    //std::map<node_t, node_t> _numeric_key;          // node_key -> node_dix
+    std::unordered_map<node_t, node_t> _numeric_key;  // node_key -> node_dix
     std::vector<node_t>      _numeric_reverse_key;  // node_idx -> node_key
 
     void   prepare_nodekey(bool _prepare_reverse);  // should call this function before graph is create

@@ -153,7 +153,7 @@ class gm_bfs_template
                         #pragma omp parallel
                         {
                             node_t local_cnt = 0;
-                            #pragma omp for nowait
+                            #pragma omp for nowait schedule(dynamic,128)
                             for (node_t t = 0; t < G.num_nodes(); t++) {
                                 if (visited_level[t] == curr_level) {
                                     iterate_neighbor_rd(t, local_cnt);
@@ -179,7 +179,7 @@ class gm_bfs_template
                         #pragma omp parallel
                         {
                             int tid = omp_get_thread_num();
-                            #pragma omp for nowait
+                            #pragma omp for nowait schedule(dynamic,128)
                             for (node_t t = 0; t < G.num_nodes(); t++) {
                                 if (visited_level[t] == curr_level) {
                                     iterate_neighbor_que(t, tid);
@@ -223,18 +223,16 @@ class gm_bfs_template
             }
            
             if (queue_ptr == NULL) {
-#pragma omp parallel
-                if (use_multithread)
+#pragma omp parallel if (use_multithread)
                 {
-#pragma omp for nowait
+#pragma omp for nowait schedule(dynamic,128)
                     for (node_t i = 0; i < G.num_nodes(); i++) {
                         if (visited_level[i] != curr_level) continue;
                         visit_rv(i);
                     }
                 }
             } else {
-#pragma omp parallel
-                if (use_multithread)
+#pragma omp parallel if (use_multithread)
                 {
 #pragma omp for nowait
                     for (node_t i = 0; i < count; i++) {
