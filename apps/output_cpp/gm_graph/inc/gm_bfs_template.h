@@ -300,7 +300,7 @@ class gm_bfs_template
                 }
                 break;
             case ST_QUE:
-                if (next_count >= THRESHOLD2) {
+                if ((next_count >= THRESHOLD2) && (next_count >= curr_count*5)) {
                     prepare_read();
                     next_state = ST_Q2R;
                 }
