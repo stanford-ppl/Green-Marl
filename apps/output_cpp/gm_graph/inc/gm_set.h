@@ -152,7 +152,7 @@ class gm_sized_set
     }
 
     void clear_large() { // should be called in seq mode
-#pragma omp parallel for
+        #pragma omp parallel for
         for (size_t i = 0; i < max_sz; i++)
             byte_map[i] = 0;
 
@@ -173,7 +173,7 @@ class gm_sized_set
 
     bool is_subset_large(gm_sized_set<T>& superset) {
         bool result = true;
-#pragma omp parallel for
+        #pragma omp parallel for
         for (size_t i = 0; i < max_sz; i++) {
             if (byte_map[i] && !superset.byte_map[i]) result = false;
         }
@@ -193,7 +193,7 @@ class gm_sized_set
 
     void complement_large(gm_sized_set<T>& other) {
         int newSize = 0;
-#pragma omp parallel for reduction (+:newSize)
+        #pragma omp parallel for reduction (+:newSize)
         for (size_t i = 0; i < max_sz; i++) {
             byte_map[i] = byte_map[i] && !other.byte_map[i];
             newSize += byte_map[i];
@@ -214,7 +214,7 @@ class gm_sized_set
 
     void union_large(gm_sized_set<T>& other) {
         int newSize = 0;
-#pragma omp parallel for reduction (+:newSize)
+        #pragma omp parallel for reduction (+:newSize)
         for (int i = 0; i < max_sz; i++) {
             byte_map[i] = byte_map[i] || other.byte_map[i];
             newSize += byte_map[i];
@@ -235,7 +235,7 @@ class gm_sized_set
 
     void intersect_large(gm_sized_set<T>& other) {
         int newSize = 0;
-#pragma omp parallel for reduction (+:newSize)
+        #pragma omp parallel for reduction (+:newSize)
         for (int i = 0; i < max_sz; i++) {
             byte_map[i] = byte_map[i] && other.byte_map[i];
             newSize += byte_map[i];
@@ -251,7 +251,7 @@ class gm_sized_set
     void re_estimate_size() {
         est_size = 0;
 
-#pragma omp parallel for reduction (+:est_size)
+        #pragma omp parallel for reduction (+:est_size)
         for (size_t i = 0; i < max_sz; i++)
             est_size += byte_map[i];
     }
