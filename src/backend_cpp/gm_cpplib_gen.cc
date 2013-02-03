@@ -221,6 +221,8 @@ const char* gm_cpplib::get_function_name_nset(int methodId, bool in_parallel) {
             return "is_subset";
         case GM_BLTIN_SET_SIZE:
             return "get_size";
+        case GM_BLTIN_SET_CLEAR:
+            return "clear";
         default:
             assert(false);
             return "ERROR";
