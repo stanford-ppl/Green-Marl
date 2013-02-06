@@ -60,6 +60,7 @@ enum gm_method_id_t
     GM_BLTIN_SET_COMPLEMENT,
     GM_BLTIN_SET_SUBSET,
     GM_BLTIN_SET_SIZE,
+    GM_BLTIN_SET_CLEAR,
 
     GM_BLTIN_MAP_SIZE,          // returns the number of mappings in the map
     GM_BLTIN_MAP_HAS_MAX_VALUE, // checks if the key is mapped to the biggest value
@@ -113,6 +114,7 @@ const gm_builtin_desc_t GM_builtins[] = {
         { "N_S:Complement:Void:1:N_S", GM_BLTIN_SET_COMPLEMENT, AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK) },
         { "N_S:IsSubsetOf:Bool:1:N_S", GM_BLTIN_SET_SUBSET, "" },
         { "N_S:Size:Int", GM_BLTIN_SET_SIZE, "" },
+        { "N_S:Clear:Void", GM_BLTIN_SET_CLEAR, AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_SHRINK) },
 
         // Order:
         { "N_O:PushBack:Void:1:Node", GM_BLTIN_SET_ADD_BACK, AUX_INFO(GM_BLTIN_INFO_MUTATING, GM_BLTIN_MUTATE_GROW) },

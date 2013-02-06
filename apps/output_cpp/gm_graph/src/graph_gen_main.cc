@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
         exit(0);
     }
 
-    node_t N = atol(argv[1]);
-    edge_t M = atol(argv[2]);
+    node_t N = (node_t) atoll(argv[1]);
+    edge_t M = (edge_t) atoll(argv[2]);
     int gtype = atoi(argv[4]);
     if (N == 0) {printf("Empty graph not allowed\n"); return EXIT_FAILURE;}
     printf("Creating Graph, N = %lld, M = %lld, Type = %d\n", (int64_t)N, (int64_t) M, gtype);
