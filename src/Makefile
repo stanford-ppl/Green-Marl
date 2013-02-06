@@ -81,6 +81,8 @@ SRCS2 =\
        gm_ind_opt.cc gm_hoist_assign.cc gm_hoist_foreach.cc\
        gm_merge_loops.cc gm_moveup_propdecl.cc\
        gm_check_property_argument_usage.cc\
+	   gm_reaching_def_analysis.cc\
+	   gm_used_symbol_analysis.cc\
        gm_opt_nonconf_reduce.cc\
        gm_opt_remove_unused_scalar.cc\
        gm_opt_propagate_trivial_writes.cc\

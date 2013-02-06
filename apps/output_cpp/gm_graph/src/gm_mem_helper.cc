@@ -103,7 +103,7 @@ node_t* gm_rt_allocate_node_t(size_t sz, int thread_id) {
     _GM_MEM.save(ptr, 0, thread_id);
     return ptr;
 }
-node_t* gm_rt_allocate_edge_t(size_t sz, int thread_id) {
+edge_t* gm_rt_allocate_edge_t(size_t sz, int thread_id) {
     node_t* ptr = new edge_t[sz];
     _GM_MEM.save(ptr, 0, thread_id);
     return ptr;
