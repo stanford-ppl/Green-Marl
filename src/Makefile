@@ -50,7 +50,8 @@ SRCS2 =\
        gm_parse_foreign_syntax.cc \
        gm_reproduce.cc gm_dumptree.cc gm_misc.cc \
        gm_main.cc gm_argopts.cc gm_copy.cc \
-       gm_code_generator.cc gm_read_setup.cc \
+       gm_code_generator.cc \
+       gm_read_setup.cc \
        gm_error.cc gm_builtin.cc \
        gm_node_info.cc\
        gm_version_string.cc\
@@ -92,7 +93,8 @@ SRCS2 =\
 	   gm_cpp_opt_debug.cc\
        gm_cpp_opt_select_par.cc\
        gm_cpp_opt_defer.cc \
-       gm_cpp_opt_reduce_scalar.cc gm_cpp_opt_reduce_field.cc\
+       gm_cpp_opt_reduce_scalar.cc \
+       gm_cpp_opt_reduce_field.cc\
        gm_cpp_opt_check_feasible.cc \
        gm_cpp_opt_save_bfs.cc\
        gm_cpp_opt_common_nbr.cc\
