@@ -596,9 +596,11 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
             for (I = modified.begin(); I != modified.end(); I++) {
                 if ((*I)->get_nodetype() == AST_ID) {
                     ast_id* id = (ast_id*) (*I);
+                    a->set_matching_rhs_top(expr);
                     a->apply_lhs(id);
                 } else if ((*I)->get_nodetype() == AST_FIELD) {
                     ast_field* f = ((ast_field*) (*I));
+                    a->set_matching_rhs_top(expr);
                     a->apply_lhs(f);
                 }
             }
@@ -634,6 +636,7 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
         if (for_lhs) {
             std::list<ast_node*>::iterator I;
             for (I = modified.begin(); I != modified.end(); I++) {
+                a->set_matching_rhs_top(expr);
                 if ((*I)->get_nodetype() == AST_ID) {
                     ast_id* id = (ast_id*) (*I);
                     if (b)
@@ -656,7 +659,6 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
                 a->apply(expr);
         }
     }
-
 }
 
 void ast_expr_reduce::traverse(gm_apply*a, bool is_post, bool is_pre) {

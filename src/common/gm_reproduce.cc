@@ -165,7 +165,11 @@ void ast_procdef::reproduce(int ind_level) {
     Out.NL();
 
     assert(sents !=NULL);
-    sents->reproduce(ind_level);
+    if (ind_level < 0) 
+        Out.push("...");
+    else
+        sents->reproduce(ind_level);
+
     Out.NL();
     Out.flush();
 }
@@ -191,10 +195,15 @@ void ast_expr_foreign::reproduce(int ind_lvel) {
 
 }
 
+void ast_expr_mapaccess::reproduce(int ind_level)
+{
+     get_mapaccess()->reproduce(ind_level); 
+}
+
 void ast_expr::reproduce(int ind_level) {
 
     char buf[1024];
-    switch (expr_class) {
+    switch (get_opclass()) {
         case GMEXPR_NIL:
             Out.push("NIL");
             return;
@@ -217,6 +226,7 @@ void ast_expr::reproduce(int ind_level) {
                 Out.push("False");
             return;
         case GMEXPR_ID:
+            assert(id1!=NULL);
             id1->reproduce(0);
             return;
         case GMEXPR_FIELD:
@@ -277,6 +287,7 @@ void ast_expr::reproduce(int ind_level) {
             break;
         case GMEXPR_BUILTIN_FIELD:
         case GMEXPR_FOREIGN:
+            return;
         case GMEXPR_MAPACCESS:
             //TODO add some print statements for these?
             return;
@@ -500,6 +511,13 @@ void ast_foreach::reproduce(int ind_level) {
         cond->reproduce(0);
         Out.pushln(")");
     }
+
+    if (ind_level < 0)
+    {
+        Out.push("...");
+        return;
+    }
+
     if (body->get_nodetype() == AST_SENTBLOCK)
         body->reproduce(0);
     else {
@@ -546,7 +564,10 @@ void ast_bfs::reproduce(int ind_level) {
     }
 
     if (f_body != NULL) {
-        f_body->reproduce(0);
+        if (ind_level < 0)
+            Out.push("...");
+        else 
+            f_body->reproduce(0);
     } else {
         Out.pushln("{}");
     }
@@ -558,7 +579,10 @@ void ast_bfs::reproduce(int ind_level) {
     }
     if (b_body != NULL) {
         Out.pushln("InReverse ");
-        b_body->reproduce(0);
+        if (ind_level < 0)
+            Out.push("...");
+        else 
+            b_body->reproduce(0);
     }
 }
 
@@ -566,6 +590,12 @@ void ast_if::reproduce(int ind_level) {
     Out.push("If (");
     cond->reproduce(0);
     Out.pushln(")");
+    if (ind_level < 0) {
+        Out.push("...");
+        if (else_part != NULL) 
+            Out.pushln("\nElse ...");
+        return;
+    }
 
     if (then_part->get_nodetype() == AST_SENTBLOCK) {
         then_part->reproduce(ind_level);
@@ -590,7 +620,10 @@ void ast_if::reproduce(int ind_level) {
 void ast_while::reproduce(int ind_level) {
     if (is_do_while()) {
         Out.push("Do ");
-        body->reproduce(ind_level); // body is always sentence block
+        if (ind_level < 0) 
+            Out.push("...\n");
+        else
+            body->reproduce(ind_level); // body is always sentence block
         Out.push("While (");
         cond->reproduce(0);
         Out.pushln(" );");
@@ -598,7 +631,10 @@ void ast_while::reproduce(int ind_level) {
         Out.push("While (");
         cond->reproduce(0);
         Out.pushln(" )");
-        body->reproduce(ind_level); // body is always sentence blco
+        if (ind_level < 0) 
+            Out.push("...\n");
+        else
+            body->reproduce(ind_level); // body is always sentence blco
     }
 }
 void ast_return::reproduce(int ind_level) {

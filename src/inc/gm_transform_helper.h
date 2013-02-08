@@ -242,6 +242,59 @@ extern void gm_make_normal_assign(ast_assign *a);
 extern void gm_flat_nested_sentblock(ast_node* n); 
 
 extern bool gm_check_if_end_with_return(ast_sentblock* sb);
+
+// find the sentence that owns this expression
 extern ast_sent* gm_find_parent_sentence(ast_expr* e);
+extern ast_sent* gm_find_parent_sentence(ast_id* e);
+
+
+//--------------------------------------------------------------------------
+// Reaching Definition Analysis (scalars only)
+//   After the analysis, the map contains the following relation
+//     <symbol, statement> ==> set of <rhs expression (or ast_proc)>
+//--------------------------------------------------------------------------
+typedef std::pair<gm_symtab_entry*, ast_sent*> gm_rda_key;
+typedef std::set<ast_node*> gm_rda_set; 
+typedef std::map<gm_rda_key, gm_rda_set> gm_rda_map;
+
+// (Call to invoke analysis)
+// R should be empty at the beginning, but filled after analysis
+extern void gm_do_reaching_def_analysis(ast_procdef* p, gm_rda_map& R); 
+
+// (Call after analysis)
+// find all reaching definitions (set of <expression,bool>, returns NULL if none)
+// if <expression is null> it means it is an input argument
+extern bool gm_has_any_reaching_defs(gm_rda_map& R, ast_id* scalar);
+extern gm_rda_set& gm_get_all_reaching_defs(gm_rda_map& R, ast_id* scalar);
+
+
+//--------------------------------------------------------------
+// Used Symbol Analysis
+// Map of <sentence> ==> set of <symbols> directly used by the sentence
+//--------------------------------------------------------------
+typedef std::map<ast_sent*, std::set<gm_symtab_entry*> > gm_used_symbol_map;
+
+// (Call to invoke analysis)
+// n is the top of tree node (should be proc or sent)
+// UI should be empty at the beginning but filled after analysis
+extern void gm_compute_used_symbol_info(ast_node* n, gm_used_symbol_map& UI);
+
+//--------------------------------------------------------------
+// Defining Symbol analysis
+//   Map of <sent or prec_def>  ==> set of (symbol, def_expression)
+//
+// Def_expression:
+//      - ast_procdef ; for arguments
+//      - ast_assign  ; for reductions
+//      - ast_forein_expr ; for foreign expressions
+//      - ast_expr ; normal assignment (lhs, rhs) or supplimentary arguments for argmin/argmax assignment
+//      - ast_foreach or ast_bfs/dfs ; for iterators
+//
+// Currently, considers scalars only
+//--------------------------------------------------------------
+typedef std::pair<gm_symtab_entry*, ast_node* > gm_symbol_def_t;
+typedef std::map<ast_node*, std::vector<gm_symbol_def_t> > gm_defined_symbol_map;
+
+extern void gm_compute_defined_symbol_info(ast_node* n, gm_defined_symbol_map& UI);
 
 #endif

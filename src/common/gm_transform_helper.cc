@@ -628,6 +628,17 @@ ast_sent* gm_find_parent_sentence(ast_expr* e) {
     else
         return NULL;
 }
+ast_sent* gm_find_parent_sentence(ast_id* e) {
+    ast_node* up = e->get_parent();
+
+    while (up != NULL) {
+        if (up->is_sentence()) return (ast_sent*) up;
+        
+        up = up->get_parent();
+    }
+
+    return NULL;
+}
 
 class gm_reconstruct_scope_t : public gm_apply {
 public:

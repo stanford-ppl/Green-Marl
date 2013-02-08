@@ -73,4 +73,10 @@ void gm_ind_opt_remove_unused_scalar::process(ast_procdef* proc) {
 
     gm_opt_remove_unused_t T2(T.get_used_set());
     proc->traverse_pre(&T2);
+
+#if 0
+    gm_used_symbol_map UI;
+    gm_compute_used_symbol_info(proc, UI);
+#endif
+
 }

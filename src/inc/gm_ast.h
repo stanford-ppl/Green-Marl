@@ -1731,6 +1731,8 @@ public:
         return clone;
     }
 
+    virtual void reproduce(int ind_level);
+
     bool is_mapaccess() {
         return true;
     }

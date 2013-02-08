@@ -23,6 +23,7 @@ void gm_cpp_gen::init_opt_steps() {
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_nonconf_reduce));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_reduce_scalar));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_reduce_field));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_opt_debug));
 }
 
 bool gm_cpp_gen::do_local_optimize() {

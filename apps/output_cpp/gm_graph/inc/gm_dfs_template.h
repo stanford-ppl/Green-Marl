@@ -51,6 +51,7 @@ class gm_dfs_template
         curr_node = INVALID_NODE;
         curr_idx = 0;
         curr_end = 0;
+        THRESHOLD_LARGE = std::max((int)(G.num_nodes()*0.1), 4096); 
     }
 
     void do_dfs() {
@@ -178,7 +179,7 @@ class gm_dfs_template
     unsigned char* visited_bitmap;
     std::set<node_t> visited_small;
     bool is_small;
-    static const int THRESHOLD_LARGE = 4096;
+    int THRESHOLD_LARGE;
     static const node_t INVALID_NODE = -1;
 
 };
