@@ -1,0 +1,22 @@
+
+// to debug reaching def
+Procedure P50(G: Graph, n:Node)
+{
+    Int x = 0;
+    InDFS(t : G.Nodes ; n)[x>3]
+    {
+        Int y;
+        y = x + 1;
+        x = 1;
+    }
+    InPost 
+    {
+        Int z;
+        z = x+ 2;
+        x = 2;
+    }
+
+    Int k;
+    k = x + 3;
+
+}

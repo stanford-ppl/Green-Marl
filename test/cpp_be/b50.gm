@@ -1,0 +1,36 @@
+
+// to debug reaching def
+Procedure P50()
+{
+    Int x;
+    Int z1,z2,z3,z4,z5,z6, z7;
+
+    z1 = x+1;
+
+    x = 0;
+    z2 = x+2;
+
+    If (z1 > 0) {
+        x = 1;
+    }
+    z3 = x+3;
+
+    If (z2 > 0) {
+        x = 2;
+    } Else {
+        x = 3;
+    }
+    z4 = x+4;
+
+    While(z3 > 0) {
+        z5 = x + 5;
+        x = 4;
+        Int y;
+        If (z4 > 0) y = 3;
+        z7 = x + y; // y = 3
+        y = 4;
+    }
+
+    z6 = x+ 6;
+
+}

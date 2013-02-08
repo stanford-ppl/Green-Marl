@@ -83,11 +83,13 @@ SRCS2 =\
        gm_check_property_argument_usage.cc\
 	   gm_reaching_def_analysis.cc\
 	   gm_used_symbol_analysis.cc\
+	   gm_def_symbol_analysis.cc\
        gm_opt_nonconf_reduce.cc\
        gm_opt_remove_unused_scalar.cc\
        gm_opt_propagate_trivial_writes.cc\
        gm_flip_edges.cc\
        gm_cpp_opt.cc\
+	   gm_cpp_opt_debug.cc\
        gm_cpp_opt_select_par.cc\
        gm_cpp_opt_defer.cc \
        gm_cpp_opt_reduce_scalar.cc gm_cpp_opt_reduce_field.cc\
