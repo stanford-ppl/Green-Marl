@@ -38,6 +38,7 @@ apps/output_cpp/gm_graph/obj
 apps/output_cpp/gm_graph/avro-c-1.7.2/jansson/src/*.o
 apps/output_cpp/gm_graph/avro-c-1.7.2/src/*.o
 apps/output_gps/generated
+apps/output_giraph/generated
 
 etc/update_setup
 setup.mk.bak
