@@ -375,10 +375,7 @@ class gm_reaching_def_traverse : public gm_apply
             // reflow C1 context to body (unless currenly reflowing)
             if (!is_reflow)
             {
-                gm_reaching_def_traverse T(UI, DI, R, true);
-                T.set_context_for(body, C1);
-                body->traverse_both(&T);
-
+                augment(w, C1, true);
                 // C1 should be updated now
             }
 
@@ -406,10 +403,7 @@ class gm_reaching_def_traverse : public gm_apply
             // reflow C1 context to body (unless currenly reflowing)
             if (!is_reflow)
             {
-                gm_reaching_def_traverse T(UI, DI, R, true);
-                T.set_context_for(body, C1);
-                body->traverse_both(&T);
-
+                augment(fe, C1, true);
                 // C1 should be updated now
             }
 
@@ -477,10 +471,10 @@ class gm_reaching_def_traverse : public gm_apply
             }
         }
 
-        void augment(ast_sent* n, reaching_context_t* T)
+        void augment(ast_sent* n, reaching_context_t* T, bool keep_context=false)
         {
             gm_reaching_def_traverse X(UI, DI, R, true); // reflow version
-            X.set_context_for(n, T, true);
+            X.set_context_for(n, T, !keep_context); // create copy if not to keep context
             n->traverse_both(&X);
         }
 public:
