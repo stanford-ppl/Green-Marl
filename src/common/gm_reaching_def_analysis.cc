@@ -270,8 +270,7 @@ class gm_reaching_def_traverse : public gm_apply
                 ast_bfs* b = (ast_bfs*) s;
                 if (b->is_bfs())
                 {
-
-
+                    previsit_bfs(b);
                 }
                 else
                 {
@@ -318,8 +317,7 @@ class gm_reaching_def_traverse : public gm_apply
                 ast_bfs* b = (ast_bfs*) s;
                 if (b->is_bfs())
                 {
-
-
+                    postvisit_bfs(b);
                 }
                 else
                 {
@@ -411,6 +409,63 @@ class gm_reaching_def_traverse : public gm_apply
             merge_contexts(*C, *C1);
         }
 
+
+        void previsit_bfs(ast_bfs* b)
+        {
+            reaching_context_t* C = get_context_for(b);
+            ast_sent* fbody = b-> get_fbody(); 
+            ast_sent* bbody = b-> get_bbody();
+            assert (fbody!=NULL);
+
+            set_context_for(b, C); // my context
+            set_context_for(fbody, C, true); // copy
+
+            if (bbody != NULL) {
+                reaching_context_t T;           // dummy context
+                set_context_for(bbody, &T, true); 
+            }
+        }
+        void  postvisit_bfs(ast_bfs* b)
+        {
+            //--------------------------------
+            // y = 0;
+            // InBFS(...) { // fw-visit
+            //    x = y ;  // possible values? [0, 1]
+            //    y = 1;
+            // } 
+            // InReverse { // reverse-visit
+            //    z = y;  // possible values? [1, 2]
+            //    y = 2;
+            // }
+            // w = y;   // possible values? [2]
+            //--------------------------------
+            ast_sent* f_body = b-> get_fbody(); 
+            ast_sent* b_body = b-> get_bbody();
+
+            reaching_context_t* C = get_context_for(b);
+            reaching_context_t* C_f = get_context_for(f_body);
+
+            if (!is_reflow) {
+                augment(f_body, C_f);  // F -> F
+            }
+            overwrite_contexts(*C, *C_f);
+
+            if (b_body != NULL) 
+            {
+                // create a new context
+                set_context_for(b_body, C, true); 
+                reaching_context_t* C_r = get_context_for(b_body);
+
+                augment(b_body, C_r, true);  // 1st flow  (keep context)
+
+                augment(b_body, C_r);  // 2nd flow
+
+                overwrite_contexts(*C, *C_r); // merge to original context
+            }
+        }
+
+
+
         void previsit_dfs(ast_bfs* b)
         {
             reaching_context_t* C = get_context_for(b);
@@ -430,14 +485,14 @@ class gm_reaching_def_traverse : public gm_apply
             //--------------------------------
             // y = 0;
             // InDFS(...) { // pre-visit
-            //    x = y ;  // possible values?
+            //    x = y ;  // possible values? [0, 1, 2]
             //    y = 1;
             // } 
             // InPost { // post-visit
-            //    z = y;  // possible values?
+            //    z = y;  // possible values? [1, 2]
             //    y = 2;
             // }
-            // w = y;   // possible values?
+            // w = y;   // possible values? [1, 2]
             //--------------------------------
             ast_sent* f_body = b-> get_fbody(); 
             ast_sent* b_body = b-> get_bbody();
@@ -454,17 +509,19 @@ class gm_reaching_def_traverse : public gm_apply
             reaching_context_t* C_fr = T.get_context_for(b_body); 
 
             // final result is C_fr 
-            if (b->get_navigator() == NULL) {
-                overwrite_contexts(*C, *C_fr); 
-            }
-            else {
-                merge_contexts(*C, *C_fr);
-            }
+            overwrite_contexts(*C, *C_fr); 
+
+            //if (b->get_navigator() == NULL) {
+            //    overwrite_contexts(*C, *C_fr); 
+            //}
+            //else {
+            //  merge_contexts(*C, *C_fr);
+            //}
 
             // augment 
             if (!is_reflow) {
-                dump_context(*C_f);
-                dump_context(*C_fr);
+                //dump_context(*C_f);
+                //dump_context(*C_fr);
                 augment(f_body, C_f);  // F -> F
                 augment(f_body, C_fr); // F -> R -> F 
                 augment(b_body, C_fr); // F -> R -> R 
@@ -474,8 +531,9 @@ class gm_reaching_def_traverse : public gm_apply
         void augment(ast_sent* n, reaching_context_t* T, bool keep_context=false)
         {
             gm_reaching_def_traverse X(UI, DI, R, true); // reflow version
-            X.set_context_for(n, T, !keep_context); // create copy if not to keep context
+            X.set_context_for(n, T, !keep_context); // create copy, unless (keep_context) is on
             n->traverse_both(&X);
+
         }
 public:
         // end of static scope

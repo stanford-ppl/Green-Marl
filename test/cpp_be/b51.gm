@@ -19,4 +19,19 @@ Procedure P50(G: Graph, n:Node)
     Int k;
     k = x + 3;
 
+    InBFS(t : G.Nodes ; n)[x>3]
+    {
+        Int y;
+        y = x + 4;
+        x = 4;
+    }
+    InReverse
+    {
+        Int z;
+        z = x+ 5;
+        x = 5;
+    }
+
+    k = x + 6;
+
 }
