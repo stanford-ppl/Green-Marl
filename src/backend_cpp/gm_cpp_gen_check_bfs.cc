@@ -207,12 +207,12 @@ class check_bfs_main_t : public gm_apply
             s->add_info_string(CPPBE_INFO_BFS_NAME, c);
 
             // traverse and insert symbol information
-            find_symobls_inside(s);
+            find_symobls_inside(s, bfs->get_source()->getSymInfo());
         }
     }
 
  private:
-    void find_symobls_inside(ast_sent* s)
+    void find_symobls_inside(ast_sent* s, gm_symtab_entry * graph)
     {
             // traverse id
             gather_symbols_inside_bfs_t R(s);
@@ -222,9 +222,13 @@ class check_bfs_main_t : public gm_apply
             s->add_info(CPPBE_INFO_BFS_SYMBOLS, syms);
 
             std::list<void*> &L = syms->get_list();
+            L.push_back(graph);
+
+            // the first element should be the graph instance
             std::set<gm_symtab_entry*>& S = R.get_syms();
             std::set<gm_symtab_entry*>::iterator I;
             for (I=S.begin(); I!=S.end(); I++) {
+                if (*I == graph) continue;
                 L.push_back(*I);
             }
     }

@@ -100,7 +100,7 @@ void gm_cpp_gen::generate_bfs_def(ast_bfs* bfs) {
     ast_extra_info_list* info = (ast_extra_info_list*) bfs->find_info(CPPBE_INFO_BFS_SYMBOLS);
     std::list<void*>& SET = info->get_list();
     std::list<void*>::iterator S;
-    gm_symtab_entry* graph_sym = (gm_symtab_entry*) (*(SET.begin()));
+    gm_symtab_entry* graph_sym = (gm_symtab_entry*) (*(SET.begin()));  // the first element of set should be the graph instance!
     const char* template_name = (bfs->is_bfs() ? BFS_TEMPLATE : DFS_TEMPLATE);
 
     sprintf(temp, "class %s : public %s", bfs_name, template_name);
