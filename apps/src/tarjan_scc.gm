@@ -1,0 +1,42 @@
+Procedure Tarjan (G:Graph, SCC: N_P<Node> )
+{
+    N_P<Bool> InStack;
+    N_P<Node> LowLink;
+    N_Q Stack;
+
+    G.SCC = NIL;
+    G.InStack = False;
+
+    // DFS
+    For(n: G.Nodes) (n.SCC == NIL)
+    {
+        InDFS(t: G.Nodes From n)[!t.InStack]
+        {
+            // previsit
+            Stack.PushBack(t);
+            t.InStack = True;
+            t.LowLink = t;
+        }
+        InPost 
+        {
+            // post visit
+            For(k: t.Nbrs) {
+                If (k.LowLink < t.LowLink) 
+                    t.LowLink = k.LowLink;
+            }
+
+            // identified an SCC
+            If (t.LowLink == t) {
+                Node w = Stack.PopBack();
+                While (w != t) {
+                    w.InStack = False;
+                    w.SCC = t;
+                    w = Stack.PopBack();
+                }
+
+                w.InStack = False;
+                w.SCC = t;
+            }
+        }
+    }
+}

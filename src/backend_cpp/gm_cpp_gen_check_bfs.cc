@@ -20,6 +20,8 @@
 //   For every bfs
 //   - save sym entries of collections that are used inside each bfs
 //---------------------------------------------------------------
+
+/*
 static void add_to_list_unless_duplicated(gm_symtab_entry* e, std::list<void*>& L)
 {
     std::list<void*>::iterator I;
@@ -27,7 +29,7 @@ static void add_to_list_unless_duplicated(gm_symtab_entry* e, std::list<void*>& 
         gm_symtab_entry* i = (gm_symtab_entry*) *I;
         if (i == e) return ;
     }
-    printf("adding %s\n",e->getId()->get_genname());
+    //printf("adding %s\n",e->getId()->get_genname());
     L.push_back(e);
 }
 
@@ -63,15 +65,13 @@ public:
                         add_to_list_unless_duplicated(g->getSymInfo(), LIST);
                     }
 
-                    /* 
-                    if (c != NULL) {
-                        // eliminate duplicates
-                        for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
-                            if (((gm_symtab_entry*)*L_I) == c->getSymInfo()) break;
-                        }
-                        if (L_I == LIST.end()) LIST.push_back(c->getSymInfo());
-                    }
-                    */
+                    //if (c != NULL) {
+                    //    // eliminate duplicates
+                    //    for (L_I = LIST.begin(); L_I != LIST.end(); L_I++) {            
+                    //        if (((gm_symtab_entry*)*L_I) == c->getSymInfo()) break;
+                    //    }
+                    //    if (L_I == LIST.end()) LIST.push_back(c->getSymInfo());
+                    //}
                 }
             }
         }
@@ -107,7 +107,6 @@ public:
             sprintf(temp, "%s", proc->get_procname()->get_genname());
             const char* suffix = bfs->is_bfs() ? "_bfs" : "_dfs";
             char* c = FE.voca_temp_name_and_add(temp, suffix);
-
             s->add_info_string(CPPBE_INFO_BFS_NAME, c);
 
             bfs_lists.push_back(s);
@@ -147,15 +146,112 @@ public:
     bool has_bfs;
     bool in_bfs;
 };
+*/
+
+class gather_symbols_inside_bfs_t: public gm_apply
+{
+
+public:
+    gather_symbols_inside_bfs_t(ast_sent* t) 
+    {
+        set_for_id(true);
+    }
+
+    bool apply(ast_id* i) {
+        gm_symtab_entry * e = i->getSymInfo();
+        syms.insert(e);
+    }
+
+    void end_context(ast_node* n)
+    {
+        // removea all local definitions
+        cleanup_local(n->get_symtab_var());
+        cleanup_local(n->get_symtab_field());
+    }
+
+    std::set<gm_symtab_entry*>& get_syms() {return syms;}
+
+private:
+    std::set<gm_symtab_entry*> syms;
+
+    void cleanup_local(gm_symtab* T)
+    {
+        std::set<gm_symtab_entry*> &S = T->get_entries();
+        std::set<gm_symtab_entry*>::iterator I;
+        for(I=S.begin(); I!=S.end(); I++)
+        {
+            syms.erase(*I);
+        }
+    }
+};
+
+// find list of BFS
+class check_bfs_main_t : public gm_apply
+{
+    public:
+    check_bfs_main_t(ast_procdef* p) :
+        proc(p), has_bfs(false) {
+        set_for_sent(true);
+    }
+
+    bool apply(ast_sent* s) {
+        if (s->get_nodetype() == AST_BFS) {
+            has_bfs = true;
+            bfs_lists.push_back(s);
+
+            char temp[1024];
+            sprintf(temp, "%s", proc->get_procname()->get_genname());
+            ast_bfs *bfs = (ast_bfs*) s;
+            const char* suffix = bfs->is_bfs() ? "_bfs" : "_dfs";
+            char* c = FE.voca_temp_name_and_add(temp, suffix);
+            s->add_info_string(CPPBE_INFO_BFS_NAME, c);
+
+            // traverse and insert symbol information
+            find_symobls_inside(s, bfs->get_source()->getSymInfo());
+        }
+    }
+
+ private:
+    void find_symobls_inside(ast_sent* s, gm_symtab_entry * graph)
+    {
+            // traverse id
+            gather_symbols_inside_bfs_t R(s);
+            s->traverse_pre(&R);
+
+            ast_extra_info_list* syms = new ast_extra_info_list();
+            s->add_info(CPPBE_INFO_BFS_SYMBOLS, syms);
+
+            std::list<void*> &L = syms->get_list();
+            L.push_back(graph);
+
+            // the first element should be the graph instance
+            std::set<gm_symtab_entry*>& S = R.get_syms();
+            std::set<gm_symtab_entry*>::iterator I;
+            for (I=S.begin(); I!=S.end(); I++) {
+                if (*I == graph) continue;
+                L.push_back(*I);
+            }
+    }
+
+ private:
+    ast_bfs* current_bfs;
+    ast_procdef* proc;
+ public:
+    std::list<ast_sent*> bfs_lists;
+    bool has_bfs;
+};
+
 
 void gm_cpp_gen_check_bfs::process(ast_procdef* d) {
     // re-do rw analysis
     gm_redo_rw_analysis(d->get_body());
 
     check_bfs_main_t T(d);
-    d->traverse_both(&T);
-
+    //d->traverse_both(&T);
+    d->traverse_pre(&T);
     d->add_info_bool(CPPBE_INFO_HAS_BFS, T.has_bfs);
+
+    
     if (T.has_bfs) {
         std::list<ast_sent*>&L = T.bfs_lists;
         std::list<ast_sent*>::iterator I;
@@ -165,4 +261,5 @@ void gm_cpp_gen_check_bfs::process(ast_procdef* d) {
         }
         d->add_info(CPPBE_INFO_BFS_LIST, BL);
     }
+    
 }
