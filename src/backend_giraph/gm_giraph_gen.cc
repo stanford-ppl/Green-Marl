@@ -281,9 +281,9 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         // Parse edge values
         //------------------------------------------------------------
         Body_input.pushln("@Override");
-        sprintf(temp, "protected Map<%s, %s> getEdges(String[] values) throws IOException {", vertex_id, edge_data);
+        sprintf(temp, "protected Iterable< Edge<%s, %s> > getEdges(String[] values) throws IOException {", vertex_id, edge_data);
         Body_input.pushln(temp);
-        sprintf(temp, "Map<%s, %s> edges = Maps.newHashMap();", vertex_id, edge_data);
+        sprintf(temp, "List< Edge<%s, %s> > edges = Lists.newLinkedList();", vertex_id, edge_data);
         Body_input.pushln(temp);
         int step ;
         //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) 
@@ -301,7 +301,7 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         }
         // edge properties
         if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-            sprintf(temp, "edges.put(edgeId, new %s(", edge_data);
+            sprintf(temp, "edges.add(new DefaultEdge<%s, %s>(edgeId, new %s(", vertex_id, edge_data, edge_data);
             Body_input.push(temp);
             val = 1;
             if (L2.size() > 0) {
@@ -313,11 +313,12 @@ void gm_giraph_gen::do_generate_input_output_formats() {
                     if (val != L2.size()) Body_input.push(", ");
                 }
             }
-            Body_input.pushln("));");
+            Body_input.pushln(")));");
         } else {
             //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) 
             //    Body_input.pushln("// Ignoring dummy edge value");
-               Body_input.pushln("edges.put(edgeId, NullWritable.get());");
+            sprintf(temp, "edges.add(new DefaultEdge<%s, %s>(edgeId, NullWritable.get()));", vertex_id, edge_data);
+            Body_input.pushln(temp);
         }
         Body_input.pushln("}");
         Body_input.pushln("return edges;");
@@ -574,16 +575,15 @@ void gm_giraph_gen::do_generate_job_configuration() {
     Body_main.NL();
     Body_main.pushln("GiraphJob job = new GiraphJob(getConf(), getClass().getName());");
     Body_main.pushln("job.getConfiguration().setInt(GiraphConfiguration.CHECKPOINT_FREQUENCY, 0);");
-    Body_main.pushln("job.getConfiguration().setBoolean(GiraphConfiguration.USE_NETTY, true);");
     sprintf(temp, "job.getConfiguration().setVertexClass(%sVertex.class);", proc_name);
     Body_main.pushln(temp);
-    sprintf(temp, "job.getConfiguration().setMasterComputeClass(%sVertex.MasterCompute.class);", proc_name);
+    sprintf(temp, "job.getConfiguration().setMasterComputeClass(%sVertex.Master.class);", proc_name);
     Body_main.pushln(temp);
-    sprintf(temp, "job.getConfiguration().setWorkerContextClass(%sVertex.WorkerContext.class);", proc_name);
+    sprintf(temp, "job.getConfiguration().setWorkerContextClass(%sVertex.Context.class);", proc_name);
     Body_main.pushln(temp);
     sprintf(temp, "job.getConfiguration().setVertexInputFormatClass(%sVertexInputFormat.class);", proc_name);
     Body_main.pushln(temp);
-    Body_main.pushln("FileInputFormat.addInputPath(job.getInternalJob(), new Path(cmd.getOptionValue('i')));");
+    Body_main.pushln("GiraphFileInputFormat.addVertexInputPath(job.getInternalJob(), new Path(cmd.getOptionValue('i')));");
     Body_main.pushln("if (cmd.hasOption('o')) {");
     sprintf(temp, "job.getConfiguration().setVertexOutputFormatClass(%sVertexOutputFormat.class);", proc_name);
     Body_main.pushln(temp);
