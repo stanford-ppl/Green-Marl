@@ -27,6 +27,9 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
     Body.pushln("import java.util.Random;");
     Body.pushln("import org.apache.giraph.aggregators.*;");
     Body.pushln("import org.apache.giraph.graph.*;");
+    Body.pushln("import org.apache.giraph.master.*;");
+    Body.pushln("import org.apache.giraph.vertex.*;");
+    Body.pushln("import org.apache.giraph.worker.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.log4j.Logger;");
     Body.NL();
@@ -42,11 +45,11 @@ void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
     Body.pushln("import org.apache.commons.cli.HelpFormatter;");
     Body.pushln("import org.apache.commons.cli.Options;");
     Body.pushln("import org.apache.commons.cli.PosixParser;");
-    Body.pushln("import org.apache.giraph.GiraphConfiguration;");
+    Body.pushln("import org.apache.giraph.conf.GiraphConfiguration;");
     Body.pushln("import org.apache.giraph.graph.GiraphJob;");
+    Body.pushln("import org.apache.giraph.io.formats.GiraphFileInputFormat;");
     Body.pushln("import org.apache.hadoop.conf.Configuration;");
     Body.pushln("import org.apache.hadoop.fs.Path;");
-    Body.pushln("import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;");
     Body.pushln("import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;");
     Body.pushln("import org.apache.hadoop.util.Tool;");
     Body.pushln("import org.apache.hadoop.util.ToolRunner;");
@@ -57,13 +60,14 @@ void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
 void gm_giraphlib::generate_headers_input(gm_code_writer& Body) {
     generate_package_decl_if_required(Body);
     Body.pushln("import java.io.IOException;");
-    Body.pushln("import java.util.Map;");
+    Body.pushln("import java.util.List;");
 
-    Body.pushln("import org.apache.giraph.io.*;");
+    Body.pushln("import org.apache.giraph.graph.*;");
+    Body.pushln("import org.apache.giraph.io.formats.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.hadoop.mapreduce.InputSplit;");
     Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
-    Body.pushln("import com.google.common.collect.Maps;");
+    Body.pushln("import com.google.common.collect.Lists;");
     Body.NL();
 }
 
@@ -72,7 +76,8 @@ void gm_giraphlib::generate_headers_output(gm_code_writer& Body) {
     Body.pushln("import java.io.IOException;");
 
     Body.pushln("import org.apache.giraph.graph.*;");
-    Body.pushln("import org.apache.giraph.io.*;");
+    Body.pushln("import org.apache.giraph.vertex.*;");
+    Body.pushln("import org.apache.giraph.io.formats.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
     Body.NL();

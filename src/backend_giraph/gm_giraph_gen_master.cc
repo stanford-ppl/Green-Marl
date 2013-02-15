@@ -27,7 +27,7 @@ void gm_giraph_gen::do_generate_master_class() {
     Body.pushln("//----------------------------------------------");
     Body.pushln("// MasterCompute Class");
     Body.pushln("//----------------------------------------------");
-    sprintf(temp, "public static class MasterCompute extends org.apache.giraph.graph.MasterCompute {");
+    sprintf(temp, "public static class Master extends MasterCompute {");
     Body.pushln(temp);
     Body.pushln("// Control fields");
     bool prep = FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE);

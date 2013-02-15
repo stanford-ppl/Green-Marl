@@ -76,7 +76,7 @@ void gm_giraph_gen::do_generate_worker_context_class() {
     Body.pushln("//----------------------------------------------");
     Body.pushln("// WorkerContext Class");
     Body.pushln("//----------------------------------------------");
-    sprintf(temp, "public static class WorkerContext extends org.apache.giraph.graph.WorkerContext {");
+    sprintf(temp, "public static class Context extends WorkerContext {");
     Body.pushln(temp);
     Body.NL();
     Body.pushln("@Override");
