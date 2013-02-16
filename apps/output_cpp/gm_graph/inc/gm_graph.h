@@ -84,6 +84,8 @@ friend class gm_graph_hdfs;
     node_t* r_node_idx;        // O(M) array of node_t (destination of each reverse edge)
     node_t* r_node_idx_src;    // O(M) array of node_t (source of each reverse edge)
 
+    edge_t* fw_edge_idx;	   // O(M) array of edge_t (a mapping rev idx => fw idx)
+
     static const node_t NIL_NODE = (node_t) -1;
     static const edge_t NIL_EDGE = (edge_t) -1;
 

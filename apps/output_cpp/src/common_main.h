@@ -84,10 +84,10 @@ public:
         gettimeofday(&T2, NULL);
         printf("reverse edge creation time=%lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
 
-        gettimeofday(&T1, NULL);
-        G.do_semi_sort();
-        gettimeofday(&T2, NULL);
-        printf("semi sorting time=%lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
+        //gettimeofday(&T1, NULL);
+        //G.do_semi_sort();
+        //gettimeofday(&T2, NULL);
+        //printf("semi sorting time=%lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
 
         //------------------------------------------------
         // Any extra preperation Step (provided by the user)

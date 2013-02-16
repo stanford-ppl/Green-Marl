@@ -225,6 +225,7 @@ gm_builtin_def* gm_builtin_manager::find_builtin_def(int source_type, const char
         gm_builtin_def* d = *i;
         if (!gm_is_same_string(orgname, d->get_orgname())) continue;
 
+
         int def_src = d->get_source_type_summary();
         if (def_src == source_type) {
             goto found;

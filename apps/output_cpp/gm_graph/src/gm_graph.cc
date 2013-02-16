@@ -6,6 +6,7 @@
 #include <sstream>
 #include <map>
 #include <set>
+#include <vector>
 
 #include "gm_graph.h"
 #include "gm_util.h"
@@ -32,6 +33,7 @@ gm_graph::gm_graph() {
 
     e_idx2id = NULL;
     e_id2idx = NULL;
+    fw_edge_idx = NULL;
 
     //n_index2id = NULL;
 
@@ -198,6 +200,7 @@ void gm_graph::make_reverse_edges() {
 
     r_begin = new edge_t[num_nodes() + 1];
     r_node_idx = new node_t[num_edges()];
+    fw_edge_idx = new node_t[num_edges()];
 
     edge_t* loc = new edge_t[num_edges()];
 
@@ -244,6 +247,7 @@ void gm_graph::make_reverse_edges() {
         for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
             node_t dest = node_idx[e];
             edge_t r_edge_idx = r_begin[dest] + loc[e];
+            fw_edge_idx[r_edge_idx] = e;
 #if GM_GRAPH_NUMA_OPT
             temp_r_node_idx[r_edge_idx] = i;
 #else
@@ -357,7 +361,7 @@ void gm_graph::do_semi_sort_reverse() {
 
 #pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < num_nodes(); i++) {
-        sort(r_begin[i], r_begin[i + 1], r_node_idx, NULL);
+        sort(r_begin[i], r_begin[i + 1], r_node_idx, fw_edge_idx);
     }
 }
 
@@ -389,7 +393,6 @@ void gm_graph::do_semi_sort() {
         do_semi_sort_reverse();
     }
 
-    // TODO: if is_edge_source_ready? -> nothing. semi sort does not change source info
     _semi_sorted = true;
 }
 
@@ -415,11 +418,13 @@ void gm_graph::delete_frozen_graph() {
 
     delete[] e_id2idx;
     delete[] e_idx2id;
+    delete[] fw_edge_idx;
 
     begin = r_begin = NULL;
     node_idx = node_idx_src = NULL;
     r_node_idx = r_node_idx_src = NULL;
     e_id2idx = e_idx2id = NULL;
+    fw_edge_idx = NULL;
 }
 
 void gm_graph::allocate_memory_for_frozen_graph(node_t n, edge_t m) {

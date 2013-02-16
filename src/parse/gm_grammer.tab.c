@@ -1,9 +1,8 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.4.2.  */
 
 /* Skeleton implementation for Bison GLR parsers in C
    
-      Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+      Copyright (C) 2002-2006, 2009-2010 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,7 +36,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.4.1"
+#define YYBISON_VERSION "2.4.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "glr.c"
@@ -53,7 +52,7 @@
 
 /* Copy the first part of user declarations.  */
 
-/* Line 172 of glr.c  */
+/* Line 171 of glr.c  */
 #line 6 "parse/gm_grammer.y"
 
     #include <stdio.h>
@@ -67,8 +66,8 @@
     extern int yylex();
 
 
-/* Line 172 of glr.c  */
-#line 72 "./parse/gm_grammer.tab.c"
+/* Line 171 of glr.c  */
+#line 71 "./parse/gm_grammer.tab.c"
 
 
 
@@ -102,15 +101,15 @@ static YYSTYPE yyval_default;
 /* Copy the second part of user declarations.  */
 
 
-/* Line 243 of glr.c  */
-#line 107 "./parse/gm_grammer.tab.c"
+/* Line 242 of glr.c  */
+#line 106 "./parse/gm_grammer.tab.c"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #ifndef YY_
-# if YYENABLE_NLS
+# if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
 #   define YY_(msgid) dgettext ("bison-runtime", msgid)
@@ -180,7 +179,8 @@ YYID (i)
 #ifndef __attribute__
 /* This feature is available in gcc versions 2.5 and later.  */
 # if (! defined __GNUC__ || __GNUC__ < 2 \
-      || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) || __STRICT_ANSI__)
+      || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) \
+      || (defined __STRICT_ANSI__ && __STRICT_ANSI__))
 #  define __attribute__(Spec) /* empty */
 # endif
 #endif
@@ -4376,7 +4376,7 @@ yyparse (void)
   yychar = YYEMPTY;
   yylval = yyval_default;
 
-#if YYLTYPE_IS_TRIVIAL
+#if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
   yylloc.first_line   = yylloc.last_line   = 1;
   yylloc.first_column = yylloc.last_column = 1;
 #endif
