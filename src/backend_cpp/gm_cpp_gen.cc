@@ -648,6 +648,7 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb) {
                 }
                 if (e->find_info_bool(CPPBE_INFO_NEED_SEMI_SORT)) {
                     bool has_edge_prop = false;
+#if 0
                     // Semi-sorting must be done before edge-property creation
                     //std::vector<gm_symtab_entry*>& F = fields-> get_entries();
                     //for(int j=0;j<F.size();j++) {
@@ -658,6 +659,7 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb) {
                         gm_symtab_entry* f = *J;
                         if ((f->getType()->get_target_graph_sym() == e) && (f->getType()->is_edge_property())) has_edge_prop = true;
                     }
+
                     if (has_edge_prop) {
                         Body.pushln("//[xxx] edge property must be created before semi-sorting");
                         sprintf(temp, "assert(%s.%s());", e->getId()->get_genname(), IS_SEMI_SORTED);
@@ -666,6 +668,10 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb) {
                         sprintf(temp, "%s.%s();", e->getId()->get_genname(), SEMI_SORT);
                         Body.pushln(temp);
                     }
+#else
+                    sprintf(temp, "%s.%s();", e->getId()->get_genname(), SEMI_SORT);
+                    Body.pushln(temp);
+#endif
                 }
 
                 if (e->find_info_bool(CPPBE_INFO_NEED_FROM_INFO)) {
