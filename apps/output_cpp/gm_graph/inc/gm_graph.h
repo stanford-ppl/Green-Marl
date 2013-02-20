@@ -16,6 +16,81 @@ typedef node_t node_id;
 typedef edge_t edge_id;
 
 
+//------------------------------------------------------------------------------------------
+// Representation of Graph
+//
+// (1) Fronzen Form: CSR implementation (which is a compacted adjacnency list)
+//       - Nodes are identified by node-idx (0 ~ N-1)
+//       - Edges are idenfified by edge-idx (0 ~ M-1)
+//       - Basic form consists of two arrays
+//            edge_t begin    O(E)  : beginning the neighbor-list of each node-idx
+//            node_t node_idx O(N)  : destination node-idx of each edge-idx.
+//       - For instance, following code iterates all the (out) neighbors of node k;
+//            edge_t begin = G.begin(k);
+//            edge_t end = G.begin(k+1);
+//            for(edge_t t = begin; t < end; t++) {
+//               node_t n = G.node_idx[t];
+//               ......
+//            }
+//
+// (2) Properties are (assumed to be) stored in array.
+//       - Node properties are stored in node-idx order.
+//       - Edge properties are stored in edge-idx order.
+//       - These indices are for when the graph is initially frozen (loaded).
+//
+//
+// (3) Additional indicies are created by request.
+//      - make_reverse_edges();  ==> create reverse edges
+//      - do_semi_sort();        ==> sort edges from the same source by the order of destination nodes
+//      - prepare_edge_source(); ==> create O(E) array of source node-idx (as opposed to destination node-idx)
+//
+//      * make_reverse_edge:
+//           - create following data structures:
+//              edge_t r_begin    O(E) :  beginning of in-neighbor list of each node-idx
+//              node_t r_node_idx O(N) :  destination of each reverse edge, i.e. source of original edge
+//              edge_t e_rev2idx  O(E) :  a mapping of reverse edge-idx ==> original edge-idx
+//
+//           - For instance, following code iterates all the incoming neighbors of node k;
+//               edge_t begin = G.r_begin(k);
+//               edge_t end = G.r_begin(k+1);
+//               for(edge_t t = begin; t < end; t++) {
+//                   node_t n = G.r_node_idx[t];
+//                   ......
+//                }
+//           - For instance, following code look at all the edge values of incoming edges
+//                edge_t begin = G.r_begin(k);
+//                edge_t end = G.r_begin(k+1);
+//                for(edge_t t = begin; t < end; t++) {
+//                   value_t V = EdgePropA[e_rev2idx[t]]; 
+//                   ......
+//                }
+//
+//      * do_semi_sort:  // [XXX: to be changed as CSR representation MUST always be sorted]
+//          - node_idx array is semi-sorted. If reverse-edge has been created, r_node_idx array is also semi-sorted.
+//          - create following data structure:
+//              edge_t e_idx2idx  O(M) : a mappping of sorted edge-idx ==> original edge-idx
+//
+//          - Henthforth, once semi-sorting has been applied, edge properties have to be indirected as in following example.
+//                edge_t begin = G.r_begin(k);
+//                edge_t end = G.r_begin(k+1);
+//                for(edge_t t = begin; t < end; t++) {
+//                   value_t V = EdgePropA[e_idx2idx[t]]; 
+//                   ......
+//                }
+//          - e_rev2idx is automatically updated, as r_node_idx array is sorted.
+//          
+//
+//      * prepare_edge_source:
+//         - create following data structure 
+//              node_t* node_idx_src     O(M) // source of each edge-idx
+//              node_t* r_node_idx_src;  O(M) // source of each reverse edge-idx (i.e. org destination)
+//
+//        
+//
+//
+//------------------------------------------------------------------------------------------
+
+
 //--------------------------------------------------------------------------
 // Representation of Graph
 // 
@@ -33,27 +108,6 @@ typedef edge_t edge_id;
 //
 //   Flexible Format
 //     Map<node_ID, vector<Node_ID, Edge_ID> > ; neighborhood list
-//
-//   Fixed Format (CSR)
-//      edge_IDX [ num_nodes +1 ] : begin of edge_idx per each node_idx
-//      node_IDX [ num_edges    ] : destination node_idx  per each edge_idx
-//
-// 3. Usage Model
-//    
-//    (1) Create the graph using add node/edge -> Freeze 
-//     or, Create the graph using load binary (the graph will be automatically frozen) 
-//    (2) Do Preprocessing (if required)
-//        - make reverse edges (if reverse edges are explored)
-//        - semi-sort (if node.isNeighbor(n) is required)
-//        - prepare source information  (if edge.From() is required)
-//
-//    (3) Define Properties
-//
-//    (4) Analysis
-//
-// 4. Removing edges/nodes from graph
-//
-//    [to be improved]
 //
 //--------------------------------------------------------------------------
 struct edge_dest_t  // for flexible graph representation
@@ -81,10 +135,11 @@ friend class gm_graph_hdfs;
     node_t* node_idx_src;      // O(M) array of node_t (source of each edge)
 
     edge_t* r_begin;           // O(N) array of edge_t
-    node_t* r_node_idx;        // O(M) array of node_t (destination of each reverse edge)
-    node_t* r_node_idx_src;    // O(M) array of node_t (source of each reverse edge)
+    node_t* r_node_idx;        // O(M) array of node_t (destination of each reverse edge, i.e. source of original edge)
+    node_t* r_node_idx_src;    // O(M) array of node_t (source of each reverse edge, i.e. destination of original edge)
 
-    edge_t* fw_edge_idx;	   // O(M) array of edge_t (a mapping rev idx => fw idx)
+    edge_t* e_idx2idx;  	   // O(M) array of edge_t (a mapping sorted edge idx => original edge idx, created after semi-sorting)
+    edge_t* e_rev2idx;  	   // O(M) array of edge_t (a mapping reverse edge idx => original edge idx, created after reverse edge creation)
 
     static const node_t NIL_NODE = (node_t) -1;
     static const edge_t NIL_EDGE = (edge_t) -1;
@@ -280,17 +335,21 @@ friend class gm_graph_hdfs;
     //--------------------------------------------------------------
     // conversion between idx and id
     //--------------------------------------------------------------
-    edge_t get_edge_idx(edge_id e) {
+    inline edge_t get_edge_idx(edge_id e) {
         return e_id2idx == NULL ? e : e_id2idx[e];
     }
-    node_t get_node_idx(node_id n) {
+    inline node_t get_node_idx(node_id n) {
         return n;
     }
-    edge_id get_edge_id(edge_t e) {
+    inline edge_id get_edge_id(edge_t e) {
         return e_idx2id == NULL ? e : e_idx2id[e];
     }
-    node_id get_node_id(node_t n) {
+    inline node_id get_node_id(node_t n) {
         return n;
+    }
+
+    inline edge_t get_org_edge_idx(edge_id e) {
+        return e_idx2idx == NULL ? e : e_idx2idx[e];
     }
 
     void clear_graph(bool clean_key_id_mappings);    // invalidate everything and make the graph empty
@@ -351,22 +410,14 @@ friend class gm_graph_hdfs;
     bool _nodekey_defined;          // 
     bool _reverse_nodekey_defined;  // 
     bool _nodekey_type_is_numeric; //
-    //std::map<node_t, node_t> _numeric_key;          // node_key -> node_dix
-    std::unordered_map<node_t, node_t> _numeric_key;  // node_key -> node_dix
-    std::vector<node_t>      _numeric_reverse_key;  // node_idx -> node_key
+    std::unordered_map<node_t, node_t> _numeric_key;  // node_key -> node_idx
+    std::vector<node_t>      _numeric_reverse_key;    // node_idx -> node_key
 
-    void   prepare_nodekey(bool _prepare_reverse);  // should call this function before graph is create
+    void   prepare_nodekey(bool _prepare_reverse);    // should call this function before graph is create
     void   create_reverse_nodekey();
     void   delete_nodekey();
     void   delete_reverse_nodekey();
     node_t add_nodekey(node_t key);
-
-    //bool _cstr_nodekey_defined;             // 
-    //bool _cstr_reverse_nodekey_defined;     // 
-    //std::map<char*, node_t> _numeric_key;          // node_key -> node_dix
-    //std::vector<char*>      _numeric_reverse_key;  // node_idx -> node_key
-    //void prepare_cstr_nodekey(node_t estimated_size, bool use_reverse_key);
-    //void delete_cstr_nodekey(bool keep_reverse_key);
 
     inline bool find_nodekey(node_t key) {return _numeric_key.find(key) != _numeric_key.end();}
     inline node_t get_num_nodekeys() {return (node_t) _numeric_key.size();}

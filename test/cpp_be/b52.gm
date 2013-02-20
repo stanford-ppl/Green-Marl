@@ -1,0 +1,14 @@
+// Check of Edge Property
+Procedure b52(G:Graph, E:E_P<Int>)
+{
+    E_P<Int> F;
+
+    G.F = G.E;
+    
+    For(n: G.Nodes) 
+        For(m: n.Nbrs) 
+        {
+            Edge e = m.ToEdge();
+            [printf("%lld ->%lld: %d %d", (long) $n, (long) $m, $e.F, $e.E)];
+        }
+}
