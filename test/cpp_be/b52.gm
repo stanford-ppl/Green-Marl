@@ -4,11 +4,29 @@ Procedure b52(G:Graph, E:E_P<Int>)
     E_P<Int> F;
 
     G.F = G.E;
+    Int Y=0;
+    Edge x;
     
     For(n: G.Nodes) 
+    {
         For(m: n.Nbrs) 
         {
             Edge e = m.ToEdge();
-            [printf("%lld ->%lld: %d %d", (long) $n, (long) $m, $e.F, $e.E)];
+            [printf("%lld -> %lld: %d %d\n", (long) $n, (long) $m, $e.F, $e.E)];
+            Y += e.E + e.F;
         }
+
+    }
+
+    For (n: G.Nodes)
+    {
+        For(k: n.InNbrs) 
+        {
+            Edge e = k.ToEdge();
+            [printf("%lld <- %lld: %d %d\n", (long) $n, (long) $k, $e.F, $e.E)];
+            Y += e.E + e.F;
+            x = e;
+        }
+    }
+
 }

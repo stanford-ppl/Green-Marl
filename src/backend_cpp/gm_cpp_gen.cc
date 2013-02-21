@@ -288,7 +288,26 @@ void gm_cpp_gen::generate_lhs_id(ast_id* id) {
     Body.push(id->get_genname());
 }
 void gm_cpp_gen::generate_rhs_id(ast_id* id) {
-    generate_lhs_id(id);
+    if (id->getTypeInfo()->is_edge_compatible()) {
+        // reverse edge
+        if (id->find_info_bool(CPPBE_INFO_IS_REVERSE_EDGE)) {
+            Body.push(get_lib()->fw_edge_index(id));
+        }
+        else if (id->getTypeInfo()->is_edge_iterator()) {
+                // original edge index if semi-sorted
+                sprintf(temp, "%s.%s(%s)",
+                    id->getTypeInfo()->get_target_graph_id()->get_genname(),
+                    GET_ORG_IDX, 
+                    id->get_genname()
+                );
+                Body.push(temp);
+        }
+        else
+            generate_lhs_id(id);
+    }
+    else {
+        generate_lhs_id(id);
+    }
 }
 void gm_cpp_gen::generate_lhs_field(ast_field* f) {
     Body.push(f->get_second()->get_genname());
@@ -297,31 +316,24 @@ void gm_cpp_gen::generate_lhs_field(ast_field* f) {
         Body.push(get_lib()->node_index(f->get_first()));
     } else if (f->getTypeInfo()->is_edge_property()) {
 
-        // [XXX] this feature is still not finished
-        if (f->is_rarrow()) {
+        if (f->is_rarrow()) { // [XXX] this feature is still not finished, should be re-visited
             const char* alias_name = f->get_first()->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
             assert(alias_name != NULL);
             assert(strlen(alias_name) > 0);
             Body.push(alias_name);
         }
         // check if the edge is a back-edge
-        else if (false) {
+        else if (f->get_first()->find_info_bool(CPPBE_INFO_IS_REVERSE_EDGE)) {
             Body.push(get_lib()->fw_edge_index(f->get_first()));
         }
         else {
-            if (!f->get_second()->getSymInfo()->isArgument()) {
-                // if the property is a temporary edge-property,
-                //   skip semi-sorting check
-                Body.push(get_lib()->edge_index(f->get_first()));
-            }
-            else {
-                sprintf(temp, "%s.%s(%s)",
-                   f->get_first()->getTypeInfo()->get_target_graph_id()->get_genname(),
-                   GET_ORG_IDX, 
-                   f->get_first()->get_genname()
-                );
-                Body.push(temp);
-            }
+            // original edge index if semi-sorted
+            sprintf(temp, "%s.%s(%s)",
+               f->get_first()->getTypeInfo()->get_target_graph_id()->get_genname(),
+               GET_ORG_IDX, 
+               f->get_first()->get_genname()
+              );
+              Body.push(temp);
         }
     }
     else {

@@ -575,7 +575,9 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
     bool for_id = a->is_for_id();
     bool for_expr = a->is_for_expr();
     bool for_lhs = a->is_for_lhs();
+    bool for_rhs = a->is_for_rhs();
     bool b = a->has_separate_post_apply();
+
     if (is_pre) {
         if (for_id) {
             std::list<ast_node*>::iterator I;
@@ -608,7 +610,7 @@ void ast_foreign::traverse_sent(gm_apply* a, bool is_post, bool is_pre) {
         if (for_expr) a->apply(expr);
     }
 
-    if (for_expr || for_id) expr->traverse(a, is_post, is_pre);
+    if (for_expr || for_id || for_rhs) { expr->traverse(a, is_post, is_pre);}
 
     if (is_post) {
         if (for_id) {

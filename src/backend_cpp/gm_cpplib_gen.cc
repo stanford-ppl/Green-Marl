@@ -95,7 +95,9 @@ const char* gm_cpplib::edge_index(ast_id* iter) {
 const char* gm_cpplib::fw_edge_index(ast_id* iter) 
 {
 // iter is a reverse edge index. get matching fw edge index
-    sprintf(str_buf, "%s[%s]",FW_EDGE_IDX,iter->get_genname()); 
+    sprintf(str_buf, "%s.%s[%s]",
+            iter->getTypeInfo()->get_target_graph_id()->get_genname(),
+            FW_EDGE_IDX,iter->get_genname()); 
     return str_buf;
 }
 
