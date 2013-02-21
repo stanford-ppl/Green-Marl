@@ -14,6 +14,7 @@ void gm_cpp_gen::init_gen_steps() {
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_misc_check));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_check_bfs));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_check_usermain));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_check_rev_edge));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_restore_vardecl));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_cpp_gen_proc));
 }

@@ -111,7 +111,8 @@ SRCS2 =\
        gm_cpp_gen_check_bfs.cc\
        gm_cpp_gen_regular.cc\
        gm_cpp_gen_check_usermain.cc\
-       gm_cpplib_gen.cc \
+	   gm_cpp_gen_check_rev_edge.cc\
+       gm_cpplib_gen.cc\
        gm_cpplib_opt.cc\
        gm_gps_opt_remove_master_random_write.cc\
        gm_gps_opt_check_reverse_edges.cc\

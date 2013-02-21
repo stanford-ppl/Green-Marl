@@ -14,11 +14,12 @@ GM_COMPILE_STEP(gm_cpp_gen_mark_parallel, "Mark every parallel sentence")
 GM_COMPILE_STEP(gm_cpp_gen_check_bfs, "Check BFS routines")
 GM_COMPILE_STEP(gm_cpp_gen_misc_check, "Checking small assumptions")
 GM_COMPILE_STEP(gm_cpp_gen_check_usermain, "Checking items for user main generation")
-GM_COMPILE_STEP(gm_cpp_gen_proc, "Creating source for each procedure")
+GM_COMPILE_STEP(gm_cpp_gen_check_rev_edge, "Checking reverse edges")
+GM_COMPILE_STEP(gm_cpp_gen_proc, "Creating target code for each procedure")
 
 //-------------------------------------------
 // [Step 2]
-// Implement step::process in a seperate file
+// Implement step::process() in each seperate file
 //-------------------------------------------
 
 //------------------------------------------------------

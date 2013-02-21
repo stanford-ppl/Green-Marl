@@ -310,7 +310,7 @@ public:
 };
 
 //-----------------------------------
-// define labels, which is nothing but a string 
+// define labels (flags for additional information)
 //-----------------------------------
 DEF_STRING(LABEL_PAR_SCOPE);
 DEF_STRING(CPPBE_INFO_HAS_BFS);
@@ -327,6 +327,7 @@ DEF_STRING(CPPBE_INFO_USE_REVERSE_EDGE);
 DEF_STRING(CPPBE_INFO_USE_DOWN_NBR);
 DEF_STRING(CPPBE_INFO_NEED_SEMI_SORT);
 DEF_STRING(CPPBE_INFO_NEED_FROM_INFO);
+DEF_STRING(CPPBE_INFO_IS_REVERSE_EDGE);
 
 //----------------------------------------
 // For runtime
