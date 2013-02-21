@@ -25,5 +25,8 @@ static const char* IS_IN = "is_in";
 static const char* MAX_SET_CNT = "max_size";
 static const char* GET_LIST = "get_list";
 static const char* FROM_IDX = "node_idx_src";
+static const char* FW_EDGE_IDX = "e_rev2idx";
+static const char* ORG_EDGE_IDX = "e_idx2idx";
+static const char* GET_ORG_IDX = "get_org_edge_idx";
 
 #endif

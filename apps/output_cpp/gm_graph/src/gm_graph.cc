@@ -33,7 +33,8 @@ gm_graph::gm_graph() {
 
     e_idx2id = NULL;
     e_id2idx = NULL;
-    fw_edge_idx = NULL;
+    e_rev2idx = NULL;
+    e_idx2idx = NULL;
 
     //n_index2id = NULL;
 
@@ -50,10 +51,12 @@ gm_graph::gm_graph() {
 }
 
 gm_graph::~gm_graph() {
+    // flexible graph is destroyed automatically
     delete_frozen_graph();
 }
 
 bool gm_graph::has_edge_to(node_t source, node_t to) {
+    // xxx: change to binary search if semi-sorted
     edge_t current = begin[source];
     edge_t end = begin[source + 1];
     while(current < end)
@@ -192,15 +195,17 @@ static T parallel_prefix_sum(size_t sz, T* in_array, T*out_array) {
 
 void gm_graph::make_reverse_edges() {
 
+    // reverse edge alread created
     if (_reverse_edge) return;
 
+    // freeze
     if (!_frozen) freeze();
 
     node_t n_nodes = num_nodes();
 
     r_begin = new edge_t[num_nodes() + 1];
-    r_node_idx = new node_t[num_edges()];
-    fw_edge_idx = new node_t[num_edges()];
+    r_node_idx = new node_t[num_edges()]; 
+    e_rev2idx = new node_t[num_edges()];
 
     edge_t* loc = new edge_t[num_edges()];
 
@@ -247,7 +252,7 @@ void gm_graph::make_reverse_edges() {
         for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
             node_t dest = node_idx[e];
             edge_t r_edge_idx = r_begin[dest] + loc[e];
-            fw_edge_idx[r_edge_idx] = e;
+            e_rev2idx[r_edge_idx] = e;
 #if GM_GRAPH_NUMA_OPT
             temp_r_node_idx[r_edge_idx] = i;
 #else
@@ -258,7 +263,7 @@ void gm_graph::make_reverse_edges() {
 #if GM_GRAPH_NUMA_OPT
     #pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < n_nodes; i++) {
-        for (edge_t e = begin[i]; e < begin[i + 1]; e++) {
+        for (edge_t e = r_begin[i]; e < r_begin[i + 1]; e++) {
             r_node_idx[e] = temp_r_node_idx[e];
         }
     }
@@ -276,7 +281,7 @@ void gm_graph::make_reverse_edges() {
     delete[] loc;
 }
 
-static void swap(edge_t idx1, edge_t idx2, node_t* dest_array, edge_t* aux_array) {
+static void swap(edge_t idx1, edge_t idx2, node_t* dest_array, edge_t* aux_array, edge_t* aux_array2) {
     if (idx1 == idx2) return;
 
     node_t T = dest_array[idx1];
@@ -288,11 +293,17 @@ static void swap(edge_t idx1, edge_t idx2, node_t* dest_array, edge_t* aux_array
         aux_array[idx1] = aux_array[idx2];
         aux_array[idx2] = T2;
     }
+
+    if (aux_array2 != NULL) {
+        edge_t T2 = aux_array2[idx1];
+        aux_array2[idx1] = aux_array2[idx2];
+        aux_array2[idx2] = T2;
+    }
 }
 
 // begin idx is inclusive
 // end idx is exclusive
-static void sort(edge_t begin_idx, edge_t end_idx, node_t* dest_array, edge_t* aux_array) {
+static void sort(edge_t begin_idx, edge_t end_idx, node_t* dest_array, edge_t* aux_array, edge_t* aux_array2=NULL) {
     edge_t cnt = end_idx - begin_idx;
     if (cnt <= 1) return;
 
@@ -305,7 +316,7 @@ static void sort(edge_t begin_idx, edge_t end_idx, node_t* dest_array, edge_t* a
             while (j >= 0) {
                 edge_t j_idx = begin_idx + j;
                 if (dest_array[j_idx] <= key) break;
-                swap(j_idx, j_idx + 1, dest_array, aux_array);
+                swap(j_idx, j_idx + 1, dest_array, aux_array, aux_array2);
                 j--;
             }
         }
@@ -314,19 +325,19 @@ static void sort(edge_t begin_idx, edge_t end_idx, node_t* dest_array, edge_t* a
         // pivot and paritition
         edge_t pivot_idx = (end_idx - begin_idx - 1) / 2 + begin_idx;
         node_t pivot_value = dest_array[pivot_idx];
-        swap(pivot_idx, end_idx - 1, dest_array, aux_array);
+        swap(pivot_idx, end_idx - 1, dest_array, aux_array, aux_array2);
         edge_t store_idx = begin_idx;
         for (edge_t i = begin_idx; i < (end_idx); i++) {
             if (dest_array[i] < pivot_value) {
-                swap(store_idx, i, dest_array, aux_array);
+                swap(store_idx, i, dest_array, aux_array, aux_array2);
                 store_idx++;
             }
         }
-        swap(store_idx, end_idx - 1, dest_array, aux_array);
+        swap(store_idx, end_idx - 1, dest_array, aux_array, aux_array2);
 
         // recurse
-        sort(begin_idx, store_idx, dest_array, aux_array);
-        sort(store_idx + 1, end_idx, dest_array, aux_array);
+        sort(begin_idx, store_idx, dest_array, aux_array, aux_array2);
+        sort(store_idx + 1, end_idx, dest_array, aux_array, aux_array2);
     }
 }
 
@@ -361,32 +372,36 @@ void gm_graph::do_semi_sort_reverse() {
 
 #pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < num_nodes(); i++) {
-        sort(r_begin[i], r_begin[i + 1], r_node_idx, fw_edge_idx);
+        sort(r_begin[i], r_begin[i + 1], r_node_idx, e_rev2idx);
     }
 }
 
 void gm_graph::do_semi_sort() {
 
-    if (e_id2idx == NULL) {
-        e_id2idx = new edge_t[num_edges()];
-        e_idx2id = new edge_id[num_edges()];
+    if (!_frozen) freeze();
+    if (_semi_sorted) return;
 
+    // create map to original index
+    e_idx2idx = new edge_t[num_edges()];
 #pragma omp parallel for schedule(dynamic,128)
-        for (edge_t j = 0; j < num_edges(); j++) {
-            e_id2idx[j] = e_idx2id[j] = j;
+    for (node_t i = 0; i < num_nodes(); i++) {
+        for (edge_t j = begin[i]; j < begin[i + 1]; j++) {
+            e_idx2idx[j] = j;           /// first touch (NUMA OPT)
         }
     }
+    
 
 #pragma omp parallel for schedule(dynamic,128)
     for (node_t i = 0; i < num_nodes(); i++) {
-        sort(begin[i], begin[i + 1], node_idx, e_idx2id);
-
+        sort(begin[i], begin[i + 1], node_idx, e_idx2idx, e_idx2id);
     }
 
+    if (e_id2idx != NULL) {
 #pragma omp parallel for
-    for (edge_t j = 0; j < num_edges(); j++) {
-        edge_t id = e_idx2id[j];
-        e_id2idx[id] = j;
+        for (edge_t j = 0; j < num_edges(); j++) {
+            edge_t id = e_idx2id[j];
+            e_id2idx[id] = j;
+        }
     }
 
     if (has_reverse_edge()) {
@@ -408,23 +423,19 @@ void gm_graph::prepare_external_creation(node_t n, edge_t m, bool clean_key_id_m
 }
 
 void gm_graph::delete_frozen_graph() {
-    delete[] node_idx;
-    delete[] begin;
-    delete[] node_idx_src;
+    delete[] node_idx; node_idx = NULL;
+    delete[] begin; begin = NULL;
+    delete[] node_idx_src; node_idx_src = NULL;
 
-    delete[] r_begin;
-    delete[] r_node_idx;
-    delete[] r_node_idx_src;
+    delete[] r_begin; r_begin = NULL;
+    delete[] r_node_idx; r_node_idx = NULL;
+    delete[] r_node_idx_src; r_node_idx_src = NULL;
 
-    delete[] e_id2idx;
-    delete[] e_idx2id;
-    delete[] fw_edge_idx;
+    delete[] e_rev2idx; e_rev2idx = NULL;
+    delete[] e_idx2idx; e_idx2idx = NULL;
+    delete[] e_id2idx; e_id2idx = NULL;
+    delete[] e_idx2id; e_idx2id = NULL;
 
-    begin = r_begin = NULL;
-    node_idx = node_idx_src = NULL;
-    r_node_idx = r_node_idx_src = NULL;
-    e_id2idx = e_idx2id = NULL;
-    fw_edge_idx = NULL;
 }
 
 void gm_graph::allocate_memory_for_frozen_graph(node_t n, edge_t m) {

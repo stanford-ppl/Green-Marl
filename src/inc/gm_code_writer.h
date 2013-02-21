@@ -24,6 +24,7 @@ public:
         file_buf = new char[32 * 1024 * 1024]; // 32MB. should be enough for a file
     }
     ~gm_code_writer() {
+    	fflush(_out);
         delete[] _buf;
         delete[] file_buf;
     }

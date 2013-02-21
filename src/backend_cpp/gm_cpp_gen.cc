@@ -293,15 +293,37 @@ void gm_cpp_gen::generate_rhs_id(ast_id* id) {
 void gm_cpp_gen::generate_lhs_field(ast_field* f) {
     Body.push(f->get_second()->get_genname());
     Body.push('[');
-    if (f->is_rarrow()) {
-        const char* alias_name = f->get_first()->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
-        assert(alias_name != NULL);
-        assert(strlen(alias_name) > 0);
-        Body.push(alias_name);
-    } else if (f->getTypeInfo()->is_node_property()) {
+    if (f->getTypeInfo()->is_node_property()) {
         Body.push(get_lib()->node_index(f->get_first()));
-    } else if (f->getTypeInfo()->is_edge_property())
-        Body.push(get_lib()->edge_index(f->get_first()));
+    } else if (f->getTypeInfo()->is_edge_property()) {
+
+        // [XXX] this feature is still not finished
+        if (f->is_rarrow()) {
+            const char* alias_name = f->get_first()->getSymInfo()->find_info_string(CPPBE_INFO_NEIGHBOR_ITERATOR);
+            assert(alias_name != NULL);
+            assert(strlen(alias_name) > 0);
+            Body.push(alias_name);
+        }
+        // check if the edge is a back-edge
+        else if (false) {
+            Body.push(get_lib()->fw_edge_index(f->get_first()));
+        }
+        else {
+            if (!f->get_second()->getSymInfo()->isArgument()) {
+                // if the property is a temporary edge-property,
+                //   skip semi-sorting check
+                Body.push(get_lib()->edge_index(f->get_first()));
+            }
+            else {
+                sprintf(temp, "%s.%s(%s)",
+                   f->get_first()->getTypeInfo()->get_target_graph_id()->get_genname(),
+                   GET_ORG_IDX, 
+                   f->get_first()->get_genname()
+                );
+                Body.push(temp);
+            }
+        }
+    }
     else {
         assert(false);
     }
@@ -648,6 +670,7 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb) {
                 }
                 if (e->find_info_bool(CPPBE_INFO_NEED_SEMI_SORT)) {
                     bool has_edge_prop = false;
+#if 0
                     // Semi-sorting must be done before edge-property creation
                     //std::vector<gm_symtab_entry*>& F = fields-> get_entries();
                     //for(int j=0;j<F.size();j++) {
@@ -658,6 +681,7 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb) {
                         gm_symtab_entry* f = *J;
                         if ((f->getType()->get_target_graph_sym() == e) && (f->getType()->is_edge_property())) has_edge_prop = true;
                     }
+
                     if (has_edge_prop) {
                         Body.pushln("//[xxx] edge property must be created before semi-sorting");
                         sprintf(temp, "assert(%s.%s());", e->getId()->get_genname(), IS_SEMI_SORTED);
@@ -666,6 +690,10 @@ void gm_cpp_gen::generate_sent_block_enter(ast_sentblock* sb) {
                         sprintf(temp, "%s.%s();", e->getId()->get_genname(), SEMI_SORT);
                         Body.pushln(temp);
                     }
+#else
+                    sprintf(temp, "%s.%s();", e->getId()->get_genname(), SEMI_SORT);
+                    Body.pushln(temp);
+#endif
                 }
 
                 if (e->find_info_bool(CPPBE_INFO_NEED_FROM_INFO)) {

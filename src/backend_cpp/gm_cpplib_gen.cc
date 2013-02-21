@@ -27,6 +27,7 @@ void gm_cpplib::build_up_language_voca(gm_vocabulary& V) {
     V.add_word(R_EDGE_IDX);
     V.add_word(BEGIN);
     V.add_word(R_BEGIN);
+    V.add_word(FW_EDGE_IDX);
 }
 
 const char* gm_cpplib::get_type_string(int type) {
@@ -89,6 +90,13 @@ const char* gm_cpplib::node_index(ast_id* iter) {
 const char* gm_cpplib::edge_index(ast_id* iter) {
     // should check iterator type????
     return iter->get_genname();
+}
+
+const char* gm_cpplib::fw_edge_index(ast_id* iter) 
+{
+// iter is a reverse edge index. get matching fw edge index
+    sprintf(str_buf, "%s[%s]",FW_EDGE_IDX,iter->get_genname()); 
+    return str_buf;
 }
 
 bool gm_cpplib::add_collection_def(ast_id* i) {

@@ -39,6 +39,7 @@ public:
     virtual const char* max_edge_index(ast_id* graph);
     virtual const char* node_index(ast_id* iter);
     virtual const char* edge_index(ast_id* iter);
+    virtual const char* fw_edge_index(ast_id* iter);
 
     virtual bool do_local_optimize();
 
