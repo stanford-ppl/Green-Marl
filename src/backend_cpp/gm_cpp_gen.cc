@@ -293,15 +293,15 @@ void gm_cpp_gen::generate_rhs_id(ast_id* id) {
         if (id->find_info_bool(CPPBE_INFO_IS_REVERSE_EDGE)) {
             Body.push(get_lib()->fw_edge_index(id));
         }
-        else if (id->getTypeInfo()->is_edge_iterator()) {
+        //else if (id->getTypeInfo()->is_edge_iterator()) {
                 // original edge index if semi-sorted
-                sprintf(temp, "%s.%s(%s)",
-                    id->getTypeInfo()->get_target_graph_id()->get_genname(),
-                    GET_ORG_IDX, 
-                    id->get_genname()
-                );
-                Body.push(temp);
-        }
+                //sprintf(temp, "%s.%s(%s)",
+                    //id->getTypeInfo()->get_target_graph_id()->get_genname(),
+                    //GET_ORG_IDX, 
+                    //id->get_genname()
+                //);
+                //Body.push(temp);
+        //}
         else
             generate_lhs_id(id);
     }
@@ -328,12 +328,13 @@ void gm_cpp_gen::generate_lhs_field(ast_field* f) {
         }
         else {
             // original edge index if semi-sorted
-            sprintf(temp, "%s.%s(%s)",
-               f->get_first()->getTypeInfo()->get_target_graph_id()->get_genname(),
-               GET_ORG_IDX, 
-               f->get_first()->get_genname()
-              );
-              Body.push(temp);
+            //sprintf(temp, "%s.%s(%s)",
+               //f->get_first()->getTypeInfo()->get_target_graph_id()->get_genname(),
+               //GET_ORG_IDX, 
+               //f->get_first()->get_genname()
+              //);
+              //Body.push(temp);
+              Body.push(get_lib()->edge_index(f->get_first()));
         }
     }
     else {

@@ -31,7 +31,7 @@ include $(FLAGS_DEF)
 
 
 dummy: $(OBJS) dummy.o
-	$(CC) $(OBJS) $(LFLAGS) dummy.o  -o dummy
+	$(CC) $(OBJS) dummy.o $(LFLAGS) -o dummy
 
 dummy.o : dummy.c
 	$(CC) $(CFLAGS) -o $@ $<

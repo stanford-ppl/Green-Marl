@@ -102,7 +102,11 @@ void gm_graph::freeze() {
     _frozen = true;
     _semi_sorted = false;
     _reverse_edge = false;
+
+    // always semi-sort after freezing
+    do_semi_sort();
 }
+
 
 void gm_graph::thaw() {
     if (!_frozen) return;
@@ -379,6 +383,7 @@ void gm_graph::do_semi_sort_reverse() {
 void gm_graph::do_semi_sort() {
 
     if (!_frozen) freeze();
+
     if (_semi_sorted) return;
 
     // create map to original index
@@ -672,6 +677,10 @@ bool gm_graph::load_binary(char* filename) {
 
     fclose(f);
     _frozen = true;
+
+    // automatically do semi-sorting after loading
+    do_semi_sort();
+
     return true;
 
     error_return: fclose(f);
@@ -680,7 +689,9 @@ bool gm_graph::load_binary(char* filename) {
 }
 
 bool gm_graph::is_neighbor(node_t src, node_t to) {
-    // Edges are semi-sorted.
+
+    // assumption: Edges are semi-sorted.
+
     // Do binary search
     edge_t begin_edge = begin[src];
     edge_t end_edge = begin[src + 1] - 1; // inclusive

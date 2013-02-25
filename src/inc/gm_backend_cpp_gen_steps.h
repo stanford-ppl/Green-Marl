@@ -15,11 +15,14 @@ GM_COMPILE_STEP(gm_cpp_gen_check_bfs, "Check BFS routines")
 GM_COMPILE_STEP(gm_cpp_gen_misc_check, "Checking small assumptions")
 GM_COMPILE_STEP(gm_cpp_gen_check_usermain, "Checking items for user main generation")
 GM_COMPILE_STEP(gm_cpp_gen_check_rev_edge, "Checking reverse edges")
-GM_COMPILE_STEP(gm_cpp_gen_proc, "Creating target code for each procedure")
+GM_COMPILE_STEP(gm_cpp_gen_proc, "Creating C++ source for each procedure")
+#ifdef COMPILE_JAVA_BACKEND
+GM_COMPILE_STEP(gm_java_gen_proc, "Creating Java source for each procedure")
+#endif
 
 //-------------------------------------------
 // [Step 2]
-// Implement step::process() in each seperate file
+// Implement step::process() in a seperate file
 //-------------------------------------------
 
 //------------------------------------------------------

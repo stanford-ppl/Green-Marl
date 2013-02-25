@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 2.4.2.  */
+/* A Bison parser, made by GNU Bison 2.5.  */
 
 /* Skeleton interface for Bison GLR parsers in C
    
-      Copyright (C) 2002-2006, 2009-2010 Free Software Foundation, Inc.
+      Copyright (C) 2002-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -117,7 +117,7 @@
 typedef union YYSTYPE
 {
 
-/* Line 2638 of glr.c  */
+/* Line 2663 of glr.c  */
 #line 18 "parse/gm_grammer.y"
 
     int  info;
@@ -132,7 +132,7 @@ typedef union YYSTYPE
 
 
 
-/* Line 2638 of glr.c  */
+/* Line 2663 of glr.c  */
 #line 137 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1

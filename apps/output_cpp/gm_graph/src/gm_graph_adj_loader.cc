@@ -79,6 +79,9 @@ void gm_graph::load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema
         }
     }
     begin[N] = M;
+
+    // semi-sorting
+    do_semi_sort();
     
     // extract array from vectors
     for (size_t i = 0; i < num_vertex_values; ++i) {
@@ -89,10 +92,13 @@ void gm_graph::load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema
     }
     for (size_t i = 0; i < num_edge_values; ++i) {
         void *array = getArrayType(eprop_schema[i], M);
-        gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i]);
+        gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i], e_idx2idx);
         gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );
         edge_props.push_back ( array ) ;
     }
+
+
+    
 
 }
 

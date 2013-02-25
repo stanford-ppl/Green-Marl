@@ -11,7 +11,7 @@ UNAME := $(shell uname -s)
 ifneq ($(UNAME),Darwin)
     LDFLAGS += -lrt
 endif
-
+ 
 include ../setup.mk
 CFLAGS += -DDEFAULT_GM_TOP="\"${GM_TOP}\""
 
@@ -27,7 +27,7 @@ vpath %.h  inc
 vpath %.c parse
 vpath %.l parse
 vpath %.y parse
-vpath %.cc common parse backend_cpp backend_gps backend_giraph frontend opt
+vpath %.cc common parse backend_cpp backend_gps backend_giraph backend_java frontend opt
 
 HEADERS =  \
     gm_frontend_api.h \
@@ -111,8 +111,8 @@ SRCS2 =\
        gm_cpp_gen_check_bfs.cc\
        gm_cpp_gen_regular.cc\
        gm_cpp_gen_check_usermain.cc\
-	   gm_cpp_gen_check_rev_edge.cc\
-       gm_cpplib_gen.cc\
+       gm_cpp_gen_check_rev_edge.cc\
+       gm_cpplib_gen.cc \
        gm_cpplib_opt.cc\
        gm_gps_opt_remove_master_random_write.cc\
        gm_gps_opt_check_reverse_edges.cc\
@@ -156,6 +156,11 @@ SRCS2 =\
        gm_giraph_lib.cc\
        gm_giraph_lib_random_write.cc\
 
+ifeq ($(COMPILE_JAVA_BACKEND),1)
+	CFLAGS += -DCOMPILE_JAVA_BACKEND
+	HEADERS += $(JAVA_BACKEND_HDRS)
+	SRCS2 += $(JAVA_BACKEND_SRCS)
+endif
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.
 OBJS = $(addprefix $(OBJ)/, $(SRCS1:.c=.o)) $(addprefix $(OBJ)/, $(SRCS2:.cc=.o))

@@ -55,6 +55,6 @@ void  gmutil_loadValueIntoVector(void *vector, std::string val, VALUE_TYPE vt);
 void  gmutil_loadDummyValueIntoVector(void *vector, VALUE_TYPE vt); 
 const char* gmutil_getTypeString(VALUE_TYPE v);
 //void* gmutil_getArrayFromVector(void* vector, VALUE_TYPE vt);
-void  gmutil_copyVectorIntoArray(void* vector, void* array, VALUE_TYPE rt);
+void  gmutil_copyVectorIntoArray(void* vector, void* array, VALUE_TYPE rt, edge_t* indirection=NULL);
 
 #endif /* GM_UTIL_H_ */
