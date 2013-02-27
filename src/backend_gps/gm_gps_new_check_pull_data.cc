@@ -52,7 +52,19 @@ public:
                 _error = true;
             }
         } else if (s->get_nodetype() == AST_CALL) {
-            assert(false);
+
+            ast_expr_builtin* b = ((ast_call*)s)->get_builtin();
+            if (b->driver_is_field()) {
+                ast_expr_builtin_field* bf = (ast_expr_builtin_field*) b;
+                ast_field* f = bf->get_field_driver();
+                int context = s->find_info_int(GPS_INT_SYNTAX_CONTEXT);
+                int scope = get_scope_from_driver(f->get_first()->getSymInfo());
+                if ((context == GPS_NEW_SCOPE_IN) && (scope == GPS_NEW_SCOPE_OUT)) {
+                    gm_backend_error(GM_ERROR_GPS_PULL_SYNTAX, s->get_line(), s->get_col());
+                    _error = true;
+                }
+            }
+
         } else if (s->get_nodetype() == AST_FOREIGN) {
             assert(false);
             // should check out-scope is modified

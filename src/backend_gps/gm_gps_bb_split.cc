@@ -54,7 +54,8 @@ public:
                 assert(current_outer_loop != NULL);
                 current_outer_loop->add_info_bool(GPS_FLAG_HAS_COMMUNICATION, true);
             } else {
-                assert(false);
+                // benign loops: do nothing
+                //assert(false);
             }
 
             //curr->set_has_sender(true);

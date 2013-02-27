@@ -766,7 +766,7 @@ void ast_expr_builtin::traverse(gm_apply* a, bool is_post, bool is_pre) {
     if (is_pre) {
         if (for_id && (driver != NULL)) a->apply(driver);
         if (for_rhs && (driver != NULL)) a->apply_rhs(driver);
-        if (for_builtin) a->apply(this);
+        if (for_builtin) a->apply_builtin(this);
         if (for_expr) a->apply(this);
     }
 
@@ -883,8 +883,9 @@ void ast_expr::traverse(gm_apply*a, bool is_post, bool is_pre) {
     bool for_expr = a->is_for_expr();
     bool for_symtab = a->is_for_symtab();
     bool for_rhs = a->is_for_rhs();
+    bool for_builtin = a->is_for_builtin();
 
-    if (!(for_id || for_expr || for_symtab || for_rhs)) return; // no more sentence behind this
+    if (!(for_id || for_expr || for_symtab || for_rhs || for_builtin)) return; // no more sentence behind this
 
     if (for_expr && is_pre) a->apply(this);
 

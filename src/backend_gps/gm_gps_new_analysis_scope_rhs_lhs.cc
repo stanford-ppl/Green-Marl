@@ -90,12 +90,21 @@ public:
                 e->add_info_int(GPS_INT_EXPR_SCOPE, get_more_restricted_scope(t, get_more_restricted_scope(l, r)));
                 break;
 
-            case GMEXPR_BUILTIN: {
+            case GMEXPR_BUILTIN: 
+            case GMEXPR_BUILTIN_FIELD: 
+            {
                 ast_expr_builtin* b = (ast_expr_builtin*) e;
-                ast_id* i = b->get_driver();
-                if (i == NULL) {
-                    e->add_info_int(GPS_INT_EXPR_SCOPE, GPS_NEW_SCOPE_GLOBAL);
-                    break;
+                ast_id* i;
+                if (b->driver_is_field()) {
+                    ast_expr_builtin_field* bf = (ast_expr_builtin_field*) e;
+                    i = bf->get_field_driver()->get_first();
+                }
+                else {
+                    i = b->get_driver();
+                    if (i == NULL) {
+                        e->add_info_int(GPS_INT_EXPR_SCOPE, GPS_NEW_SCOPE_GLOBAL);
+                        break;
+                    }
                 }
 
                 // scope from driver
@@ -112,6 +121,7 @@ public:
                 e->add_info_int(GPS_INT_EXPR_SCOPE, t);
             }
                 break;
+
 
             case GMEXPR_REDUCE:
             case GMEXPR_FOREIGN:

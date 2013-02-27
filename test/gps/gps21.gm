@@ -1,0 +1,36 @@
+// Test of while inside outer-loop
+Procedure gps21(
+    G : Graph, A,B: N_P<Int>) : Int
+ {
+    Int T = 0;
+    Foreach(u: G.Nodes) {
+        Int i = 0;
+        While (i < 10) {
+            Foreach(w: u.Nbrs)(w > u) {
+                w.A += i * u.B;
+            }
+            i ++;
+        }
+    }
+
+    Foreach(u: G.Nodes) {
+        Foreach(w: u.InNbrs) {
+            Int i = 0;
+            While (i < 10) {
+                w.A += i * u.B;
+                i ++;
+            }
+        }
+    }
+
+    Foreach(u: G.Nodes) {
+        Int i = 0;
+        If (i < 10) {
+            Foreach(w: u.Nbrs)(w > u) {
+                w.A += i * u.B;
+            }
+        }
+    }
+
+    Return T;
+}

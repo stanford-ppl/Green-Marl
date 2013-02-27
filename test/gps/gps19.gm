@@ -6,10 +6,8 @@ Procedure gps19(
  {
     Int x = 0;
     Foreach(e: G.Edges)(e.A>0) {
-
         //Node n = e.FromNode(); 
         //Node r = e.ToNode();
-
         x += e.A;
     }
 }

@@ -114,6 +114,7 @@ public:
                 }
             }
 
+
             if (avoid_pull) {
                 if (dest->get_nodetype() == AST_ASSIGN) {
                     ast_assign* d = (ast_assign*) dest;

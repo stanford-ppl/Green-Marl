@@ -11,8 +11,8 @@
 //
 // [1] Conditions 
 //   - Access to edge property is available only through edge variable that is defined
-//     inside the 2nd-level FE.
-//   - Edge variable, defined inside a 2nd-level FE, should be initialized as (2nd-level iterator).toEdge.
+//     inside the inner-loop.
+//   - Edge variable, defined inside a inner-loop, should be initialized as (2nd-level iterator).toEdge.
 //   - 2nd level iteration should use out-going edges only.
 //          
 //     Foreach(n: G.Nodes)  {

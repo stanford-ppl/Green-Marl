@@ -42,6 +42,13 @@ public:
     bool apply(gm_symtab_entry* e, int symtab_type) {
         e->add_info_int(GPS_INT_SYMBOL_SCOPE, current_scope);
 
+        /*
+        printf("%s : %s\n", e->getId()->get_genname(), 
+                (current_scope == GPS_NEW_SCOPE_GLOBAL) ? "global" :
+                (current_scope == GPS_NEW_SCOPE_IN) ? "in" : "out");
+        */
+
+
         //---------------------------------------------------------------------------
         // This information is redundant at this moment. Need to be clear up 
         //---------------------------------------------------------------------------
@@ -56,6 +63,20 @@ public:
 
         if (s->get_nodetype() == AST_FOREACH) {
             ast_foreach* fe = (ast_foreach*) s;
+            if (fe->find_info_bool(GPS_FLAG_IS_OUTER_LOOP))
+            {
+                outer_loop = fe;
+                outer_loop->get_iterator()->getSymInfo()->add_info_int(GPS_INT_SYMBOL_SCOPE, GPS_NEW_SCOPE_OUT);
+                current_scope = GPS_NEW_SCOPE_OUT;
+            }
+            else if (fe->find_info_bool(GPS_FLAG_IS_INNER_LOOP))
+            {
+                inner_loop = fe;
+                inner_loop->get_iterator()->getSymInfo()->add_info_int(GPS_INT_SYMBOL_SCOPE, GPS_NEW_SCOPE_IN);
+                current_scope = GPS_NEW_SCOPE_IN;
+            }
+
+            /*
             if (outer_loop == NULL) {
                 assert(gm_is_all_graph_node_iteration(fe->get_iter_type()));
                 outer_loop = fe;
@@ -73,6 +94,7 @@ public:
             } else {
                 assert(false);
             }
+            */
         } else if (s->get_nodetype() == AST_ASSIGN) {
             ast_assign* a = (ast_assign*) s;
             if (a->is_target_scalar() && a->get_lhs_scala()->getTypeInfo()->is_edge_compatible()) {

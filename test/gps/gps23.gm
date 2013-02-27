@@ -1,0 +1,14 @@
+// Test of adding to sets
+Procedure gps23(
+    G : Graph, X,Y: N_P<Int>) 
+{
+    Node_Property<Node_Set> SET;
+
+    Foreach(o: G.Nodes) {
+        Foreach(i: o.Nbrs) {
+            If (o.X > i.X) {
+                i.SET.Add(o);
+            }
+        }
+    }
+}

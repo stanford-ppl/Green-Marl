@@ -39,7 +39,7 @@ public:
             if (depth == 1) {
                 outer_iter = ((ast_foreach*) s)->get_iterator()->getSymInfo();
             }
-        } else if (depth == 2) {
+        } else if (depth >= 2) {
             if (contains_built_in_through_driver(s, outer_iter)) {
                 L1.push_back(s);
                 L2.push_back(outer_iter);

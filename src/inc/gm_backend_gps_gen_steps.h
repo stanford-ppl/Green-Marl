@@ -10,6 +10,7 @@
 //-------------------------------------------
 GM_COMPILE_STEP(gm_gps_opt_check_reverse_edges, "Check use of reverse edges")
 GM_COMPILE_STEP(gm_gps_new_check_depth_two, "Checking if has max two foreach depths")
+GM_COMPILE_STEP(gm_gps_new_check_nested_loops, "Checking nested depth of foreach")
 GM_COMPILE_STEP(gm_gps_new_analyze_scope_sent_var, "Analyzing scope of symbols and sentences")
 GM_COMPILE_STEP(gm_gps_new_analyze_scope_rhs_lhs, "Analyzing scope of rhs and lhs")
 GM_COMPILE_STEP(gm_gps_new_check_pull_data, "Checking if there exist data pulling")

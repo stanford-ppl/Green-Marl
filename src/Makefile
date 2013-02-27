@@ -5,7 +5,7 @@ PARSE = ./parse
 INC = ./inc
 OBJ = ../obj
 BIN = ../bin
-CFLAGS += -g -O1 -I$(INC) -I. -W -Wno-unused-parameter
+CFLAGS += -g -O0 -I$(INC) -I. -W -Wno-unused-parameter
 # Mac OS does not have librt
 UNAME := $(shell uname -s)
 ifneq ($(UNAME),Darwin)
@@ -20,14 +20,6 @@ ifeq ($(CODE_COVERAGE),1)
 	CFLAGS  += --coverage
 	LDFLAGS += --coverage
 endif
-
-
-# where to find source codes
-vpath %.h  inc
-vpath %.c parse
-vpath %.l parse
-vpath %.y parse
-vpath %.cc common parse backend_cpp backend_gps backend_giraph backend_java frontend opt
 
 HEADERS =  \
     gm_frontend_api.h \
@@ -149,6 +141,7 @@ SRCS2 =\
        gm_gps_new_check_edge_value.cc\
        gm_gps_new_check_random_write.cc\
        gm_gps_new_check_random_read.cc\
+       gm_gps_new_check_nested_loops.cc\
        gm_gps_new_rewrite_rhs.cc\
        gm_giraph_gen.cc\
        gm_giraph_gen_master.cc\
@@ -156,11 +149,31 @@ SRCS2 =\
        gm_giraph_lib.cc\
        gm_giraph_lib_random_write.cc\
 
+# where to find source codes
+SRC_DIRS = common parse backend_cpp backend_gps backend_giraph frontend opt
+
 ifeq ($(COMPILE_JAVA_BACKEND),1)
 	CFLAGS += -DCOMPILE_JAVA_BACKEND
+	ifeq (${EDGE_SIZE},64)
+		ifeq (${NODE_SIZE},32)
+	   		CFLAGS += -DGM_RUNTIME_MODE48
+		else 
+		    ifeq (${NODE_SIZE},64)
+		   		CFLAGS += -DGM_RUNTIME_MODE64
+		    endif
+		endif
+	endif
 	HEADERS += $(JAVA_BACKEND_HDRS)
 	SRCS2 += $(JAVA_BACKEND_SRCS)
+	SRC_DIRS += $(JAVA_BACKEND_SRC_DIRS)
+	LDFLAGS += -lctemplate
 endif
+
+vpath %.h  inc
+vpath %.c parse
+vpath %.l parse
+vpath %.y parse
+vpath %.cc $(SRC_DIRS)
 
 # Object names: change .cc -> .o and add ./obj/ in front of it.
 OBJS = $(addprefix $(OBJ)/, $(SRCS1:.c=.o)) $(addprefix $(OBJ)/, $(SRCS2:.cc=.o))
@@ -169,7 +182,7 @@ HEADS = $(addprefix $(INC)/, $(HEADERS))
 all: $(BIN)/gm_comp
 
 $(BIN)/gm_comp: $(SRCS1) $(OBJS) $(HEADS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ 
+	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LDFLAGS)
 
 $(OBJ)/%.o : %.c 
 	$(CC) $(CFLAGS) -c $< -o $@

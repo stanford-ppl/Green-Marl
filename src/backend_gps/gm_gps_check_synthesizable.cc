@@ -148,6 +148,14 @@ public:
                 case GM_BLTIN_TOP_EXP:           // exp function
                 case GM_BLTIN_TOP_POW:           // pow function
                     break;
+
+                case GM_BLTIN_SET_ADD:
+                case GM_BLTIN_SET_REMOVE:
+                case GM_BLTIN_SET_HAS:
+                case GM_BLTIN_SET_SIZE:
+                case GM_BLTIN_SET_CLEAR:
+                    break;
+
                 default:
                     gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_OP, e->get_line(), e->get_col(), "Builtin (function)");
                     _error = true;

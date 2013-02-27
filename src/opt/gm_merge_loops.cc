@@ -22,6 +22,7 @@ static bool is_linear_access_only(gm_rwinfo_list* L) {
     return true;
 }
 
+// return true if intersect
 static bool intersect_check_for_merge(gm_rwinfo_map& S1, gm_rwinfo_map& S2, gm_rwinfo_map& S1_reduce, bool check_reduce) {
     gm_rwinfo_map::iterator i;
     gm_rwinfo_map::iterator j;
@@ -115,6 +116,9 @@ bool gm_is_mergeable_loops(ast_foreach* P, ast_foreach* Q) {
     //---------------------------------------------------
     b = intersect_check_for_merge(P_W, Q_W, P_D, true);
     if (b) return false;
+
+    //gm_print_rwinfo_set(P_M);
+    //gm_print_rwinfo_set(Q_R);
 
     //---------------------------------------------------
     // mutate dependency checks.
@@ -222,6 +226,8 @@ protected:
 
 //bool gm_independent_optimize::do_merge_foreach(ast_procdef* proc) 
 void gm_ind_opt_loop_merge::process(ast_procdef* proc) {
+    gm_redo_rw_analysis(proc->get_body());
+
     gm_merge_loop_t T;
     T.do_loop_merge(proc->get_body());
 

@@ -92,6 +92,7 @@ class gm_mutatable_priority_map
 
 };
 
+#if 0
 template<class Key, class Value>
 class gm_mutatable_priority_map_default : public gm_mutatable_priority_map<Key, Value>
 {
@@ -612,6 +613,8 @@ private:
     bool is_less(Value v1, Value v2) {return v1 > v2;} // return true if v1 < v2
 
 };
+
+#endif
 
 #undef COPY_FROM_RIGHT
 #undef COPY_FROM_LEFT

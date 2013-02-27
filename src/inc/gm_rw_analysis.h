@@ -115,7 +115,7 @@ public:
     int reduce_op;
     gm_symtab_entry* bound_symbol;
 
-    bool is_supplement;  // is-supplement LHS
+    bool is_supplement;  // is-supplement LHS (i.e. lhs of argmax/argmin)
     gm_symtab_entry* org_lhs;
 
     // one exxample of  access instance 

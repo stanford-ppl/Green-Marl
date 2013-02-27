@@ -186,12 +186,11 @@ int main(int argc, char** argv) {
         PREGEL_BE = &GIRAPH_BE;
         OPTIONS.set_arg_bool(GMARGFLAG_FLIP_PULL, true);
 #ifdef COMPILE_JAVA_BACKEND
-    } else if (gm_is_same_string(name, "java_seq")) {
-    	JAVA_BE.set_target_par(false);
-    	BACK_END = &JAVA_BE;
-    } else if (gm_is_same_string(name, "java_par")) {
-    	JAVA_BE.set_target_par(true);
-    	BACK_END = &JAVA_BE;
+    } else if (gm_is_same_string(name, "java_seq") || gm_is_same_string(name, "java_par")) {
+    	bool is_ndm = gm_is_same_string(OPTIONS.get_arg_string(GMARGFLAG_JAVA_GRAPH_REPRESENTATION), "ndm");
+		JAVA_BE.set_target_ndm(is_ndm);
+		JAVA_BE.set_target_par(gm_is_same_string(name, "java_par"));
+		BACK_END = &JAVA_BE;
 #endif
     } else {
         printf("Unsupported target = %s\n", name);

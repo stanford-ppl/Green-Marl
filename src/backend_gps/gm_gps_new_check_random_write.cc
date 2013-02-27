@@ -118,9 +118,9 @@ public:
                 // non random write
             } else if (sym->find_info_int(GPS_INT_SYMBOL_SCOPE) == GPS_NEW_SCOPE_OUT) {
                 if (s->find_info_int(GPS_INT_SYNTAX_CONTEXT) != GPS_NEW_SCOPE_OUT) {
-                    _error = true;
                     gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE_USE_SCOPE, f->get_line(), f->get_col());
                 } else if (check_if_met_conditional_before(s, sym)) {
+                    //printf("sym = %s\n", sym->getId()->get_genname());
                     _error = true;
                     gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_WRITE_CONDITIONAL, f->get_line(), f->get_col());
                 }

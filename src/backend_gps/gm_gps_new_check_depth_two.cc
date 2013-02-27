@@ -12,8 +12,8 @@
 //   scope analysis is invoked at the end of this analysis
 //------------------------------------------------------------------------
 // Information Created
-//    GPS_FLAG_IS_INNER_LOOP: <to:>foreach or symbol of iterator <what:>if inner loop
-//    GPS_FLAG_IS_OUTER_LOOP: <to:>foreach or symbol of iterator <what:>if inner loop
+//    GPS_FLAG_IS_INNER_LOOP: <to:>foreach or symbol of iterator <what:>true if inner loop
+//    GPS_FLAG_IS_OUTER_LOOP: <to:>foreach or symbol of iterator <what:>true if outer loop
 //------------------------------------------------------------------------
 
 class gps_new_check_depth_two_t : public gm_apply

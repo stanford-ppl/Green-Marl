@@ -219,6 +219,7 @@ protected:
     char* fname;
     gm_code_writer Body;
     FILE* f_body;
+    char temp [1024];
 
 private:
     gm_gpslib* glib; // graph library
@@ -227,6 +228,8 @@ public:
     // from code generator interface
     virtual const char* get_type_string(ast_typedecl* T, bool is_master);
     virtual const char* get_type_string(int prim_type);
+    virtual const char* get_box_type_string(int prim_type);
+    virtual const char* get_collection_type_string(ast_typedecl* T);
 
     virtual void generate_proc(ast_procdef* p);
 
@@ -253,6 +256,8 @@ public:
     virtual void generate_sent_bfs(ast_bfs *a) {
         assert(false);
     }
+    virtual void generate_sent_call(ast_call *c); 
+
     virtual void generate_sent_foreach(ast_foreach *f);
     virtual void generate_sent_return(ast_return *r);
     virtual void generate_sent_assign(ast_assign *a);

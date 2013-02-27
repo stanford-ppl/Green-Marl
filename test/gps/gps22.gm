@@ -1,0 +1,18 @@
+// Test of benign loops
+Procedure gps22(
+    G : Graph, X,Y: N_P<Int>) 
+ {
+    Node_Property<Node_Set> SET;
+    Node_Property<Node_Seq> Q;
+
+    Foreach(o: G.Nodes) {
+        For(s: o.SET.Items) {
+            Foreach(i: o.Nbrs) {
+                Foreach(r: i.Q.Items)(r > s) {
+                    i.X += o.Y;
+                }
+            }
+        }
+    }
+
+}

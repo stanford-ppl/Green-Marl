@@ -49,6 +49,8 @@ static const char* GMARGFLAG_GIRAPH_PACKAGE = "GiraphPackage";
 //static const char* GMARGFLAG_NOMERGE = "NoMerge";
 //static const char* GMARGFLAG_NOSCREDUCE = "NoScalarReduce";
 
+static const char* GMARGFLAG_JAVA_GRAPH_REPRESENTATION = "JavaGraph";
+
 // Add compiler options here
 static struct GM_comp_args GM_compiler_options[] = {
         { GMARGFLAG_HELP, GMARG_NULL, "Print help messages", NULL },
@@ -76,6 +78,8 @@ static struct GM_comp_args GM_compiler_options[] = {
         //{GMARGFLAG_DUMPIR, GMARG_BOOL, "(For internal debug) When stopped, dump IR tree", "0"},
         //{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},
         //{GMARGFLAG_NOSCREDUCE, GMARG_BOOL, "(For Paper writing) Disable Optimizing Scalar Reduction", "0"},
+
+        { GMARGFLAG_JAVA_GRAPH_REPRESENTATION, GMARG_STRING, "Java Graph Representation. Valid values are 'csr' and 'ndm'", "csr" },
     };
 
 //----------------------------------------

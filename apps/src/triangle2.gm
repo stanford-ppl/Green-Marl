@@ -1,0 +1,20 @@
+Procedure triangle2(G: Graph): Int
+{
+    Node_Prop<Node_Set> Second_hop;
+	Int T=0;
+
+	Foreach(u: G.Nodes) 
+    	Foreach(v: u.InNbrs) (u > v) 
+            Foreach(w: u.Nbrs) (w > u) {
+                v.Second_hop.Add(w);
+            }
+
+	Foreach(v: G.Nodes) 
+    	Foreach(w: v.Second_hop.Items) 
+            If (v.HasEdgeTo(w)) {
+                T++;
+
+            }
+
+   	Return T;   
+}
