@@ -5,6 +5,7 @@ PARSE = ./parse
 INC = ./inc
 OBJ = ../obj
 BIN = ../bin
+EXTLIBS = ext-lib
 CFLAGS += -g -O0 -I$(INC) -I. -W -Wno-unused-parameter
 # Mac OS does not have librt
 UNAME := $(shell uname -s)
@@ -165,8 +166,10 @@ ifeq ($(COMPILE_JAVA_BACKEND),1)
 	endif
 	HEADERS += $(JAVA_BACKEND_HDRS)
 	SRCS2 += $(JAVA_BACKEND_SRCS)
-	SRC_DIRS += $(JAVA_BACKEND_SRC_DIRS)
-	LDFLAGS += -lctemplate
+	SRC_DIRS += $(JAVA_BACKEND_SRC_DIR)
+	CTEMPLATE = $(shell pwd)/$(EXTLIBS)/ctemplate-2.2
+	CFLAGS += -I"$(CTEMPLATE)/src" 
+	LDFLAGS += -L"$(CTEMPLATE)/.libs" -Wl,-rpath,"$(CTEMPLATE)/.libs" -lctemplate_nothreads
 endif
 
 vpath %.h  inc
@@ -179,10 +182,17 @@ vpath %.cc $(SRC_DIRS)
 OBJS = $(addprefix $(OBJ)/, $(SRCS1:.c=.o)) $(addprefix $(OBJ)/, $(SRCS2:.cc=.o))
 HEADS = $(addprefix $(INC)/, $(HEADERS))
 
+ifeq ($(COMPILE_JAVA_BACKEND),1)
+all: libs $(BIN)/gm_comp
+else
 all: $(BIN)/gm_comp
+endif
 
 $(BIN)/gm_comp: $(SRCS1) $(OBJS) $(HEADS)
 	$(CC) $(CFLAGS) $(OBJS) -o $@ $(LDFLAGS)
+
+libs:
+	@cd $(EXTLIBS); make
 
 $(OBJ)/%.o : %.c 
 	$(CC) $(CFLAGS) -c $< -o $@

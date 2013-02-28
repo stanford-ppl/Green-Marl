@@ -330,17 +330,19 @@ void gm_code_generator::generate_sent_if(ast_if *i) {
     s = i->get_else();
     if (s == NULL) return;
 
-    _Body.pushln("else");
-    if (s->get_nodetype() != AST_SENTBLOCK) {
+    _Body.push("else ");
+    if (s->get_nodetype() != AST_IF) {
+        _Body.NL();
+    }
+    if ((s->get_nodetype() != AST_SENTBLOCK) && (s->get_nodetype() != AST_IF)) {
         _Body.push_indent();
     }
 
     generate_sent(s);
 
-    if (s->get_nodetype() != AST_SENTBLOCK) {
+    if ((s->get_nodetype() != AST_SENTBLOCK) && (s->get_nodetype() != AST_IF)) {
         _Body.pop_indent();
     }
-
 }
 
 void gm_code_generator::generate_sent_return(ast_return *r) {

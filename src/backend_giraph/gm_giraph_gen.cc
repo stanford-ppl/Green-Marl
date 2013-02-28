@@ -680,3 +680,23 @@ void gm_giraph_gen::generate_proc(ast_procdef* proc) {
 void gm_giraph_gen_class::process(ast_procdef* proc) {
     PREGEL_BE->generate_proc(proc);
 }
+
+const char* gm_giraph_gen::get_box_type_string(int gm_type) {
+    switch(gm_type) {
+        case GMTYPE_NODE:
+            if (get_lib()->is_node_type_int())
+                return "IntWritable";
+            else
+                return "LongWritable";
+        case GMTYPE_EDGE:
+            if (get_lib()->is_edge_type_int())
+                return "IntWritable";
+            else
+                return "LongWritable";
+        default:
+            assert(false);
+    }
+}
+const char* gm_giraph_gen::get_unbox_method_string(int gm_type) {
+    return "get";
+}

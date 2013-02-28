@@ -44,6 +44,23 @@ const char* gm_gps_gen::get_box_type_string(int gm_type) {
             assert(false);
     }
 }
+const char* gm_gps_gen::get_unbox_method_string(int gm_type) {
+    switch(gm_type) {
+        case GMTYPE_NODE:
+            if (get_lib()->is_node_type_int())
+                return "getInt";
+            else
+                return "getLong";
+        case GMTYPE_EDGE:
+            if (get_lib()->is_edge_type_int())
+                return "getInt";
+            else
+                return "getLong";
+        default:
+            assert(false);
+    }
+}
+
 const char* gm_gps_gen::get_collection_type_string(ast_typedecl* T) {
 
     const char* t ="";
@@ -402,10 +419,7 @@ void gm_gps_gen::generate_sent_foreach(ast_foreach* fe) {
         char temp[2048];
         sprintf(iterator_name, "__%s_iter", fe->get_iterator()->get_genname());
         int base_type = f->get_second()->getTypeInfo()->get_target_type()->is_node_collection() ? GMTYPE_NODE : GMTYPE_EDGE;
-        const char* unbox_name = 
-            (base_type == GMTYPE_NODE) && (get_lib()->is_node_type_int()) ||
-            (base_type == GMTYPE_EDGE) && (get_lib()->is_edge_type_int()) ?
-            "getInt" : "getLong";
+        const char* unbox_name = get_unbox_method_string(base_type);
         
         sprintf(temp, "for (%s %s : _this.%s) {",
             get_box_type_string(base_type),
@@ -437,6 +451,8 @@ void gm_gps_gen::generate_expr_builtin(ast_expr *e) {
         case GM_BLTIN_GRAPH_RAND_NODE:
         case GM_BLTIN_NODE_DEGREE:
         case GM_BLTIN_NODE_IN_DEGREE:
+        case GM_BLTIN_NODE_HAS_EDGE_TO:
+        case GM_BLTIN_NODE_IS_NBR_FROM:
             get_lib()->generate_expr_builtin(be, Body, is_master_generate());
             break;
 

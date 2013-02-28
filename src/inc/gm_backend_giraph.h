@@ -121,6 +121,8 @@ public:
     virtual gm_giraphlib* get_lib() {
         return glib;
     }
+    virtual const char* get_box_type_string(int gm_type); 
+    virtual const char* get_unbox_method_string(int gm_type); 
 
 protected:
     virtual void init_gen_steps();

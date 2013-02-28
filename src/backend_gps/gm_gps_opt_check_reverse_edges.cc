@@ -16,6 +16,7 @@ public:
         set_for_expr(true);
         r_edge = false;
         r_degree = false;
+        b_has_edge = false;
         target_graph = NULL;
     }
     bool apply(ast_sent *s) {
@@ -35,8 +36,20 @@ public:
                 target_graph = b->get_driver()->getTypeInfo()->get_target_graph_sym();
                 r_degree = true;
             }
+            else if (b->get_builtin_def()->get_method_id() == GM_BLTIN_NODE_IS_NBR_FROM) {
+                r_edge = true;
+                b_has_edge = true;
+            }
+            else if (b->get_builtin_def()->get_method_id() == GM_BLTIN_NODE_HAS_EDGE_TO) {
+                b_has_edge = true;
+            }
         }
         return true;
+    }
+
+    // has edge or is neighbor
+    bool use_has_edge() {
+        return b_has_edge;
     }
 
     bool use_in_degree() {
@@ -52,6 +65,7 @@ public:
 private:
     bool r_edge;
     bool r_degree;
+    bool b_has_edge;
     gm_symtab_entry* target_graph;
 };
 
@@ -93,6 +107,11 @@ private:
 void gm_gps_opt_check_reverse_edges::process(ast_procdef* p) {
     gps_check_reverse_edge_t T;
     p->traverse_pre(&T);
+    if (T.use_has_edge())
+    {
+        FE.get_proc_info(p)->add_info_bool(GPS_FLAG_USE_HAS_EDGE, true);
+    }
+
     if (T.use_rev_edge()) {
         FE.get_proc_info(p)->add_info_bool(GPS_FLAG_USE_REVERSE_EDGE, true);
         // a special basic block will be added in create ebb state.

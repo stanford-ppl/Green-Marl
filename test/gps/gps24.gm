@@ -1,0 +1,21 @@
+// Test of has_edge_to
+Procedure gps24(
+    G : Graph, X,Y: N_P<Int>) 
+{
+    Node_Property<Node_Set> SET;
+    Int T1 = 0;
+    Int T2 = 0;
+
+    Foreach(o: G.Nodes) {
+        Foreach(s: o.SET.Items) {
+            If (o.IsNbrFrom(s)) 
+            {
+                T1++;
+            }
+            Else If (o.HasEdgeTo(s)) 
+            {
+                T2++;
+            }
+        }
+    }
+}

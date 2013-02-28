@@ -220,6 +220,8 @@ protected:
     gm_code_writer Body;
     FILE* f_body;
     char temp [1024];
+    virtual const char* get_box_type_string(int prim_type);
+    virtual const char* get_unbox_method_string(int prim_type);
 
 private:
     gm_gpslib* glib; // graph library
@@ -228,7 +230,6 @@ public:
     // from code generator interface
     virtual const char* get_type_string(ast_typedecl* T, bool is_master);
     virtual const char* get_type_string(int prim_type);
-    virtual const char* get_box_type_string(int prim_type);
     virtual const char* get_collection_type_string(ast_typedecl* T);
 
     virtual void generate_proc(ast_procdef* p);
@@ -283,6 +284,7 @@ public:
 extern gm_gps_gen* PREGEL_BE;
 
 // string used in code generator
+DEF_STRING(GPS_FLAG_USE_HAS_EDGE);
 DEF_STRING(GPS_FLAG_USE_REVERSE_EDGE);
 DEF_STRING(GPS_FLAG_USE_IN_DEGREE);
 DEF_STRING(GPS_FLAG_COMM_SYMBOL);

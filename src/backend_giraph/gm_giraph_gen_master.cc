@@ -30,7 +30,7 @@ void gm_giraph_gen::do_generate_master_class() {
     sprintf(temp, "public static class Master extends MasterCompute {");
     Body.pushln(temp);
     Body.pushln("// Control fields");
-    bool prep = FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE);
+    bool prep = FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE) || FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_HAS_EDGE);
     sprintf(temp, "private int     _master_state                = %d;", !prep ? 0 : GPS_PREPARE_STEP1);
     Body.pushln(temp);
     sprintf(temp, "private int     _master_state_nxt            = %d;", !prep ? 0 : GPS_PREPARE_STEP1);

@@ -27,6 +27,7 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
     Body.pushln("import java.util.Random;");
     Body.pushln("import java.util.HashSet;");
     Body.pushln("import java.util.ArrayList;");
+    Body.pushln("import java.util.Arrays;");
     Body.pushln("import org.apache.giraph.aggregators.*;");
     Body.pushln("import org.apache.giraph.graph.*;");
     Body.pushln("import org.apache.giraph.master.*;");
@@ -472,12 +473,12 @@ static void genPutIOBCollection(const char* name, ast_typedecl* T, gm_code_write
         ((base_type == GMTYPE_EDGE) && (lib->is_edge_type_int()))) {
         Body.push("out.WriteInt(");
         Body.push(iterator);
-        Body.pushln(".intValue());");
+        Body.pushln(".get());");
     }
     else {
         Body.push("out.WriteLong(");
         Body.push(iterator);
-        Body.pushln(".longValue());");
+        Body.pushln(".get());");
     }
     Body.pushln("}");
 }
@@ -1196,6 +1197,30 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
             Body.push(".length");
             break;
 
+        case GM_BLTIN_NODE_IS_NBR_FROM:
+            Body.push("(Arrays.binarySearch(");
+            Body.push(STATE_SHORT_CUT);
+            Body.push(".");
+            Body.push(GPS_REV_NODE_ID);
+            Body.push(", new ");
+            Body.push(get_main()->get_box_type_string(GMTYPE_NODE));
+            Body.push("(");
+            get_main()->generate_expr(ARGS.front());
+            Body.push(")");
+            Body.push(")");
+            Body.push(">=0)");
+            break;
+
+        case GM_BLTIN_NODE_HAS_EDGE_TO:
+            Body.push("hasEdge(");
+            Body.push("new ");
+            Body.push(get_main()->get_box_type_string(GMTYPE_NODE));
+            Body.push("(");
+            get_main()->generate_expr(ARGS.front());
+            Body.push(")");
+            Body.push(")");
+            break;
+
         case GM_BLTIN_SET_ADD:
         case GM_BLTIN_SET_HAS:
         case GM_BLTIN_SET_REMOVE:
@@ -1235,12 +1260,18 @@ void gm_giraphlib::generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block*
         Body.pushln("i=0;");
         Body.pushln("for (MessageData _msg : _msgs) {");
         generate_message_receive_begin(NULL, Body, bb, true);
-        sprintf(temp, "%s.%s[i] = new %s(%s);", STATE_SHORT_CUT, GPS_REV_NODE_ID, PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable",
-                GPS_DUMMY_ID);
+        sprintf(temp, "%s.%s[i] = new %s(%s);", STATE_SHORT_CUT, GPS_REV_NODE_ID, PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", GPS_DUMMY_ID);
         Body.pushln(temp);
         generate_message_receive_end(Body, true);
         Body.pushln("i++;");
         Body.pushln("}");
+
+        if (FE.get_proc_info(FE.get_current_proc())->find_info_bool(GPS_FLAG_USE_HAS_EDGE))
+        {
+            sprintf(temp,"Arrays.sort(%s.%s);", STATE_SHORT_CUT, GPS_REV_NODE_ID);
+            Body.pushln(temp);
+        }
+
     } else {
         assert(false);
     }
