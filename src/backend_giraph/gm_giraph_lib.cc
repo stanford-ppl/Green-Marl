@@ -31,8 +31,6 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
     Body.pushln("import org.apache.giraph.aggregators.*;");
     Body.pushln("import org.apache.giraph.graph.*;");
     Body.pushln("import org.apache.giraph.master.*;");
-    Body.pushln("import org.apache.giraph.vertex.*;");
-    Body.pushln("import org.apache.giraph.worker.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.log4j.Logger;");
     Body.NL();
@@ -48,9 +46,9 @@ void gm_giraphlib::generate_headers_main(gm_code_writer& Body) {
     Body.pushln("import org.apache.commons.cli.HelpFormatter;");
     Body.pushln("import org.apache.commons.cli.Options;");
     Body.pushln("import org.apache.commons.cli.PosixParser;");
-    Body.pushln("import org.apache.giraph.conf.GiraphConfiguration;");
+    Body.pushln("import org.apache.giraph.GiraphConfiguration;");
     Body.pushln("import org.apache.giraph.graph.GiraphJob;");
-    Body.pushln("import org.apache.giraph.io.formats.GiraphFileInputFormat;");
+    Body.pushln("import org.apache.giraph.io.GiraphFileInputFormat;");
     Body.pushln("import org.apache.hadoop.conf.Configuration;");
     Body.pushln("import org.apache.hadoop.fs.Path;");
     Body.pushln("import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;");
@@ -64,9 +62,11 @@ void gm_giraphlib::generate_headers_input(gm_code_writer& Body) {
     generate_package_decl_if_required(Body);
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.util.List;");
+    Body.pushln("import java.util.Map;");
+    Body.pushln("import java.util.HashMap;");
 
     Body.pushln("import org.apache.giraph.graph.*;");
-    Body.pushln("import org.apache.giraph.io.formats.*;");
+    Body.pushln("import org.apache.giraph.io.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.hadoop.mapreduce.InputSplit;");
     Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
@@ -79,8 +79,7 @@ void gm_giraphlib::generate_headers_output(gm_code_writer& Body) {
     Body.pushln("import java.io.IOException;");
 
     Body.pushln("import org.apache.giraph.graph.*;");
-    Body.pushln("import org.apache.giraph.vertex.*;");
-    Body.pushln("import org.apache.giraph.io.formats.*;");
+    Body.pushln("import org.apache.giraph.io.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.hadoop.mapreduce.TaskAttemptContext;");
     Body.NL();
@@ -471,12 +470,12 @@ static void genPutIOBCollection(const char* name, ast_typedecl* T, gm_code_write
     Body.pushln(") {");
     if (((base_type == GMTYPE_NODE) && (lib->is_node_type_int())) ||
         ((base_type == GMTYPE_EDGE) && (lib->is_edge_type_int()))) {
-        Body.push("out.WriteInt(");
+        Body.push("out.writeInt(");
         Body.push(iterator);
         Body.pushln(".get());");
     }
     else {
-        Body.push("out.WriteLong(");
+        Body.push("out.writeLong(");
         Body.push(iterator);
         Body.pushln(".get());");
     }
@@ -531,8 +530,8 @@ static void genGetIOBCollection(const char* name, ast_typedecl* T, gm_code_write
     int base_type = T->is_node_collection() ? GMTYPE_NODE : GMTYPE_EDGE;
     const char* iterator = "__iter";
     Body.pushln("{");
-    Body.pushln("int __size = out.readInt();");
-    Body.pushln("for (__i = 0; __i < __size; __i++) {");
+    Body.pushln("int __size = in.readInt();");
+    Body.pushln("for (int __i = 0; __i < __size; __i++) {");
     Body.push(name);
     Body.push(".add(new ");
     Body.push(lib->get_main()->get_box_type_string(base_type));

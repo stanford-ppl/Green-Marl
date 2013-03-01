@@ -28,10 +28,11 @@
 //    GPS_FLAG_IS_OUTER_LOOP: <to:>foreach or symbol of iterator <what:>true if outer loop
 //------------------------------------------------------------------------
 
+
 class gps_new_check_nested_if_used_as_driver_t : public gm_apply
 {
 public:
-    gps_new_check_nested_if_used_as_driver_t(std::set<gm_symtab_entry*>& _S) : S(_S) {
+    gps_new_check_nested_if_used_as_driver_t(std::set<gm_symtab_entry*>& __S) : S(__S) {
         set_for_builtin(true);
         set_for_lhs(true);
         set_for_rhs(true);
@@ -83,7 +84,7 @@ private:
 class gps_new_check_nested_depth_t : public gm_apply
 {
 public:
-    gps_new_check_nested_depth_t(std::set<gm_symtab_entry*>& _S, bool b) : S(_S), _gen_error(b) {
+    gps_new_check_nested_depth_t(std::set<gm_symtab_entry*>& __S, bool b) : S(__S), _gen_error(b) {
         _error = false;
         inner_loop = NULL;
         outer_loop = NULL;

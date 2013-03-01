@@ -282,9 +282,9 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         // Parse edge values
         //------------------------------------------------------------
         Body_input.pushln("@Override");
-        sprintf(temp, "protected Iterable< Edge<%s, %s> > getEdges(String[] values) throws IOException {", vertex_id, edge_data);
+        sprintf(temp, "protected Map< %s, %s > getEdges(String[] values) throws IOException {", vertex_id, edge_data);
         Body_input.pushln(temp);
-        sprintf(temp, "List< Edge<%s, %s> > edges = Lists.newLinkedList();", vertex_id, edge_data);
+        sprintf(temp, "Map< %s, %s > edges = new HashMap<%s, %s>();", vertex_id, edge_data, vertex_id, edge_data);
         Body_input.pushln(temp);
         int step ;
         //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) 
@@ -296,13 +296,13 @@ void gm_giraph_gen::do_generate_input_output_formats() {
         Body_input.pushln(temp);
         // destination id
         if (PREGEL_BE->get_lib()->is_node_type_int()) {
-            Body_input.pushln("IntWritable edgeId = new IntWritable(Integer.parseInt(values[i]));");
+            Body_input.pushln("IntWritable destId = new IntWritable(Integer.parseInt(values[i]));");
         } else {
-            Body_input.pushln("LongWritable edgeId = new LongWritable(Long.parseLong(values[i]));");
+            Body_input.pushln("LongWritable destId = new LongWritable(Long.parseLong(values[i]));");
         }
         // edge properties
         if (proc->find_info_bool(GPS_FLAG_USE_EDGE_PROP)) {
-            sprintf(temp, "edges.add(new DefaultEdge<%s, %s>(edgeId, new %s(", vertex_id, edge_data, edge_data);
+            sprintf(temp, "edges.put(destId, new %s(", edge_data);
             Body_input.push(temp);
             val = 1;
             if (L2.size() > 0) {
@@ -314,11 +314,11 @@ void gm_giraph_gen::do_generate_input_output_formats() {
                     if (val != L2.size()) Body_input.push(", ");
                 }
             }
-            Body_input.pushln(")));");
+            Body_input.pushln("));");
         } else {
             //if ((L2.size() == 0) && (OPTIONS.get_arg_bool(GMARGFLAG_GIRAPH_DUMMY_VALUE))) 
             //    Body_input.pushln("// Ignoring dummy edge value");
-            sprintf(temp, "edges.add(new DefaultEdge<%s, %s>(edgeId, NullWritable.get()));", vertex_id, edge_data);
+            sprintf(temp, "edges.put(destId, NullWritable.get());", vertex_id, edge_data);
             Body_input.pushln(temp);
         }
         Body_input.pushln("}");

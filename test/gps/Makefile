@@ -1,5 +1,6 @@
 
-# stop after parse and typecheck
+include ../../setup.mk
+
 ODIR = output
 COMP = ../../bin/gm_comp
 FLAGS = -o=$(ODIR) -t=giraph
@@ -18,4 +19,14 @@ $(ODIR)/result_%.gm: %.gm
 	$(COMP) $(FLAGS) -DS=5 -V=1 $< > $@ 
 
 clean: 
-	\rm -rf $(ODIR)/*.java *.java $(ODIR)/*.gm *.cc *.h
+	\rm -rf $(ODIR)/*.java *.java $(ODIR)/*.gm *.cc *.h $(ODIR)/*.jar
+
+GIRAPH_JAR=giraph-0.2-SNAPSHOT-for-hadoop-0.20.203.0-jar-with-dependencies.jar
+TEST_JAR = test.jar
+jar: output/$(TEST_JAR)
+
+output/$(TEST_JAR): 
+	mkdir -p lib
+	mkdir -p bin
+	javac output/*.java -Xlint -d bin/ -classpath $(GM_TOP)/apps/output_giraph/lib/$(GIRAPH_JAR):$(HADOOP_HOME)/$(HADOOP_CORE_JAR)
+	jar cf output/$(TEST_JAR) -C bin/ .
