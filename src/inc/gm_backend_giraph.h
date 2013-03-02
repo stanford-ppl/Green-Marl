@@ -19,7 +19,6 @@
 //-----------------------------------------------------------------
 class gm_giraph_gen;
 
-// Nothing happens in this class
 class gm_giraphlib : public gm_gpslib
 {
 public:
@@ -91,6 +90,8 @@ public:
     virtual void generate_message_send_for_random_write(ast_sentblock* sb, gm_symtab_entry* sym, gm_code_writer& Body);
 
     virtual void generate_expr_builtin(ast_expr_builtin* e, gm_code_writer& Body, bool is_master);
+
+    virtual void generate_benign_feloop_header(ast_foreach* fe, bool& need_close_block, gm_code_writer& Body); 
 
     virtual bool is_node_type_int() {
         return false;  // Node ID is long type

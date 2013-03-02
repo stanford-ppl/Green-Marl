@@ -1276,3 +1276,49 @@ void gm_giraphlib::generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block*
     }
 
 }
+
+void gm_giraphlib::generate_benign_feloop_header(ast_foreach* fe, bool& need_close_block, gm_code_writer& Body)
+{
+    need_close_block = true;
+    char temp[1024];
+
+    char iter_name[128];
+    sprintf(iter_name,"__%s_iter", fe->get_iterator()->get_genname());
+
+    if (fe->get_iter_type() == GMITER_NODE_IN_NBRS)
+    {
+        sprintf(temp, "for (%s %s : %s)", 
+            get_main()->get_box_type_string(GMTYPE_NODE),
+            iter_name, 
+            GPS_REV_NODE_ID
+            );
+        Body.pushln(temp);
+        Body.pushln("{");
+        sprintf(temp, "%s %s = %s.%s();", 
+            is_node_type_int() ? "int" : "long", 
+            fe->get_iterator()->get_genname(),
+            iter_name,
+            get_main()->get_unbox_method_string(GMTYPE_NODE));
+        Body.pushln(temp);
+    }
+    else if (fe->get_iter_type() == GMITER_NODE_NBRS)
+    {
+        const char* edge_data = FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP) ? "EdgeData" : "NullWritable";
+
+        sprintf(temp, "for (Edge<%s, %s> __edge : getEdges())", 
+            get_main()->get_box_type_string(GMTYPE_NODE),
+            edge_data);
+        Body.pushln(temp);
+        Body.pushln("{");
+        sprintf(temp, "%s %s = __edge.getTargetVertexId().%s();", 
+            is_node_type_int() ? "int" : "long", 
+            fe->get_iterator()->get_genname(),
+            get_main()->get_unbox_method_string(GMTYPE_NODE));
+        Body.pushln(temp);
+    }
+    else
+    {
+        assert(false);
+    }
+
+}

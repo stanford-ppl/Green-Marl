@@ -107,6 +107,8 @@ public:
         return str_buf;
     }
 
+    virtual void generate_benign_feloop_header(ast_foreach* fe, bool& need_close_block, gm_code_writer& Body) {assert(false);} 
+
     // true if node == int false, if node == long
     virtual bool is_node_type_int() {
         return true;

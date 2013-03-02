@@ -412,30 +412,42 @@ void gm_gps_gen::generate_sent_foreach(ast_foreach* fe) {
     }
     else {
         assert (!fe->find_info_bool(GPS_FLAG_IS_OUTER_LOOP));
-        assert (fe->is_source_field());
-        ast_field * f = fe->get_source_field();
+        if (fe->is_source_field())
+        {
+            ast_field * f = fe->get_source_field();
 
-        char iterator_name[256];
-        char temp[2048];
-        sprintf(iterator_name, "__%s_iter", fe->get_iterator()->get_genname());
-        int base_type = f->get_second()->getTypeInfo()->get_target_type()->is_node_collection() ? GMTYPE_NODE : GMTYPE_EDGE;
-        const char* unbox_name = get_unbox_method_string(base_type);
+            char iterator_name[256];
+            char temp[2048];
+            sprintf(iterator_name, "__%s_iter", fe->get_iterator()->get_genname());
+            int base_type = f->get_second()->getTypeInfo()->get_target_type()->is_node_collection() ? GMTYPE_NODE : GMTYPE_EDGE;
+            const char* unbox_name = get_unbox_method_string(base_type);
         
-        sprintf(temp, "for (%s %s : _this.%s) {",
-            get_box_type_string(base_type),
-            iterator_name, 
-            f->get_second()->get_genname());
-        Body.pushln(temp);
+            sprintf(temp, "for (%s %s : _this.%s) {",
+                get_box_type_string(base_type),
+                iterator_name, 
+                f->get_second()->get_genname());
+            Body.pushln(temp);
 
-        sprintf(temp,"%s %s = %s.%s();",
+            sprintf(temp,"%s %s = %s.%s();",
                 get_type_string(base_type), 
                 fe->get_iterator()->get_genname(), 
                 iterator_name, 
                 unbox_name);
-        Body.pushln(temp);
+            Body.pushln(temp);
 
-        generate_sent(fe->get_body());
-        Body.pushln("}");
+            generate_sent(fe->get_body());
+            Body.pushln("}");
+        }
+        else 
+        {
+            bool need_close_block;
+            get_lib()->generate_benign_feloop_header(fe, need_close_block, Body);
+
+            generate_sent(fe->get_body());
+            if (need_close_block)
+                Body.pushln("}");
+
+        }
     }
 }
 

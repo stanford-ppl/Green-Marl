@@ -1,4 +1,5 @@
-Procedure triangle2(G: Graph): Int
+// triangle counting
+Procedure gps25(G: Graph): Int
 {
     Node_Prop<Node_Set> Second_hop;
 	Int T=0;
@@ -7,13 +8,12 @@ Procedure triangle2(G: Graph): Int
         Foreach(w: u.Nbrs) (w > u) {
     	   Foreach(v: u.InNbrs) (u > v) 
                 v.Second_hop.Add(w);
-            }
+        }
 
 	Foreach(v: G.Nodes) 
     	Foreach(w: v.Second_hop.Items) 
             If (v.HasEdgeTo(w)) {
                 T++;
-
             }
 
    	Return T;   
