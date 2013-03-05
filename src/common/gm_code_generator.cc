@@ -308,7 +308,7 @@ void gm_code_generator::generate_sent_assign(ast_assign* a) {
 
     generate_expr(a->get_rhs());
 
-    _Body.pushln(" ;");
+    _Body.pushln(";");
 }
 
 void gm_code_generator::generate_sent_if(ast_if *i) {

@@ -9,7 +9,7 @@
 //-------------------------------------------------------------------
 //  At each foreach or bfs
 //    check bound symbols
-//    if (1) every reduction assignment is (1) sigle-threaded or (2) non-conflicting
+//    if (1) every reduction assignment is (1) single-threaded or (2) non-conflicting
 //
 //  ==> change it into normal 
 //-------------------------------------------------------------------
