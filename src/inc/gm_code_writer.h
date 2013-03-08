@@ -141,11 +141,8 @@ public:
             for (int i = 0; i < col; i++) {
                 if (_buf[i] == '{')
                     indent++;
-                else if (_buf[i] == '(')
-                    indent++;
                 else if (_buf[i] == '}')
                     indent--;
-                else if (_buf[i] == ')') indent--;
             }
 
             col = 0;
