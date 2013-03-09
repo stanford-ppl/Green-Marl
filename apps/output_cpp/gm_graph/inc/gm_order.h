@@ -44,16 +44,18 @@ class gm_order
         }
     }
 
-    void pop_back() {
+    T pop_back() {
         T e = Q.back();
         _gm_clear_bit(bitmap, e);
         Q.pop_back();
+        return e;
     }
 
-    void pop_front() {
+    T pop_front() {
         T e = Q.front();
         _gm_clear_bit(bitmap, e);
         Q.pop_front();
+        return e;
     }
 
     void clear() {

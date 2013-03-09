@@ -1,0 +1,40 @@
+
+// test for the optimization that chooses the sequence-implementation
+Procedure P53(G: Graph, n: Node,  arg: Node_Sequence) // the sequence in the argument must not be changed to gm_node_seq_vec
+{
+	
+	
+	// this sequence should be a gm_node_seq_vec in the C++ code
+	Node_Sequence onlyBack;
+	onlyBack.PushBack(n);
+	Node x = onlyBack.PopBack();
+	
+	// this sequence should be a gm_node_seq_vec in the C++ code
+	// and all ___Front functions should be changed to ___Back
+	Node_Sequence onlyFront;
+	onlyFront.PushFront(n);
+	Node y = onlyFront.PopFront();
+	
+	// this sequence should be a gm_node_seq in the C++ code
+	Node_Sequence mixed;
+	mixed.PushFront(n);
+	mixed.PushBack(n);
+	
+	
+	// test if iterations compile properly
+	Foreach(i : onlyBack.Items) {
+	}
+	Foreach(i : onlyFront.Items) {
+	}
+	Foreach(i : mixed.Items) {
+	}
+	
+	//test if BFS compiles properly
+	InBFS(i : G.Nodes From n) {
+		onlyBack.PushBack(i);
+		onlyFront.PushFront(i);
+		mixed.PushBack(i);
+	}
+	
+	
+}

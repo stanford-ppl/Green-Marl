@@ -7,10 +7,12 @@ public:
     int max_iter;
     double e;
     double d;
+
     my_main() {
         e = 0.001;
         d = 0.85;
         max_iter = 100;
+        rank = NULL;
     }
 
     virtual bool prepare() {

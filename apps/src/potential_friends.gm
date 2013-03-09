@@ -1,8 +1,8 @@
 Procedure potential_friends(G: Graph, potFriend: N_P<Node_Set>(G))
 {
 	Foreach(v: G.Nodes) 
-   		Foreach(u: v.Nbrs) (u > v)
-			Foreach(w: u.Nbrs) (w > u)
+   		Foreach(u: v.Nbrs) (u != v)
+			Foreach(w: u.Nbrs) (w != u && w != v)
 				If (!v.HasEdgeTo(w))
 					v.potFriend.Add(w);
 }

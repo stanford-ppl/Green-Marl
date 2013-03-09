@@ -61,11 +61,15 @@ void gm_cpplib::generate_up_initializer(ast_foreach* f, gm_code_writer& Body) {
             source_type_str = get_type_string(f->get_source_field()->get_second()->getTargetTypeInfo());
             iter_source_type = f->get_source_field()->get_second()->getTypeInfo()->getTargetTypeSummary();
         } else {
-            source_type_str = get_type_string(f->get_source()->getTypeInfo());
+            gm_symtab_entry* sym = f->get_source()->getSymInfo();
+            if(has_optimized_type_name(sym)) {
+                source_type_str = get_optimized_type_name(sym);
+            } else {
+                source_type_str = get_type_string(f->get_source()->getTypeInfo());
+            }
+
             iter_source_type = f->get_source()->getTypeInfo()->getTypeSummary();
         }
-
-
 
         // get a list
         const char* typeString = NULL;

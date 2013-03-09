@@ -3,6 +3,7 @@
 #include "gm_error.h"
 #include "gm_code_writer.h"
 #include "gm_frontend.h"
+#include "gm_builtin.h"
 
 //------------------------------------------------------------------------
 //  Check nested loops
@@ -70,7 +71,10 @@ public:
         else {
             ast_id * i = b->get_driver();
             if (i!= NULL) {
-                S.insert(i->getSymInfo());
+                gm_builtin_def* def = b->get_builtin_def();
+                int method_id = def->get_method_id();
+                if (method_id != GM_BLTIN_NODE_TO_EDGE) 
+                    S.insert(i->getSymInfo());
             }
         }
     }

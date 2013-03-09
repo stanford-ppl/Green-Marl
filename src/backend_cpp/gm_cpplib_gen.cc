@@ -137,11 +137,17 @@ bool gm_cpplib::add_collection_def(ast_id* i) {
 }
 
 const char* gm_cpplib::getMapTypeString(int type) {
-    if (type == MEDIUM)
-        return "gm_map_medium";
-    else
-        assert(false);
-    return NULL;
+    switch (type) {
+        case MEDIUM:
+            return "gm_map_medium";
+        case PRIORITY_MIN:
+            return "gm_mutatable_priority_map_unordered_min";
+        case PRIORITY_MAX:
+            return "gm_mutatable_priority_map_unordered_max";
+        default:
+            assert(false);
+            return NULL;
+    }
 }
 
 const char* gm_cpplib::getMapDefaultValueForType(int type) {
@@ -166,6 +172,9 @@ const char* gm_cpplib::getAdditionalMapParameters(int mapType) {
     switch (mapType) {
         case MEDIUM:
             return "gm_rt_get_num_threads(), ";
+        case PRIORITY_MIN:
+        case PRIORITY_MAX:
+            return "";
         default:
             assert(false);
             return "ERROR";
@@ -175,6 +184,9 @@ const char* gm_cpplib::getAdditionalMapParameters(int mapType) {
 void gm_cpplib::add_map_def(ast_maptypedecl* map, ast_id* mapId) {
 
     int mapType = MEDIUM; //TODO: implement compiler optimization to figure out what is best here
+    if (mapId->getSymInfo()->has_info(CPPBE_INFO_USE_PRIORITY_MAP_MIN)) mapType = PRIORITY_MIN;
+    else if (mapId->getSymInfo()->has_info(CPPBE_INFO_USE_PRIORITY_MAP_MAX)) mapType = PRIORITY_MAX;
+
     int keyType = map->getKeyTypeSummary();
     int valueType = map->getValueTypeSummary();
     if (valueType == GMTYPE_BOOL) {
@@ -245,7 +257,7 @@ const char* gm_cpplib::get_function_name_nseq(int methodId) {
             return "push_front";
         case GM_BLTIN_SET_ADD_BACK:
             return "push_back";
-        case GM_BLTIN_SET_REMOVE:
+        case GM_BLTIN_SEQ_POP_FRONT:
             return "pop_front";
         case GM_BLTIN_SET_REMOVE_BACK:
             return "pop_back";
@@ -304,6 +316,10 @@ const char* gm_cpplib::get_function_name_map(int methodId, bool in_parallel) {
             } else {
                 return "removeKey_seq";
             }
+        case GM_BLTIN_MAP_REMOVE_MAX:
+            return "removeMaxKey_seq";
+        case GM_BLTIN_MAP_REMOVE_MIN:
+            return "removeMinKey_seq";
         default:
             assert(false);
             return "ERROR";
@@ -326,8 +342,10 @@ const char* gm_cpplib::get_function_name_map_par(int methodId) {
             return "getMaxValue_seq";
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue_seq";
-        default:
+        default: {
+            assert(false);
             return "?";
+        }
     }
 }
 
@@ -347,8 +365,10 @@ const char* gm_cpplib::get_function_name_map_seq(int methodId) {
             return "getMaxValue_par";
         case GM_BLTIN_MAP_GET_MIN_VALUE:
             return "getMinValue_par";
-        default:
+        default: {
+            assert(false);
             return "?";
+        }
     }
 }
 
@@ -544,4 +564,24 @@ const char* gm_cpplib::get_reduction_function_name(GM_REDUCE_T type) {
             assert(false);
             return "ERROR";
     }
+}
+
+bool gm_cpplib::has_optimized_type_name(gm_symtab_entry* sym) {
+    if (sym->find_info_bool(CPPBE_INFO_USE_VECTOR_SEQUENCE)) return true;
+    if (sym->find_info_bool(CPPBE_INFO_USE_PRIORITY_MAP_MIN)) return true;
+    if (sym->find_info_bool(CPPBE_INFO_USE_PRIORITY_MAP_MAX)) return true;
+    return false;
+}
+
+const char* gm_cpplib::get_optimized_type_name(gm_symtab_entry* sym) {
+    if (sym->find_info_bool(CPPBE_INFO_USE_VECTOR_SEQUENCE)) {
+        GMTYPE_T type = (GMTYPE_T) sym->getType()->getTypeSummary();
+        if (gm_is_node_sequence_type(type))
+            return "gm_node_seq_vec";
+        else
+            return "gm_edge_seq_vec";
+    }
+    if (sym->find_info_bool(CPPBE_INFO_USE_PRIORITY_MAP_MIN)) return "XXX";
+    if (sym->find_info_bool(CPPBE_INFO_USE_PRIORITY_MAP_MAX)) return "XXX";
+    return get_type_string(sym->getType());
 }

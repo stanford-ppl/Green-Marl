@@ -10,6 +10,7 @@ Procedure sssp_path(G:Graph, dist: N_P<Double>, edge_cost: E_P<Double>, root: No
     G.dist_nxt = G.dist;
     G.updated_nxt = G.updated;
     G.prev_node = NIL;
+    G.prev_edge = NIL;
 
     While(!fin) {
         fin = True;

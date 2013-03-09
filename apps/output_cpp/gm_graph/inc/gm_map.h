@@ -663,15 +663,6 @@ class gm_map_medium : public gm_map<Key, Value>
         return true;
     }
 
-    unsigned getKeyForMask(const Key key) {
-        unsigned new_key;
-        if (sizeof(Key) >= sizeof(new_key)) {
-            const Key* key_p = &key;
-
-        }
-        return 0;
-    }
-
     template<class Function>
     bool hasValue_generic_seq(Function compare, const Key key) {
         bool result = true;

@@ -58,6 +58,9 @@ public:
 
     const char* get_reduction_function_name(GM_REDUCE_T type);
 
+    virtual bool has_optimized_type_name(gm_symtab_entry* sym);
+    virtual const char* get_optimized_type_name(gm_symtab_entry* t);
+
 protected:
     gm_cpp_gen* get_main() {return main;}
 
@@ -66,6 +69,8 @@ private:
     static const int SMALL = 0;
     static const int MEDIUM = 1;
     static const int LARGE = 2;
+    static const int PRIORITY_MIN = 3;
+    static const int PRIORITY_MAX = 4;
 
     char str_buf[1024 * 8];
     gm_cpp_gen* main;
@@ -329,6 +334,10 @@ DEF_STRING(CPPBE_INFO_USE_DOWN_NBR);
 DEF_STRING(CPPBE_INFO_NEED_SEMI_SORT);
 DEF_STRING(CPPBE_INFO_NEED_FROM_INFO);
 DEF_STRING(CPPBE_INFO_IS_REVERSE_EDGE);
+
+DEF_STRING(CPPBE_INFO_USE_VECTOR_SEQUENCE);
+DEF_STRING(CPPBE_INFO_USE_PRIORITY_MAP_MIN);
+DEF_STRING(CPPBE_INFO_USE_PRIORITY_MAP_MAX);
 
 //----------------------------------------
 // For runtime

@@ -26,6 +26,11 @@ test/giraph/.project
 test/giraph/giraph_errors/output
 test/giraph/bin
 test/giraph/lib/
+test/errors/output/
+test/opt/output/
+test/parse/output/
+test/rw_check/output/
+test/sugars/output/
 
 src/parse/gm_grammer.output
 src/parse/gm_grammer.tab.c

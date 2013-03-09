@@ -120,9 +120,13 @@ public:
 
         assert(col < MAX_COL *2);
         if (s == '\n') {
-            // First count if this sentence starts or closes an indentention
 
-            if (_buf[0] == '}') indent--;
+            // current indentation  modification
+            // e.g.  
+            //     if () .. {
+            //     } <-- should remove indentation at this line
+            if (_buf[0] == '}') {indent--; }
+            else if (_buf[0] == ')') {indent--; }
 
             // print this line with previous indent
             _buf[col++] = '\0';
@@ -137,13 +141,38 @@ public:
             file_ptr += sprintf(&file_buf[file_ptr], "%s", _buf);
 
             // compute next indent
-            if (_buf[0] == '}') indent++;
-            for (int i = 0; i < col; i++) {
-                if (_buf[i] == '{')
-                    indent++;
-                else if (_buf[i] == '}')
-                    indent--;
+            // e.g. 1  
+            //     if () .. {
+            //     } else { <-- should add indentation next
+            //       ...
+            // e.g. 2  
+            //     for (  ) {
+            //       ... } <-- should remove indentation next
+            // e.g. 3  
+            //     for (   {  <-- should add indentation only once
+            //     }) <-- should remove indentation only once
+            int i;
+            for(i=0;i<col; i++) { // ignore staring closures. indent already decreased
+                if (_buf[i] == '}' || _buf[i] == ')') continue;
+                break;
             }
+
+            int open_cnt=0;
+            for (; i < col; i++) {
+                if (_buf[i] == '{')
+                    open_cnt++;
+                else if (_buf[i] == '(')
+                    open_cnt++;
+                else if (_buf[i] == '}') 
+                    open_cnt--;
+                else if (_buf[i] == ')')
+                    open_cnt--;
+            }
+
+            if (open_cnt > 0)
+                indent ++;
+            else if (open_cnt < 0) 
+                indent --;
 
             col = 0;
         }

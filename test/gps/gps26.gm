@@ -1,0 +1,11 @@
+// Edge value test
+Procedure gps26(G: Graph; a : E_P<Int>)
+{
+    //G.a = 0;
+    Foreach(n: G.Nodes) {
+        Foreach(t: n.Nbrs) {
+            Edge e = t.ToEdge();
+            e.a = 0;
+        }
+    }
+}

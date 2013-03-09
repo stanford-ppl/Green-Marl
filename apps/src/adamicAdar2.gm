@@ -1,0 +1,27 @@
+Procedure adamicAdar2(
+    G : Graph;
+    aa : E_P <Double>(G))
+{
+    //G.aa = 0;
+    N_P<Int> cnt;
+    G.cnt = 0;
+
+    Foreach (to : G.Nodes)
+    {
+        Foreach (n : to.InNbrs)
+        {
+            Foreach (from : to.InNbrs)
+            {
+                If (from.HasEdgeTo(n)) 
+                {
+                    //Edge e = from.ToEdge();
+                    //e.aa += 1 / Log(n.Degree());
+
+                    from.cnt ++;
+                }
+            }
+        }
+    }
+
+}
+

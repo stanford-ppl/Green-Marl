@@ -1,4 +1,4 @@
-Procedure Tarjan (G:Graph, SCC: N_P<Node> )
+Procedure Tarjan (G:Graph; SCC: N_P<Node> )
 {
     N_P<Bool> InStack;
     N_P<Node> LowLink;

@@ -1,0 +1,20 @@
+
+// test for the optimization that chooses map-implementation and rewrites built-ins
+Procedure P53(G: Graph, n: Node,  arg: Map<Int, Int>) // the map in the argument must not be a gm_map
+{
+	Map<Int, Int> map;	//should be a priority-min-map
+	Int min = map.GetMinKey();
+	Int val = map[min];	//should be rewritten to 'val = map.GetMinValue();'
+	map.Remove(min);	//should be rewirtten to 'map.RemoveMinKey();'
+	
+	Map<Int, Int> nop;	//should be a medium-map
+	Int key;
+	If(min == val) {
+		key = nop.GetMinKey();
+	} Else {
+		key = 42;
+	}
+	val = nop[key];	//should still be 'val = map.GetValue(min);'
+	nop.Remove(key);//should still be 'map.RemoveKey(min);'		
+		
+}

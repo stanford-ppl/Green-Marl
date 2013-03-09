@@ -34,6 +34,7 @@ public:
                     printf("%s.%s\n", f->get_field()->get_first()->get_genname(), f->get_field()->get_second()->get_genname());
                 else
                     printf("%s->..()\n", ((ast_expr_builtin*) f)->get_driver()->get_genname());
+
                 gm_backend_error(GM_ERROR_GPS_RANDOM_NODE_READ, f->get_line(), f->get_col(), "");
                 _error = true;
             }

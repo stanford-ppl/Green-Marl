@@ -257,6 +257,8 @@ void storeValueBasedOnType(void *arr, long pos, GM_Writer& writer, VALUE_TYPE vt
         case GMTYPE_LONG: writer.write(((long *)arr)[pos]); break;
         case GMTYPE_FLOAT: writer.write(((float *)arr)[pos]); break;
         case GMTYPE_DOUBLE: writer.write(((double *)arr)[pos]); break;
+        case GMTYPE_NODE:  writer.write(((node_t *)arr)[pos]); break;
+        case GMTYPE_EDGE: writer.write(((edge_t *)arr)[pos]); break;
         case GMTYPE_END: 
         default:
                             assert (false); return; // Control should never reach this case.

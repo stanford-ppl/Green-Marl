@@ -2,9 +2,9 @@ Procedure triangle_counting(G: Graph): Int
 {
 	Int T;
 	Foreach(v: G.Nodes) 
-    	Foreach(u: v.Nbrs) (u > v)
-			Foreach(w: u.Nbrs) (w > u)
-    			If (v.HasEdgeTo(w)) 
+    	Foreach(u: v.Nbrs) (u < v)
+			Foreach(w: u.Nbrs) (w < v)
+    			If (w != u && w.HasEdgeTo(v)) 
        				T += 1;
    	Return T;   
 }

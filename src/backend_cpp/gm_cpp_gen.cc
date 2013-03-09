@@ -562,7 +562,19 @@ void gm_cpp_gen::generate_sent_vardecl(ast_vardecl* v) {
         return;
     }
 
-    Body.push_spc(get_type_string(t));
+    if (t->is_sequence_collection()) {
+        //for sequence-list-vector optimization
+        ast_id* id = v->get_idlist()->get_item(0);
+        const char* type_string;
+        if(get_lib()->has_optimized_type_name(id->getSymInfo())) {
+            type_string = get_lib()->get_optimized_type_name(id->getSymInfo());
+        } else {
+            type_string = get_type_string(t);
+        }
+        Body.push_spc(type_string);
+    } else {
+        Body.push_spc(get_type_string(t));
+    }
 
     if (t->is_property()) {
         ast_idlist* idl = v->get_idlist();
