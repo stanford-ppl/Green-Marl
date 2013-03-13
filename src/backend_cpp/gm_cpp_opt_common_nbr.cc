@@ -25,8 +25,8 @@
 // 
 //---------------------------------------------
 
-static bool is_common_nbr_expression(ast_expr* e, gm_symtab_entry*& s) {
-    // all right. Just be practical and check only two cases:
+// check wheter if condition is checking common nbr expression
+static bool is_common_nbr_expression(ast_expr* e, gm_symtab_entry* iter_sym, gm_symtab_entry*& s) {
     // t.IsNbrFrom(y)
     // t.IsNbrFrom(y) == True
     if (e->get_optype() == GMOP_EQ)
@@ -50,6 +50,9 @@ static bool is_common_nbr_expression(ast_expr* e, gm_symtab_entry*& s) {
         if (driver == NULL) 
             return false;
         if (!driver->getTypeInfo()->is_node_compatible())
+            return false;
+
+        if (driver->getSymInfo() != iter_sym)
             return false;
 
         if (b->get_builtin_def()->get_method_id() == GM_BLTIN_NODE_IS_NBR_FROM) {
@@ -101,7 +104,7 @@ public:
             return true;
 
         gm_symtab_entry* t_sym;
-        if (is_common_nbr_expression(iff->get_cond(), t_sym)) 
+        if (is_common_nbr_expression(iff->get_cond(), fe->get_iterator()->getSymInfo(), t_sym)) 
         {
             gm_cpp_common_nbr_item_t T;
             T.fe = fe;
@@ -117,7 +120,7 @@ public:
                 return true;
 
             ast_if* iff2 = (ast_if*) iff_body;
-            if (is_common_nbr_expression(iff2->get_cond(), t_sym)) 
+            if (is_common_nbr_expression(iff2->get_cond(), fe->get_iterator()->getSymInfo(), t_sym)) 
             {
                 gm_cpp_common_nbr_item_t T;
                 T.fe = fe;

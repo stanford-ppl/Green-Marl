@@ -56,12 +56,7 @@ gm_graph::~gm_graph() {
 }
 
 bool gm_graph::has_edge_to(node_t source, node_t to) {
-    // xxx: change to binary search if semi-sorted
-    edge_t current = begin[source];
-    edge_t end = begin[source + 1];
-    while(current < end)
-        if(node_idx[current++] == to) return true;
-    return false;
+    return is_neighbor(source, to);
 }
 
 void gm_graph::freeze() {

@@ -443,6 +443,26 @@ bool gm_has_dependency(gm_rwinfo_sets* P_SET, gm_rwinfo_sets* Q_SET) {
     if (gm_does_intersect(P_R, Q_W, false)) return true;
     // output dep
     if (gm_does_intersect(P_W, Q_W, false)) return true;
+
+#if 0
+    if (P_M.size() != 0) {
+        gm_rwinfo_map::iterator I;
+        printf("P mutate set : ");
+        for(I=P_M.begin(); I!=P_M.end(); I++) {
+            printf("%s ", I->first->getId()->get_genname());
+        }
+        printf("\n");
+    }
+    if (Q_R.size() != 0) {
+        gm_rwinfo_map::iterator I;
+        printf("Q read set : ");
+        for(I=Q_R.begin(); I!=Q_R.end(); I++) {
+            printf("%s ", I->first->getId()->get_genname());
+        }
+        printf("\n");
+    }
+#endif
+
     // write & muate => dependency
     if (gm_does_intersect(P_W, Q_M, false)) return true;
     if (gm_does_intersect(P_M, Q_W, false)) return true;

@@ -7,7 +7,6 @@
 //------------------------------------------------------
 // hoist up target-type sentence as far as possible 
 // (in the same sent block)
-// target-type should not be a var-decl
 //------------------------------------------------------
 class gm_hoist_normal_sent_t : public gm_apply
 {
