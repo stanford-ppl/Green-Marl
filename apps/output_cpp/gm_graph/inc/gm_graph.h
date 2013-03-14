@@ -146,6 +146,7 @@ friend class gm_graph_hdfs;
 
     bool is_neighbor(node_t src, node_t to); // need semi sorting
     bool has_edge_to(node_t source, node_t to);
+    edge_t get_edge_idx_for_src_dest(node_t src, node_t dest);
 
     node_t num_nodes() {
         return _numNodes;
