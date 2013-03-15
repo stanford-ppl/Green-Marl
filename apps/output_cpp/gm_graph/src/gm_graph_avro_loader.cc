@@ -283,7 +283,7 @@ bool gm_graph::load_adjacency_list_avro(const char* filename, // input parameter
     }
 
     // prepare nodekey structure and its reverse structure
-    prepare_nodekey(true);
+    prepare_nodekey();
 
     // count nodes and edges
 	avro_schema_t rec_schema = avro_file_reader_get_writer_schema(reader);

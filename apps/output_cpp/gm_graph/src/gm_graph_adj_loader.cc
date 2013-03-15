@@ -85,13 +85,13 @@ void gm_graph::load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema
     
     // extract array from vectors
     for (size_t i = 0; i < num_vertex_values; ++i) {
-        void *array = getArrayType(vprop_schema[i], N);
+        void *array = gmutil_getArrayType(vprop_schema[i], N);
         gmutil_copyVectorIntoArray(node_prop_vectors[i], array, vprop_schema[i]);
         gmutil_deleteVectorType(node_prop_vectors[i], vprop_schema[i] );
         vertex_props.push_back ( array ) ;
     }
     for (size_t i = 0; i < num_edge_values; ++i) {
-        void *array = getArrayType(eprop_schema[i], M);
+        void *array = gmutil_getArrayType(eprop_schema[i], M);
         gmutil_copyVectorIntoArray(edge_prop_vectors[i], array, eprop_schema[i], e_idx2idx);
         gmutil_deleteVectorType(edge_prop_vectors[i], eprop_schema[i] );
         edge_props.push_back ( array ) ;
@@ -147,7 +147,7 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
     }
 
     // prepare nodekey structure and its reverse structure
-    prepare_nodekey(true);
+    prepare_nodekey();
 
     // Count the number of nodes and edges to allocate memory appropriately
     while (lineReader.getNextLine(line)) {
@@ -162,7 +162,13 @@ bool gm_graph::load_adjacency_list(const char* filename, // input parameter
         // Get the first token in the line, which must be the vertex id
         temp_str = tknzr.getNextToken();
         //index_convert[atol(temp_str.c_str())] = N;
-        add_nodekey(atol(temp_str.c_str()));
+        node_t n ;
+#if GM_NODE64
+        n = atoll(temp_str.c_str());
+#else
+        n = atol(temp_str.c_str());
+#endif
+        add_nodekey(n);
         EDGE_CNT.push_back(M);
         N++;
 

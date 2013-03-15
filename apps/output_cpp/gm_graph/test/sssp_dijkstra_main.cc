@@ -86,6 +86,9 @@ int main(int argc, char** argv) {
 
     //    struct timeval T3, T4;    
     //    gettimeofday(&T3, NULL);
+    struct timeval T1, T2;    
+    gettimeofday(&T1, NULL);
+
     if (str_ends_with(inputFile,".avro"))
     {
         vprop_schema.clear();
@@ -93,23 +96,17 @@ int main(int argc, char** argv) {
         std::vector<std::string> vprop_name;
         std::vector<std::string> eprop_name;
         G.load_adjacency_list_avro(inputFile, vprop_schema, eprop_schema, vprop_name, eprop_name, vertex_props, edge_props, false);
-
-        std::vector<VALUE_TYPE>::iterator I;
-        for(I = vprop_schema.begin(); I!= vprop_schema.end(); I++)
-        {
-            printf("vprop type = %d", *I);
-        }
-
-        for(I = eprop_schema.begin(); I!= eprop_schema.end(); I++)
-        {
-            printf("eprop type = %d", *I);
-        }
-        fflush(stdout);
+    }
+    else if (str_ends_with(inputFile, ".ebin"))
+    {
+        G.load_extended_binary(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, false);
     }
     else
+    {
         G.load_adjacency_list(inputFile, vprop_schema, eprop_schema, vertex_props, edge_props, " \t", false);
-    //    gettimeofday(&T4, NULL);
-    //    printf("G-M DIJKSTRA CSR C - GRAPH LOADING TIME (ms): %lf\n", (T4.tv_sec - T3.tv_sec) * 1000 + (T4.tv_usec - T3.tv_usec) * 0.001);
+    }
+    gettimeofday(&T2, NULL);
+    printf("G-M DIJKSTRA CSR C - GRAPH LOADING TIME (ms): %lf\n", (T2.tv_sec - T1.tv_sec) * 1000 + (T2.tv_usec - T1.tv_usec) * 0.001);
 
     //------------------------------
     // Print graph details for manual verification 
@@ -168,7 +165,6 @@ int main(int argc, char** argv) {
 
     //    printf("GRAPH LOADED\n");
     //    fflush(stdout);
-    struct timeval T1, T2;    
     gettimeofday(&T1, NULL);
     // compute all shortest paths from root
     //    CALLGRIND_START_INSTRUMENTATION;

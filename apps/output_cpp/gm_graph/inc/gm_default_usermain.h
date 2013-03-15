@@ -24,7 +24,8 @@ enum GM_FILE_FORMAT {
     GM_ADJ_LIST_AVRO,
     GM_EDGE_LIST,
     GM_NODE_PROP_LIST,  // dump node properties only
-    GM_NULL_FORMAT,    // dump nothing
+    GM_NULL_FORMAT,    // dump graph only in ADJ list
+    GM_EXTENDED_BINARY,  // binary graph + binary properties
 };
 
 struct gm_schema {

@@ -55,17 +55,35 @@ long GM_Tokenizer::countNumberOfTokens() {
 /*
  * Method to create arrays based on a given value type and size.
  */
-void *getArrayType(VALUE_TYPE vt, int size) {
+void *gmutil_getArrayType(VALUE_TYPE vt, int size) {
     switch(vt) {
         case GMTYPE_BOOL: return (void *) new bool[size];
         case GMTYPE_INT: return (void *) new int[size];
         case GMTYPE_LONG: return (void *) new long[size];
         case GMTYPE_FLOAT: return (void *) new float[size];
         case GMTYPE_DOUBLE: return (void *) new double[size];
+        case GMTYPE_NODE: return (void *) new node_t[size];
+        case GMTYPE_EDGE: return (void *) new edge_t[size];
         case GMTYPE_END: 
         default: assert(false); return NULL; // Control should never reach this case.
     }
     return NULL;
+}
+
+int gmutil_getSizeOfType(VALUE_TYPE vt)
+{
+    switch(vt) {
+        case GMTYPE_BOOL: return 1; 
+        case GMTYPE_INT: return 4;
+        case GMTYPE_LONG: return 8;
+        case GMTYPE_FLOAT: return 4;
+        case GMTYPE_DOUBLE: return 8;
+        case GMTYPE_NODE: return sizeof(node_t);
+        case GMTYPE_EDGE: return sizeof(edge_t);
+        case GMTYPE_END: 
+        default: assert(false); return -1; // Control should never reach this case.
+    }
+    return -1;
 }
 
 void* gmutil_createVectorType(VALUE_TYPE vt) 

@@ -118,6 +118,7 @@ public:
         f_body_main = NULL;
         f_body_input = NULL;
         f_body_output = NULL;
+        init_gen_steps();  // change generation steps
     }
     virtual gm_giraphlib* get_lib() {
         return glib;

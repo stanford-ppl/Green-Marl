@@ -55,18 +55,13 @@ public:
 
             is_message_write_target = s->find_info_bool(GPS_FLAG_COMM_DEF_ASSIGN);
 
-            /* what?
-             if (foreach_depth > 1) {
-             if (context == GPS_CONTEXT_MASTER) // inner loop
-             return true;
-             }
-             */
             ast_id* target = (a->is_target_scalar()) ? a->get_lhs_scala() : a->get_lhs_field()->get_second();
             int is_scalar = (a->is_target_scalar()) ? IS_SCALAR : IS_FIELD;
             int lhs_reduce = a->is_reduce_assign() ? GPS_SYM_USED_AS_REDUCE : GPS_SYM_USED_AS_LHS;
             int r_type = a->is_reduce_assign() ? a->get_reduce_type() : GMREDUCE_NULL;
 
-            if (!is_scalar && a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) is_edge_prop_write_target = true;
+            if (!is_scalar && a->get_lhs_field()->get_first()->getSymInfo()->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) 
+                is_edge_prop_write_target = true;
 
             if (context == GPS_CONTEXT_RECEIVER) {
                 if (is_message_write_target || is_edge_prop_write_target || is_random_write_target) return true;
@@ -178,14 +173,12 @@ protected:
 
         syminfo->add_usage_in_BB(get_curr_BB()->get_id(), usage, context, r_type);
 
-        /*
          printf("Add usage : %s for BB : %d, context: %s\n",
-         i->get_genname(),
-         get_curr_BB()->get_id(),
-         (context == GPS_CONTEXT_MASTER) ? "master" :
-         (context == GPS_CONTEXT_RECEIVER) ? "receiver" : "vertex"
+            i->get_genname(),
+            get_curr_BB()->get_id(),
+            (context == GPS_CONTEXT_MASTER) ? "master" :
+            (context == GPS_CONTEXT_RECEIVER) ? "receiver" : "vertex"
          );
-         */
     }
 
     gps_syminfo* get_or_create_global_syminfo(ast_id *i, bool is_scalar) {

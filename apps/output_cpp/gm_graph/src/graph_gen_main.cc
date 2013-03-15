@@ -4,6 +4,7 @@
 #include <map>
 #include <assert.h>
 #include <sys/time.h>
+#include <inttypes.h>  // for PRId64
 
 #include "graph_gen.h"
 
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
     edge_t M = (edge_t) atoll(argv[2]);
     int gtype = atoi(argv[4]);
     if (N == 0) {printf("Empty graph not allowed\n"); return EXIT_FAILURE;}
-    printf("Creating Graph, N = %lld, M = %lld, Type = %d\n", (int64_t)N, (int64_t) M, gtype);
+    printf("Creating Graph, N = %I64d, M = %I64d , Type = %d\n", (int64_t)N, (int64_t) M, gtype);
 
 
     gm_graph* g;

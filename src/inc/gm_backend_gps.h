@@ -166,8 +166,8 @@ public:
     void print_basicblock();
 
 protected:
-    void init_opt_steps();
-    void init_gen_steps();
+    virtual void init_opt_steps();
+    virtual void init_gen_steps();
     std::list<gm_compile_step*>& get_opt_steps() {
         return opt_steps;
     }
@@ -265,6 +265,7 @@ public:
     virtual void generate_sent_return(ast_return *r);
     virtual void generate_sent_assign(ast_assign *a);
     virtual void generate_sent_block(ast_sentblock* sb, bool need_brace = true);
+    virtual void generate_sent_if(ast_if *iff);
 
     void set_master_generate(bool b) {
         _is_master_gen = b;
@@ -326,6 +327,10 @@ DEF_STRING(GPS_FLAG_COMM_DEF_ASSIGN);
 
 // target: ast_bfs, gps_opt_tranform.bfs
 DEF_STRING(GPS_FLAG_HAS_DOWN_NBRS);
+
+// see gm_gps_opt_early_filter.cc
+DEF_STRING(GPS_FLAG_IS_EARLY_FILTER);
+DEF_STRING(GPS_FLAG_PTR_EARLY_FILTER);
 
 static const int GPS_PREPARE_STEP1 = 100000;
 static const int GPS_PREPARE_STEP2 = 100001;

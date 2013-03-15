@@ -195,17 +195,38 @@ void gm_gps_gen::generate_lhs_field(ast_field* f) {
 
 void gm_gps_gen::generate_rhs_id(ast_id* i) {
     if (i->getSymInfo()->getType()->is_node_iterator()) {
-        if (i->getSymInfo()->find_info_bool(GPS_FLAG_COMM_SYMBOL)) {
-            if (!this->is_receiver_generate()) {
-                get_lib()->generate_node_iterator_rhs(i, Body);
+        /*
+        if (i->getSymInfo()->find_info_bool(GPS_FLAG_COMM_SYMBOL)) { // transmitted information
+            if (!this->is_receiver_generate()) { // master generate
+                get_lib()->generate_node_iterator_rhs(i, Body);  // this.getId()
             } else {
-                generate_lhs_id(i);
+                generate_lhs_id(i); // normal symbol name
             }
         } else {
-            //generate_lhs_id(i);
-            get_lib()->generate_node_iterator_rhs(i, Body);
+            get_lib()->generate_node_iterator_rhs(i, Body);     // this.getId()
         }
+        */
+        if (i->getSymInfo()->find_info_bool(GPS_FLAG_IS_OUTER_LOOP)) {
+            if (this->is_receiver_generate()) { 
+                generate_lhs_id(i); // normal symbol name. 
+            }
+            else {
+                get_lib()->generate_node_iterator_rhs(i, Body);     // this.getId()
+            }
+        } else if (i->getSymInfo()->find_info_bool(GPS_FLAG_IS_INNER_LOOP)) {
+            if (this->is_receiver_generate()) { 
+                get_lib()->generate_node_iterator_rhs(i, Body);     // this.getId()
+            }
+            else {
+                generate_lhs_id(i); // normal symbol name. 
+            }
+        } else {
+            generate_lhs_id(i); // normal symbol name
+        }
+
+
     } else {
+        // normal symbol name
         generate_lhs_id(i);
     }
 }
@@ -399,6 +420,18 @@ void gm_gps_gen::generate_sent_return(ast_return *r) {
         _Body.push(" = ");
         generate_expr(r->get_expr());
         _Body.pushln(";");
+    }
+}
+
+void gm_gps_gen::generate_sent_if(ast_if* iff)
+{
+    if (iff->find_info_bool(GPS_FLAG_IS_EARLY_FILTER))
+    {
+        assert(iff->get_else() == NULL);
+        generate_sent(iff->get_then());
+    }
+    else {
+        gm_code_generator::generate_sent_if(iff);
     }
 }
 

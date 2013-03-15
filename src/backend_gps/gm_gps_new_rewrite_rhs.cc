@@ -91,10 +91,14 @@ public:
     }
 
     bool apply(ast_expr* e) {
+        if (e->find_info_bool(GPS_FLAG_IS_EARLY_FILTER)) return true;
+
         ast_sent* s = get_current_sent();
         if (s->find_info_int(GPS_INT_SYNTAX_CONTEXT) != GPS_NEW_SCOPE_IN) return true;
 
-        if ((e->find_info_int(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_OUT) || (e->find_info_int(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_EDGE)) {
+        if ((e->find_info_int(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_OUT) || 
+            (e->find_info_int(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_EDGE)) {
+
             // (current traversal engine does not support pruning, so should look at parents
             //
             if (!parent_already_added(e)) {
@@ -120,26 +124,49 @@ public:
         assert(fe->find_info_bool(GPS_FLAG_IS_INNER_LOOP));
 
         ast_sentblock* sb = (ast_sentblock*) (fe->get_body());
-        //printf("(2)fe = %p, sb = %p\n", fe, sb);
         assert(sb->get_nodetype() == AST_SENTBLOCK);
 
-
+        // outer iterator
         gm_symtab_entry* out_iter = NULL;
-
-        // process raw property access first
+       
         std::set<ast_expr*>::iterator I;
+        //------------------------------------------
+        // eleminating common sub-expressions in a poor way.
+        //------------------------------------------
+        // process raw property access or field first
         for (I = exprs.begin(); I != exprs.end(); I++) {
             ast_expr* e = *I;
-            if (e->is_field()) {
-                gm_symtab_entry* p = e->get_field()->get_second()->getSymInfo();
+            if (e->is_id() || e->is_field()) {
+                gm_symtab_entry* p;
+                if (e->is_id())
+                    p = e->get_id()->getSymInfo();
+                else
+                    p = e->get_field()->get_second()->getSymInfo();
+
+                // if this property or scala variable is new, add
                 if (props_vars.find(p) == props_vars.end()) {
-                    gm_symtab_entry* target = define_temp(p->getType()->getTargetTypeSummary(), sb, p->getType()->get_target_graph_sym());
+
+                    // define a temporary scalar matching this variable
+                    gm_symtab_entry* target;
+                    int type;
+                    gm_symtab_entry* graph = NULL;
+                    if (e->is_field()) {
+                        type = p->getType()->getTargetTypeSummary();
+                        graph = p->getType()->get_target_graph_sym();
+                    }
+                    else {
+                        type = p->getType()->getTypeSummary();
+                        if (e->get_id()->getTypeInfo()->is_node_compatible() || e->get_id()->getTypeInfo()->is_edge_compatible())
+                            graph = p->getType()->get_target_graph_sym();
+                    }
+                    target = define_temp(type, sb, graph);
 
                     props_vars[p] = target;
-                    if (out_iter == NULL)
-                        out_iter = e->get_field()->get_first()->getSymInfo();
-                    else {
-                        assert(out_iter == e->get_field()->get_first()->getSymInfo());
+                    if (e->is_field()) {
+                        if (out_iter == NULL) 
+                            out_iter = e->get_field()->get_first()->getSymInfo();
+                        else 
+                            assert(out_iter == e->get_field()->get_first()->getSymInfo());
                     }
                 }
             }
@@ -148,11 +175,11 @@ public:
         // process complicated sub expressions
         for (I = exprs.begin(); I != exprs.end(); I++) {
             ast_expr* e = *I;
-            if (e->is_field()) continue;
+            if (e->is_field() || e->is_id()) continue;
 
             // for future optimization
             if (is_composed_of(e, props_vars)) {
-                assert(false);
+                assert(false); // [xxx] what is this?
             } else {
                 gm_symtab_entry* target;
                 if (gm_is_node_edge_compatible_type(e->get_type_summary())) {
@@ -169,7 +196,9 @@ public:
         for (I = exprs.begin(); I != exprs.end(); I++) {
             ast_expr* e = *I;
             // if not is_composed_of ...
-            if (e->is_field())
+            if (e->is_id())
+                replace_access_expr(e, props_vars[e->get_id()->getSymInfo()], true);
+            else if (e->is_field() )
                 replace_access_expr(e, props_vars[e->get_field()->get_second()->getSymInfo()], true);
             else
                 replace_access_expr(e, expr_vars[e], false);
@@ -192,16 +221,24 @@ public:
         for (J = props_vars.begin(); J != props_vars.end(); J++) {
             gm_symtab_entry* prop = J->first;
             gm_symtab_entry* target = J->second;
+            ast_assign* r_assign;
 
-            ast_id* lhs_id = target->getId()->copy(true);
-            ast_id* driver = out_iter->getId()->copy(true);
-            ast_id* prop_id = prop->getId()->copy(true);
-            ast_field* f = ast_field::new_field(driver, prop_id);
-            ast_expr* rhs = ast_expr::new_field_expr(f);
-            ast_assign* r_assign = ast_assign::new_assign_scala(lhs_id, rhs);
+            if (prop->getType()->is_property()) {
+                ast_id* lhs_id = target->getId()->copy(true);
+                ast_id* driver = out_iter->getId()->copy(true);
+                ast_id* prop_id = prop->getId()->copy(true);
+                ast_field* f = ast_field::new_field(driver, prop_id);
+                ast_expr* rhs = ast_expr::new_field_expr(f);
+                r_assign = ast_assign::new_assign_scala(lhs_id, rhs);
+            }
+            else {
+                ast_id* lhs_id = target->getId()->copy(true);
+                ast_id* rhs_id = prop->getId()->copy(true);
+                ast_expr* rhs = ast_expr::new_id_expr(rhs_id);
+                r_assign = ast_assign::new_assign_scala(lhs_id, rhs);
+            }
 
             r_assign->add_info_bool(GPS_FLAG_COMM_DEF_ASSIGN, true);
-
             gm_insert_sent_begin_of_sb(sb, r_assign);
         }
 

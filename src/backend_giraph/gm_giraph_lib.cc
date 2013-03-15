@@ -913,6 +913,11 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
 
     bool need_separate_message = (fe == NULL) ? false : fe->find_info_bool(GPS_FLAG_EDGE_DEFINING_INNER);
     bool is_in_neighbors = (fe != NULL) && (gm_is_in_nbr_node_iteration(fe->get_iter_type()));
+    bool early_filter = (fe!=NULL) && (fe->find_info_bool(GPS_FLAG_IS_EARLY_FILTER));
+
+    if (need_separate_message) {
+        assert(!early_filter); 
+    } // [xxx] temporary 
 
     if (!need_separate_message) {
         Body.pushln("// Sending messages to all neighbors (if there is a neighbor)");
@@ -997,15 +1002,70 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
         Body.pushln(";");
     }
 
+    ast_if* iff = NULL;
+    if (early_filter) {
+        iff = (ast_if*) fe->find_info_ptr(GPS_FLAG_PTR_EARLY_FILTER);
+        assert(iff != NULL);
+    }
+
     if (!need_separate_message) {
         if (is_in_neighbors) {
-            sprintf(temp, "for (%s node : %s.%s) {", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", STATE_SHORT_CUT,
+            sprintf(temp, "for (%s _%s_node : %s.%s) {", 
+                    PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", 
+                    fe->get_iterator()->get_genname(),
+                    STATE_SHORT_CUT,
                     GPS_REV_NODE_ID);
             Body.pushln(temp);
-            Body.pushln("sendMessage(node, _msg);");
+
+            if (early_filter) { 
+                sprintf(temp, "%s %s = _%s_node.get();", 
+                        PREGEL_BE->get_type_string(GMTYPE_NODE),  
+                        fe->get_iterator()->get_genname(),
+                        fe->get_iterator()->get_genname());
+                Body.pushln(temp);
+            }
+
+            // create early filter
+            Body.push("if (!(");
+            get_main()->generate_expr(iff->get_cond());
+            Body.pushln(")) continue;\n");
+
+            sprintf(temp, "sendMessage(_%s_node, _msg);", fe->get_iterator()->get_genname());
+            Body.pushln(temp);
             Body.pushln("}");
+
         } else {
-            Body.pushln("sendMessageToAllEdges(_msg);");
+
+            if (early_filter) {
+                sprintf(temp, "for (Edge<%s, %s> _%s_edge : getEdges()) {", vertex_id, edge_data,
+                        fe->get_iterator()->get_genname());
+                Body.pushln(temp);
+                sprintf(temp, "%s _%s_node = _%s_edge.getTargetVertexId();", 
+                        PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable",
+                        fe->get_iterator()->get_genname(),
+                        fe->get_iterator()->get_genname());
+                Body.pushln(temp);
+
+                sprintf(temp, "%s %s = _%s_node.get();", 
+                        PREGEL_BE->get_type_string(GMTYPE_NODE),  
+                        fe->get_iterator()->get_genname(),
+                        fe->get_iterator()->get_genname());
+                Body.pushln(temp);
+
+                // create early filter
+                Body.push("if (!(");
+                get_main()->generate_expr(iff->get_cond());
+                Body.pushln(")) continue;\n");
+
+                sprintf(temp, "sendMessage(_%s_node, _msg);", fe->get_iterator()->get_genname());
+                Body.pushln(temp);
+
+                Body.pushln("}");
+            }
+            else {
+                // send to all
+                Body.pushln("sendMessageToAllEdges(_msg);");
+            }
         }
         Body.pushln("}");
     } else {
@@ -1305,13 +1365,15 @@ void gm_giraphlib::generate_benign_feloop_header(ast_foreach* fe, bool& need_clo
     {
         const char* edge_data = FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP) ? "EdgeData" : "NullWritable";
 
-        sprintf(temp, "for (Edge<%s, %s> __edge : getEdges())", 
+        sprintf(temp, "for (Edge<%s, %s> _%s_edge : getEdges())", 
             get_main()->get_box_type_string(GMTYPE_NODE),
-            edge_data);
+            edge_data,
+            fe->get_iterator()->get_genname());
         Body.pushln(temp);
         Body.pushln("{");
-        sprintf(temp, "%s %s = __edge.getTargetVertexId().%s();", 
+        sprintf(temp, "%s %s = _%s_edge.getTargetVertexId().%s();", 
             is_node_type_int() ? "int" : "long", 
+            fe->get_iterator()->get_genname(),
             fe->get_iterator()->get_genname(),
             get_main()->get_unbox_method_string(GMTYPE_NODE));
         Body.pushln(temp);

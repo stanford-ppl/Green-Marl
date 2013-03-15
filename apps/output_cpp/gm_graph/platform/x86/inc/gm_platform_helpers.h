@@ -150,4 +150,7 @@ _gm_i386_cas(volatile unsigned long* ptr, unsigned long old, unsigned long _new)
 #define n32tohedge(n)  ((edge_t)__builtin_bswap32((uint32_t)n))
 #define n64tohedge(n)  ((edge_t)__builtin_bswap64((uint64_t)n))
 
+#define ntoh64(n)      (__builtin_bswap64((uint64_t)n)) 
+#define hton64(n)      (__builtin_bswap64((uint64_t)n)) 
+
 #endif

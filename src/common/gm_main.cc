@@ -32,7 +32,7 @@ gm_frontend FE;
 gm_cpp_gen CPP_BE;  // CPP Backend
 gm_gps_gen GPS_BE;  // GPS Backend
 gm_giraph_gen GIRAPH_BE;  // Giraph Backend
-gm_gps_gen* PREGEL_BE; //TODO
+gm_gps_gen* PREGEL_BE; // for debug
 #ifdef COMPILE_JAVA_BACKEND
 gm_java_gen JAVA_BE; // Java Backend
 #endif

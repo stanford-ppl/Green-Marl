@@ -5,6 +5,9 @@
 // This is the internal 'shared' header for the modules in the library.
 // This header includes all the 'leaf' headers, which are common to each module
 //-------------------------------------------------------------------------------
+// If the following flag is on, we let the correct thread 'touches' the data strcutre
+// for the first time, so that the memory is allocated in the corresponding socket.
+#define GM_GRAPH_NUMA_OPT   1   
 
 // defines the size of edge_t and node_t
 #include "gm_graph_typedef.h"  

@@ -1916,7 +1916,7 @@ public:
         return true;
     }
 
-    ast_field* get_field_driver() {
+    virtual ast_field* get_field_driver() {
         return field_driver;
     }
 

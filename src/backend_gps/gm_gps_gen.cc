@@ -60,6 +60,7 @@ void gm_gps_gen::init_gen_steps() {
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_read));         // check if it contains random access
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_check_random_write));        // check if it contains random access
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_edge_value));          //
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_early_filter));          // find early filtered loops
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_new_rewrite_rhs));               //
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_create_ebb));                // create (Extended) basic block

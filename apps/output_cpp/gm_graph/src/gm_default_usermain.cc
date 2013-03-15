@@ -24,13 +24,21 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
    //OPTIONS.add_option(OPT_DUMMYPROP,  GMTYPE_BOOL, "0", "Insert dummy properties so that there is at least one node & edge propery.");
 
    OPTIONS.add_option(OPT_MEASURETIME, GMTYPE_BOOL, "0",   "Measure running time");
+
+#define DEF_FORMATS "ADJ: adjacency list, EDGE: edge list, BIN: binary (graph only), EBIN: extended binary (graph + property)"
+#define INPUT_FORMATS_STR "Input formats -- " DEF_FORMATS
+#define OUTPUT_FORMATS_STR "Output format -- " DEF_FORMATS ", NODE_PROP: dump node properties only, NULL: dump graph only in adjacencly list"
+
 #ifdef AVRO
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, EDGE: edge list, NODE_PROP: dump of node properties only, NULL: dump no properties, BIN: Binary (graph only)");
-   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, ADJ_AVRO: adj-list in avro file, EDGE: edge list, BIN: Binary(graph only)");
+#define AVRO_STR ", ADJ_AVRO: adj-list in avro file"
 #else
-   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, "Output format -- ADJ: adjacency list, EDGE: edge list, NODE_PROP: dump of node properties only, NULL: dump no properties, BIN: Binary(graph only)");
-   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, "Input format -- ADJ: adjacency list, EDGE: edge list, BIN: Binary (graph only)");
+#define AVRO_STR ""
 #endif
+
+   OPTIONS.add_option(OPT_OUTTYPE,    GMTYPE_END,  NULL, OUTPUT_FORMATS_STR AVRO_STR "\n");
+
+   OPTIONS.add_option(OPT_INTYPE,     GMTYPE_END,  NULL, INPUT_FORMATS_STR AVRO_STR "\n");
+
    OPTIONS.add_option(OPT_NUMTHREAD,  GMTYPE_INT,  NULL,  "Number of threads");
 #ifdef HDFS
    OPTIONS.add_option(OPT_USEHDFS, GMTYPE_BOOL, "0", "Use HDFS instead of local file system");
@@ -178,6 +186,10 @@ static bool parse_format_string(const char* str, enum GM_FILE_FORMAT& format)
         format = GM_BINARY;
         return true;
     }
+    if (!strcmp(str, "EBIN") || !strcmp(str,"ebin")) {
+        format = GM_EXTENDED_BINARY;
+        return true;
+    }
     if ((!strcmp(str,"NODE_PROP")) || (!strcmp(str,"node_prop"))) {
         format = GM_NODE_PROP_LIST;
         return true;
@@ -205,6 +217,7 @@ static bool guess_file_format_from_extension(const char* fname, GM_FILE_FORMAT& 
         else if (ext == ".avro") {fmt = GM_ADJ_LIST_AVRO; return true;}
         else if (ext == ".bin")  {fmt = GM_BINARY; return true;}
         else if (ext == ".prop") {fmt = GM_NODE_PROP_LIST; return true;}
+        else if (ext == ".ebin") {fmt = GM_EXTENDED_BINARY; return true;}
     }
 
     return false; // donno
@@ -226,7 +239,12 @@ bool gm_default_usermain::determine_formats()
             OPTIONS.get_arg(0), this->in_format) == false) {
         printf("Warning: assuming input is ADJ list\n");
     }
-    if ((in_format != GM_ADJ_LIST) && (in_format != GM_ADJ_LIST_AVRO) && (in_format != GM_EDGE_LIST) && (in_format != GM_BINARY)) {
+    if ((in_format != GM_ADJ_LIST) && 
+        (in_format != GM_ADJ_LIST_AVRO) && 
+        (in_format != GM_EDGE_LIST) && 
+        (in_format != GM_BINARY) &&
+        (in_format != GM_EXTENDED_BINARY)
+        ) {
         printf("Error:output format not supported.\n");
         return false;
     }
@@ -235,6 +253,7 @@ bool gm_default_usermain::determine_formats()
                                (in_format == GM_ADJ_LIST_AVRO) ? "ADJ_AVRO" :
                                (in_format == GM_EDGE_LIST) ? "EDGE_LIST" :
                                (in_format == GM_BINARY) ? "BINARY" :
+                               (in_format == GM_EXTENDED_BINARY) ? "EXTENDED_BINARY" :
                                "Unknown");
 
     if (create_output_graph) {
@@ -250,9 +269,13 @@ bool gm_default_usermain::determine_formats()
             printf("Warning: assuming output is ADJ list\n");
         }
 
-        if ((out_format != GM_ADJ_LIST) && (out_format != GM_ADJ_LIST_AVRO) 
-            && (out_format != GM_NODE_PROP_LIST) && (out_format != GM_NULL_FORMAT)
-            && (out_format != GM_EDGE_LIST) && (out_format != GM_BINARY)) {
+        if ((out_format != GM_ADJ_LIST) && 
+            (out_format != GM_ADJ_LIST_AVRO) && 
+            (out_format != GM_NODE_PROP_LIST) && 
+            (out_format != GM_NULL_FORMAT) && 
+            (out_format != GM_EDGE_LIST) && 
+            (out_format != GM_EXTENDED_BINARY) && 
+            (out_format != GM_BINARY)) {
             printf("Error:output format not supported.\n");
             return false;
         }
@@ -263,6 +286,7 @@ bool gm_default_usermain::determine_formats()
                                  (out_format == GM_NULL_FORMAT)? "NULL_FORMAT" : 
                                  (out_format == GM_EDGE_LIST)? "EDGE_LIST" : 
                                  (out_format == GM_BINARY)? "BINARY" : 
+                                 (out_format == GM_EXTENDED_BINARY) ? "EXTENDED_BINARY" :
                                  "Unknown");
     }
 
@@ -320,25 +344,15 @@ bool gm_default_usermain::process_arguments(int argc, char** argv)
         return false;
     }
 
-    /*
-    if (in_format == GM_BINARY) 
-    {
+    // binary format does not support input properties 
+    // (should we initiate it with random values?)
+    if (in_format == GM_BINARY) {
         for(size_t i=0;i<property_schema.size(); i++) 
         {
             gm_schema S = property_schema[i];
-            if (S.is_input) {
-                sprintf(buffer1,"%s",S.name);
-                sprintf(buffer2,"input %s_property file (binary)", S.schema_type == GM_NODEPROP ? "Node" : "Edge" );
-                char* name = new char[strlen(buffer1)+1];
-                char* desc = new char[strlen(buffer2)+1];
-                strcpy(name, buffer1);
-                strcpy(desc, buffer2);
-                OPTIONS.add_argument(name, GMTYPE_END, desc);
-            }
+            assert (!S.is_input) ;
         }
     }
-    */
-
 
     // check if every scalar variables are declared
     for(size_t i=0; i < scalar_schema.size(); i++)
@@ -423,8 +437,6 @@ bool gm_default_usermain::do_preprocess()
 
     char fullpath_name[1024*64];
 
-    // check output directory is open for writing
-    //if (OPTIONS.get_option_bool(OPT_DUMPGRAPH)) 
     {
         if (strlen(output_path) >= 1) {
             sprintf(fullpath_name, "%s%s",output_path, "__temp_test");
@@ -477,6 +489,20 @@ bool gm_default_usermain::do_preprocess()
             return false;
         }
 
+    }
+    else if (get_input_format() == GM_EXTENDED_BINARY) 
+    {
+        bool okay = GRAPH.load_extended_binary(fullpath_name,
+                vprop_in_schema,
+                eprop_in_schema,
+                vprop_in_array,
+                eprop_in_array,
+                use_hdfs);
+
+        if (!okay) {
+            printf("Error: cannot open file\n");
+            return false;
+        }
     }
     else if (get_input_format() == GM_EDGE_LIST) 
     {
@@ -716,7 +742,15 @@ bool gm_default_usermain::do_postprocess()
             assert (eprop_out_schema.size() == 0);
             assert(!use_hdfs);
             okay = GRAPH.store_binary(fullpath_name);
-
+        }
+        else if (get_output_format() == GM_EXTENDED_BINARY) 
+        {
+           okay = GRAPH.store_extended_binary(fullpath_name,
+                vprop_out_schema,
+                eprop_out_schema,
+                vprop_out_array,
+                eprop_out_array,
+                use_hdfs);
         }
         else if (get_output_format() == GM_EDGE_LIST) 
         {

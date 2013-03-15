@@ -237,7 +237,8 @@ friend class gm_graph_hdfs;
     // Read and Write the graph from/to a file, using a custom binary format
     // The graph will be frozen automatically.
     //--------------------------------------------------------------
-    #define MAGIC_WORD 0x03939999
+    #define MAGIC_WORD_BIN  0x03939999
+    #define MAGIC_WORD_EBIN 0x99191191
     void prepare_external_creation(node_t n, edge_t m);
     void prepare_external_creation(node_t n, edge_t m, bool clean_key_id_mappings);
     bool store_binary(char* filename);          // attributes not saved
@@ -246,7 +247,7 @@ friend class gm_graph_hdfs;
     /*
      * A specialized function to load a graph represented using the adjacency list format.
      */
-    bool load_adjacency_list(char* filename, char separator = '\t');
+    bool load_adjacency_list(char* filename, char separator = '\t');  // to be depricated
 
     void load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema,
             std::vector<VALUE_TYPE> eprop_schema,
@@ -333,6 +334,23 @@ friend class gm_graph_hdfs;
             bool use_hdfs = false
             );
 
+    bool load_extended_binary(
+            char* filename,                          // input: filename
+            std::vector<VALUE_TYPE>& vprop_schema,   // input: type of node properties
+            std::vector<VALUE_TYPE>& eprop_schema,   // input: type of edge properties
+            std::vector<void*>& vertex_props,        // output: vector of arrays
+            std::vector<void*>& edge_props,          // output: vector of arrays,
+            bool use_hdfs = false
+            );
+
+    bool store_extended_binary(const char* filename, // input parameter
+            std::vector<VALUE_TYPE> vprop_schema, // input parameter
+            std::vector<VALUE_TYPE> eprop_schema, // input parameter
+            std::vector<void*>& vertex_props, // input parameter
+            std::vector<void*>& edge_props, // input parameter
+            bool use_hdfs = false // input parameter
+            );
+
     //--------------------------------------------------------------
     // conversion between idx and id
     //--------------------------------------------------------------
@@ -382,7 +400,7 @@ friend class gm_graph_hdfs;
     }
     inline node_t nodeid_to_nodekey(node_t nodeid) {
       // not all graphs have this mapping defined (only those loaded from adjacency list format)
-      return (_reverse_nodekey_defined ? _numeric_reverse_key[nodeid] : nodeid);
+      return (_nodekey_defined ? _numeric_reverse_key[nodeid] : nodeid);
     }
   private:
 
@@ -409,19 +427,21 @@ friend class gm_graph_hdfs;
     // Use node key that is different from node idx.
     //-----------------------------------------------------
     bool _nodekey_defined;          // 
-    bool _reverse_nodekey_defined;  // 
-    bool _nodekey_type_is_numeric; //
     std::unordered_map<node_t, node_t> _numeric_key;  // node_key -> node_idx
     std::vector<node_t>      _numeric_reverse_key;    // node_idx -> node_key
 
-    void   prepare_nodekey(bool _prepare_reverse);    // should call this function before graph is create
-    void   create_reverse_nodekey();
+    void   prepare_nodekey();    // should call this function before graph is create
     void   delete_nodekey();
-    void   delete_reverse_nodekey();
     node_t add_nodekey(node_t key);
 
     inline bool find_nodekey(node_t key) {return _numeric_key.find(key) != _numeric_key.end();}
     inline node_t get_num_nodekeys() {return (node_t) _numeric_key.size();}
+
+    bool load_binary_internal(FILE* f, uint32_t magic_word, bool need_semisort);
+    bool store_binary_internal(FILE* f, uint32_t magic_word);
+
+    bool store_nodekey_binary(FILE*f);
+    bool load_nodekey_binary(FILE*f);
 };
 
 #endif
