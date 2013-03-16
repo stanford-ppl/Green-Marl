@@ -1023,12 +1023,12 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
                         fe->get_iterator()->get_genname(),
                         fe->get_iterator()->get_genname());
                 Body.pushln(temp);
-            }
 
-            // create early filter
-            Body.push("if (!(");
-            get_main()->generate_expr(iff->get_cond());
-            Body.pushln(")) continue;\n");
+                // create early filter
+                Body.push("if (!(");
+                get_main()->generate_expr(iff->get_cond());
+                Body.pushln(")) continue;\n");
+            }
 
             sprintf(temp, "sendMessage(_%s_node, _msg);", fe->get_iterator()->get_genname());
             Body.pushln(temp);
@@ -1036,7 +1036,7 @@ void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) 
 
         } else {
 
-            if (early_filter) {
+            if (early_filter) { // early filter
                 sprintf(temp, "for (Edge<%s, %s> _%s_edge : getEdges()) {", vertex_id, edge_data,
                         fe->get_iterator()->get_genname());
                 Body.pushln(temp);
