@@ -50,6 +50,7 @@ static const char* GMARGFLAG_GIRAPH_PACKAGE = "GiraphPackage";
 //static const char* GMARGFLAG_NOSCREDUCE = "NoScalarReduce";
 
 static const char* GMARGFLAG_JAVA_GRAPH_REPRESENTATION = "JavaGraph";
+static const char* GMARGFLAG_JAVA_PACKAGE = "JavaPackage";
 
 // Add compiler options here
 static struct GM_comp_args GM_compiler_options[] = {
@@ -79,7 +80,8 @@ static struct GM_comp_args GM_compiler_options[] = {
         //{GMARGFLAG_NOMERGE, GMARG_BOOL, "(For Paper writing) Disable Loop Merging", "0"},
         //{GMARGFLAG_NOSCREDUCE, GMARG_BOOL, "(For Paper writing) Disable Optimizing Scalar Reduction", "0"},
 
-        { GMARGFLAG_JAVA_GRAPH_REPRESENTATION, GMARG_STRING, "Java Graph Representation. Valid values are 'csr' and 'ndm'", "csr" },
+        { GMARGFLAG_JAVA_GRAPH_REPRESENTATION, GMARG_STRING, "(For Java) Java Graph Representation. Valid values are 'csr' and 'ndm'", "csr" },
+        { GMARGFLAG_JAVA_PACKAGE, GMARG_STRING, "(For Java) Package name for generated Java files", "" },
     };
 
 //----------------------------------------
