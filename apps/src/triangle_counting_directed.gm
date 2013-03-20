@@ -1,0 +1,14 @@
+Procedure triangle_counting_directed(G: Graph): Long
+{
+    // directed version
+	Long T=0;
+	Foreach(v: G.Nodes) 
+    	Foreach(u: v.Nbrs) {
+			Foreach(w: v.Nbrs) (w > u) {
+    			If (w.HasEdgeFrom(u) || (w.HasEdgeTo(u))) 
+       				T ++;
+            }
+        }
+
+   	Return T;   
+}

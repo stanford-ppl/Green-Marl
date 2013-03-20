@@ -112,10 +112,11 @@ void gm_giraph_gen::close_output_files() {
 }
 
 void gm_giraph_gen::write_headers() {
-    get_lib()->generate_headers_vertex(Body);
-    get_lib()->generate_headers_main(Body_main);
-    get_lib()->generate_headers_input(Body_input);
-    get_lib()->generate_headers_output(Body_output);
+    printf("lib = %p\n", get_giraph_lib());
+    get_giraph_lib()->generate_headers_vertex(Body);
+    get_giraph_lib()->generate_headers_main(Body_main);
+    get_giraph_lib()->generate_headers_input(Body_input);
+    get_giraph_lib()->generate_headers_output(Body_output);
 }
 
 void gm_giraph_gen::do_generate_parsing_from_str(gm_code_writer& Body, char* str, int gm_prim_type) {

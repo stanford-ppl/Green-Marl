@@ -72,9 +72,9 @@ void gm_giraph_gen::do_generate_master_class() {
         assert(syminfo!=NULL);
 
         if ((syminfo->is_used_in_vertex() || syminfo->is_used_in_receiver()) && syminfo->is_used_in_master()) {
-            sprintf(temp, "registerPersistentAggregator(%s, ", get_lib()->create_key_string(sym->getId()));
+            sprintf(temp, "registerPersistentAggregator(%s, ", get_giraph_lib()->create_key_string(sym->getId()));
             Body.push(temp);
-            get_lib()->generate_broadcast_aggregator_type(sym->getId()->getTypeSummary(), Body, syminfo->get_reduce_type());
+            get_giraph_lib()->generate_broadcast_aggregator_type(sym->getId()->getTypeSummary(), Body, syminfo->get_reduce_type());
             Body.pushln(".class);");
         }
     }
@@ -195,7 +195,7 @@ void gm_giraph_gen::do_generate_master_scalar() {
 void gm_giraph_gen::do_generate_master_serialization() {
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
     std::set<gm_symtab_entry*>& scalar = info->get_scalar_symbols();
-    get_lib()->generate_master_class_details(scalar, Body);
+    get_giraph_lib()->generate_master_class_details(scalar, Body);
 }
 
 void gm_giraph_gen::do_generate_shared_variables_keys() {

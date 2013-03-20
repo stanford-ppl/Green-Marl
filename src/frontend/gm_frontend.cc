@@ -5,6 +5,7 @@
 #include "gm_error.h"
 #include "gm_misc.h"
 #include "gm_transform_helper.h"
+#include "gm_ind_opt.h"
 
 //--------------------------------------------
 // Functions called from gm_grammer.y
@@ -634,6 +635,7 @@ void gm_frontend::init_steps() {
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_fixup_bound_symbol));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_rw_analysis));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_reduce_error_check));
+    LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_nonconf_reduce)); // resolve trivial reduction first
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_rw_analysis_check2));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_remove_vardecl));
     LIST.push_back(GM_COMPILE_STEP_FACTORY(gm_fe_check_property_argument_usage));

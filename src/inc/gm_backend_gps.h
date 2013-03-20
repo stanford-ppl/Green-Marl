@@ -30,10 +30,10 @@ public:
     gm_gpslib(gm_gps_gen* gen) {
         set_main(gen);
     }
-    void set_main(gm_gps_gen* gen) {
+    virtual void set_main(gm_gps_gen* gen) {
         main = gen;
     }
-    gm_gps_gen* get_main() {
+    virtual gm_gps_gen* get_main() {
         return main;
     }
 
@@ -138,7 +138,7 @@ class gm_gps_gen : public gm_backend, public gm_code_generator
 public:
     gm_gps_gen() :
             gm_code_generator(Body), dname(NULL), fname(NULL), f_body(NULL) {
-        glib = new gm_gpslib(this);
+        set_lib(new gm_gpslib(this));
         init_opt_steps();
         init_gen_steps();
     }
@@ -161,6 +161,9 @@ public:
 
     virtual gm_gpslib* get_lib() {
         return glib;
+    }
+    virtual void set_lib(gm_gpslib* g)  {
+        glib = g;
     }
 
     void print_basicblock();
@@ -222,6 +225,8 @@ protected:
     gm_code_writer Body;
     FILE* f_body;
     char temp [1024];
+
+public:
     virtual const char* get_box_type_string(int prim_type);
     virtual const char* get_unbox_method_string(int prim_type);
 

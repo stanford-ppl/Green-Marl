@@ -34,11 +34,17 @@ static ast_foreach* create_surrounding_fe(ast_assign* a) {
     src->set_line(first->get_line());
     src->set_col(first->get_col());
     int iter;
-    if (gm_is_node_property_type(second->getTypeSummary()))
-        iter = GMITER_NODE_ALL;
-    else if (gm_is_edge_property_type(second->getTypeSummary()))
-        iter = GMITER_EDGE_ALL;
-    else
+    if (first->getSymInfo()->getType()->is_graph()) {
+        if (gm_is_node_property_type(second->getTypeSummary()))
+            iter = GMITER_NODE_ALL;
+        else if (gm_is_edge_property_type(second->getTypeSummary()))
+            iter = GMITER_EDGE_ALL;
+    } else if (first->getSymInfo()->getType()->is_collection()) {
+        if (gm_is_node_property_type(second->getTypeSummary()))
+            iter = GMITER_NODE_COLLECTION;
+        else if (gm_is_edge_property_type(second->getTypeSummary()))
+            iter = GMITER_EDGE_COLLECTION;
+    } else
         assert(false);
 
     ast_foreach* fe_new = gm_new_foreach_after_tc(it, src, a, iter);
@@ -57,7 +63,8 @@ public:
 
         ast_field* lhs = a->get_lhs_field();
         assert(lhs != NULL);
-        if (!gm_is_graph_type(lhs->getSourceTypeSummary())) return true;
+        if (!gm_is_graph_type(lhs->getSourceTypeSummary()) 
+            && !gm_is_collection_type(lhs->getSourceTypeSummary())) return true;
 
         // append to a seperate list and process them later
         target_list.push_back(a);

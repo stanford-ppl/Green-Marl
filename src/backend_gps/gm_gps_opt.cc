@@ -15,6 +15,7 @@ void gm_gps_gen::init_opt_steps() {
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_propagate_trivial_writes));
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_remove_unused_scalar));
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl));            // copied from from ind-opt
+
     //L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_simplify_expr1));           // separate built-in calls through out-loop drivers 
     //L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_find_nested_loops_test)); 
 
@@ -23,7 +24,8 @@ void gm_gps_gen::init_opt_steps() {
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_flip_edges));               // Flip Edges
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_move_propdecl));            // Move property declarations
-    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_remove_master_random_write));               // Merge Loops
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_remove_master_set_iteration));        // Master set iteration with random write ==> expand into foreach
+    L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_remove_master_random_write));          // Master random write ==> expand into foreach
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_ind_opt_loop_merge));               // Merge Loops
 
     L.push_back(GM_COMPILE_STEP_FACTORY(gm_gps_opt_check_synthesizable));      // check if contains DFS, etc

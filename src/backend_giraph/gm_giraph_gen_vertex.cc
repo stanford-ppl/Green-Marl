@@ -45,12 +45,21 @@ void gm_giraph_gen::do_generate_vertex_begin() {
 }
 
 void gm_giraph_gen::do_generate_vertex_end() {
-    Body.pushln("public static long gmGetRandomVertex(long gsize) {");
+    Body.pushln("// Utility Functions");
+    Body.pushln("private static final ThreadLocal < Random > _tlocal_rand = new ThreadLocal < Random > () {");
+    Body.pushln("@Override");
+    Body.pushln("protected Random initialValue() {");
+    Body.pushln("try {Thread.sleep(1);} catch (InterruptedException e) {}");
+    Body.pushln("return new Random();");
+    Body.pushln("}");
+    Body.pushln("};");
+    Body.pushln("public static Random gmGetMyRandom() { return _tlocal_rand.get();}");
+    Body.pushln("public static long gmGetRandomLongInRange(long gsize) {");
     Body.pushln("if (gsize < 1 * 1024 * 1024 * 1024) ");
-    Body.pushln("return (long) (new Random()).nextInt((int) gsize);");
+    Body.pushln("return (long) gmGetMyRandom().nextInt((int) gsize);");
     Body.pushln("else {");
     Body.pushln("while(true) {");
-    Body.pushln("long l = (new Random()).nextLong(); ");
+    Body.pushln("long l = gmGetMyRandom().nextLong(); ");
     Body.pushln("if (l < 0) l = l * -1; ");
     Body.pushln("if (l < gsize) return l;");
     Body.pushln("}");
@@ -227,10 +236,10 @@ void gm_giraph_gen::do_generate_vertex_state_receive_global(gm_gps_basic_block *
                 Body.push(" = ");
                 if (global_info->is_argument()) {
                     // read the parameter
-                    get_lib()->generate_parameter_read_vertex(sym->getId(), Body);
+                    get_giraph_lib()->generate_parameter_read_vertex(sym->getId(), Body);
                 } else {
                     // receive it from Broadcast
-                    get_lib()->generate_broadcast_receive_vertex(sym->getId(), Body);
+                    get_giraph_lib()->generate_broadcast_receive_vertex(sym->getId(), Body);
                 }
                 Body.pushln(";");
             }

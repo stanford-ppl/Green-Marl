@@ -1,5 +1,4 @@
-
-// Test of reverse edge iteration
+// Test of reverse neighbor iteration
 Proc gps11(G: Graph, A,B:N_P<Int>(G))
 {
     G.A = 0; // initialization;

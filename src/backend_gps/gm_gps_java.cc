@@ -498,6 +498,7 @@ void gm_gps_gen::generate_expr_builtin(ast_expr *e) {
         case GM_BLTIN_NODE_IN_DEGREE:
         case GM_BLTIN_NODE_HAS_EDGE_TO:
         case GM_BLTIN_NODE_IS_NBR_FROM:
+        case GM_BLTIN_NODE_RAND_NBR:
             get_lib()->generate_expr_builtin(be, Body, is_master_generate());
             break;
 

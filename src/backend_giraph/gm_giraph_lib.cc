@@ -703,7 +703,7 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
     if (FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE)) {
         sprintf(temp, "out.writeInt(%s.length);", GPS_REV_NODE_ID);
         Body.pushln(temp);
-        sprintf(temp, "for (%s node : %s) {", PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", GPS_REV_NODE_ID);
+        sprintf(temp, "for (%s node : %s) {", get_main()->get_box_type_string(GMTYPE_NODE), GPS_REV_NODE_ID);
         Body.pushln(temp);
         Body.pushln("node.write(out);");
         Body.pushln("}");
@@ -723,7 +723,7 @@ void gm_giraphlib::generate_vertex_prop_class_details(std::set<gm_symtab_entry*>
     }
     if (FE.get_current_proc_info()->find_info_bool(GPS_FLAG_USE_REVERSE_EDGE)) {
         Body.pushln("int _node_count = in.readInt();");
-        sprintf(temp, "%s = new %s[_node_count];", GPS_REV_NODE_ID, PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
+        sprintf(temp, "%s = new %s[_node_count];", GPS_REV_NODE_ID, get_main()->get_box_type_string(GMTYPE_NODE));
         Body.pushln(temp);
         Body.pushln("for (int i = 0; i < _node_count; i++) {");
         sprintf(temp, "%s[i].readFields(in);", GPS_REV_NODE_ID);
@@ -898,7 +898,7 @@ void gm_giraphlib::generate_message_class_details(gm_gps_beinfo* info, gm_code_w
 void gm_giraphlib::generate_message_send(ast_foreach* fe, gm_code_writer& Body) {
     char temp[1024];
 
-    const char* vertex_id = PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable";
+    const char* vertex_id = get_main()->get_box_type_string(GMTYPE_NODE);
     const char* edge_data = FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP) ? "EdgeData" : "NullWritable";
 
     gm_gps_beinfo * info = (gm_gps_beinfo *) FE.get_current_backend_info();
@@ -1215,7 +1215,8 @@ static void generate_collection_builtin(ast_id* driver_i, gm_builtin_def* def, g
 void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& Body, bool is_master) {
     gm_builtin_def* def = be->get_builtin_def();
     std::list<ast_expr*>& ARGS = be->get_args();
-    assert(!PREGEL_BE->get_lib()->is_node_type_int()); // WHAT?
+
+    assert(!PREGEL_BE->get_lib()->is_node_type_int()); // Assuming node is long type (why?)
 
     ast_id* driver_i;
     if (be->driver_is_field()) 
@@ -1225,21 +1226,24 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
     else {
         driver_i = be->get_driver();
     }
+    char temp[1024];
+
+    const char* vertex_id = get_main()->get_box_type_string(GMTYPE_NODE);
+    const char* edge_data = FE.get_current_proc()->find_info_bool(GPS_FLAG_USE_EDGE_PROP) ? "EdgeData" : "NullWritable";
 
     switch (def->get_method_id()) {
         case GM_BLTIN_TOP_DRAND:         // rand function
-            Body.push("(new Random()).nextDouble()");
+            Body.push("gmGetMyRandom().nextDouble()");
             break;
 
         case GM_BLTIN_TOP_IRAND:         // rand function
-            Body.push("(new Random()).nextInt(");
+            Body.push("gmGetMyRandom().nextInt(");
             get_main()->generate_expr(ARGS.front());
             Body.push(")");
             break;
 
         case GM_BLTIN_GRAPH_RAND_NODE:         // random node function
-            //Body.push("(new java.util.Random()).nextLong(");
-            Body.push("gmGetRandomVertex(getTotalNumVertices())");
+            Body.push("gmGetRandomLongInRange(getTotalNumVertices())");
             break;
 
         case GM_BLTIN_GRAPH_NUM_NODES:
@@ -1254,6 +1258,13 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
             Body.push(".");
             Body.push(GPS_REV_NODE_ID);
             Body.push(".length");
+            break;
+
+        case GM_BLTIN_NODE_RAND_NBR:
+            sprintf(temp, "((ArrayList<Edge<%s,%s>>) getEdges()).get(", vertex_id, edge_data);
+            Body.pushln(temp);
+            sprintf(temp,"gmGetMyRandom().nextInt(getNumEdges())).getTargetVertexId().get();");
+            Body.pushln(temp);
             break;
 
         case GM_BLTIN_NODE_IS_NBR_FROM:
@@ -1285,7 +1296,7 @@ void gm_giraphlib::generate_expr_builtin(ast_expr_builtin* be, gm_code_writer& B
         case GM_BLTIN_SET_REMOVE:
         case GM_BLTIN_SET_SIZE:
         {
-            generate_collection_builtin(driver_i, def, Body, ARGS, get_main());
+            generate_collection_builtin(driver_i, def, Body, ARGS, (gm_giraph_gen*)get_main());
             break;
         }
 
@@ -1312,14 +1323,14 @@ void gm_giraphlib::generate_prepare_bb(gm_code_writer& Body, gm_gps_basic_block*
         Body.pushln("i++;");
         Body.pushln("}");
 
-        sprintf(temp, "%s.%s = new %s[i];", STATE_SHORT_CUT, GPS_REV_NODE_ID, PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable");
+        sprintf(temp, "%s.%s = new %s[i];", STATE_SHORT_CUT, GPS_REV_NODE_ID, get_main()->get_box_type_string(GMTYPE_NODE));
         Body.pushln(temp);
         Body.NL();
 
         Body.pushln("i=0;");
         Body.pushln("for (MessageData _msg : _msgs) {");
         generate_message_receive_begin(NULL, Body, bb, true);
-        sprintf(temp, "%s.%s[i] = new %s(%s);", STATE_SHORT_CUT, GPS_REV_NODE_ID, PREGEL_BE->get_lib()->is_node_type_int() ? "IntWritable" : "LongWritable", GPS_DUMMY_ID);
+        sprintf(temp, "%s.%s[i] = new %s(%s);", STATE_SHORT_CUT, GPS_REV_NODE_ID, get_main()->get_box_type_string(GMTYPE_NODE), GPS_DUMMY_ID);
         Body.pushln(temp);
         generate_message_receive_end(Body, true);
         Body.pushln("i++;");

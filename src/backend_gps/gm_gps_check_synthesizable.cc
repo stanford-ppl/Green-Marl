@@ -132,6 +132,7 @@ public:
                 case GM_BLTIN_TOP_DRAND:         // rand function
                 case GM_BLTIN_TOP_IRAND:         // rand function
                 case GM_BLTIN_GRAPH_RAND_NODE:
+                case GM_BLTIN_NODE_RAND_NBR:
                     _rand_used = true;
                     break;
 

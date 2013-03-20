@@ -2587,6 +2587,11 @@ public:
         return source2;
     }
 
+    void set_source(ast_id* i) {
+        source = i;
+        if (i != NULL) i->set_parent(this);
+    }
+
     void set_source2(ast_id* i) {
         source2 = i;
         if (i != NULL) i->set_parent(this);

@@ -97,19 +97,20 @@
      T_MINEQ = 314,
      T_MAXEQ = 315,
      T_PLUSPLUS = 316,
-     T_ANDEQ = 317,
-     T_OREQ = 318,
-     T_M_INF = 319,
-     T_P_INF = 320,
-     T_DOUBLE_COLON = 321,
-     T_RARROW = 322,
-     T_NIL = 323,
-     ID = 324,
-     USER_TEXT = 325,
-     INT_NUM = 326,
-     FLOAT_NUM = 327,
-     BOOL_VAL = 328,
-     NEG = 329
+     T_MINUSMINUS = 317,
+     T_ANDEQ = 318,
+     T_OREQ = 319,
+     T_M_INF = 320,
+     T_P_INF = 321,
+     T_DOUBLE_COLON = 322,
+     T_RARROW = 323,
+     T_NIL = 324,
+     ID = 325,
+     USER_TEXT = 326,
+     INT_NUM = 327,
+     FLOAT_NUM = 328,
+     BOOL_VAL = 329,
+     NEG = 330
    };
 #endif
 
@@ -134,7 +135,7 @@ typedef union YYSTYPE
 
 
 /* Line 2638 of glr.c  */
-#line 138 "./parse/gm_grammer.tab.h"
+#line 139 "./parse/gm_grammer.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 #endif

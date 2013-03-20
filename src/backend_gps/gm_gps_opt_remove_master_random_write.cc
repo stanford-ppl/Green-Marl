@@ -18,17 +18,23 @@ public:
     gm_gps_opt_remove_master_random_write_t() {
         set_for_sent(true);
         set_separate_post_apply(true);
-        depth = 0;
+        fe_top = NULL;
     }
 
     // pre
     virtual bool apply(ast_sent* s) {
+        if (fe_top != NULL) return true;
+
         if (s->get_nodetype() == AST_FOREACH) {
-            if (((ast_foreach*)s)->is_parallel())
-                depth ++;
+            ast_foreach* fe = (ast_foreach*) s;
+            if (fe->is_parallel() && (fe->get_iter_type() == GMITER_NODE_ALL)) {
+                fe_top = fe;
+            }
+            return true;
         }
 
-        if ((depth == 0) && (s->get_nodetype() == AST_ASSIGN)) {
+
+        if (s->get_nodetype() == AST_ASSIGN) {
             ast_assign* a = (ast_assign*) s;
             if (!a->is_target_scalar() && !a->is_reduce_assign()) {
                 if (a->get_lhs_field()->get_first()->getTypeInfo()->get_target_graph_sym() != NULL)
@@ -39,9 +45,9 @@ public:
     }
 
     virtual bool apply2(ast_sent* s) {
-        if (s->get_nodetype() == AST_FOREACH) {
-            if (((ast_foreach*)s)->is_parallel())
-                depth --;
+        assert(s!=NULL);
+        if (((ast_foreach*)s) == fe_top) {
+            fe_top = NULL;
         }
         return true;
     }
@@ -79,7 +85,7 @@ public:
 
 private:
     std::list<ast_assign*> targets;
-    int depth;
+    ast_foreach* fe_top;
 };
 
 

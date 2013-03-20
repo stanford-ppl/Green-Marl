@@ -44,7 +44,7 @@
 %token T_EMPTYLINE
 %token T_AND T_OR T_EQ T_NEQ T_LE T_GE
 %token T_IF  T_ELSE T_DO T_WHILE
-%token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS T_ANDEQ T_OREQ
+%token T_PLUSEQ T_MULTEQ T_MINEQ T_MAXEQ T_PLUSPLUS T_MINUSMINUS T_ANDEQ T_OREQ
 %token T_M_INF T_P_INF
 %token T_DOUBLE_COLON T_RARROW
 %token T_NIL
@@ -312,6 +312,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
   sent_assignment : lhs '=' rhs             { $$ = GM_normal_assign($1, $3); GM_set_lineinfo($$, @2.first_line, @2.first_column)}
   sent_reduce_assignment : lhs reduce_eq rhs optional_bind  { $$ = GM_reduce_assign($1, $3, $4, $2); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
                          | lhs T_PLUSPLUS optional_bind{ $$ = GM_reduce_assign($1, GM_expr_ival(1, @2.first_line, @2.first_column), $3, GMREDUCE_PLUS); }
+                         | lhs T_MINUSMINUS optional_bind{ $$ = GM_reduce_assign($1, GM_expr_ival(-1, @2.first_line, @2.first_column), $3, GMREDUCE_PLUS); }
 
   sent_defer_assignment : lhs T_LE rhs optional_bind  { $$ = GM_defer_assign($1, $3, $4); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
 
