@@ -143,8 +143,10 @@ public:
             return GPS_NEW_SCOPE_OUT;
         else if (e->find_info_bool(GPS_FLAG_IS_EDGE_ITERATOR))
             return GPS_NEW_SCOPE_EDGE;
+        else if (e->getType()->is_collection()) 
+            return e->find_info_int(GPS_INT_SYMBOL_SCOPE);
         else
-            return GPS_NEW_SCOPE_RANDOM;
+            return GPS_NEW_SCOPE_RANDOM; // why? 
     }
 
 private:

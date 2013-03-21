@@ -71,8 +71,12 @@ public:
     virtual bool apply(gm_symtab_entry* e, int symtab_type) {
         int type_id = e->getType()->get_typeid();
         if (gm_is_collection_type(type_id)) {
-            gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_COLLECTION, e->getId()->get_line(), e->getId()->get_col(), e->getId()->get_orgname());
+            
+            /*
+            gm_backend_error(GM_ERROR_GPS_UNSUPPORTED_COLLECTION, 
+                    e->getId()->get_line(), e->getId()->get_col(), e->getId()->get_orgname());
             _error = true;
+            */
         }
 
         else if (gm_is_edge_property_type(type_id)) {

@@ -162,6 +162,7 @@ protected:
     virtual void do_generate_input_output_formats();
     virtual void do_generate_job_configuration();
 
+    virtual const char* get_collection_type_string(ast_typedecl* T);
 private:
     void do_generate_parsing_from_str(gm_code_writer& body, char* input_str, int gm_prim_type);
 

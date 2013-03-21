@@ -225,6 +225,7 @@ protected:
     gm_code_writer Body;
     FILE* f_body;
     char temp [1024];
+    char* get_temp_buffer_member() {return temp;}
 
 public:
     virtual const char* get_box_type_string(int prim_type);

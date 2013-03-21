@@ -523,8 +523,9 @@ void gm_gps_gen::generate_expr_builtin(ast_expr *e) {
             generate_expr(ARGS.back());
             Body.push(")");
             break;
+
         default:
-            assert(false);
+            get_lib()->generate_expr_builtin(be, Body, is_master_generate());
             break;
     }
 }

@@ -399,7 +399,7 @@ void gm_gps_gen::do_generate_vertex_state_body(gm_gps_basic_block *b) {
 void gm_gps_gen::generate_scalar_var_def(gm_symtab_entry* sym, bool finish_sent) {
     if (sym->find_info_bool(GPS_FLAG_EDGE_DEFINED_INNER)) return; // skip edge iteration
 
-    assert(sym->getType()->is_primitive() || sym->getType()->is_node_compatible());
+    assert(sym->getType()->is_primitive() || sym->getType()->is_node_compatible() || sym->getType()->is_collection());
 
     char temp[1024];
     sprintf(temp, "%s %s", get_type_string(sym->getType(), is_master_generate()), sym->getId()->get_genname());

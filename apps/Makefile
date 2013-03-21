@@ -57,6 +57,7 @@ gen:
 	@cd src; make 
 
 clean:
+	\rm -f *.java *.cc *.h
 	@cd src; make clean
 
 clean_all:

@@ -1,0 +1,51 @@
+Procedure parallel_random_walk_jump_sampling(
+    G: Graph, p_size, p_jump: Float, 
+    num_tokens: Int; Selected : N_P<Bool>)
+{
+    N_P<Int> Token, TokenNxt;
+
+    G.Token = 0;
+    G.TokenNxt = 0;
+    G.Selected = False;
+
+/*
+    Int i = 0;
+    While (i < num_tokens) {
+        Node n = G.PickRandom();
+        n.Token =1;
+    }
+*/
+
+    Node_Set S;
+    Do {
+        Node n = G.PickRandom();
+        S.Add(n);
+    } While(S.Size() < num_tokens);
+    S.Token = 1;
+
+
+    Long N = G.NumNodes() * p_size;
+    Long count = 0;
+    While (count < N)
+    {
+        Foreach(n: G.Nodes)(n.Token > 0) 
+        {
+            If (!n.Selected) {n.Selected = True; count ++;}
+            While (n.Token > 0) {
+                If ((n.Degree() == 0) || (Uniform() < p_jump)) {
+                    Node m = G.PickRandom();
+                    m.TokenNxt ++;
+                }
+                Else {
+                    //Node m = G.PickRandom();
+                    Node m = n.PickRandomNbr();
+                    m.TokenNxt ++;
+                }
+                n.Token--; 
+            }
+        }
+
+        G.Token = G.TokenNxt;
+        G.TokenNxt = 0;
+    }
+}

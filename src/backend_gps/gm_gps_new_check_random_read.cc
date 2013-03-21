@@ -25,7 +25,8 @@ public:
         if ((f->get_opclass() == GMEXPR_FIELD) || (f->get_opclass() == GMEXPR_BUILTIN)) {
             if (f->find_info_int(GPS_INT_EXPR_SCOPE) == GPS_NEW_SCOPE_RANDOM) {
                 gm_symtab_entry *driver =
-                        (f->get_opclass() == GMEXPR_FIELD) ? f->get_field()->get_first()->getSymInfo() : ((ast_expr_builtin*) f)->get_driver()->getSymInfo();
+                        (f->get_opclass() == GMEXPR_FIELD) ? f->get_field()->get_first()->getSymInfo() : 
+                            ((ast_expr_builtin*) f)->get_driver()->getSymInfo();
 
                 if (driver->getType()->is_graph()) return true;
 

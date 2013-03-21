@@ -7,12 +7,14 @@
 #include "gm_transform_helper.h"
 #include "gm_typecheck.h"
 #include "gps_syminfo.h"
+#include "gm_builtin.h"
 
 //---------------------------------------------------------------------
 // Traverse AST per each BB
 //  - figure out how each symbol is used.
 //     (as LHS, as RHS, as REDUCE targe)
 //     (in MASTER, in RECEIVER, in VERTEX)
+// todo: use apply_lhs and apply_rhs instead
 //---------------------------------------------------------------------
 class gps_merge_symbol_usage_t : public gps_apply_bb_ast
 {
@@ -91,7 +93,40 @@ public:
         return true;
     }
 
+    bool apply_builtin(ast_expr_builtin* b)
+    {
+        // only look at driver side.
+        if (!b->driver_is_field() && (b->get_driver() == NULL)) return true;
+
+        int expr_scope = b->find_info_int(GPS_INT_EXPR_SCOPE);
+        int context = get_current_context();
+        bool is_id = !b->driver_is_field();
+        int sc_type = is_id ? IS_SCALAR : IS_FIELD;
+        ast_id* tg = is_id ? b->get_driver() : ((ast_expr_builtin_field*)b)->get_field_driver()->get_second();
+
+        if (!is_id) return true; // [XXX] temporary
+
+        if (b->get_driver()->getTypeInfo()->is_graph()) return true;
+        if (b->get_driver()->getTypeInfo()->is_iterator()) return true;
+
+        if (context == GPS_CONTEXT_RECEIVER) {
+            // sender context only
+            if (is_message_write_target || is_edge_prop_write_target || is_random_write_target) return true;
+        }
+
+        int used_type = b->get_builtin_def()->find_info_bool(GM_BLTIN_INFO_MUTATING)? GPS_SYM_USED_AS_LHS: GPS_SYM_USED_AS_RHS;
+
+        update_access_information(tg, sc_type, used_type, context);
+
+
+        return true;
+    }
+
+    // todo change this into apply lhs and apply rhs
     virtual bool apply(ast_expr* e) {
+
+        if (e->is_builtin()) return apply_builtin( (ast_expr_builtin*) e); 
+
         if (!e->is_id() && !e->is_field()) return true;
 
         //int syntax_scope = get_current_sent()->find_info_int(GPS_INT_SYNTAX_CONTEXT);
@@ -112,6 +147,7 @@ public:
 
         if (is_random_write_target) {
             if ((expr_scope != GPS_NEW_SCOPE_RANDOM) && (expr_scope != GPS_NEW_SCOPE_GLOBAL)) comm_symbol = true;
+
             /*
              if (is_id) {
              gps_syminfo* syminfo = gps_get_global_syminfo(tg);

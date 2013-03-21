@@ -195,6 +195,29 @@ void gm_giraphlib::generate_broadcast_aggregator_type(int type_id, gm_code_write
     //   <Type><Reduce>BV( value )
     //--------------------------------------
     // Generate following string
+    if (gm_is_collection_type(type_id))
+    {
+        switch(type_id) {
+            case GMTYPE_NSET:
+                if (is_node_type_int())
+                    Body.push("Int");
+                else
+                    Body.push("Long");
+                Body.push("Set");
+                break;
+
+            default: 
+                assert(false);
+        }
+        switch(reduce_op) {
+            case GMREDUCE_NULL: Body.push("Overwrite"); break;
+            default:
+                assert(false);
+        }
+
+        Body.push("Aggregator");
+        return;
+    }
 
     //---------------------------------------------------
     // Type:  Long, Int, Double, Float, Bool, NODE,EDGE
@@ -263,6 +286,25 @@ void gm_giraphlib::generate_broadcast_aggregator_type(int type_id, gm_code_write
 
 void gm_giraphlib::generate_broadcast_writable_type(int type_id, gm_code_writer& Body)
 {
+    if (gm_is_collection_type(type_id))
+    {
+        switch(type_id) {
+            case GMTYPE_NSET:
+            if (is_node_type_int())
+                Body.push("Int");
+            else
+                Body.push("Long");
+            Body.push("Set");
+            break;
+
+            default: 
+                assert(false);
+        }
+        Body.push("Writable");
+        return;
+    }
+
+
     if (gm_is_node_compatible_type(type_id)) type_id = GMTYPE_NODE;
     if (gm_is_edge_compatible_type(type_id)) type_id = GMTYPE_EDGE;
 

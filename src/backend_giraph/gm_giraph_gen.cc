@@ -688,3 +688,17 @@ const char* gm_giraph_gen::get_box_type_string(int gm_type) {
 const char* gm_giraph_gen::get_unbox_method_string(int gm_type) {
     return "get";
 }
+
+const char* gm_giraph_gen::get_collection_type_string(ast_typedecl* T)
+{
+    char* temp = get_temp_buffer_member();
+    int type_id = T->get_typeid();
+
+    const char* base = T->is_node_collection() ?
+        (get_lib()->is_node_type_int() ? "Int" : "Long") :
+        (get_lib()->is_edge_type_int() ? "Int" : "Long") ;
+
+    sprintf(temp, "%sSetWritable", base);
+
+    return temp;
+}
