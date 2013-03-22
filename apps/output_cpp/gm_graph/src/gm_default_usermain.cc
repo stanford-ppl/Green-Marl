@@ -50,7 +50,7 @@ gm_default_usermain::gm_default_usermain() : is_return_defined(false)
    out_format = GM_ADJ_LIST;
    sprintf(input_path,"%s","");
    sprintf(output_path,"%s","");
-   create_output_graph = false;
+   create_output_graph = true;
    create_output_text = false;
 }
 
@@ -452,14 +452,14 @@ bool gm_default_usermain::do_preprocess()
     // load the graph 
     sprintf(fullpath_name,"%s%s",input_path, OPTIONS.get_arg(0));
 
-    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+    if (OPTIONS.is_option_defined(OPT_MEASURETIME) && OPTIONS.get_option_bool(OPT_MEASURETIME)) {
         gettimeofday(&TV1, NULL);
     }
 
     bool use_hdfs = false;
 
 #ifdef HDFS
-    use_hdfs = OPTIONS.get_option_bool(OPT_USEHDFS) ;
+    use_hdfs = OPTIONS.is_option_defined(OPT_USEHDFS) && OPTIONS.get_option_bool(OPT_USEHDFS) ;
 #endif
 
     if (get_input_format() == GM_ADJ_LIST) 
@@ -565,7 +565,7 @@ bool gm_default_usermain::do_preprocess()
     // create & register arrays
     create_and_register_property_arrays();
 
-    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+    if (OPTIONS.is_option_defined(OPT_MEASURETIME) && OPTIONS.get_option_bool(OPT_MEASURETIME)) {
         gettimeofday(&TV2, NULL);
         printf("loading time:%8.3lf (ms)\n", (TV2.tv_sec - TV1.tv_sec)*1000 + (TV2.tv_usec - TV1.tv_usec)*0.001);
     }
@@ -598,7 +598,6 @@ void gm_default_usermain::create_property_in_out_schema()
     }
 
     // adding dummy schema
-    //if (OPTIONS.get_option_bool(OPT_DUMMYPROP))
     if (false)
     {
         if ((vprop_in_schema.size() == 0) || (vprop_out_schema.size() == 0))
@@ -716,11 +715,11 @@ bool gm_default_usermain::do_postprocess()
     bool use_hdfs = false;
 
 #ifdef HDFS
-    use_hdfs = OPTIONS.get_option_bool(OPT_USEHDFS) ;
+    use_hdfs = OPTIONS.is_option_defined(OPT_USEHDFS) && OPTIONS.get_option_bool(OPT_USEHDFS) ;
 #endif
 
     if (create_output_graph) {
-        if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+        if (OPTIONS.is_option_defined(OPT_MEASURETIME) && OPTIONS.get_option_bool(OPT_MEASURETIME)) {
             gettimeofday(&TV1, NULL);
         }
 
@@ -791,7 +790,7 @@ bool gm_default_usermain::do_postprocess()
             return false;
         }
 
-        if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+        if (OPTIONS.is_option_defined(OPT_MEASURETIME) && OPTIONS.get_option_bool(OPT_MEASURETIME)) {
             gettimeofday(&TV2, NULL);
             printf("storing time:%8.3lf (ms)\n", (TV2.tv_sec - TV1.tv_sec)*1000 + (TV2.tv_usec - TV1.tv_usec)*0.001);
         }
@@ -802,13 +801,13 @@ bool gm_default_usermain::do_postprocess()
 
 void gm_default_usermain::begin_usermain()
 {
-    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+    if (OPTIONS.is_option_defined(OPT_MEASURETIME) && OPTIONS.get_option_bool(OPT_MEASURETIME)) {
         gettimeofday(&TV1, NULL);
     }
 }
 void gm_default_usermain::end_usermain()
 {
-    if (OPTIONS.get_option_bool(OPT_MEASURETIME)) {
+    if (OPTIONS.is_option_defined(OPT_MEASURETIME) && OPTIONS.get_option_bool(OPT_MEASURETIME)) {
         gettimeofday(&TV2, NULL);
         printf("main execution time:%8.3lf (ms)\n", (TV2.tv_sec - TV1.tv_sec)*1000 + (TV2.tv_usec - TV1.tv_usec)*0.001);
     }

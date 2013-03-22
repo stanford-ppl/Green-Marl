@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <sys/time.h>
 
 #include "gm_graph.h"
 #include "gm_util.h"
@@ -196,8 +197,12 @@ void gm_graph::make_reverse_edges() {
     // reverse edge alread created
     if (_reverse_edge) return;
 
+
     // freeze
     if (!_frozen) freeze();
+
+    struct timeval t1, t2;
+    gettimeofday(&t1, NULL);
 
     node_t n_nodes = num_nodes();
 
@@ -274,6 +279,10 @@ void gm_graph::make_reverse_edges() {
 
     // TODO: if is_edge_source_ready?
     if (is_edge_source_ready()) prepare_edge_source_reverse();
+
+    gettimeofday(&t2, NULL);
+    //printf("time to compute reverse edge: %lf ms\n", 
+    //        (t2.tv_sec - t1.tv_sec) * 1000 - (t2.tv_usec-t1.tv_usec)*0.001);
 
     // TODO: if id2idx?
     delete[] loc;

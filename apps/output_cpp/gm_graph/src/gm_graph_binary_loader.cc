@@ -192,6 +192,10 @@ bool gm_graph::load_binary_internal(FILE*f, uint32_t magic_word, bool need_semi_
     if (need_semi_sort)
         do_semi_sort();
 
+    _semi_sorted = true;
+    // automatically make reverse edges after loading
+    make_reverse_edges();
+
     return true;
 
 error_return: 

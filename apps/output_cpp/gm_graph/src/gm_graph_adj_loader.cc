@@ -82,6 +82,9 @@ void gm_graph::load_adjacency_list_internal(std::vector<VALUE_TYPE> vprop_schema
 
     // semi-sorting
     do_semi_sort();
+
+    // create reverse edges
+    make_reverse_edges();
     
     // extract array from vectors
     for (size_t i = 0; i < num_vertex_values; ++i) {

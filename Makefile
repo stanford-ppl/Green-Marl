@@ -17,6 +17,7 @@ BUILD_DIRS=\
 	$(GPS)/generated \
 	$(GIRAPH)/generated \
 	$(GIRAPH)/bin \
+	$(GIRAPH)/java_bin \
 	$(GIRAPH)/target 
 	
 TEST_DIRS=\

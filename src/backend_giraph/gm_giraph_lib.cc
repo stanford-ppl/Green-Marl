@@ -25,7 +25,6 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
     Body.pushln("import java.io.IOException;");
     Body.pushln("import java.lang.Math;");
     Body.pushln("import java.util.Random;");
-    Body.pushln("import java.util.HashSet;");
     Body.pushln("import java.util.ArrayList;");
     Body.pushln("import java.util.Arrays;");
     Body.pushln("import org.apache.giraph.aggregators.*;");
@@ -33,6 +32,7 @@ void gm_giraphlib::generate_headers_vertex(gm_code_writer& Body) {
     Body.pushln("import org.apache.giraph.master.*;");
     Body.pushln("import org.apache.hadoop.io.*;");
     Body.pushln("import org.apache.log4j.Logger;");
+    Body.pushln("import com.oracle.greenmarl.giraphlib.*;");
     Body.NL();
 
     Body.pushln("@SuppressWarnings(\"unused\")");
@@ -153,8 +153,11 @@ void gm_giraphlib::generate_broadcast_receive_vertex(ast_id* id, gm_code_writer&
     char temp[1024];
     Body.push("this.<");
     generate_broadcast_writable_type(id->getTypeSummary(), Body);
-    sprintf(temp, "> getAggregatedValue(%s).get()", create_key_string(id));
+    sprintf(temp, "> getAggregatedValue(%s)", create_key_string(id));
     Body.push(temp);
+    if (!id->getTypeInfo()->is_collection())
+        Body.push(".get()"); // primitive 
+
 }
 
 void gm_giraphlib::generate_parameter_read_vertex(ast_id* id, gm_code_writer& Body) {
@@ -498,6 +501,10 @@ static void genPutIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gi
 }
 
 static void genPutIOBCollection(const char* name, ast_typedecl* T, gm_code_writer& Body, gm_giraphlib* lib) {
+    Body.push(name);
+    Body.pushln(".write(out);");
+
+    /*
     int base_type = T->is_node_collection() ? GMTYPE_NODE : GMTYPE_EDGE;
     const char* iterator = "__iter";
     Body.push("out.writeInt(");
@@ -522,6 +529,7 @@ static void genPutIOBCollection(const char* name, ast_typedecl* T, gm_code_write
         Body.pushln(".get());");
     }
     Body.pushln("}");
+    */
 }
 
 static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_giraphlib* lib) {
@@ -569,6 +577,14 @@ static void genGetIOB(const char* name, int gm_type, gm_code_writer& Body, gm_gi
     Body.pushln(";");
 }
 static void genGetIOBCollection(const char* name, ast_typedecl* T, gm_code_writer& Body, gm_giraphlib* lib) {
+    // collection themselves are writables
+    Body.push(name);
+    Body.push(" = new ");
+    Body.push(lib->get_giraph_main()->get_collection_type_string(T));
+    Body.pushln("();");
+    Body.push(name);
+    Body.pushln(".readFields(in);");
+    /*
     int base_type = T->is_node_collection() ? GMTYPE_NODE : GMTYPE_EDGE;
     const char* iterator = "__iter";
     Body.pushln("{");
@@ -588,6 +604,7 @@ static void genGetIOBCollection(const char* name, ast_typedecl* T, gm_code_write
     Body.pushln("));");
     Body.pushln("}");
     Body.pushln("}");
+    */
 }
 
 

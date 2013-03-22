@@ -3,6 +3,16 @@
 #include <stdlib.h>
 
 
+void gm_useropt::remove_option(const char* opt_name)
+{
+    if (option_desc.find(opt_name)!=option_desc.end())
+    {
+        option_desc.erase(opt_name);
+        option_type.erase(opt_name);
+        option_values.erase(opt_name);
+    }
+   
+}
 void gm_useropt::add_option(const char* opt_name, VALUE_TYPE t, const char* def_value, const char* description)
 {
     assert(opt_name != NULL);
@@ -25,6 +35,16 @@ void gm_useropt::remove_last_argument()
     arg_names.pop_back();
     arg_types.pop_back();
     arg_descs.pop_back();
+}
+
+void gm_useropt::remove_all()
+{
+    option_desc.clear();
+    option_type.clear();;
+    option_values.clear();
+    arg_names.clear();
+    arg_types.clear();
+    arg_descs.clear();
 }
 
 static const char* get_type_string(VALUE_TYPE t) {

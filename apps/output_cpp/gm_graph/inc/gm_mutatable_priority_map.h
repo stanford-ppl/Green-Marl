@@ -963,6 +963,24 @@ class gm_mutatable_priority_map_unordered : public gm_mutatable_priority_map<Key
     virtual Value getMaxValue_seq() =0;
     virtual Value getMinValue_seq() =0;
 
+    void setAllValues_seq(vector<Key>* keys, vector<Value>* values) {
+        assert (keys->size() == values->size());
+        for (int i = 0; i < keys->size(); i++) {
+            setValueNoHeapify_seq((*keys)[i], (*values)[i]);
+        }
+    }
+
+    void setAllValues_seq(map<Key,Value> *newKeyValues) {
+        for (typename map<Key,Value>::iterator keyval_it = newKeyValues->begin(); keyval_it != newKeyValues->end(); keyval_it++) {
+            setValueNoHeapify_seq(keyval_it->first, keyval_it->second);
+        }
+    }
+
+    void reHeapify() {
+        // Re-Heapify
+        build_heap_from_vector();
+    }
+
 protected:
     virtual bool is_less(Value v1, Value v2) = 0; // return true if v1 < v2
 
@@ -1001,6 +1019,97 @@ protected:
         }
     }
 
+    // Methods to get and remove all minimum keys (and values) 
+    // from the heap
+    vector<int> minValuePositions;
+    void findMinValuePositions(Value v, int pos) {
+        // TODO: Do we need a special is_equal method?
+        if (value_vector[pos] == v) { 
+            minValuePositions.push_back(pos);
+            int left = 2 * pos + 1;
+            int right = 2 * pos + 2;
+            if (left < value_vector.size()) { // left exists?
+                findMinValuePositions(v, left);
+            }
+            if (right < value_vector.size()) { // right exists?
+                findMinValuePositions(v, right);
+            }
+        }
+    }
+
+    void findMinValuePositions() {
+        minValuePositions.clear();
+        // Reserve space for 1000 elements by default
+        // This does nothing if the vector capacity is already over 1000
+        minValuePositions.reserve(1000);
+        findMinValuePositions(value_vector[0], 0);
+    }
+
+    void getAllMinValuedKeys(vector<Key>* minValuedKeys) {
+        if (minValuePositions.size() == 0) {
+            findMinValuePositions();
+        }
+        for (vector<int>::iterator it = minValuePositions.begin(); it != minValuePositions.end(); ++it) {
+            minValuedKeys->push_back(key_vector[*it].first);
+        }
+    }
+
+    void getAllMinValues(vector<Value>* minValues) {
+        if (minValuePositions.size() == 0) {
+            findMinValuePositions();
+        } 
+        for (vector<int>::iterator it = minValuePositions.begin(); it != minValuePositions.end(); ++it) {
+            minValues->push_back(value_vector[*it]);
+        }
+    }
+
+    void removeAllMinValuedKeys() {
+        for (vector<int>::iterator it = minValuePositions.begin(); it != minValuePositions.end(); ++it) {
+            // remove from map
+            data_map.erase(key_vector[*it].first);
+
+            // delete place holder
+            // TODO: Fix this memory leak.
+            // Status on Mar 20, 2013 - If deleted, there is a memory corruption error
+            //delete key_vector[*it].second;
+
+            // remove from heap
+            int idx = value_vector.size()-1;
+            value_vector[*it] = value_vector[idx];
+            key_vector[*it] = key_vector[idx];
+            *(key_vector[*it].second) = 0;
+            value_vector.pop_back();
+            key_vector.pop_back();
+        }
+        minValuePositions.clear();
+    }
+
+    void setValueNoHeapify_seq (Key k, Value v) {
+        Iterator it = data_map.find(k);
+        if (it == data_map.end()) {
+            int* index_place_holder = new int();
+            insertToHeapNoHeapify(k, v, index_place_holder);
+            MapValue mv(index_place_holder, v);
+            data_map[k] = mv;
+        } else {
+            Value oldValue = it->second.second;
+            if (oldValue != v) {
+                it->second.second = v;
+                int idx = *(it->second.first);
+                value_vector[idx] = v;
+            }
+        }
+    }
+
+    void insertAllKeys (vector<Key> *keys, vector<Value> *values, vector<int*> *index_place_holders) {
+        assert (keys->size() == values->size());
+        assert (keys->size() == index_place_holders->size());
+        for (int i = 0; i < keys->size(); i++) {
+            insertToHeapNoHeapify((*keys)[i], (*values)[i], (*index_place_holders)[i]);
+        }
+        // Re-Heapify
+        build_heap_from_vector();
+    }
 
 private:
     void delete_place_holders()
@@ -1010,6 +1119,7 @@ private:
             delete key_vector[i].second; // delete place holders
         }
     }
+
     void insertToHeap(Key k, Value v, int*index_place_holder) {
         *index_place_holder = key_vector.size();
         HeapValue HV(k, index_place_holder);
@@ -1017,7 +1127,7 @@ private:
         // add it to end of heap
         value_vector.push_back(v);
         key_vector.push_back(HV);
-        
+
         // heapify up
         heapify_up(value_vector.size()-1);
     }
@@ -1033,6 +1143,22 @@ private:
         }
     }
 
+    void insertToHeapNoHeapify(Key k, Value v, int*index_place_holder) {
+        *index_place_holder = key_vector.size();
+        HeapValue HV(k, index_place_holder);
+
+        // add it to end of heap
+        value_vector.push_back(v);
+        key_vector.push_back(HV);
+    }
+
+    void build_heap_from_vector()
+    {
+        for(int i= value_vector.size()/2; i >=0; i--) {
+            heapify_down(i);
+        }
+    }
+
 #define SWAP_VECTOR3(i, j)  {\
     Value v1 = value_vector[i]; \
     HeapValue mi1 = key_vector[i];\
@@ -1044,119 +1170,130 @@ private:
     *(key_vector[j].second)=(j);\
 }
 
-    void heapify_down(int i) // hepify down
-    {
-        int left = 2*i+1;
-        int right = 2*i + 2;
-        int smallest = i;
+void heapify_down(int i) // hepify down
+{
+    int left = 2*i+1;
+    int right = 2*i + 2;
+    int smallest = i;
 
-        if (left < value_vector.size()) {  // left exist?
-            Value v_left = value_vector[left];
-            Value v_smallest = value_vector[smallest];
-            if (is_less(v_left, v_smallest)) 
-                smallest = left;
+    if (left < value_vector.size()) {  // left exist?
+        Value v_left = value_vector[left];
+        Value v_smallest = value_vector[smallest];
+        if (is_less(v_left, v_smallest)) 
+            smallest = left;
 
-        }
-        if (right < value_vector.size()) {  // right exist?
-            Value v_right = value_vector[right];
-            Value v_smallest = value_vector[smallest];
-            if (is_less(v_right, v_smallest)) 
-                smallest = right;
-        }
-
-        if (smallest != i)
-        {
-            SWAP_VECTOR3(smallest, i);
-            heapify_down(smallest);
-        }
+    }
+    if (right < value_vector.size()) {  // right exist?
+        Value v_right = value_vector[right];
+        Value v_smallest = value_vector[smallest];
+        if (is_less(v_right, v_smallest)) 
+            smallest = right;
     }
 
-    void heapify_up(int i) 
+    if (smallest != i)
     {
-        if (i==0) return; // already at the top
-
-        int parent = (i-1)/2;
-        Value curr_v = value_vector[i];
-        Value parent_v  = value_vector[parent];
-        if (is_less(curr_v, parent_v)) 
-        {
-            SWAP_VECTOR3(i, parent);
-            heapify_up(parent);
-        }
+        SWAP_VECTOR3(smallest, i);
+        heapify_down(smallest);
     }
+}
+
+void heapify_up(int i) 
+{
+    if (i==0) return; // already at the top
+
+    int parent = (i-1)/2;
+    Value curr_v = value_vector[i];
+    Value parent_v  = value_vector[parent];
+    if (is_less(curr_v, parent_v)) 
+    {
+        SWAP_VECTOR3(i, parent);
+        heapify_up(parent);
+    }
+}
 
 public:
-    void dump()  {// for test
-        Iterator mi;
-        printf("============ from map =============== \n");
-        int cnt =0;
-        for(mi=data_map.begin(); mi != data_map.end(); mi ++, cnt++) 
-        {
-            printf("[K:%d V:%d I:%d] ", mi->first, mi->second.second, *(mi->second.first));
-            if ((cnt % 5) == 4) printf("\n");
-        }
-        printf("\n============ from vector =============== \n");
-        for(int i=0;i<value_vector.size();i++) 
-        {
-            printf("%d:[K:%d V:%d I:%d] ", i, key_vector[i].first, value_vector[i], *(key_vector[i].second));
-            if ((i % 5) == 4) printf("\n");
-        }
-        printf("\n");
+void dump()  {// for test
+    Iterator mi;
+    printf("============ from map =============== \n");
+    int cnt =0;
+    for(mi=data_map.begin(); mi != data_map.end(); mi ++, cnt++) 
+    {
+        printf("[K:%d V:%d I:%d] ", mi->first, mi->second.second, *(mi->second.first));
+        if ((cnt % 5) == 4) printf("\n");
     }
+    printf("\n============ from vector =============== \n");
+    for(int i=0;i<value_vector.size();i++) 
+    {
+        printf("%d:[K:%d V:%d I:%d] ", i, key_vector[i].first, value_vector[i], *(key_vector[i].second));
+        if ((i % 5) == 4) printf("\n");
+    }
+    printf("\n");
+}
 
-    void check_integrity() {
-        // for debug
-        // check size
-        assert(data_map.size() == (key_vector.size()));
-        assert(key_vector.size() == value_vector.size());
-        // check heap property
-        for(int i=0; i<key_vector.size(); i++) {
-            Value v = value_vector[i];
-            int left = i*2+1;
-            int right = i*2+2;
-            if (left < key_vector.size()) {
-                Value v_left = value_vector[left];
-                if( is_less(v_left, v))
-                {
-                    printf("v_left = %d, v = %d, i = %d, left = %d\n", v_left, v, i, left);
+void check_integrity() {
+    // for debug
+    // check size
+    assert(data_map.size() == (key_vector.size()));
+    assert(key_vector.size() == value_vector.size());
+    // check heap property
+    for(int i=0; i<key_vector.size(); i++) {
+        Value v = value_vector[i];
+        int left = i*2+1;
+        int right = i*2+2;
+        if (left < key_vector.size()) {
+            Value v_left = value_vector[left];
+            if( is_less(v_left, v))
+            {
+                printf("v_left = %d, v = %d, i = %d, left = %d\n", v_left, v, i, left);
 
-                }
-                assert(! is_less(v_left, v));
             }
-            if (right < key_vector.size()) {
-                Value v_right = value_vector[right];
-                if( is_less(v_right, v))
-                {
-                    printf("v_right = %d, v = %d, i = %d, right = %d\n", v_right, v, i, right);
-
-                }
-                assert(! is_less(v_right, v));
-            }
+            assert(! is_less(v_left, v));
         }
-        for(int i=0; i<key_vector.size();i++) {
-            assert(i== *(key_vector[i].second));
+        if (right < key_vector.size()) {
+            Value v_right = value_vector[right];
+            if( is_less(v_right, v))
+            {
+                printf("v_right = %d, v = %d, i = %d, right = %d\n", v_right, v, i, right);
+
+            }
+            assert(! is_less(v_right, v));
         }
     }
+    for(int i=0; i<key_vector.size();i++) {
+        assert(i== *(key_vector[i].second));
+    }
+}
 };
 
 
 template<class Key, class Value>
 class gm_mutatable_priority_map_unordered_min : public gm_mutatable_priority_map_unordered<Key, Value>
 {
-public:
-    gm_mutatable_priority_map_unordered_min(Value defValue) : gm_mutatable_priority_map_unordered<Key, Value>(defValue) { } 
-    virtual ~gm_mutatable_priority_map_unordered_min() {}
+    public:
+        gm_mutatable_priority_map_unordered_min(Value defValue) : gm_mutatable_priority_map_unordered<Key, Value>(defValue) { } 
+        virtual ~gm_mutatable_priority_map_unordered_min() {}
 
-    Key getMinKey_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
-    Value getMinValue_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
-    void removeMinKey_seq() {gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
-    Key getMaxKey_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
-    Value getMaxValue_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
-    void removeMaxKey_seq() {assert(false);gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
+        Key getMinKey_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
+        Value getMinValue_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
+        void removeMinKey_seq() {gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
+
+        void getAllMinKeys_seq(vector<Key> *minValuedKeys) { 
+            gm_mutatable_priority_map_unordered<Key,Value>::getAllMinValuedKeys(minValuedKeys); 
+        }
+        void getAllMinValues_seq(vector<Value> *minValues) {
+            gm_mutatable_priority_map_unordered<Key,Value>::getAllMinValues(minValues);
+        }
+        void removeAllMinKeys_seq() {
+            gm_mutatable_priority_map_unordered<Key,Value>::removeAllMinValuedKeys();
+        }
+
+        Key getMaxKey_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
+        Value getMaxValue_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
+        void removeMaxKey_seq() {assert(false);gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
 
 
-private:
-    bool is_less(Value v1, Value v2) {return v1 < v2;} // return true if v1 < v2
+    private:
+        bool is_less(Value v1, Value v2) {return v1 < v2;} // return true if v1 < v2
 
 };
 
@@ -1164,19 +1301,19 @@ private:
 template<class Key, class Value>
 class gm_mutatable_priority_map_unordered_max : public gm_mutatable_priority_map_unordered<Key, Value>
 {
-public:
-    gm_mutatable_priority_map_unordered_max(Value defValue) : gm_mutatable_priority_map_unordered<Key, Value>(defValue) { } 
-    virtual ~gm_mutatable_priority_map_unordered_max() {}
+    public:
+        gm_mutatable_priority_map_unordered_max(Value defValue) : gm_mutatable_priority_map_unordered<Key, Value>(defValue) { } 
+        virtual ~gm_mutatable_priority_map_unordered_max() {}
 
-    Key getMinKey_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
-    Value getMinValue_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
-    void removeMinKey_seq() {assert(false);gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
-    Key getMaxKey_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
-    Value getMaxValue_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
-    void removeMaxKey_seq() {gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
+        Key getMinKey_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
+        Value getMinValue_seq() {assert(false);return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
+        void removeMinKey_seq() {assert(false);gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
+        Key getMaxKey_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValuedKey();}
+        Value getMaxValue_seq() {return gm_mutatable_priority_map_unordered<Key,Value>::getSmallestValue();}
+        void removeMaxKey_seq() {gm_mutatable_priority_map_unordered<Key,Value>::removeSmallest();}
 
-private:
-    bool is_less(Value v1, Value v2) {return v1 > v2;} // return true if v1 < v2
+    private:
+        bool is_less(Value v1, Value v2) {return v1 > v2;} // return true if v1 < v2
 
 };
 

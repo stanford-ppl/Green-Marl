@@ -79,6 +79,10 @@ void gm_edge_list_graph_reader::builtGraph() {
 
     inputFileStream.close();
     G.freeze();
+
+    assert(false); // okay this doen't work. nodeId != nodeIdx
+    G.do_semi_sort();
+    G.make_reverse_edges();
 }
 
 bool gm_edge_list_graph_reader::loadEdgeList() {
