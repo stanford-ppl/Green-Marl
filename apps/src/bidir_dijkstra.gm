@@ -1,0 +1,136 @@
+Procedure bidir_dijkstra (G: Graph,
+        Weight: E_P<Int>,
+        src, dst: Node;
+        Parent: N_P<Node>,
+        ParentEdge: N_P<Edge>) : Bool
+{
+    // Temporary data structures
+    N_P<Node> RParent;
+    N_P<Edge> RParentEdge;
+    N_P<Bool> FFinalized;
+    N_P<Bool> RFinalized;
+    Map<Node, Int> FReachable;
+    Map<Node, Int> RReachable;
+    N_P<Int> FCost;
+    N_P<Int> RCost;
+
+    // Initializations
+    G.Parent = NIL;
+    G.RParent = NIL;
+    G.FFinalized = False;
+    G.RFinalized = False;
+    G.FCost = +INF;
+    G.RCost = +INF;
+    FReachable[src] = 0;
+    RReachable[dst] = 0;
+    src.FCost = 0;
+    dst.RCost = 0;
+
+    /*
+     *  Perform Dijkstra algorithm starting from src and dst
+     *      one step at a time in one of the directions.
+     *      Choose the direction with lesser frontier nodes for expansion.
+     *  Store the shortest path found so far between src and dst in minCost.
+     *  When minCost is < Lf + Lr, stop both the searches
+     *      Lf is the min distance discovered in the latest forward search.
+     *      Lr is the min distance discovered in the latest reverse search.
+     *  After the first path between src and dst has been found, prune the search space as follows:
+     *      Suppose you get node u from the Priority Queue in forward search
+     *          and you are looking to expand u to a node v.
+     *          If DistanceFromSrc(u) + weight(u,v) + Lr > minCost, do no expand to v.
+     *      Do the same in reverse search too.
+     */
+    Int curMinFCost = 0;
+    Int curMinRCost = 0;
+    Int minCost = +INF;
+    Node mid = NIL;
+    Bool terminate = False;
+    While ( !terminate && (FReachable.Size() != 0 || RReachable.Size() != 0) ) {
+
+        If (FReachable.Size() != 0 
+                && (FReachable.Size() <= RReachable.Size() || RReachable.Size() == 0) ) {
+            Node(G) fnext = FReachable.GetMinKey();
+            FReachable.Remove(fnext);
+            fnext.FFinalized = True;
+            curMinFCost = fnext.FCost;
+            If (curMinFCost + curMinRCost > minCost) {
+                terminate = True;
+            }
+
+            Int fdist = fnext.FCost;
+            For(v: fnext.Nbrs) (!v.FFinalized) {
+                Edge e = v.ToEdge();
+                If (fdist + e.Weight + curMinRCost <= minCost) {
+                    If (v.FCost > fdist + e.Weight) {
+                        v.FCost = fdist + e.Weight;
+                        FReachable[v] = v.FCost;
+                        v.Parent = fnext;
+                        v.ParentEdge = e;
+                        If (v.RCost != +INF) {
+                            Int newCost = v.FCost + v.RCost;
+                            <minCost; mid> min= <newCost; v>;
+                        }
+                    }
+                }
+            }
+        } Else If (RReachable.Size() != 0 
+                && (RReachable.Size() <= FReachable.Size() || FReachable.Size() == 0) ) {
+            Node(G) rnext = RReachable.GetMinKey();
+            RReachable.Remove(rnext);
+            rnext.RFinalized = True;
+            curMinRCost = rnext.RCost;
+            If (curMinFCost + curMinRCost > minCost) {
+                terminate = True;
+            }
+                
+            Int rdist = rnext.RCost;
+            For(v: rnext.InNbrs) (!v.RFinalized) {
+                Edge e = v.ToEdge();
+                If (rdist + e.Weight + curMinFCost <= minCost) {
+                    If (v.RCost > rdist + e.Weight) {
+                        v.RCost = rdist + e.Weight;
+                        RReachable[v] = v.RCost;
+                        v.RParent = rnext;
+                        v.RParentEdge = e;
+                        If (v.FCost != +INF) {
+                            Int newCost = v.FCost + v.RCost;
+                            <minCost; mid> min= <newCost; v>;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // If a path was found
+    If (mid != NIL) {
+        // Update the 'Parent' and 'ParentEdge' property of all the nodes in the path from mid to dst
+        Node cur = mid;
+        While (cur != dst) {
+            Node prev = cur.RParent;
+            prev.Parent = cur;
+            prev.ParentEdge = cur.RParentEdge;
+            cur = prev;
+        }
+
+        Return True;
+    }
+    
+    // No path was found
+    Return False;
+}
+
+Procedure get_path(G: Graph, src, dst: Node, prev_node: N_P<Node>, prev_edge: N_P<Edge>(G), edge_cost: E_P<Int>(G); Q: Node_Seq) : Int {
+    Int total_cost = 0;
+    Node(G) n = dst;
+    If (dst.prev_node != NIL) {
+        While (n != src) {
+            Q.PushFront(n);
+            Edge(G) e = n.prev_edge;
+            total_cost += e.edge_cost;
+            n = n.prev_node;
+        }
+    }
+    Return total_cost;
+}
+

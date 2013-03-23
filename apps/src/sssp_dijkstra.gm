@@ -1,4 +1,4 @@
-Procedure dijkstra(G:Graph, Len:E_P<Int>, root, dest: Node; Parent: N_P<Node>) : Bool
+Procedure dijkstra(G:Graph, Len:E_P<Int>, root, dest: Node; Parent: N_P<Node>, ParentEdge: N_P<Edge>) : Bool
 {
     N_P<Bool> Reached;
     G.Parent = NIL;
@@ -17,10 +17,12 @@ Procedure dijkstra(G:Graph, Len:E_P<Int>, root, dest: Node; Parent: N_P<Node>) :
     Bool failed = False;
     While (!found && !failed)
     {
-        If (Reachable.Size() == 0) {
+        If (Reachable.Size() == 0) 
+        {
             failed = True;
         }
         Else {
+
             Node(G) next = Reachable.GetMinKey();
             If (next == dest)  {
                 found = True;
@@ -35,17 +37,34 @@ Procedure dijkstra(G:Graph, Len:E_P<Int>, root, dest: Node; Parent: N_P<Node>) :
                     If (!Reachable.HasKey(v)) {
                         Reachable[v] = dist + e.Len;
                         v.Parent = next;
+                        v.ParentEdge = e;
                     }
                     Else If (Reachable[v] > dist + e.Len) {
                         Reachable[v] = dist + e.Len;
                         v.Parent = next;
+                        v.ParentEdge = e;
                     }
                 }
             }
         }
     }
 
-
     // Return False if not reachable
     Return !failed;
+}
+
+// get the specific path instance
+Procedure get_path(G: Graph, begin,end: Node, prev_node: N_P<Node>, prev_edge: N_P<Edge>(G), edge_cost: E_P<Int>(G), Q: Node_Seq): Int
+{
+   Int total_cost = 0;
+   Node(G) n = end;
+   If (end.prev_node != NIL) {
+       While(n != begin) {
+           Q.PushFront(n);
+           Edge(G) e = n.prev_edge;
+           total_cost += e.edge_cost;
+           n = n.prev_node;
+       }
+   }
+   Return total_cost;
 }

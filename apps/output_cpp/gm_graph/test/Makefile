@@ -17,7 +17,7 @@ include ../../../../setup.mk
 include ../../common.mk
 
 #TARGET = a_main test_graph test_set test_seq test_order
-TARGET = test_generic_adj_list test_usermain test_prt_map #sssp_dijkstra_pq
+TARGET = test_generic_adj_list test_usermain test_prt_map 
 
 ifeq ($(SUPPORT_AVRO),1)
 # enable Avro
@@ -27,10 +27,7 @@ TARGET += test_adj_list_avro
 endif
 
 
-all: $(TARGET) sssp_dijkstra
-
-sssp_dijkstra: sssp_dijkstra.cc sssp_dijkstra_main.cc $(LIB)/libgmgraph.a
-	$(CC) sssp_dijkstra.cc sssp_dijkstra_main.cc $(CFLAGS) $(LFLAGS) -o $@
+all: $(TARGET)
 
 %:%.cc  $(LIB)/libgmgraph.a
 	$(CC) $< $(CFLAGS) $(LFLAGS) -o $@
