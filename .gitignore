@@ -53,8 +53,8 @@ apps/output_java/data
 apps/output_java/src/generated
 apps/output_java/src/runtime/_48bit
 apps/output_java/src/runtime/_64bit
-apps/output_java/src/generated_fake/_48bit
-apps/output_java/src/generated_fake/_64bit
+apps/output_java/src/main/_48bit
+apps/output_java/src/main/_64bit
 
 etc/update_setup
 setup.mk.bak
