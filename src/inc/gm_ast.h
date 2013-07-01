@@ -2356,11 +2356,15 @@ public:
 
     static ast_assign_mapentry* new_mapentry_assign(ast_mapaccess* lhs, ast_expr* rhs) {
         ast_assign_mapentry* newAssign = new ast_assign_mapentry(lhs, rhs);
+        lhs->set_parent(newAssign);
+        rhs->set_parent(newAssign);
         return newAssign;
     }
 
     static ast_assign_mapentry* new_mapentry_reduce_assign(ast_mapaccess* lhs, ast_expr* rhs, int reduceType) {
         ast_assign_mapentry* newAssign = new ast_assign_mapentry(lhs, rhs, reduceType);
+        lhs->set_parent(newAssign);
+        rhs->set_parent(newAssign);
         return newAssign;
     }
 
