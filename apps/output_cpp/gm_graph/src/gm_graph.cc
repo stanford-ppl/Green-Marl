@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <algorithm>
 #include <sys/time.h>
 
 #include "gm_graph.h"
@@ -308,6 +309,8 @@ static void swap(edge_t idx1, edge_t idx2, node_t* dest_array, edge_t* aux_array
     }
 }
 
+
+#if 0
 // begin idx is inclusive
 // end idx is exclusive
 static void sort(edge_t begin_idx, edge_t end_idx, node_t* dest_array, edge_t* aux_array, edge_t* aux_array2=NULL) {
@@ -347,6 +350,63 @@ static void sort(edge_t begin_idx, edge_t end_idx, node_t* dest_array, edge_t* a
         sort(store_idx + 1, end_idx, dest_array, aux_array, aux_array2);
     }
 }
+#endif
+
+template <typename T>
+class _gm_sort_indices
+{
+   private:
+     T* mparr;
+   public:
+     _gm_sort_indices(T* parr) : mparr(parr) {}
+     bool operator()(int i, int j) { return mparr[i]<mparr[j]; }
+};
+
+static void semi_sort_main(node_t N, edge_t M, edge_t* begin, node_t* dest, edge_t* aux, edge_t* aux2)
+{
+    #pragma omp parallel
+    {
+        std::vector<edge_t> index;
+        std::vector<node_t> dest_copy;
+        std::vector<edge_t> aux_copy;
+        std::vector<edge_t> aux2_copy;
+
+        #pragma omp for schedule(dynamic,4096) nowait
+        for (node_t i = 0; i < N; i++) {
+            index.clear(); dest_copy.clear(); aux_copy.clear(); aux2_copy.clear();
+            edge_t sz = begin[i+1] - begin[i];
+            node_t* dest_local = dest + begin[i];
+            edge_t* aux_local =  aux + begin[i];
+            edge_t* aux2_local = (aux2 == NULL)?NULL:aux2 + begin[i];
+
+            if (index.capacity() < (size_t) sz) {
+                index.reserve(sz);
+                dest_copy.reserve(sz);
+                aux_copy.reserve(sz);
+                aux2_copy.reserve(sz);
+            }
+            for(edge_t j=0;j < sz; j++) {
+                index[j] = j;
+                dest_copy[j] = dest_local[j];
+                aux_copy[j] = aux_local[j];
+                if (aux2 != NULL)
+                    aux2_copy[j] = aux2_local[j];
+            }
+
+            // sort indicies
+            std::sort(index.data(), index.data()+sz, _gm_sort_indices<node_t>(dest_copy.data()));
+
+            // now modify original
+            for(edge_t j=0;j < sz; j++) {
+                dest_local[j] = dest_copy [ index[j] ];
+                aux_local[j] = aux_copy [ index[j] ];
+                if (aux2 != NULL)
+                    aux2_local[j] = aux2_copy [ index[j] ];
+            }
+        }
+    }
+}
+
 
 void gm_graph::prepare_edge_source() {
     assert(node_idx_src == NULL);
@@ -377,10 +437,8 @@ void gm_graph::prepare_edge_source_reverse() {
 void gm_graph::do_semi_sort_reverse() {
     assert(r_begin != NULL);
 
-#pragma omp parallel for schedule(dynamic,128)
-    for (node_t i = 0; i < num_nodes(); i++) {
-        sort(r_begin[i], r_begin[i + 1], r_node_idx, e_rev2idx);
-    }
+    semi_sort_main(num_nodes(), num_edges(), r_begin, r_node_idx, e_rev2idx, NULL);
+                   
 }
 
 void gm_graph::do_semi_sort() {
@@ -397,12 +455,8 @@ void gm_graph::do_semi_sort() {
             e_idx2idx[j] = j;           /// first touch (NUMA OPT)
         }
     }
-    
 
-#pragma omp parallel for schedule(dynamic,128)
-    for (node_t i = 0; i < num_nodes(); i++) {
-        sort(begin[i], begin[i+1], node_idx, e_idx2idx, e_idx2id);
-    }
+    semi_sort_main(num_nodes(), num_edges(), begin, node_idx, e_idx2idx, e_idx2id);
 
     if (e_id2idx != NULL) {
 #pragma omp parallel for

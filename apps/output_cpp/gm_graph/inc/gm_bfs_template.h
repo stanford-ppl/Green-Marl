@@ -20,6 +20,7 @@ class gm_bfs_template
             G(_G) {
         visited_bitmap = NULL; // bitmap
         visited_level = NULL;
+
         //global_curr_level = NULL;
         //global_next_level = NULL;
         //global_queue = NULL;
@@ -32,12 +33,12 @@ class gm_bfs_template
     }
 
     virtual ~gm_bfs_template() {
-        delete visited_bitmap;
-        delete visited_level;
+        delete [] visited_bitmap;
+        delete [] visited_level;
         //delete [] global_queue;
         delete [] thread_local_next_level;
-        delete down_edge_set;
-        delete down_edge_array;
+        delete [] down_edge_set;
+        delete [] down_edge_array;
     }
 
     void prepare(node_t root_node, int max_num_thread) {
@@ -61,7 +62,7 @@ class gm_bfs_template
         // create local queues
         thread_local_next_level = new std::vector<node_t>[num_thread];
         for (int i = 0; i < num_thread; i++)
-            thread_local_next_level[i].reserve(THRESHOLD2);
+            thread_local_next_level[i].reserve(G.num_nodes()/num_thread/2);
 
     }
 
@@ -82,8 +83,17 @@ class gm_bfs_template
         level_count.push_back(curr_count);
         level_queue_begin.push_back(global_curr_level_begin);
 
+#define PROFILE_LEVEL_TIME  0
+#if PROFILE_LEVEL_TIME
+        struct timeval T1, T2;
+#endif
+
         bool is_done = false;
         while (!is_done) {
+#if PROFILE_LEVEL_TIME
+            gettimeofday(&T1,NULL);
+            printf("state = %d, curr_count=%d, ", state, curr_count);
+#endif
             switch (state) {
                 case ST_SMALL: {
                     for (node_t i = 0; i < curr_count; i++) {
@@ -99,7 +109,7 @@ class gm_bfs_template
                         #pragma omp parallel
                         {
                             int tid = omp_get_thread_num();
-                            #pragma omp for nowait
+                            #pragma omp for nowait schedule(dynamic,128)
                             for (node_t i = 0; i < curr_count; i++) {
                                 //node_t t = global_curr_level[i];
                                 node_t t = global_vector[global_curr_level_begin + i];
@@ -126,7 +136,7 @@ class gm_bfs_template
                         #pragma omp parallel
                         {
                             node_t local_cnt = 0;
-                            #pragma omp for nowait
+                            #pragma omp for nowait schedule(dynamic,128)
                             for (node_t i = 0; i < curr_count; i++) {
                                 //node_t t = global_curr_level[i];
                                 node_t t = global_vector[global_curr_level_begin + i];
@@ -200,11 +210,64 @@ class gm_bfs_template
                     }
                     break;
                 }
+
+                // reverse read
+                case ST_RRD: {
+                    #pragma omp parallel if (use_multithread)
+                    {
+                        node_t local_cnt = 0;
+                        #pragma omp for nowait schedule(dynamic,128)
+                        for (node_t t = 0; t < G.num_nodes(); t++) {
+                            if (visited_level[t] == curr_level) {
+                                visit_fw(t);
+                            }
+                            else if (visited_level[t] == __INVALID_LEVEL) {
+                                if (check_parent_rrd(t)) {
+                                    local_cnt ++;
+                                    _gm_set_bit(visited_bitmap, t);
+                                    visited_level[t] = (curr_level + 1);
+                                }
+                            }
+                        }
+                        finish_thread_rd(local_cnt);
+                    }
+                    break;
+                }
+                             
+                // reverse read2Q
+                case ST_RR2Q: {
+                    #pragma omp parallel if (use_multithread)
+                    {
+
+                        int tid = omp_get_thread_num();
+                        #pragma omp for nowait schedule(dynamic,128)
+                        for (node_t t = 0; t < G.num_nodes(); t++) {
+                            if (visited_level[t] == curr_level) {
+                                visit_fw(t);
+                            }
+                            else if (visited_level[t] == __INVALID_LEVEL) {
+                                if (check_parent_rrd(t)) {
+                                    _gm_set_bit(visited_bitmap, t);
+                                    visited_level[t] = (curr_level + 1);
+                                    thread_local_next_level[tid].push_back(t);
+                                }
+                            }
+                        }
+                        finish_thread_que(tid);
+                    }
+                    break;
+                }
+
             } // end of switch
 
             do_end_of_level_fw();
             is_done = get_next_state();
+#if PROFILE_LEVEL_TIME
+            gettimeofday(&T2, NULL);
+            printf("time = %6.5f ms\n", (T2.tv_sec - T1.tv_sec)*1000 + (T2.tv_usec - T1.tv_usec)*0.001);
+#endif
         } // end of while
+        
     }
 
     void do_bfs_reverse() {
@@ -292,6 +355,8 @@ class gm_bfs_template
         if (next_count == 0) return true;  // BFS is finished
 
         int next_state = state;
+        bool already_expanded = false;
+        const float RRD_THRESHOLD = 0.05;
         switch (state) {
             case ST_SMALL:
                 if (next_count >= THRESHOLD1) {
@@ -300,20 +365,51 @@ class gm_bfs_template
                 }
                 break;
             case ST_QUE:
-                if ((next_count >= THRESHOLD2) && (next_count >= curr_count*5)) {
+               if (already_expanded) break;
+
+               if (next_count >= G.num_nodes()*RRD_THRESHOLD)  
+               {
+                   already_expanded = true;
+                    prepare_read();
+                    if (!save_child && G.has_reverse_edge()) 
+                    {
+                        next_state = ST_RRD;
+                    }
+                    else
+                        next_state = ST_RD;
+                    break;
+                }
+                else if ((next_count >= THRESHOLD2) && (next_count >= curr_count*5)) {
+                   already_expanded = true;
                     prepare_read();
                     next_state = ST_Q2R;
                 }
                 break;
             case ST_Q2R:
-                next_state = ST_RD;
+                if (!save_child && G.has_reverse_edge() && (next_count >= G.num_nodes()*RRD_THRESHOLD))
+                {
+                    next_state = ST_RRD;
+                }
+                else
+                    next_state = ST_RD;
                 break;
             case ST_RD:
-                if (next_count <= (2 * curr_count)) {
+                if (next_count >= G.num_nodes()*RRD_THRESHOLD) {
+                    next_state = ST_RRD;
+                }
+                else if (next_count <= (2 * curr_count)) {
                     next_state = ST_R2Q;
                 }
                 break;
             case ST_R2Q:
+                next_state = ST_QUE;
+                break;
+            case ST_RRD:
+                if (next_count <= (2 * curr_count)) {
+                    next_state = ST_RR2Q;
+                }
+                break;
+            case ST_RR2Q:
                 next_state = ST_QUE;
                 break;
         }
@@ -341,7 +437,7 @@ class gm_bfs_template
 
         // save 'new current' level status
         level_count.push_back(curr_count);
-        if ((state == ST_RD) || (state == ST_Q2R)) {
+        if ((state == ST_RD) || (state == ST_Q2R) || (state == ST_RRD)) {
             //level_start_ptr.push_back(NULL);
             level_queue_begin.push_back(-1);
         } else {
@@ -359,12 +455,28 @@ class gm_bfs_template
             end = G.begin[t + 1];
         }
     }
+    void get_range_rev(edge_t& begin, edge_t& end, node_t t) {
+        if (use_reverse_edge) {
+            begin = G.begin[t];
+            end = G.begin[t + 1];
+        } else {
+            begin = G.r_begin[t];
+            end = G.r_begin[t + 1];
+        }
+    }
 
     node_t get_node(edge_t& n) {
         if (use_reverse_edge) {
             return G.r_node_idx[n];
         } else {
             return G.node_idx[n];
+        }
+    }
+    node_t get_node_rev(edge_t& n) {
+        if (use_reverse_edge) {
+            return G.node_idx[n];
+        } else {
+            return G.r_node_idx[n];
         }
     }
 
@@ -425,16 +537,16 @@ class gm_bfs_template
         if (use_multithread) {
 #pragma omp parallel
             {
-#pragma omp for nowait
+#pragma omp for nowait //schedule(dynamic,65536)
                 for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
                     visited_bitmap[i] = 0;
 
-#pragma omp for nowait
+#pragma omp for nowait //schedule(dynamic,65536)
                 for (node_t i = 0; i < G.num_nodes(); i++)
-                    visited_level[i] = __INVALID_LEVEL;
+                    visited_level[i] =  __INVALID_LEVEL;
 
                 if (save_child) {
-#pragma omp for nowait
+#pragma omp for nowait //schedule(dynamic,65536)
                     for (edge_t i = 0; i < G.num_edges(); i++)
                         down_edge_array[i] = 0;
                 }
@@ -443,7 +555,7 @@ class gm_bfs_template
             for (node_t i = 0; i < (G.num_nodes() + 7) / 8; i++)
                 visited_bitmap[i] = 0;
             for (node_t i = 0; i < G.num_nodes(); i++)
-                visited_level[i] = __INVALID_LEVEL;
+                visited_level[i] =  __INVALID_LEVEL;
             if (save_child) {
                 for (edge_t i = 0; i < G.num_edges(); i++)
                     down_edge_array[i] = 0;
@@ -573,6 +685,28 @@ class gm_bfs_template
         _gm_atomic_fetch_and_add_node(&next_count, local_cnt);
     }
 
+    // return true if t is next level
+    bool check_parent_rrd(node_t t)
+    {
+        bool ret = false;
+        edge_t begin;
+        edge_t end;
+        get_range_rev(begin, end, t);
+
+        if (has_navigator) {
+           // [XXX] fixme 
+           if (check_navigator(t, 0) == false) return false;
+        }
+
+        for (edge_t nx = begin; nx < end; nx++) {
+            node_t u = get_node_rev(nx);
+            //if (_gm_get_bit(visited_bitmap, u) == 0) continue;
+            if (visited_level[u] == (curr_level )) 
+                return true;
+        }
+        return false;
+    }
+
 
     //-----------------------------------------------------
     //-----------------------------------------------------
@@ -581,6 +715,8 @@ class gm_bfs_template
     static const int ST_Q2R = 2;
     static const int ST_RD = 3;
     static const int ST_R2Q = 4;
+    static const int ST_RRD = 5;
+    static const int ST_RR2Q = 6;
     static const int THRESHOLD1 = 128;  // single threaded
     static const int THRESHOLD2 = 1024; // move to RD-based
 
