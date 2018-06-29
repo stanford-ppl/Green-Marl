@@ -309,7 +309,7 @@ bfs_navigator :  '[' expr ']'              {$$ = $2;}
 
   var_target: id_comma_list                   { $$ = GM_finish_id_comma_list();}
 
-  sent_assignment : lhs '=' rhs             { $$ = GM_normal_assign($1, $3); GM_set_lineinfo($$, @2.first_line, @2.first_column)}
+  sent_assignment : lhs '=' rhs             { $$ = GM_normal_assign($1, $3); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
   sent_reduce_assignment : lhs reduce_eq rhs optional_bind  { $$ = GM_reduce_assign($1, $3, $4, $2); GM_set_lineinfo($$, @2.first_line, @2.first_column);}
                          | lhs T_PLUSPLUS optional_bind{ $$ = GM_reduce_assign($1, GM_expr_ival(1, @2.first_line, @2.first_column), $3, GMREDUCE_PLUS); }
                          | lhs T_MINUSMINUS optional_bind{ $$ = GM_reduce_assign($1, GM_expr_ival(-1, @2.first_line, @2.first_column), $3, GMREDUCE_PLUS); }
