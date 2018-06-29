@@ -33,11 +33,11 @@ void gm_print_error_header() {
     need_print = false;
 }
 
-void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2) {
+void gm_type_error(int errnumber, ast_id* id, const char* str1, const char* str2) {
     gm_print_error_header();
     if (curr_file != NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", id->get_line(), id->get_col());
-    switch (errno) {
+    switch (errnumber) {
         case GM_ERROR_INVALID_ITERATOR_FOR_RARROW:
             printf("%s cannot be used in Edge() syntax.\n", id->get_orgname());
             break;
@@ -89,12 +89,12 @@ void gm_type_error(int errno, ast_id* id, const char* str1, const char* str2) {
             break;
     }
 }
-void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, const char* str3) {
+void gm_type_error(int errnumber, int l, int c, const char* str1, const char* str2, const char* str3) {
     gm_print_error_header();
 
     if (curr_file != NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
-    switch (errno) {
+    switch (errnumber) {
         case GM_ERROR_PAR_RETURN:
             printf("return inside parallel consistency\n");
             break;
@@ -196,11 +196,11 @@ void gm_type_error(int errno, int l, int c, const char* str1, const char* str2, 
     }
 }
 
-void gm_type_error(int errno, ast_id* id1, ast_id* id2) {
+void gm_type_error(int errnumber, ast_id* id1, ast_id* id2) {
     gm_print_error_header();
     if (curr_file != NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", id1->get_line(), id1->get_col());
-    switch (errno) {
+    switch (errnumber) {
         case GM_ERROR_NONGRAPH_TARGET:
             printf("%s is not a graph type object\n", id1->get_orgname());
             break;
@@ -234,7 +234,7 @@ void gm_type_error(int errno, ast_id* id1, ast_id* id2) {
     }
 }
 
-void gm_conf_error(int errno, gm_symtab_entry* target, ast_id* ev1, ast_id* ev2, bool is_warning) {
+void gm_conf_error(int errnumber, gm_symtab_entry* target, ast_id* ev1, ast_id* ev2, bool is_warning) {
     gm_print_error_header();
     if (curr_file != NULL) printf("%s:", curr_file);
 
@@ -246,7 +246,7 @@ void gm_conf_error(int errno, gm_symtab_entry* target, ast_id* ev1, ast_id* ev2,
     ast_id* target_id = target->getId();
     char* name = target_id->get_orgname();
 
-    switch (errno) {
+    switch (errnumber) {
         case GM_ERROR_READ_WRITE_CONFLICT:
             printf("Property %s may have read-write conflict: read at line:%d, write at line:%d\n", name, ev1->get_line(), ev2->get_line());
             break;
@@ -277,10 +277,10 @@ void gm_conf_error(int errno, gm_symtab_entry* target, ast_id* ev1, ast_id* ev2,
 }
 
 // todo: should be differend error routines for different back-ends
-void gm_backend_error(int errno, const char* str1, const char* str2) {
+void gm_backend_error(int errnumber, const char* str1, const char* str2) {
     gm_print_error_header();
     if (curr_file != NULL) printf("%s:", curr_file);
-    switch (errno) {
+    switch (errnumber) {
         case GM_ERROR_FILEWRITE_ERROR:
             printf("cannot open file %s for write\n", str1);
             break;
@@ -302,11 +302,11 @@ void gm_backend_error(int errno, const char* str1, const char* str2) {
             break;
     }
 }
-void gm_backend_error(int errno, int l, int c, const char* str1) {
+void gm_backend_error(int errnumber, int l, int c, const char* str1) {
     gm_print_error_header();
     if (curr_file != NULL) printf("%s:", curr_file);
     printf("%d: %d: error: ", l, c);
-    switch (errno) {
+    switch (errnumber) {
         case GM_ERROR_GPS_EDGE_SEND_VERSIONS:
             printf("Communicating multiple versions of edge value in one message: %s\n", str1);
             break;
