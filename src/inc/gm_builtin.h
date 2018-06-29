@@ -4,7 +4,7 @@
 #include <list>
 #include <map>
 
-#define AUX_INFO(X,Y)			TO_STR(X)":"TO_STR(Y)
+#define AUX_INFO(X,Y)			TO_STR(X) ":" TO_STR(Y)
 
 #define GM_BLTIN_MUTATE_GROW 1
 #define GM_BLTIN_MUTATE_SHRINK 2
