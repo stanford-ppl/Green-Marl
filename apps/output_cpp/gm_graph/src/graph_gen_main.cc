@@ -24,11 +24,11 @@ int main(int argc, char** argv) {
         exit(0);
     }
 
-    node_t N = (node_t) atoll(argv[1]);
-    edge_t M = (edge_t) atoll(argv[2]);
+    node_t N = (node_t) strtoull(argv[1], NULL, 10);
+    edge_t M = (edge_t) strtoull(argv[2], NULL, 10);
     int gtype = atoi(argv[4]);
     if (N == 0) {printf("Empty graph not allowed\n"); return EXIT_FAILURE;}
-    printf("Creating Graph, N = %I64d, M = %I64d , Type = %d\n", (int64_t)N, (int64_t) M, gtype);
+    printf("Creating Graph, N = %" PRIi64 ", M = %" PRIi64 " , Type = %d\n", (int64_t)N, (int64_t)M, gtype);
 
 
     gm_graph* g;
